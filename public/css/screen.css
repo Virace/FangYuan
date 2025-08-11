@@ -1,0 +1,78 @@
+/*!*********************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/scss/screen.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************/
+@charset "UTF-8";
+/**
+ * 方圆主题前端样式测试代码
+ * 为网站前台添加明显的样式变化
+ */
+body {
+  background-color: #fafbfc;
+  font-family: "Fira Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+  color: #2c3e50;
+}
+
+main {
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin: 20px auto;
+  padding: 30px;
+  max-width: 1200px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #34495e;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+h1::before, h2::before, h3::before, h4::before, h5::before, h6::before {
+  content: "✦ ";
+  color: #007cba;
+  margin-right: 8px;
+}
+
+a {
+  color: #007cba;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+a:hover {
+  color: #005a87;
+  border-bottom-color: #007cba;
+}
+
+.wp-element-button,
+.wp-block-button__link {
+  background: linear-gradient(135deg, #007cba, #005a87);
+  border: none;
+  border-radius: 25px;
+  padding: 12px 24px;
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+.wp-element-button:hover,
+.wp-block-button__link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 124, 186, 0.4);
+}
+
+.fangyuan-test-highlight {
+  background: linear-gradient(45deg, #f39c12, #e67e22);
+  padding: 20px;
+  border-radius: 10px;
+  color: white;
+  text-align: center;
+  margin: 20px 0;
+  font-weight: bold;
+}
+.fangyuan-test-highlight::before {
+  content: "🎨 方圆主题测试样式已加载 🎨";
+  display: block;
+  font-size: 1.2em;
+}
+
+/*# sourceMappingURL=screen.css.map*/

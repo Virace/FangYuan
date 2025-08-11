@@ -1,0 +1,52 @@
+/**
+ * WordPress 编辑器样式测试代码
+ * 为方圆主题编辑器界面添加明显的样式变化
+ */
+
+// 编辑器主体样式测试
+.editor-styles-wrapper {
+    // 更改编辑器背景色以便测试
+    background-color: #f8f9fa;
+    
+    // 为编辑器内容区域添加测试样式
+    .wp-block {
+        border-left: 3px solid #007cba;
+        padding-left: 15px;
+        margin-bottom: 20px;
+        
+        &:hover {
+            border-left-color: #005a87;
+            background-color: rgba(0, 124, 186, 0.05);
+        }
+    }
+    
+    // 标题块样式测试
+    .wp-block-heading {
+        color: #2c3e50;
+        font-weight: 600;
+        
+        h1, h2, h3, h4, h5, h6 {
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+    }
+    
+    // 段落块测试样式
+    .wp-block-paragraph {
+        line-height: 1.7;
+        color: #495057;
+    }
+}
+
+// 编辑器工具栏测试样式
+.edit-post-header-toolbar {
+    background: linear-gradient(90deg, #007cba, #005a87);
+    
+    .components-button {
+        color: white !important;
+        
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+    }
+}

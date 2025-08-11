@@ -1,0 +1,33 @@
+{
+	"name": "fangyuan",
+	"version": "0.1.0",
+	"description": "FangYuan (方圆) - A modern WordPress block theme based on Twenty Twenty-Five",
+	"author": "Virace",
+	"license": "GPL-3.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/virace/fangyuan-theme.git"
+	},
+	"keywords": [
+		"wordpress",
+		"theme",
+		"block-theme",
+		"modern",
+		"responsive"
+	],
+	"engines": {
+		"node": ">=18.0.0",
+		"npm": ">=8.0.0"
+	},
+	"scripts": {
+		"start": "wp-scripts start --webpack-src-dir=src --output-path=public",
+		"build": "wp-scripts build --webpack-src-dir=src --output-path=public",
+		"dev": "npm run start",
+		"production": "npm run build"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.21.0",
+		"path": "^0.12.7",
+		"webpack-remove-empty-scripts": "^1.1.1"
+	}
+}

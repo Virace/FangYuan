@@ -1,0 +1,42 @@
+/*!*********************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/scss/editor.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************/
+@charset "UTF-8";
+/**
+ * WordPress 编辑器样式测试代码
+ * 为方圆主题编辑器界面添加明显的样式变化
+ */
+.editor-styles-wrapper {
+  background-color: #f8f9fa;
+}
+.editor-styles-wrapper .wp-block {
+  border-right: 3px solid #007cba;
+  padding-right: 15px;
+  margin-bottom: 20px;
+}
+.editor-styles-wrapper .wp-block:hover {
+  border-right-color: #005a87;
+  background-color: rgba(0, 124, 186, 0.05);
+}
+.editor-styles-wrapper .wp-block-heading {
+  color: #2c3e50;
+  font-weight: 600;
+}
+.editor-styles-wrapper .wp-block-heading h1, .editor-styles-wrapper .wp-block-heading h2, .editor-styles-wrapper .wp-block-heading h3, .editor-styles-wrapper .wp-block-heading h4, .editor-styles-wrapper .wp-block-heading h5, .editor-styles-wrapper .wp-block-heading h6 {
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 10px;
+}
+.editor-styles-wrapper .wp-block-paragraph {
+  line-height: 1.7;
+  color: #495057;
+}
+
+.edit-post-header-toolbar {
+  background: linear-gradient(-90deg, #007cba, #005a87);
+}
+.edit-post-header-toolbar .components-button {
+  color: white !important;
+}
+.edit-post-header-toolbar .components-button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
