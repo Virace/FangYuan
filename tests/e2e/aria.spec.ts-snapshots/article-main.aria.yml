@@ -1,0 +1,121 @@
+- main:
+  - img
+  - text: /\d+ 字/
+  - img
+  - text: 1 分钟 Markdown Baseline Sample
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the Notes category":
+    - /url: /archive/?category=Notes
+    - text: ""
+  - img
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /
+  - link "View all posts with the Example tag":
+    - /url: /archive/?tag=Example
+    - text: ""
+  - 'heading "Markdown Baseline Sample #" [level=1]':
+    - text: ""
+    - link "#":
+      - /url: "#markdown-baseline-sample"
+  - paragraph: This note keeps a compact but practical Markdown sample for FangYuan, so later theme changes can quickly verify typography, spacing, lists, tables, quotes, and code blocks.
+  - 'heading "Text #" [level=2]':
+    - text: ""
+    - link "#":
+      - /url: "#text"
+  - paragraph: Paragraphs are separated by a blank line.
+  - paragraph:
+    - text: You can mix
+    - emphasis: italic
+    - text: ","
+    - strong: bold
+    - text: ","
+    - code: inline code
+    - text: ", and"
+    - link "links":
+      - /url: https://astro.build
+    - text: in the same paragraph without any special handling.
+  - blockquote:
+    - paragraph: A short quote block is useful for callouts, excerpts, or migration notes.
+  - 'heading "Lists #" [level=2]':
+    - text: ""
+    - link "#":
+      - /url: "#lists"
+  - list:
+    - listitem: Prepare a topic
+    - listitem: Write the frontmatter
+    - listitem: Publish when the note is ready
+  - list:
+    - listitem: unordered items also work well
+    - listitem: especially for small checklists
+    - listitem: or short content summaries
+  - 'heading "Code #" [level=2]':
+    - text: ""
+    - link "#":
+      - /url: "#code"
+  - figure:
+    - text: ts
+    - code: "export function siteName(): string { return \"FangYuan\"; }"
+    - button "Copy code":
+      - img
+      - img
+  - 'heading "Table #" [level=2]':
+    - text: ""
+    - link "#":
+      - /url: "#table"
+  - table:
+    - rowgroup:
+      - row "Item Purpose":
+        - columnheader "Item"
+        - columnheader "Purpose"
+    - rowgroup:
+      - row "title Display name of the post":
+        - cell "title":
+          - code: title
+        - cell "Display name of the post"
+      - row "description Summary shown in listings":
+        - cell "description":
+          - code: description
+        - cell "Summary shown in listings"
+      - row "draft Keeps the post hidden until ready":
+        - cell "draft":
+          - code: draft
+        - cell "Keeps the post hidden until ready"
+  - 'heading "Math #" [level=2]':
+    - text: ""
+    - link "#":
+      - /url: "#math"
+  - paragraph:
+    - text: Inline math looks like
+    - math: ω = d ϕ / d t
+    - text: .
+  - paragraph: "Display math can also be used:"
+  - paragraph:
+    - math: I = ∫ ρ R 2 d V
+  - text: Markdown Baseline Sample
+  - link "https://github.com/posts/markdown/":
+    - /url: https://github.com/posts/markdown/
+  - text: /作者 FangYuan 发布于 \d+-\d+-\d+ 许可协议/
+  - link "MIT":
+    - /url: https://opensource.org/license/mit
+  - img
+  - link "FangYuan Baseline Notes":
+    - /url: /posts/guide/
+    - img
+    - text: ""
+  - text: /© \d+ FangYuan\. Licensed under MIT\. \//
+  - link "RSS":
+    - /url: /rss.xml
+  - text: /
+  - link "Sitemap":
+    - /url: /sitemap-index.xml
+  - text: Built with
+  - link "Astro":
+    - /url: https://astro.build

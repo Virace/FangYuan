@@ -1,0 +1,145 @@
+- main:
+  - heading "主页" [level=1]
+  - link "FangYuan Markdown Extensions":
+    - /url: /posts/markdown-extended/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the Notes category":
+    - /url: /archive/?category=Notes
+    - text: ""
+  - img
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /
+  - link "View all posts with the Extensions tag":
+    - /url: /archive/?tag=Extensions
+    - text: ""
+  - text: /用于记录 FangYuan 当前启用的 Markdown 扩展能力。 \d+ 字 \| 1 分钟/
+  - link "FangYuan Markdown Extensions":
+    - /url: /posts/markdown-extended/
+    - img
+  - link "Expressive Code Baseline Notes":
+    - /url: /posts/expressive-code/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the Notes category":
+    - /url: /archive/?category=Notes
+    - text: ""
+  - img
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /
+  - link "View all posts with the Code tag":
+    - /url: /archive/?tag=Code
+    - text: ""
+  - text: /用于预览 FangYuan 默认代码块样式与标记效果。 \d+ 字 \| 1 分钟/
+  - link "Expressive Code Baseline Notes":
+    - /url: /posts/expressive-code/
+    - img
+  - link "Embedding Video in FangYuan Posts":
+    - /url: /posts/video/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the Notes category":
+    - /url: /archive/?category=Notes
+    - text: ""
+  - img
+  - link "View all posts with the Video tag":
+    - /url: /archive/?tag=Video
+    - text: ""
+  - text: /
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /
+  - link "View all posts with the Example tag":
+    - /url: /archive/?tag=Example
+    - text: ""
+  - text: /记录 FangYuan 默认内容中嵌入视频的方式。 \d+ 字 \| 1 分钟/
+  - link "Embedding Video in FangYuan Posts":
+    - /url: /posts/video/
+    - img
+  - link "FangYuan Baseline Notes":
+    - /url: /posts/guide/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the Guides category":
+    - /url: /archive/?category=Guides
+    - text: ""
+  - img
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /
+  - link "View all posts with the Notes tag":
+    - /url: /archive/?tag=Notes
+    - text: ""
+  - text: /
+  - link "View all posts with the Baseline tag":
+    - /url: /archive/?tag=Baseline
+    - text: ""
+  - text: /Notes for evolving the FangYuan site from its initial fork baseline\. \d+ 字 \| 1 分钟/
+  - link "FangYuan Baseline Notes":
+    - /url: /posts/guide/
+    - img
+    - img "Cover Image of the Post"
+  - link "Markdown Baseline Sample":
+    - /url: /posts/markdown/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the Notes category":
+    - /url: /archive/?category=Notes
+    - text: ""
+  - img
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /
+  - link "View all posts with the Example tag":
+    - /url: /archive/?tag=Example
+    - text: ""
+  - text: /用于校验 FangYuan 默认 Markdown 渲染效果的基础示例。 \d+ 字 \| 1 分钟/
+  - link "Markdown Baseline Sample":
+    - /url: /posts/markdown/
+    - img
+  - img
+  - text: "1"
+  - img
+  - text: /© \d+ FangYuan\. Licensed under MIT\. \//
+  - link "RSS":
+    - /url: /rss.xml
+  - text: /
+  - link "Sitemap":
+    - /url: /sitemap-index.xml
+  - text: Built with
+  - link "Astro":
+    - /url: https://astro.build

@@ -20,6 +20,46 @@ pnpm check
 pnpm build
 ```
 
+## Browser Quality Gate
+
+运行默认浏览器门禁：
+
+```bash
+pnpm test:e2e
+```
+
+运行本地视觉回归：
+
+```bash
+pnpm test:e2e:visual
+```
+
+只在确认 UI 改动本身就是预期结果时，才更新本地视觉基线：
+
+```bash
+pnpm test:e2e:update
+```
+
+常用本地变体：
+
+```bash
+pnpm test:e2e:headed
+pnpm exec playwright test tests/e2e/smoke.spec.ts
+pnpm exec playwright test tests/e2e/a11y.spec.ts
+```
+
+说明：
+
+- `pnpm test:e2e` 默认不包含视觉快照测试，保证干净环境下无需提交 PNG 基线也能通过
+- `pnpm test:e2e:visual` 和 `pnpm test:e2e:update` 仅作为本地视觉回归工作流使用
+- `tests/e2e/visual.spec.ts-snapshots/` 已加入 `.gitignore`
+
+更新 snapshot 前请先确认：
+
+- UI 变化本身是有意设计，而不是偶发回归
+- 已查看截图 diff，而不是只看命令通过
+- 不要把无关内容改动和 snapshot 更新混在同一个提交里
+
 ## 说明
 
 - 站点默认配置位于 `src/config.ts`

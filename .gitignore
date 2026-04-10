@@ -32,3 +32,8 @@ yarn.lock
 
 # local agent artifacts
 .serena/
+
+# Playwright artifacts
+playwright-report/
+test-results/
+tests/e2e/visual.spec.ts-snapshots/
