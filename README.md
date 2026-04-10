@@ -8,6 +8,11 @@ FangYuan 是一个基于 Astro 的个人站点二开基线项目。当前首次�
 
 ## 本地开发
 
+要求：
+
+- Node.js >= 22.12.0
+- pnpm >= 9
+
 ```bash
 pnpm install
 pnpm dev
