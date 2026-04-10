@@ -202,6 +202,7 @@ import {
 	// SizeObserverPlugin,
 	// ClickScrollPlugin
 } from 'overlayscrollbars';
+import { resolveSwupAnnouncementText } from "../utils/swup-a11y";
 import {getHue, getStoredTheme, setHue, setTheme} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
 import {
@@ -371,6 +372,10 @@ function init() {
 	showBanner();
 }
 
+function resolvePageAnnouncement() {
+	return resolveSwupAnnouncementText(document, document.title)
+}
+
 /* Load settings when entering the site */
 init();
 
@@ -403,6 +408,14 @@ const setup = () => {
 		if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
 			navbar.classList.add('navbar-hidden')
 		}
+	})
+	window.swup.hooks.before('content:announce', (visit: { a11y: { announce?: string } }) => {
+		const announcement = resolvePageAnnouncement()
+		if (!announcement) {
+			return
+		}
+
+		visit.a11y.announce = announcement
 	})
 	window.swup.hooks.on('content:replace', initCustomScrollbar)
 	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
