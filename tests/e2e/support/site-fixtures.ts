@@ -6,6 +6,7 @@ export const SITE_ROUTES = {
 	archive: "/archive/",
 	postBasic: "/posts/markdown/",
 	postComplex: "/posts/markdown-extended/",
+	postWithCover: "/posts/guide/",
 } as const;
 
 export const VIEWPORTS = {

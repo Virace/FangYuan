@@ -88,3 +88,18 @@ test("desktop back-to-top button appears after scroll and returns to top", async
 		.poll(async () => page.evaluate(() => Math.round(window.scrollY)))
 		.toBe(0);
 });
+
+test("photoswipe assets are scoped to image pages and cover click opens lightbox", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await prepareStablePage(page, SITE_ROUTES.home);
+
+	await expect(page.locator('link[data-photoswipe-style="true"]')).toHaveCount(0);
+
+	await gotoAndWaitForApp(page, SITE_ROUTES.postWithCover);
+	await expect(page.locator('link[data-photoswipe-style="true"]')).toHaveCount(1);
+
+	await page.locator("#post-cover img").click();
+	await expect(page.locator(".pswp")).toBeVisible();
+});
