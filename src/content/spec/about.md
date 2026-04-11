@@ -1,10 +1,11 @@
-# 关于
+# About
 
-FangYuan / 方圆 是一个为后续个人站点主题与内容演进准备的基线仓库。
+This is the demo site for [FangYuan](https://github.com/Virace/FangYuan).
 
-当前首次提交的重点，是先完成基线整理、文本切换和仓库归属收口，而不是立刻改写整套视觉设计。
+::github{repo="Virace/FangYuan"}
 
-> ### 当前说明
-> - 本次提交用于建立新的项目基线
-> - 后续主题与视觉方向会在此基础上单独推进
-> - 仓库级来源说明与许可信息保留在 `README.md` 与 `LICENSE`
+> ### Sources of images used in this site
+>
+> - [Unsplash](https://unsplash.com/)
+> - [星と少女](https://www.pixiv.net/artworks/108916539) by [Stella](https://www.pixiv.net/users/93273965)
+> - [Rabbit - v1.4 Showcase](https://civitai.com/posts/586908) by [Rabbit_YourMajesty](https://civitai.com/user/Rabbit_YourMajesty)
