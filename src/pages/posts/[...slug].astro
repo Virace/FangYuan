@@ -1,4 +1,5 @@
 ---
+import { render } from "astro:content";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
@@ -7,7 +8,6 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getSortedPosts } from "@utils/content-utils";
 import { shouldEnablePhotoSwipe } from "@utils/photoswipe-utils";
 import { getDir, getPostUrlBySlug } from "@utils/url-utils";
-import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import { licenseConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";

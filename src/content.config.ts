@@ -1,19 +1,29 @@
 import { defineCollection } from "astro:content";
+import type { CollectionConfig } from "astro/content/config";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+
+export type GlobCollectionLoader = ReturnType<typeof glob>;
+export type ObjectCollectionSchema = z.ZodObject<z.ZodRawShape>;
 
 function generateMarkdownId(entry: string): string {
 	const normalizedEntry = entry.replace(/\\/g, "/");
 	const entryWithoutExtension = normalizedEntry.replace(/\.md$/, "");
 
-	if (entryWithoutExtension !== "index" && entryWithoutExtension.endsWith("/index")) {
+	if (
+		entryWithoutExtension !== "index" &&
+		entryWithoutExtension.endsWith("/index")
+	) {
 		return entryWithoutExtension.slice(0, -"/index".length);
 	}
 
 	return entryWithoutExtension;
 }
 
-const postsCollection = defineCollection({
+const postsCollection: CollectionConfig<
+	ObjectCollectionSchema,
+	GlobCollectionLoader
+> = defineCollection({
 	loader: glob({
 		base: "./src/content/posts",
 		pattern: "**/*.md",
@@ -38,7 +48,10 @@ const postsCollection = defineCollection({
 	}),
 });
 
-const specCollection = defineCollection({
+const specCollection: CollectionConfig<
+	ObjectCollectionSchema,
+	GlobCollectionLoader
+> = defineCollection({
 	loader: glob({
 		base: "./src/content/spec",
 		pattern: "**/*.md",
@@ -47,7 +60,10 @@ const specCollection = defineCollection({
 	schema: z.object({}),
 });
 
-export const collections = {
+export const collections: {
+	posts: CollectionConfig<ObjectCollectionSchema, GlobCollectionLoader>;
+	spec: CollectionConfig<ObjectCollectionSchema, GlobCollectionLoader>;
+} = {
 	posts: postsCollection,
 	spec: specCollection,
 };

@@ -1,15 +1,15 @@
 ---
-import type { CollectionEntry } from "astro:content";
+import type { PostEntry } from "@utils/content-utils";
 import { getPostUrlBySlug } from "@utils/url-utils";
 import PostCard from "./PostCard.astro";
 
-const { page } = Astro.props;
+const page = Astro.props.page as { data: PostEntry[] };
 
 let delay = 0;
 const interval = 50;
 ---
 <div class="transition flex flex-col rounded-[var(--radius-large)] bg-[var(--card-bg)] py-1 md:py-0 md:bg-transparent md:gap-4 mb-4">
-    {page.data.map((entry: CollectionEntry<"posts">) => (
+    {page.data.map((entry: PostEntry) => (
         <PostCard
                 entry={entry}
                 title={entry.data.title}
