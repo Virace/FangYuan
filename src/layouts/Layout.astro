@@ -5,6 +5,7 @@ import "@fontsource/roboto/700.css";
 import "overlayscrollbars/overlayscrollbars.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
+import GlobalStyles from "@components/GlobalStyles.astro";
 import photoSwipeStylesUrl from "photoswipe/style.css?url";
 import { profileConfig, siteConfig } from "@/config";
 import {
@@ -162,6 +163,7 @@ const bannerOffset =
 	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
 		  data-overlayscrollbars-initialize
 	>
+		<GlobalStyles />
 		<ConfigCarrier></ConfigCarrier>
 		<slot />
 
