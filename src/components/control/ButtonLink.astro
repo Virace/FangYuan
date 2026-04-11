@@ -12,7 +12,7 @@ const { badge, url, label } = Astro.props;
             w-full
             h-10
             rounded-lg
-            bg-none
+            bg-transparent
             hover:bg-[var(--btn-plain-bg-hover)]
             active:bg-[var(--btn-plain-bg-active)]
             transition-all
@@ -27,7 +27,7 @@ const { badge, url, label } = Astro.props;
         }
     >
         <div class="flex items-center justify-between relative mr-2">
-            <div class="overflow-hidden text-left whitespace-nowrap overflow-ellipsis  ">
+            <div class="overflow-hidden text-left whitespace-nowrap text-ellipsis">
                 <slot></slot>
             </div>
             { badge !== undefined && badge !== null && badge !== '' &&
