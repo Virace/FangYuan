@@ -84,7 +84,7 @@ const jsonLd = {
                     text-3xl md:text-[2.25rem]/[2.75rem]
                     text-black/90 dark:text-white/90
                     md:before:w-1 before:h-5 before:rounded-md before:bg-primary
-                    before:absolute before:top-[0.75rem] before:left-[-1.125rem]
+                    before:absolute before:top-3 before:-left-4.5
                 ">
                     {entry.data.title}
                 </div>
@@ -99,7 +99,7 @@ const jsonLd = {
                         tags={entry.data.tags}
                         category={entry.data.category}
                 ></PostMetadata>
-                {!entry.data.image && <div class="border-line-divider border-dashed border-b-[1px] mb-5"></div>}
+                {!entry.data.image && <div class="border-line-divider border-dashed border-b mb-5"></div>}
             </div>
 
             <!-- always show cover as long as it has one -->
@@ -121,9 +121,9 @@ const jsonLd = {
     <div class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full">
         <div class="w-full font-bold overflow-hidden">
             {entry.data.nextSlug && <a href={getPostUrlBySlug(entry.data.nextSlug)} class="block active:scale-95">
-                <div class="btn-card rounded-2xl w-full h-[3.75rem] max-w-full px-4 flex items-center !justify-start gap-4" >
+                <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-start! gap-4" >
                     <Icon name="material-symbols:chevron-left-rounded" class="text-[2rem] text-primary" />
-                    <div class="overflow-hidden transition text-ellipsis whitespace-nowrap max-w-[calc(100%_-_3rem)] text-black/75 dark:text-white/75">
+                    <div class="overflow-hidden transition text-ellipsis whitespace-nowrap max-w-[calc(100%-3rem)] text-black/75 dark:text-white/75">
                         {entry.data.nextTitle}
                     </div>
                 </div>
@@ -132,8 +132,8 @@ const jsonLd = {
 
         <div class="w-full font-bold overflow-hidden">
             {entry.data.prevSlug && <a href={getPostUrlBySlug(entry.data.prevSlug)} class="block active:scale-95">
-                <div class="btn-card rounded-2xl w-full h-[3.75rem] max-w-full px-4 flex items-center !justify-end gap-4">
-                    <div class="overflow-hidden transition text-ellipsis whitespace-nowrap max-w-[calc(100%_-_3rem)] text-black/75 dark:text-white/75">
+                <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-end! gap-4">
+                    <div class="overflow-hidden transition text-ellipsis whitespace-nowrap max-w-[calc(100%-3rem)] text-black/75 dark:text-white/75">
                         {entry.data.prevTitle}
                     </div>
                     <Icon name="material-symbols:chevron-right-rounded" class="text-[2rem] text-primary" />
