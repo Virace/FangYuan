@@ -27,3 +27,13 @@ test("LightDarkSwitch should use semantic icon sizing utilities", async () => {
 		"LightDarkSwitch should not regress to arbitrary 1.25rem icon sizing",
 	);
 });
+
+test("LightDarkSwitch hover boundary wrapper should keep an ARIA role", async () => {
+	const source = await readFile(componentPath, "utf8");
+
+	assert.match(
+		source,
+		/<div(?=[^>]*onmouseleave=\{hidePanel\})(?=[^>]*role="presentation")[^>]*>/,
+		"LightDarkSwitch should keep a presentational ARIA role on the hover boundary wrapper to satisfy Svelte accessibility checks",
+	);
+});
