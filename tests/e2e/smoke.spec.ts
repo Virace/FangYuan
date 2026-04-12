@@ -10,7 +10,7 @@ const smokeCases = [
 		name: "homepage shell",
 		path: SITE_ROUTES.home,
 		assertReady: (page) =>
-			page.getByRole("link", { name: /Markdown Baseline Sample/i }).first(),
+			page.locator(`a[href="${SITE_ROUTES.postBasic}"]`).first(),
 	},
 	{
 		name: "about page shell",
@@ -20,7 +20,7 @@ const smokeCases = [
 	{
 		name: "archive page shell",
 		path: SITE_ROUTES.archive,
-		assertReady: (page) => page.getByText(/Markdown Baseline Sample/i).first(),
+		assertReady: (page) => page.getByText(/Markdown Example/i).first(),
 	},
 	{
 		name: "basic article shell",

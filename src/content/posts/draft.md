@@ -1,25 +1,22 @@
 ---
-title: Draft Workflow Note
-published: 2024-04-11
-description: A hidden draft note for the FangYuan baseline.
-tags: [Draft, Workflow, FangYuan]
-category: Notes
+title: Draft Example
+published: 2022-07-01
+tags: [Markdown, Blogging, Demo]
+category: Examples
 draft: true
 ---
 
-# Draft Workflow Note
+# This Article is a Draft
 
-This entry stays hidden while `draft: true` is enabled.
+This article is currently in a draft state and is not published. Therefore, it will not be visible to the general audience. The content is still a work in progress and may require further editing and review.
 
-Use draft posts for topic sketches, migration checklists, and unfinished long-form writing in FangYuan.
+When the article is ready for publication, you can update the "draft" field to "false" in the Frontmatter:
 
 ```markdown
 ---
-title: Draft Workflow Note
-published: 2024-04-11
-description: A hidden draft note for the FangYuan baseline.
-tags: [Draft, Workflow, FangYuan]
-category: Notes
+title: Draft Example
+published: 2024-01-11T04:40:26.381Z
+tags: [Markdown, Blogging, Demo]
+category: Examples
 draft: false
 ---
-```

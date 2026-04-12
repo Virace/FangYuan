@@ -58,10 +58,7 @@ test("swup navigation target page has no critical or serious axe violations", as
 	page,
 }) => {
 	await gotoAndWaitForApp(page, SITE_ROUTES.home);
-	await page
-		.getByRole("link", { name: /Markdown Baseline Sample/i })
-		.first()
-		.click();
+	await page.locator(`a[href="${SITE_ROUTES.postBasic}"]`).first().click();
 
 	await page.waitForURL("**/posts/markdown/");
 	await expectNoCriticalOrSeriousViolations(page);

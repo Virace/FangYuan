@@ -37,3 +37,4 @@ yarn.lock
 playwright-report/
 test-results/
 tests/e2e/visual.spec.ts-snapshots/
+.playwright-mcp/
