@@ -81,3 +81,94 @@
 @utility card-shadow {
 	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.005));
 }
+
+@utility page-shell {
+	max-width: var(--page-width);
+	margin-inline: auto;
+}
+
+@utility page-shell-gutter {
+	padding-inline: 0;
+
+	@media (min-width: 48rem) {
+		padding-inline: 1rem;
+	}
+}
+
+@utility layout-main-grid {
+	display: grid;
+	grid-template-columns: 17.5rem auto;
+	grid-template-rows: auto 1fr auto;
+	gap: 1rem;
+
+	@media (min-width: 64rem) {
+		grid-template-rows: auto;
+	}
+}
+
+@utility toc-rail {
+	right: calc(var(--toc-width) * -1);
+	width: var(--toc-width);
+}
+
+@utility toc-scroll-region {
+	width: var(--toc-width);
+	height: calc(100vh - 20rem);
+}
+
+@utility post-nav-title {
+	flex: 1 1 0%;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@utility post-card-body-no-cover {
+	@media (min-width: 48rem) {
+		width: calc(100% - 52px - 0.75rem);
+	}
+}
+
+@utility post-card-body-with-cover {
+	@media (min-width: 48rem) {
+		width: calc(100% - var(--coverWidth) - 0.75rem);
+	}
+}
+
+@utility post-card-cover-frame {
+	@media (min-width: 48rem) {
+		width: var(--coverWidth);
+	}
+}
+
+@utility search-field-shell {
+	background-color: rgb(0 0 0 / 0.04);
+
+	&:hover,
+	&:focus-within {
+		background-color: rgb(0 0 0 / 0.06);
+	}
+
+	@variant dark {
+		background-color: rgb(255 255 255 / 0.05);
+
+		&:hover,
+		&:focus-within {
+			background-color: rgb(255 255 255 / 0.10);
+		}
+	}
+}
+
+@utility search-panel-shell {
+	top: calc(var(--spacing) * 20);
+	right: calc(var(--spacing) * 4);
+	left: calc(var(--spacing) * 4);
+	max-height: calc(100vh - 100px);
+	overflow-y: auto;
+
+	@media (min-width: 48rem) {
+		left: auto;
+		width: calc(var(--spacing) * 120);
+	}
+}

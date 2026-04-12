@@ -57,3 +57,63 @@ test("app shell components should not keep legacy inline color utilities", async
 		);
 	}
 });
+
+test("layout shell should prefer semantic Tailwind v4 utilities over repeated arbitrary layout bridges", async () => {
+	const fileExpectations = [
+		{
+			filePath: path.join(repoRoot, "src", "layouts", "MainGridLayout.astro"),
+			mustInclude: ["page-shell", "layout-main-grid", "toc-rail", "toc-scroll-region"],
+			mustExclude: [
+				/max-w-\(--page-width\)/,
+				/grid-cols-\[17\.5rem_auto\]/,
+				/grid-rows-\[auto_1fr_auto\]/,
+				/-right-\(--toc-width\)/,
+				/w-\(--toc-width\)/,
+				/h-\[calc\(100vh-20rem\)\]/,
+			],
+		},
+		{
+			filePath: path.join(repoRoot, "src", "components", "Navbar.astro"),
+			mustInclude: ["page-shell"],
+			mustExclude: [/max-w-\(--page-width\)/],
+		},
+		{
+			filePath: path.join(repoRoot, "src", "pages", "posts", "[...slug].astro"),
+			mustInclude: ["post-nav-title"],
+			mustExclude: [/max-w-\[calc\(100%-3rem\)\]/],
+		},
+		{
+			filePath: path.join(repoRoot, "src", "components", "PostCard.astro"),
+			mustInclude: [
+				"post-card-body-no-cover",
+				"post-card-body-with-cover",
+				"post-card-cover-frame",
+			],
+			mustExclude: [
+				/w-\[calc\(100%-52px-12px\)\]/,
+				/w-\[calc\(100%-var\(--coverWidth\)-12px\)\]/,
+				/w-\(--coverWidth\)/,
+			],
+		},
+	];
+
+	for (const { filePath, mustInclude, mustExclude } of fileExpectations) {
+		const source = await readFile(filePath, "utf8");
+
+		for (const token of mustInclude) {
+			assert.match(
+				source,
+				new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+				`${path.relative(repoRoot, filePath)} should use ${token} after the layout semanticization pass`,
+			);
+		}
+
+		for (const pattern of mustExclude) {
+			assert.doesNotMatch(
+				source,
+				pattern,
+				`${path.relative(repoRoot, filePath)} should not regress to the targeted arbitrary layout bridge ${pattern}`,
+			);
+		}
+	}
+});

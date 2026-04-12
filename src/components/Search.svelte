@@ -139,36 +139,29 @@ $: if (initialized && keywordMobile) {
 </script>
 
 <!-- search bar for desktop view -->
-<div id="search-bar" class="hidden lg:flex transition-all items-center h-11 mr-2 rounded-lg
-      bg-black/4 hover:bg-black/6 focus-within:bg-black/6
-      dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
-">
-    <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
+<div id="search-bar" class="search-field-shell hidden lg:flex transition-all items-center h-11 mr-2 rounded-lg">
+    <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
     <input placeholder="{i18n(I18nKey.search)}" bind:value={keywordDesktop} on:focus={() => search(keywordDesktop, true)}
            class="transition-all pl-10 text-sm bg-transparent outline-0
-         h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
+         h-full w-40 active:w-60 focus:w-60 text-50 placeholder:text-black/25 dark:placeholder:text-white/25"
     >
 </div>
 
 <!-- toggle btn for phone/tablet view -->
 <button on:click={togglePanel} aria-label="Search Panel" id="search-switch"
         class="btn-plain scale-animation lg:hidden! rounded-lg w-11 h-11 active:scale-90">
-    <Icon icon="material-symbols:search" class="text-[1.25rem]"></Icon>
+    <Icon icon="material-symbols:search" class="text-xl"></Icon>
 </button>
 
 <!-- search panel -->
-<div id="search-panel" class="float-panel float-panel-closed search-panel absolute md:w-120
-top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
+<div id="search-panel" class="search-panel-shell float-panel float-panel-closed absolute shadow-2xl rounded-2xl p-2">
 
     <!-- search bar inside panel for phone/tablet -->
-    <div id="search-bar-inside" class="flex relative lg:hidden transition-all items-center h-11 rounded-xl
-      bg-black/4 hover:bg-black/6 focus-within:bg-black/6
-      dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
-  ">
-        <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
+    <div id="search-bar-inside" class="search-field-shell flex relative lg:hidden transition-all items-center h-11 rounded-xl">
+        <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
         <input placeholder="Search" bind:value={keywordMobile}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
-               focus:w-60 text-black/50 dark:text-white/50"
+               focus:w-60 text-50 placeholder:text-black/25 dark:placeholder:text-white/25"
         >
     </div>
 
@@ -178,7 +171,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
            class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
        rounded-xl text-lg px-3 py-2 hover:bg-btn-plain-bg-hover active:bg-btn-plain-bg-active">
             <div class="transition text-90 inline-flex font-bold group-hover:text-primary">
-                {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-primary"></Icon>
+                {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-xs translate-x-1 my-auto text-primary"></Icon>
             </div>
             <div class="transition text-sm text-50">
                 {@html item.excerpt}
@@ -186,13 +179,3 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
         </a>
     {/each}
 </div>
-
-<style>
-  input:focus {
-    outline: 0;
-  }
-  .search-panel {
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
-  }
-</style>
