@@ -153,11 +153,7 @@
 
 .btn-card.disabled {
     pointer-events: none;
-    color: rgb(0 0 0 / 0.1);
-}
-
-.dark .btn-card.disabled {
-    color: rgb(255 255 255 / 0.1);
+    color: var(--btn-card-disabled-content);
 }
 
 .btn-plain {
@@ -166,7 +162,7 @@
     align-items: center;
     justify-content: center;
     background-color: transparent;
-    color: rgb(0 0 0 / 0.75);
+    color: var(--btn-plain-content);
     transition:
         color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
         background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
@@ -177,14 +173,6 @@
 }
 
 .btn-plain:hover {
-    color: var(--primary);
-}
-
-.dark .btn-plain {
-    color: rgb(255 255 255 / 0.75);
-}
-
-.dark .btn-plain:hover {
     color: var(--primary);
 }
 
@@ -210,7 +198,7 @@
     align-items: center;
     justify-content: center;
     background-color: var(--btn-regular-bg);
-    color: var(--btn-content);
+    color: var(--btn-regular-content);
     transition:
         color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
         background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
@@ -226,10 +214,6 @@
 
 .btn-regular:active {
     background-color: var(--btn-regular-bg-active);
-}
-
-.dark .btn-regular {
-    color: rgb(255 255 255 / 0.75);
 }
 
 .link-underline {

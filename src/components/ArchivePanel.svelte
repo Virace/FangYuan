@@ -79,16 +79,16 @@ onMount(async () => {
     {#each groups as group}
         <div>
             <div class="flex flex-row w-full items-center h-15">
-                <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75">
+                <div class="archive-side-col transition text-2xl font-bold text-right text-75">
                     {group.year}
                 </div>
-                <div class="w-[15%] md:w-[10%]">
+                <div class="archive-side-col">
                     <div
                             class="h-3 w-3 bg-transparent rounded-full outline outline-primary mx-auto
                   -outline-offset-2 z-50"
                     ></div>
                 </div>
-                <div class="w-[70%] md:w-[80%] transition text-left text-50">
+                <div class="archive-main-col transition text-left text-50">
                     {group.posts.length} {i18n(group.posts.length === 1 ? I18nKey.postCount : I18nKey.postsCount)}
                 </div>
             </div>
@@ -97,16 +97,16 @@ onMount(async () => {
                 <a
                         href={getPostUrlBySlug(post.slug)}
                         aria-label={post.data.title}
-                        class="group btn-plain block! h-10 w-full rounded-lg hover:text-[initial]"
+                        class="group btn-plain block! h-10 w-full rounded-lg"
                 >
                     <div class="flex flex-row justify-start items-center h-full">
                         <!-- date -->
-                        <div class="w-[15%] md:w-[10%] transition text-sm text-right text-50">
+                        <div class="archive-side-col transition text-sm text-right text-50">
                             {formatDate(post.data.published)}
                         </div>
 
                         <!-- dot and line -->
-                        <div class="w-[15%] md:w-[10%] relative dash-line h-full flex items-center">
+                        <div class="archive-side-col relative dash-line h-full flex items-center">
                             <div
                                     class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
                        bg-archive-dot group-hover:bg-primary outline-4 z-50
@@ -118,7 +118,7 @@ onMount(async () => {
 
                         <!-- post title -->
                         <div
-                                class="w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold
+                                class="archive-title-col text-left font-bold
                      group-hover:translate-x-1 transition-all group-hover:text-primary
                      text-75 pr-8 whitespace-nowrap text-ellipsis overflow-hidden"
                         >
@@ -127,7 +127,7 @@ onMount(async () => {
 
                         <!-- tag list -->
                         <div
-                                class="hidden md:block md:w-[15%] text-left text-sm transition
+                                class="hidden archive-tags-col text-left text-sm transition
                      whitespace-nowrap text-ellipsis overflow-hidden text-30"
                         >
                             {formatTag(post.data.tags)}

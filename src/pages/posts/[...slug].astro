@@ -59,15 +59,15 @@ const jsonLd = {
             {!hasPrimaryHeading && <h1 class="sr-only">{entry.data.title}</h1>}
 
             <!-- word count and reading time -->
-            <div class="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation">
+            <div class="flex flex-row text-30 gap-5 mb-3 transition onload-animation">
                 <div class="flex flex-row items-center">
-                    <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+                    <div class="transition h-6 w-6 rounded-md bg-soft-contrast text-50 flex items-center justify-center mr-2">
                         <Icon name="material-symbols:notes-rounded"></Icon>
                     </div>
                     <div class="text-sm">{remarkPluginFrontmatter.words} {" " + i18n(I18nKey.wordsCount)}</div>
                 </div>
                 <div class="flex flex-row items-center">
-                    <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+                    <div class="transition h-6 w-6 rounded-md bg-soft-contrast text-50 flex items-center justify-center mr-2">
                         <Icon name="material-symbols:schedule-outline-rounded"></Icon>
                     </div>
                     <div class="text-sm">
@@ -81,8 +81,8 @@ const jsonLd = {
                 <div
                     data-pagefind-body data-pagefind-weight="10" data-pagefind-meta="title"
                     class="transition w-full block font-bold mb-3
-                    text-3xl md:text-[2.25rem]/[2.75rem]
-                    text-black/90 dark:text-white/90
+                    text-3xl md:text-4xl/11
+                    text-90
                     md:before:w-1 before:h-5 before:rounded-md before:bg-primary
                     before:absolute before:top-3 before:-left-4.5
                 ">
@@ -122,7 +122,7 @@ const jsonLd = {
         <div class="w-full font-bold overflow-hidden">
             {entry.data.nextSlug && <a href={getPostUrlBySlug(entry.data.nextSlug)} class="block active:scale-95">
                 <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-start! gap-4" >
-                    <Icon name="material-symbols:chevron-left-rounded" class="text-[2rem] text-primary" />
+                    <Icon name="material-symbols:chevron-left-rounded" class="icon-32 text-primary" />
                     <div class="post-nav-title transition text-75">
                         {entry.data.nextTitle}
                     </div>
@@ -136,7 +136,7 @@ const jsonLd = {
                     <div class="post-nav-title transition text-75">
                         {entry.data.prevTitle}
                     </div>
-                    <Icon name="material-symbols:chevron-right-rounded" class="text-[2rem] text-primary" />
+                    <Icon name="material-symbols:chevron-right-rounded" class="icon-32 text-primary" />
                 </div>
             </a>}
         </div>

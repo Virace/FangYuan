@@ -48,14 +48,14 @@ const entryBasePath = entry.filePath
     <div class:list={["pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full post-card-body-no-cover": !hasCover, "w-full post-card-body-with-cover": hasCover}]}>
         <a href={url}
            class="transition group w-full block font-bold mb-3 text-3xl text-90
-        hover:text-primary dark:hover:text-primary
-        active:text-title-active dark:active:text-title-active
+        hover:text-primary
+        active:text-title-active
         before:w-1 before:h-5 before:rounded-md before:bg-primary
         before:absolute before:top-8.75 before:left-4.5 before:hidden md:before:block
         ">
             {title}
-            <Icon class="inline text-[2rem] text-primary md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
-            <Icon class="text-primary text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
+            <Icon class="inline icon-32 text-primary md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
+            <Icon class="text-primary icon-32 transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
         </a>
 
         <!-- metadata -->
@@ -67,7 +67,7 @@ const entryBasePath = entry.filePath
         </div>
 
         <!-- word count and read time  -->
-        <div class="text-sm text-black/30 dark:text-white/30 flex gap-4 transition">
+        <div class="text-sm text-30 flex gap-4 transition">
             <div>
                 {remarkPluginFrontmatter.words} {" " + i18n(remarkPluginFrontmatter.words === 1 ? I18nKey.wordCount : I18nKey.wordsCount)}
             </div>
@@ -106,7 +106,7 @@ const entryBasePath = entry.filePath
         </a>
     }
 </div>
-<div class="transition border-t border-dashed mx-6 border-black/10 dark:border-white/15 last:border-t-0 md:hidden"></div>
+<div class="transition border-t border-dashed mx-6 border-line-divider last:border-t-0 md:hidden"></div>
 
 <style define:vars={{coverWidth}}>
 </style>
