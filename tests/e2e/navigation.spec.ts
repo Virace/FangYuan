@@ -9,20 +9,15 @@ test("swup navigation updates title and article shell", async ({ page }) => {
 	const consoleErrors = installConsoleErrorCollector(page);
 
 	await gotoAndWaitForApp(page, SITE_ROUTES.home);
-	await page
-		.getByRole("link", { name: /Markdown Baseline Sample/i })
-		.first()
-		.click();
+	await page.locator(`a[href="${SITE_ROUTES.postBasic}"]`).first().click();
 
 	await page.waitForURL("**/posts/markdown/");
 
-	await expect(page).toHaveTitle(/Markdown Baseline Sample - FangYuan/);
-	await expect(page.locator("#post-container")).toContainText(
-		"Markdown Baseline Sample",
-	);
+	await expect(page).toHaveTitle(/Markdown Example - FangYuan/);
+	await expect(page.locator("#post-container")).toContainText("Markdown Example");
 	await expect(page.locator("[data-swup-announcement]")).toHaveAttribute(
 		"data-swup-announcement",
-		"Markdown Baseline Sample",
+		"Markdown Example",
 	);
 	expect(consoleErrors).toEqual([]);
 });

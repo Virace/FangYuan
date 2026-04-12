@@ -24,13 +24,13 @@ test("cross-template swup route flow stays stable", async ({ page }) => {
 	await expect(page.locator("#swup-container")).toBeVisible();
 	await expect(page).not.toHaveTitle(aboutTitle);
 
-	await page.getByRole("link", { name: /Markdown Baseline Sample/i }).first().click();
+	await page.locator(`a[href="${SITE_ROUTES.postBasic}"]`).first().click();
 	await page.waitForURL("**/posts/markdown/");
 	await expect(page.locator("#swup-container")).toBeVisible();
-	await expect(page).toHaveTitle(/Markdown Baseline Sample - FangYuan/);
+	await expect(page).toHaveTitle(/Markdown Example - FangYuan/);
 	await expect(page.locator("[data-swup-announcement]")).toHaveAttribute(
 		"data-swup-announcement",
-		"Markdown Baseline Sample",
+		"Markdown Example",
 	);
 
 	expect(consoleErrors).toEqual([]);
@@ -126,4 +126,23 @@ test("markdown inline links keep dashed underline on hover", async ({ page }) =>
 	expect(hoveredStyle.borderBottomWidth).toBe("1px");
 	expect(hoveredStyle.borderBottomStyle).toBe("dashed");
 	expect(hoveredStyle.borderBottomColor).toBe(hoveredStyle.color);
+});
+
+test("css-first dark variant still flips token-backed navbar colors", async ({
+	page,
+}) => {
+	await gotoAndWaitForApp(page, SITE_ROUTES.home);
+
+	const brand = page.locator("#navbar a").first();
+	const readColor = () =>
+		brand.locator("div").first().evaluate((el) => getComputedStyle(el).color);
+
+	const lightColor = await readColor();
+
+	await page.locator("html").evaluate((el) => el.classList.add("dark"));
+	await expect
+		.poll(async () => readColor(), {
+			message: "navbar brand color should change after enabling dark mode",
+		})
+		.not.toBe(lightColor);
 });

@@ -1,0 +1,79 @@
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+	--font-sans: "Roboto", sans-serif, ui-sans-serif, system-ui, sans-serif;
+	--color-page-bg: var(--page-bg);
+	--color-card-bg: var(--card-bg);
+	--color-primary: var(--primary);
+	--color-btn-content: var(--btn-content);
+	--color-deep-text: var(--deep-text);
+	--color-title-active: var(--title-active);
+	--color-btn-regular-bg: var(--btn-regular-bg);
+	--color-btn-regular-bg-hover: var(--btn-regular-bg-hover);
+	--color-btn-regular-bg-active: var(--btn-regular-bg-active);
+	--color-enter-btn-bg: var(--enter-btn-bg);
+	--color-enter-btn-bg-hover: var(--enter-btn-bg-hover);
+	--color-enter-btn-bg-active: var(--enter-btn-bg-active);
+	--color-btn-plain-bg-hover: var(--btn-plain-bg-hover);
+	--color-btn-plain-bg-active: var(--btn-plain-bg-active);
+	--color-meta-divider: var(--meta-divider);
+	--color-line-divider: var(--line-divider);
+	--color-license-block-bg: var(--license-block-bg);
+	--color-toc-badge-bg: var(--toc-badge-bg);
+	--color-toc-btn-hover: var(--toc-btn-hover);
+	--color-toc-btn-active: var(--toc-btn-active);
+	--radius-panel: var(--radius-large);
+}
+
+@utility text-90 {
+	color: rgb(0 0 0 / 0.9);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.9);
+	}
+}
+
+@utility text-75 {
+	color: rgb(0 0 0 / 0.75);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.75);
+	}
+}
+
+@utility text-50 {
+	color: rgb(0 0 0 / 0.5);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.5);
+	}
+}
+
+@utility text-30 {
+	color: rgb(0 0 0 / 0.3);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.3);
+	}
+}
+
+@utility text-25 {
+	color: rgb(0 0 0 / 0.25);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.25);
+	}
+}
+
+@utility hide-scrollbar {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+@utility card-shadow {
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.005));
+}

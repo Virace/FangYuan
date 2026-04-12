@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @config "../../tailwind.config.cjs";
+@import "./tailwind-theme.css";
 
 .card-base {
     overflow: hidden;
@@ -14,18 +15,20 @@
         transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th, td, strong {
-    transition:
-        color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
+@layer base {
+    h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th, td, strong {
+        transition:
+            color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+            background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+            border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+            box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+            transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-.card-shadow {
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.005));
+    ::selection {
+        background-color: var(--selection-bg);
+    }
 }
 
 .expand-animation,
@@ -262,55 +265,6 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th
     mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2rem), transparent 100%);
 }
 
-.hide-scrollbar {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-
-.text-90 {
-    color: rgb(0 0 0 / 0.9);
-}
-
-.dark .text-90 {
-    color: rgb(255 255 255 / 0.9);
-}
-
-.text-75 {
-    color: rgb(0 0 0 / 0.75);
-}
-
-.dark .text-75 {
-    color: rgb(255 255 255 / 0.75);
-}
-
-.text-50 {
-    color: rgb(0 0 0 / 0.5);
-}
-
-.dark .text-50 {
-    color: rgb(255 255 255 / 0.5);
-}
-
-.text-30 {
-    color: rgb(0 0 0 / 0.3);
-}
-
-.dark .text-30 {
-    color: rgb(255 255 255 / 0.3);
-}
-
-.text-25 {
-    color: rgb(0 0 0 / 0.25);
-}
-
-.dark .text-25 {
-    color: rgb(255 255 255 / 0.25);
-}
-
 .meta-icon {
     display: flex;
     align-items: center;
@@ -385,10 +339,6 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th
 .custom-md img,
 #post-cover img {
     cursor: zoom-in;
-}
-
-::selection {
-    background-color: var(--selection-bg);
 }
 
 .dash-line {
