@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@config "../../tailwind.config.cjs";
+@plugin "@tailwindcss/typography";
 @import "./tailwind-theme.css";
 
 .card-base {
