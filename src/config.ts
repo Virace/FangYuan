@@ -6,86 +6,136 @@ import type {
 	ProfileConfig,
 	SiteConfig,
 } from "./types/config";
-import { LinkPreset } from "./types/config";
+import {
+	defaultExpressiveCodeConfig,
+	defaultFooterConfig,
+	defaultLicenseConfig,
+	defaultNavBarConfig,
+	defaultProfileConfig,
+	defaultSiteConfig,
+} from "./default-config";
 
-export const siteConfig: SiteConfig = {
-	title: "FangYuan",
-	subtitle: "方圆",
-	postsPerPage: null,
-	lang: "zh_CN", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
-	themeColor: {
-		hue: 250, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
-		fixed: false, // Hide the theme color picker for visitors
-	},
-	banner: {
-		enable: true,
-		src: "assets/images/demo-banner.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
-		position: "center", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default
-		credit: {
-			enable: true, // Display the credit text of the banner image
-			text: "credit 文本", // Credit text to be displayed
-			url: "", // (Optional) URL link to the original artwork or artist's page
-		},
-	},
-	toc: {
-		enable: true, // Display the table of contents on the right side of the post
-		depth: 2, // Maximum heading depth to show in the table, from 1 to 3
-	},
-	favicon: [
-		// Leave this array empty to use the default favicon
-		// {
-		//   src: '/favicon/icon.png',    // Path of the favicon, relative to the /public directory
-		//   theme: 'light',              // (Optional) Either 'light' or 'dark', set only if you have different favicons for light and dark mode
-		//   sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
-		// }
-	],
+type ExternalSiteConfig = Omit<Partial<SiteConfig>, "themeColor" | "banner" | "toc"> & {
+	themeColor?: Partial<SiteConfig["themeColor"]>;
+	banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
+		credit?: Partial<SiteConfig["banner"]["credit"]>;
+	};
+	toc?: Partial<SiteConfig["toc"]>;
 };
 
-export const navBarConfig: NavBarConfig = {
-	links: [
-		LinkPreset.Home,
-		LinkPreset.Archive,
-		LinkPreset.About,
-		{
-			name: "GitHub",
-			url: "https://github.com/Virace/FangYuan", // Internal links should not include the base path, as it is automatically added
-			external: true, // Show an external link icon and will open in a new tab
-		},
-	],
+type ExternalNavBarConfig = {
+	links?: NavBarConfig["links"];
 };
 
-export const profileConfig: ProfileConfig = {
-	avatar: "assets/images/demo-avatar.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
-	name: "FangYuan",
-	bio: "用于后续主题与内容演进的个人站点二开基线。",
-	links: [
-		{
-			name: "GitHub",
-			icon: "fa6-brands:github",
-			url: "https://github.com/Virace/FangYuan",
-		},
-		{
-			name: "Bilibili",
-			icon: "fa6-brands:bilibili",
-			url: "https://space.bilibili.com/12353537",
-		},
-	],
+type ExternalProfileConfig = Omit<Partial<ProfileConfig>, "links"> & {
+	links?: ProfileConfig["links"];
 };
+
+type ExternalSiteConfigModule = {
+	siteConfig?: ExternalSiteConfig;
+	navBarConfig?: ExternalNavBarConfig;
+	profileConfig?: ExternalProfileConfig;
+	footerConfig?: Partial<FooterConfig>;
+	licenseConfig?: Partial<LicenseConfig>;
+	expressiveCodeConfig?: Partial<ExpressiveCodeConfig>;
+};
+
+const externalSiteConfigModules = import.meta.glob<ExternalSiteConfigModule>(
+	"../site/config.ts",
+	{ eager: true },
+);
+
+const externalSiteConfig =
+	(Object.values(externalSiteConfigModules)[0] as ExternalSiteConfigModule | undefined) ??
+	null;
+
+function mergeSiteConfig(
+	defaultConfig: SiteConfig,
+	override?: ExternalSiteConfig,
+): SiteConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		themeColor: {
+			...defaultConfig.themeColor,
+			...override.themeColor,
+		},
+		banner: {
+			...defaultConfig.banner,
+			...override.banner,
+			credit: {
+				...defaultConfig.banner.credit,
+				...override.banner?.credit,
+			},
+		},
+		toc: {
+			...defaultConfig.toc,
+			...override.toc,
+		},
+		favicon: override.favicon ?? defaultConfig.favicon,
+	};
+}
+
+function mergeNavBarConfig(
+	defaultConfig: NavBarConfig,
+	override?: ExternalNavBarConfig,
+): NavBarConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		links: override.links ?? defaultConfig.links,
+	};
+}
+
+function mergeProfileConfig(
+	defaultConfig: ProfileConfig,
+	override?: ExternalProfileConfig,
+): ProfileConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		links: override.links ?? defaultConfig.links,
+	};
+}
+
+export const siteConfig: SiteConfig = mergeSiteConfig(
+	defaultSiteConfig,
+	externalSiteConfig?.siteConfig,
+);
+
+export const navBarConfig: NavBarConfig = mergeNavBarConfig(
+	defaultNavBarConfig,
+	externalSiteConfig?.navBarConfig,
+);
+
+export const profileConfig: ProfileConfig = mergeProfileConfig(
+	defaultProfileConfig,
+	externalSiteConfig?.profileConfig,
+);
 
 export const footerConfig: FooterConfig = {
-	customHtml: "",
-	icp: null,
-	policeRecord: null,
+	...defaultFooterConfig,
+	...externalSiteConfig?.footerConfig,
 };
 
 export const licenseConfig: LicenseConfig = {
-	enable: true,
-	name: "MIT",
-	url: "https://opensource.org/license/mit",
+	...defaultLicenseConfig,
+	...externalSiteConfig?.licenseConfig,
 };
 
 export const expressiveCodeConfig: ExpressiveCodeConfig = {
-	// Note: Some styles (such as background color) are being overridden, see the astro.config.mjs file.
-	// Please select a dark theme, as this blog theme currently only supports dark background color
-	theme: "github-dark",
+	...defaultExpressiveCodeConfig,
+	...externalSiteConfig?.expressiveCodeConfig,
 };

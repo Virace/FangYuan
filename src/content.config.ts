@@ -2,6 +2,7 @@ import { defineCollection } from "astro:content";
 import type { CollectionConfig } from "astro/content/config";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { resolveContentRoot } from "./utils/site-source";
 
 export type GlobCollectionLoader = ReturnType<typeof glob>;
 export type ObjectCollectionSchema = z.ZodObject<z.ZodRawShape>;
@@ -20,12 +21,14 @@ function generateMarkdownId(entry: string): string {
 	return entryWithoutExtension;
 }
 
+const contentRoot = resolveContentRoot();
+
 const postsCollection: CollectionConfig<
 	ObjectCollectionSchema,
 	GlobCollectionLoader
 > = defineCollection({
 	loader: glob({
-		base: "./src/content/posts",
+		base: `${contentRoot}/posts`,
 		pattern: "**/*.md",
 		generateId: ({ entry }) => generateMarkdownId(entry),
 	}),
@@ -53,7 +56,7 @@ const specCollection: CollectionConfig<
 	GlobCollectionLoader
 > = defineCollection({
 	loader: glob({
-		base: "./src/content/spec",
+		base: `${contentRoot}/spec`,
 		pattern: "**/*.md",
 		generateId: ({ entry }) => generateMarkdownId(entry),
 	}),

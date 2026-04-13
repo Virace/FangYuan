@@ -67,6 +67,38 @@ pnpm exec playwright test tests/e2e/a11y.spec.ts
 - About 页面内容位于 `src/content/spec/about.md`
 - 当前项目主身份统一为 `FangYuan`
 
+## 外部 site 输入层
+
+Phase 1 支持把真实站点输入从主题源码里拆到本地 `site/` 目录：
+
+- `site/config.ts`：覆盖 `src/config.ts` 的同名导出；未提供的项继续回退到默认值
+- `site/content/`：一旦存在且非空，`posts` 和 `spec` 两个 collection 会整体切到这里，不再混用 `src/content/`
+- `site/assets/`：当前阶段只负责初始化目录，暂未接入运行时资源解析
+
+这里的 `posts/` 和 `spec/` 只是 Astro content collection 的目录组织方式，不是两个独立开关。
+切到 `site/content/` 后就视为整站内容完全切到 `site/`，不会额外检查内部哪个子目录“是否完整”。
+
+初始化本地 `site/` 目录：
+
+```bash
+node scripts/init-site.js
+```
+
+初始化脚本会：
+
+- 创建 `site/content/posts/`
+- 创建 `site/content/spec/`
+- 创建 `site/assets/`
+- 复制默认 `about.md` 到 `site/content/spec/about.md`
+- 在 fresh / empty `site/` 中生成一篇 `site/content/posts/welcome.md`，保证最低可 build
+- 生成最小 `site/config.ts` 模板
+
+说明：
+
+- `site/` 已加入 `.gitignore`，用于承载本地站点输入，不进入主题仓库版本控制
+- 如果 `site/` 已经存在并且里面已经有文件，`init-site` 不会再自动补 demo post
+- 如果 `site/content/` 已启用但删掉了 `site/content/spec/about.md`，About 页面会直接报错，不会回退到 demo 内容
+
 ## 许可
 
 本仓库继续使用 MIT License。
