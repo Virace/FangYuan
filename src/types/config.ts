@@ -3,6 +3,7 @@ import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
+	postsPerPage?: number | null;
 
 	lang:
 		| "en"
@@ -58,6 +59,12 @@ export type NavBarLink = {
 
 export type NavBarConfig = {
 	links: (NavBarLink | LinkPreset)[];
+};
+
+export type FooterConfig = {
+	customHtml?: string;
+	icp?: string | null;
+	policeRecord?: string | null;
 };
 
 export type ProfileConfig = {

@@ -1,5 +1,5 @@
 export const PAGE_SIZE = 8;
-
+export const MIN_POSTS_PER_PAGE = 5;
 export const LIGHT_MODE = "light",
 	DARK_MODE = "dark",
 	AUTO_MODE = "auto";

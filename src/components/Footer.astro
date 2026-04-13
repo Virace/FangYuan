@@ -1,18 +1,71 @@
 ---
-
 import { profileConfig } from "../config";
+import {
+	footerCustomHtmlLooksLikeMarkup,
+	getFooterCustomHtml,
+	getFooterIcpRecord,
+	getFooterIcpUrl,
+	getFooterPoliceRecord,
+	getFooterPoliceRecordUrl,
+} from "../utils/footer-utils";
 import { url } from "../utils/url-utils";
 
 const currentYear = new Date().getFullYear();
+const customHtml = getFooterCustomHtml();
+const hasCustomHtml = customHtml !== "";
+const customHtmlIsMarkup = footerCustomHtmlLooksLikeMarkup();
+const icpRecord = getFooterIcpRecord();
+const policeRecord = getFooterPoliceRecord();
+const policeRecordUrl = getFooterPoliceRecordUrl();
 ---
 
-<div class="transition my-10 mx-32 border-t border-dashed border-footer-divider"></div>
+<div class="transition my-10 border-t border-dashed border-footer-divider"></div>
 <div class="transition border-dashed border-footer-divider rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
     <div class="transition text-50 text-sm text-center">
-        &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. Licensed under MIT. /
+        &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. ALL RIGHTS RESERVED. /
         <a class="transition link text-primary font-medium" target="_blank" href={url('rss.xml')}>RSS</a> /
         <a class="transition link text-primary font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a><br>
         Built with
-        <a class="transition link text-primary font-medium" target="_blank" href="https://astro.build">Astro</a>
+        <a class="transition link text-primary font-medium" target="_blank" href="https://astro.build">Astro</a>  
+        &
+		<a class="transition link text-primary font-medium" target="_blank" href="https://github.com/Virace/FangYuan">FangYuan (mod by Fuwari)</a>
     </div>
+
+	{hasCustomHtml && (
+		<div class="transition text-50 text-sm text-center mt-3">
+			{customHtmlIsMarkup ? (
+				<Fragment set:html={customHtml}></Fragment>
+			) : (
+				customHtml
+			)}
+		</div>
+	)}
+
+	{(icpRecord !== "" || policeRecord !== "") && (
+		<div class="transition text-50 text-sm text-center mt-3 flex flex-col items-center gap-y-2">
+			{icpRecord !== "" && (
+				<a class="transition link text-primary font-medium" target="_blank" rel="noreferrer" href={getFooterIcpUrl()}>
+					{icpRecord}
+				</a>
+			)}
+			{policeRecord !== "" && (
+				policeRecordUrl ? (
+					<a
+						class="transition link text-primary font-medium inline-flex items-center gap-2"
+						target="_blank"
+						rel="noreferrer"
+						href={policeRecordUrl}
+					>
+						<img src={url("icon/police-emblem.png")} alt="" aria-hidden="true" class="h-4 w-4 object-contain" />
+						{policeRecord}
+					</a>
+				) : (
+					<span class="inline-flex items-center gap-2">
+						<img src={url("icon/police-emblem.png")} alt="" aria-hidden="true" class="h-4 w-4 object-contain" />
+						{policeRecord}
+					</span>
+				)
+			)}
+		</div>
+	)}
 </div>

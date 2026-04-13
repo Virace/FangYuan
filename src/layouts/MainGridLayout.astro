@@ -94,26 +94,23 @@ const mainPanelTop = siteConfig.banner.enable
 
             <SideBar class="mb-4 row-start-2 row-end-3 col-span-2 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-70 onload-animation" headings={headings}></SideBar>
 
-            <main
-                id="swup-container"
-                data-swup-announcement={title}
-                data-enable-photoswipe={enablePhotoSwipe}
-                class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden"
-            >
-                <div id="content-wrapper" class="onload-animation">
-                    <!-- the overflow-hidden here prevent long text break the layout-->
-                    <!-- make id different from windows.swup global property -->
-                    <slot></slot>
-                    <div class="footer col-span-2 onload-animation hidden lg:block">
-                        <Footer></Footer>
-                    </div>
-                </div>
-            </main>
+			<main
+				id="swup-container"
+				data-swup-announcement={title}
+				data-enable-photoswipe={enablePhotoSwipe}
+				class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden"
+			>
+				<div id="content-wrapper" class="onload-animation">
+					<!-- the overflow-hidden here prevent long text break the layout-->
+					<!-- make id different from windows.swup global property -->
+					<slot></slot>
+				</div>
+			</main>
 
-            <div class="footer col-span-2 onload-animation block lg:hidden">
-                <Footer></Footer>
-            </div>
-        </div>
+			<div class="footer col-span-2 onload-animation">
+				<Footer></Footer>
+			</div>
+		</div>
 
         <BackToTop></BackToTop>
     </div>
