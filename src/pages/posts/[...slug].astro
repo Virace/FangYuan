@@ -125,7 +125,7 @@ const jsonLd = {
             {entry.data.nextSlug && <a href={getPostUrlBySlug(entry.data.nextSlug)} class="block active:scale-95">
                 <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-start! gap-4" >
                     <Icon name="material-symbols:chevron-left-rounded" class="icon-32 text-primary" />
-                    <div class="post-nav-title transition text-75">
+                    <div class="post-nav-title transition text-75 text-left">
                         {entry.data.nextTitle}
                     </div>
                 </div>
@@ -135,7 +135,7 @@ const jsonLd = {
         <div class="w-full font-bold overflow-hidden">
             {entry.data.prevSlug && <a href={getPostUrlBySlug(entry.data.prevSlug)} class="block active:scale-95">
                 <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-end! gap-4">
-                    <div class="post-nav-title transition text-75">
+                    <div class="post-nav-title transition text-75 text-right">
                         {entry.data.prevTitle}
                     </div>
                     <Icon name="material-symbols:chevron-right-rounded" class="icon-32 text-primary" />

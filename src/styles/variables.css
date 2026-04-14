@@ -94,7 +94,8 @@
 	--toc-badge-bg: oklch(0.89 0.050 var(--hue));
 	--toc-btn-hover: oklch(0.926 0.015 var(--hue));
 	--toc-btn-active: oklch(0.90 0.015 var(--hue));
-	--toc-width: calc((100vw - var(--page-width)) / 2 - 1rem);
+	--sidebar-width: 17.5rem;
+	--toc-width: clamp(0rem, calc((100vw - var(--page-width)) / 2 - 1rem), var(--sidebar-width));
 	--toc-item-active: oklch(0.70 0.13 var(--hue));
 }
 
