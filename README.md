@@ -68,6 +68,14 @@ node scripts/init-site.js
 - `site/assets/` 与 `src/` 下现有资源目录都可以作为本地图片输入来源
 - 具体解析细节仍可能随开发分支调整，以实际构建结果为准
 
+### Resource Strategy
+
+- 正文字体与代码字体通过 Astro Font API 注册，不再依赖直接 `@fontsource/*` CSS import
+- 进入 Astro 资产管线的本地图片统一使用 `astro.config.mjs` 中的全局编码默认值
+- `public/**` 图片路径继续按直接静态资源处理
+- 远程图片 URL 默认继续透传；只有未来单独规划并授权的可信来源，才会进一步纳入 Astro 处理
+- 浏览器视觉快照若因字体分发策略调整而变化，应先确认是预期设计结果，再决定是否更新 baseline
+
 ## 许可
 
 本仓库继续使用 MIT License。

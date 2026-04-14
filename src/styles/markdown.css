@@ -116,7 +116,7 @@
     border-radius: 0.375rem;
     background-color: var(--inline-code-bg);
     color: var(--inline-code-color);
-    font-family: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     counter-reset: line;
 }
 

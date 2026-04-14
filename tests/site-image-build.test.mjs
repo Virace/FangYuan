@@ -77,7 +77,10 @@ async function withMutableSiteFixture(t, callback) {
 	});
 }
 
-test("cover image aliases should resolve site-root assets while markdown images stay on real relative paths", async (t) => {
+test(
+	"cover image aliases should resolve site-root assets while markdown images stay on real relative paths",
+	{ concurrency: false },
+	async (t) => {
 	await withMutableSiteFixture(t, async ({ markCreated }) => {
 		const postDir = markCreated(
 			path.join(siteRoot, "content", "posts", "__site-image-demo"),
@@ -153,9 +156,13 @@ export const profileConfig = {
 		assert.match(homeHtml, /\/icon\/__site-image-test-avatar\.svg/);
 		assert.doesNotMatch(articleHtml, /src\/generated|site-content/);
 	});
-});
+	},
+);
 
-test("invalid relative cover image paths should fail instead of being remapped", async (t) => {
+test(
+	"invalid relative cover image paths should fail instead of being remapped",
+	{ concurrency: false },
+	async (t) => {
 	await withMutableSiteFixture(t, async ({ markCreated }) => {
 		const postDir = markCreated(
 			path.join(siteRoot, "content", "posts", "__invalid-relative-cover"),
@@ -186,9 +193,13 @@ draft: false
 		assert.match(result.stdout + result.stderr, /ImageNotFound/);
 		assert.match(result.stdout + result.stderr, /\.\.\/assets\/__missing-cover\.svg/);
 	});
-});
+	},
+);
 
-test("remote site-level images should pass through unchanged while local article covers stay optimized", async (t) => {
+test(
+	"remote site-level images should pass through unchanged while local article covers stay optimized",
+	{ concurrency: false },
+	async (t) => {
 	await withMutableSiteFixture(t, async ({ markCreated }) => {
 		const postDir = markCreated(
 			path.join(siteRoot, "content", "posts", "__remote-avatar-demo"),
@@ -241,4 +252,5 @@ draft: false
 		assert.match(homeHtml, /https:\/\/cdn\.example\.com\/avatar\.png/);
 		assert.match(articleHtml, /_astro\/.*\.(png|webp|jpg|jpeg|svg)/);
 	});
-});
+	},
+);

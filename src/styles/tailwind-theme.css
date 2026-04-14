@@ -1,7 +1,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-	--font-sans: "Roboto", sans-serif, ui-sans-serif, system-ui, sans-serif;
+	--font-sans: var(--font-roboto), sans-serif, ui-sans-serif, system-ui, sans-serif;
 	--color-page-bg: var(--page-bg);
 	--color-card-bg: var(--card-bg);
 	--color-primary: var(--primary);

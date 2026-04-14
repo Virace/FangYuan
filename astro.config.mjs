@@ -4,7 +4,7 @@ import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-s
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import swup from "@swup/astro";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
@@ -35,6 +35,34 @@ export default defineConfig({
 	site: "https://github.com/Virace/FangYuan",
 	base: "/",
 	trailingSlash: "always",
+	fonts: [
+		{
+			name: "Roboto",
+			cssVariable: "--font-roboto",
+			provider: fontProviders.fontsource(),
+			weights: [400, 500, 700],
+			styles: ["normal"],
+			fallbacks: ["sans-serif"],
+		},
+		{
+			name: "JetBrains Mono",
+			cssVariable: "--font-jetbrains-mono",
+			provider: fontProviders.fontsource(),
+			weights: [400, 500, 700],
+			styles: ["normal", "italic"],
+			fallbacks: ["monospace"],
+		},
+	],
+	image: {
+		service: {
+			config: {
+				jpeg: { mozjpeg: true },
+				webp: { effort: 6, alphaQuality: 80 },
+				avif: { effort: 4, chromaSubsampling: "4:2:0" },
+				png: { compressionLevel: 9 },
+			},
+		},
+	},
 	integrations: [
 		swup({
 			theme: false,
@@ -80,7 +108,7 @@ export default defineConfig({
 				borderColor: "none",
 				codeFontSize: "0.875rem",
 				codeFontFamily:
-					"'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+					"var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
 				codeLineHeight: "1.5rem",
 				frames: {
 					editorBackground: "var(--codeblock-bg)",

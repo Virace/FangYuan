@@ -1,7 +1,5 @@
 ---
-import "@fontsource/roboto/400.css";
-import "@fontsource/roboto/500.css";
-import "@fontsource/roboto/700.css";
+import { Font } from "astro:assets";
 import "overlayscrollbars/overlayscrollbars.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
@@ -120,6 +118,9 @@ const bannerOffset =
 				  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
 			/>
 		))}
+
+		<Font cssVariable="--font-roboto" preload />
+		<Font cssVariable="--font-jetbrains-mono" />
 
 		<!-- Set the theme before the page is rendered to avoid a flash -->
 		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
