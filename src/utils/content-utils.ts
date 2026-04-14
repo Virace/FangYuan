@@ -26,8 +26,8 @@ export type PostEntry = Omit<CollectionEntry<"posts">, "data"> & {
 
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts(): Promise<PostEntry[]> {
-	const allBlogPosts = (await getCollection("posts", ({ data }) => {
-		const postData = data as Partial<PostData>;
+	const allBlogPosts = (await getCollection("posts", (entry: CollectionEntry<"posts">) => {
+		const postData = entry.data as Partial<PostData>;
 		return import.meta.env.PROD ? postData.draft !== true : true;
 	})) as PostEntry[];
 
@@ -74,8 +74,8 @@ export type Tag = {
 };
 
 export async function getTagList(): Promise<Tag[]> {
-	const allBlogPosts = (await getCollection("posts", ({ data }) => {
-		const postData = data as Partial<PostData>;
+	const allBlogPosts = (await getCollection("posts", (entry: CollectionEntry<"posts">) => {
+		const postData = entry.data as Partial<PostData>;
 		return import.meta.env.PROD ? postData.draft !== true : true;
 	})) as PostEntry[];
 
@@ -102,8 +102,8 @@ export type Category = {
 };
 
 export async function getCategoryList(): Promise<Category[]> {
-	const allBlogPosts = (await getCollection("posts", ({ data }) => {
-		const postData = data as Partial<PostData>;
+	const allBlogPosts = (await getCollection("posts", (entry: CollectionEntry<"posts">) => {
+		const postData = entry.data as Partial<PostData>;
 		return import.meta.env.PROD ? postData.draft !== true : true;
 	})) as PostEntry[];
 	const count: { [key: string]: number } = {};

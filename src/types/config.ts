@@ -1,5 +1,6 @@
 import type { ImageMetadata } from "astro";
 import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
+import type { CommentProvider } from "@utils/comments/provider";
 
 export type SiteConfig = {
 	title: string;
@@ -107,4 +108,11 @@ export type BlogPostData = {
 
 export type ExpressiveCodeConfig = {
 	theme: string;
+};
+
+export type CommentConfig = {
+	enable: boolean;
+	provider?: CommentProvider | null;
+	rootLimit?: number;
+	maxDepth?: number;
 };

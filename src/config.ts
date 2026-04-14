@@ -1,4 +1,5 @@
 import type {
+	CommentConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
 	LicenseConfig,
@@ -7,6 +8,7 @@ import type {
 	SiteConfig,
 } from "./types/config";
 import {
+	defaultCommentConfig,
 	defaultExpressiveCodeConfig,
 	defaultFooterConfig,
 	defaultLicenseConfig,
@@ -14,6 +16,7 @@ import {
 	defaultProfileConfig,
 	defaultSiteConfig,
 } from "./default-config";
+import { normalizeCommentConfig } from "./utils/comments/options";
 
 type ExternalSiteConfig = Omit<Partial<SiteConfig>, "themeColor" | "banner" | "toc"> & {
 	themeColor?: Partial<SiteConfig["themeColor"]>;
@@ -38,6 +41,7 @@ type ExternalSiteConfigModule = {
 	footerConfig?: Partial<FooterConfig>;
 	licenseConfig?: Partial<LicenseConfig>;
 	expressiveCodeConfig?: Partial<ExpressiveCodeConfig>;
+	commentConfig?: CommentConfig;
 };
 
 const externalSiteConfigModules = import.meta.glob<ExternalSiteConfigModule>(
@@ -110,6 +114,21 @@ function mergeProfileConfig(
 	};
 }
 
+function mergeCommentConfig(
+	defaultConfig: CommentConfig,
+	override?: CommentConfig,
+): CommentConfig {
+	if (!override) {
+		return normalizeCommentConfig(defaultConfig);
+	}
+
+	return normalizeCommentConfig({
+		...defaultConfig,
+		...override,
+		provider: override.provider ?? defaultConfig.provider,
+	});
+}
+
 export const siteConfig: SiteConfig = mergeSiteConfig(
 	defaultSiteConfig,
 	externalSiteConfig?.siteConfig,
@@ -139,6 +158,11 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...externalSiteConfig?.expressiveCodeConfig,
 };
+
+export const commentConfig: CommentConfig = mergeCommentConfig(
+	defaultCommentConfig,
+	externalSiteConfig?.commentConfig,
+);
 
 export const configImageBaseRoots = {
 	banner: externalSiteConfig?.siteConfig?.banner?.src ? "site" : "src",

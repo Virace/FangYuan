@@ -1,11 +1,13 @@
 ---
 import { render } from "astro:content";
-import type { ImageMetadata } from "astro";
+import type { ImageMetadata, MarkdownHeading } from "astro";
+import CommentSection from "@components/comments/CommentSection.svelte";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getPostKeyFromEntry } from "@utils/comments/post-key";
 import { getSortedPosts } from "@utils/content-utils";
 import { resolveContentImage } from "@utils/image-source";
 import { shouldEnablePhotoSwipe } from "@utils/photoswipe-utils";
@@ -14,7 +16,7 @@ import { Icon } from "astro-icon/components";
 import { licenseConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
-import { profileConfig, siteConfig } from "../../config";
+import { commentConfig, profileConfig, siteConfig } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 
 export async function getStaticPaths() {
@@ -27,7 +29,9 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
-const hasPrimaryHeading = headings.some((heading) => heading.depth === 1);
+const hasPrimaryHeading = headings.some(
+	(heading: MarkdownHeading) => heading.depth === 1,
+);
 const enablePhotoSwipe = shouldEnablePhotoSwipe(entry.body, entry.data.image);
 const resolvedCoverImage = await resolveContentImage(
 	entry.data.image as string | ImageMetadata | undefined,
@@ -143,5 +147,15 @@ const jsonLd = {
             </a>}
         </div>
     </div>
+
+    {commentConfig.enable && commentConfig.provider && (
+        <CommentSection
+            client:only="svelte"
+            postKey={getPostKeyFromEntry(entry.id)}
+            postTitle={entry.data.title}
+            rootLimit={commentConfig.rootLimit}
+            maxDepth={commentConfig.maxDepth}
+        />
+    )}
 
 </MainGridLayout>

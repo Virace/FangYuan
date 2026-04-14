@@ -1,4 +1,5 @@
 import type {
+	CommentConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
 	LicenseConfig,
@@ -7,6 +8,11 @@ import type {
 	SiteConfig,
 } from "./types/config";
 import { LinkPreset } from "./types/config";
+import { mockCommentProvider } from "./utils/comments/mock-provider";
+import {
+	DEFAULT_COMMENT_MAX_DEPTH,
+	DEFAULT_COMMENT_ROOT_LIMIT,
+} from "./utils/comments/options";
 
 export const defaultSiteConfig: SiteConfig = {
 	title: "FangYuan",
@@ -88,4 +94,11 @@ export const defaultExpressiveCodeConfig: ExpressiveCodeConfig = {
 	// Note: Some styles (such as background color) are being overridden, see the astro.config.mjs file.
 	// Please select a dark theme, as this blog theme currently only supports dark background color
 	theme: "github-dark",
+};
+
+export const defaultCommentConfig: CommentConfig = {
+	enable: true,
+	provider: mockCommentProvider,
+	rootLimit: DEFAULT_COMMENT_ROOT_LIMIT,
+	maxDepth: DEFAULT_COMMENT_MAX_DEPTH,
 };
