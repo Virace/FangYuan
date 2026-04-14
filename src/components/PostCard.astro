@@ -1,9 +1,10 @@
 ---
 import { type CollectionEntry, render } from "astro:content";
+import type { ImageMetadata } from "astro";
 import { Icon } from "astro-icon/components";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
-import { getDir } from "../utils/url-utils";
+import { resolveContentImage } from "../utils/image-source";
 import ImageWrapper from "./misc/ImageWrapper.astro";
 import PostMetadata from "./PostMeta.astro";
 
@@ -16,7 +17,7 @@ interface Props {
 	updated?: Date;
 	tags: string[];
 	category: string | null;
-	image: string;
+	image: string | ImageMetadata;
 	description: string;
 	draft: boolean;
 	style: string;
@@ -40,9 +41,10 @@ const hasCover = image !== undefined && image !== null && image !== "";
 const coverWidth = "28%";
 
 const { remarkPluginFrontmatter } = await render(entry);
-const entryBasePath = entry.filePath
-	? getDir(entry.filePath.replace(/\\/g, "/").replace(/^src\//, ""))
-	: "/";
+const resolvedCoverImage = await resolveContentImage(
+	image,
+	entry.filePath?.replace(/\\/g, "/"),
+);
 ---
 <div class:list={["card-base flex flex-col-reverse md:flex-col w-full rounded-panel overflow-hidden relative", className]} style={style}>
     <div class:list={["pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full post-card-body-no-cover": !hasCover, "w-full post-card-body-with-cover": hasCover}]}>
@@ -90,7 +92,7 @@ const entryBasePath = entry.filePath
                   class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl">
             </Icon>
         </div>
-        <ImageWrapper src={image} basePath={entryBasePath} alt="Cover Image of the Post"
+        <ImageWrapper src={resolvedCoverImage} alt="Cover Image of the Post"
                   class="w-full h-full">
         </ImageWrapper>
     </a>}

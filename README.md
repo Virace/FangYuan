@@ -22,61 +22,30 @@ pnpm build
 
 ## Browser Quality Gate
 
-运行默认浏览器门禁：
-
 ```bash
 pnpm test:e2e
-```
-
-运行本地视觉回归：
-
-```bash
 pnpm test:e2e:visual
-```
-
-只在确认 UI 改动本身就是预期结果时，才更新本地视觉基线：
-
-```bash
 pnpm test:e2e:update
 ```
 
-常用本地变体：
+- `pnpm test:e2e` 默认不包含视觉快照测试
+- `pnpm test:e2e:visual` 和 `pnpm test:e2e:update` 主要用于本地视觉回归
+- 更新 snapshot 前先确认变化是预期设计，而不是偶发回归
 
-```bash
-pnpm test:e2e:headed
-pnpm exec playwright test tests/e2e/smoke.spec.ts
-pnpm exec playwright test tests/e2e/a11y.spec.ts
-```
+## 项目结构
 
-说明：
-
-- `pnpm test:e2e` 默认不包含视觉快照测试，保证干净环境下无需提交 PNG 基线也能通过
-- `pnpm test:e2e:visual` 和 `pnpm test:e2e:update` 仅作为本地视觉回归工作流使用
-- `tests/e2e/visual.spec.ts-snapshots/` 已加入 `.gitignore`
-
-更新 snapshot 前请先确认：
-
-- UI 变化本身是有意设计，而不是偶发回归
-- 已查看截图 diff，而不是只看命令通过
-- 不要把无关内容改动和 snapshot 更新混在同一个提交里
-
-## 说明
-
-- 站点默认配置位于 `src/config.ts`
-- 文章内容位于 `src/content/posts/`
-- About 页面内容位于 `src/content/spec/about.md`
-- 当前项目主身份统一为 `FangYuan`
+- 默认配置：`src/config.ts`
+- 文章内容：`src/content/posts/`
+- About 页面：`src/content/spec/about.md`
+- 当前项目主身份：`FangYuan`
 
 ## 外部 site 输入层
 
-Phase 1 支持把真实站点输入从主题源码里拆到本地 `site/` 目录：
+`develop` 分支当前支持一个本地 `site/` 输入层，用于把真实站点的内容、配置和资源从主题源码中拆出。该能力仍在演进，README 只记录稳定入口与基本目录，不追踪所有开发中细节。
 
-- `site/config.ts`：覆盖 `src/config.ts` 的同名导出；未提供的项继续回退到默认值
-- `site/content/`：一旦存在且非空，`posts` 和 `spec` 两个 collection 会整体切到这里，不再混用 `src/content/`
-- `site/assets/`：当前阶段只负责初始化目录，暂未接入运行时资源解析
-
-这里的 `posts/` 和 `spec/` 只是 Astro content collection 的目录组织方式，不是两个独立开关。
-切到 `site/content/` 后就视为整站内容完全切到 `site/`，不会额外检查内部哪个子目录“是否完整”。
+- `site/config.ts`：本地站点配置覆盖入口
+- `site/content/`：本地内容目录
+- `site/assets/`：本地图片和其他静态资源目录
 
 初始化本地 `site/` 目录：
 
@@ -84,20 +53,20 @@ Phase 1 支持把真实站点输入从主题源码里拆到本地 `site/` 目录
 node scripts/init-site.js
 ```
 
-初始化脚本会：
-
-- 创建 `site/content/posts/`
-- 创建 `site/content/spec/`
-- 创建 `site/assets/`
-- 复制默认 `about.md` 到 `site/content/spec/about.md`
-- 在 fresh / empty `site/` 中生成一篇 `site/content/posts/welcome.md`，保证最低可 build
-- 生成最小 `site/config.ts` 模板
+初始化脚本会创建基础目录、最小配置和示例内容，方便本地启动后继续调整。
 
 说明：
 
 - `site/` 已加入 `.gitignore`，用于承载本地站点输入，不进入主题仓库版本控制
-- 如果 `site/` 已经存在并且里面已经有文件，`init-site` 不会再自动补 demo post
-- 如果 `site/content/` 已启用但删掉了 `site/content/spec/about.md`，About 页面会直接报错，不会回退到 demo 内容
+- 开发分支中的目录组织和字段语义仍可能继续调整
+- 若 README 与当前实现存在差异，以当前代码和 `pnpm build` 行为为准
+
+### 图片输入语义
+
+- Markdown 正文图片继续按 Markdown 原生相对路径解析，例如 `./inline.svg`、`../images/foo.png`
+- 文章 frontmatter `image` 和站点配置里的图片字段支持本地资源、`public/` 资源以及远程 URL
+- `site/assets/` 与 `src/` 下现有资源目录都可以作为本地图片输入来源
+- 具体解析细节仍可能随开发分支调整，以实际构建结果为准
 
 ## 许可
 

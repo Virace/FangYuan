@@ -30,6 +30,18 @@ test("external site content collections should flow through the shared node-side
 	);
 
 	assert.match(
+		siteSource,
+		/const repoRoot = process\.cwd\(\);/,
+		"site-source helper should anchor external site resolution to process.cwd so the same root is used in bundled Astro server code",
+	);
+
+	assert.doesNotMatch(
+		siteSource,
+		/fileURLToPath\(import\.meta\.url\)/,
+		"site-source helper should not derive the repo root from import.meta.url once it is shared with bundled Astro components",
+	);
+
+	assert.match(
 		contentConfigSource,
 		/import \{ resolveContentRoot \} from "\.\/utils\/site-source";/,
 		"content config should import the shared content root helper",
@@ -158,39 +170,46 @@ test("runtime config should merge external overrides without leaking node-only l
 	);
 });
 
-test("repo should ignore and document the local external site layer", async () => {
-	const [gitignoreSource, readmeSource] = await Promise.all([
-		readRepoFile(".gitignore"),
-		readRepoFile("README.md"),
+test("image handling should stay on direct roots with a shared resolver instead of component path guessing", async () => {
+	const [configSource, imageSource, imageWrapperSource] = await Promise.all([
+		readRepoFile("src", "config.ts"),
+		readRepoFile("src", "utils", "image-source.ts"),
+		readRepoFile("src", "components", "misc", "ImageWrapper.astro"),
 	]);
 
 	assert.match(
-		gitignoreSource,
-		/^site\/$/m,
-		".gitignore should ignore the local site/ input layer",
+		configSource,
+		/export const configImageBaseRoots = \{/,
+		"runtime config should expose image root provenance for config-driven local assets",
 	);
 
 	assert.match(
-		readmeSource,
-		/site\/config\.ts/,
-		"README should document the external config override file",
+		imageSource,
+		/export async function resolveContentImage\(/,
+		"shared image resolver should expose content-image resolution",
 	);
 
 	assert.match(
-		readmeSource,
-		/site\/content\//,
-		"README should document the external content directory",
+		imageSource,
+		/export async function resolveConfigImage\(/,
+		"shared image resolver should expose config-image resolution",
 	);
 
 	assert.match(
-		readmeSource,
-		/node scripts\/init-site\.js/,
-		"README should document the scaffold command",
+		imageSource,
+		/if \(isRelativePath\(value\)\)/,
+		"resolver should preserve true relative-path semantics for cover images",
 	);
 
 	assert.match(
-		readmeSource,
-		/site\/assets\/.*暂未接入运行时资源解析/s,
-		"README should call out that site/assets is scaffolded but not wired into runtime asset resolution in phase 1",
+		imageSource,
+		/return resolveRootAlias\(value, inferEntryBaseRoot\(entryFilePath\)\);/,
+		"non-relative local cover image aliases should resolve through the root-alias branch",
+	);
+
+	assert.doesNotMatch(
+		imageWrapperSource,
+		/hasExternalSiteContent|import\.meta\.glob|basePath\?: string|buildLookupCandidates|resolveExternalSiteAssetCandidate/,
+		"ImageWrapper should stop guessing file paths and only render resolved inputs",
 	);
 });

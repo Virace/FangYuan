@@ -1,3 +1,4 @@
+import type { ImageMetadata } from "astro";
 import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
@@ -9,7 +10,7 @@ export type PostData = {
 	updated?: Date;
 	draft: boolean;
 	description: string;
-	image: string;
+	image: string | ImageMetadata;
 	tags: string[];
 	category: string | null;
 	lang: string;

@@ -1,11 +1,9 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 type ContentRoot = "./src/content" | "./site/content";
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(currentDir, "..", "..");
+const repoRoot = process.cwd();
 const externalSiteRoot = path.join(repoRoot, "site");
 const externalContentRoot = path.join(externalSiteRoot, "content");
 const externalConfigPath = path.join(externalSiteRoot, "config.ts");

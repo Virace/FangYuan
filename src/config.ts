@@ -139,3 +139,8 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...externalSiteConfig?.expressiveCodeConfig,
 };
+
+export const configImageBaseRoots = {
+	banner: externalSiteConfig?.siteConfig?.banner?.src ? "site" : "src",
+	avatar: externalSiteConfig?.profileConfig?.avatar ? "site" : "src",
+} as const;

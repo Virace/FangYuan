@@ -1,11 +1,7 @@
 import { defineCollection } from "astro:content";
-import type { CollectionConfig } from "astro/content/config";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { resolveContentRoot } from "./utils/site-source";
-
-export type GlobCollectionLoader = ReturnType<typeof glob>;
-export type ObjectCollectionSchema = z.ZodObject<z.ZodRawShape>;
 
 function generateMarkdownId(entry: string): string {
 	const normalizedEntry = entry.replace(/\\/g, "/");
@@ -23,38 +19,73 @@ function generateMarkdownId(entry: string): string {
 
 const contentRoot = resolveContentRoot();
 
-const postsCollection: CollectionConfig<
-	ObjectCollectionSchema,
-	GlobCollectionLoader
-> = defineCollection({
+const publicPathSchema = z.string().regex(/^\/(?!\/).+/, {
+	message: "Public image URLs must start with a single leading slash.",
+});
+
+const publicAliasSchema = z.string().regex(/^public\/.+/, {
+	message: "Public image aliases must start with public/.",
+});
+
+const remoteImageSchema = z.string().regex(/^https?:\/\/.+/, {
+	message: "Remote image URLs must start with http:// or https://.",
+});
+
+const dataImageSchema = z.string().regex(/^data:.+/, {
+	message: "Data image URLs must start with data:.",
+});
+
+const relativeCoverImageSchema = (image: any) =>
+	z.string().regex(/^(?:\.\.?\/).+/, {
+		message: "Relative cover images must start with ./ or ../.",
+	}).pipe(image());
+
+const localAliasImageSchema = z.string().regex(
+	/^(?!\.{1,2}\/)(?!\/)(?!public\/)(?!https?:\/\/)(?!data:).+/,
+	{
+		message:
+			"Non-relative local cover images are treated as root aliases under src/ or site/.",
+	},
+);
+
+const postsCollection = defineCollection({
 	loader: glob({
 		base: `${contentRoot}/posts`,
 		pattern: "**/*.md",
 		generateId: ({ entry }) => generateMarkdownId(entry),
 	}),
-	schema: z.object({
-		title: z.string(),
-		published: z.date(),
-		updated: z.date().optional(),
-		draft: z.boolean().optional().default(false),
-		description: z.string().optional().default(""),
-		image: z.string().optional().default(""),
-		tags: z.array(z.string()).optional().default([]),
-		category: z.string().optional().nullable().default(""),
-		lang: z.string().optional().default(""),
+	schema: ({ image }) =>
+		z.object({
+			title: z.string(),
+			published: z.date(),
+			updated: z.date().optional(),
+			draft: z.boolean().optional().default(false),
+			description: z.string().optional().default(""),
+			image: z
+				.union([
+					relativeCoverImageSchema(image),
+					publicPathSchema,
+					publicAliasSchema,
+					remoteImageSchema,
+					dataImageSchema,
+					localAliasImageSchema,
+					z.literal(""),
+				])
+				.optional()
+				.default(""),
+			tags: z.array(z.string()).optional().default([]),
+			category: z.string().optional().nullable().default(""),
+			lang: z.string().optional().default(""),
 
-		/* For internal use */
-		prevTitle: z.string().default(""),
-		prevSlug: z.string().default(""),
-		nextTitle: z.string().default(""),
-		nextSlug: z.string().default(""),
-	}),
+			/* For internal use */
+			prevTitle: z.string().default(""),
+			prevSlug: z.string().default(""),
+			nextTitle: z.string().default(""),
+			nextSlug: z.string().default(""),
+		}),
 });
 
-const specCollection: CollectionConfig<
-	ObjectCollectionSchema,
-	GlobCollectionLoader
-> = defineCollection({
+const specCollection = defineCollection({
 	loader: glob({
 		base: `${contentRoot}/spec`,
 		pattern: "**/*.md",
@@ -63,10 +94,7 @@ const specCollection: CollectionConfig<
 	schema: z.object({}),
 });
 
-export const collections: {
-	posts: CollectionConfig<ObjectCollectionSchema, GlobCollectionLoader>;
-	spec: CollectionConfig<ObjectCollectionSchema, GlobCollectionLoader>;
-} = {
+export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
 };

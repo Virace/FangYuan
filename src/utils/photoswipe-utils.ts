@@ -1,3 +1,5 @@
+import type { ImageMetadata } from "astro";
+
 const MARKDOWN_IMAGE_PATTERN = /!\[[^\]]*]\([^)]+\)|<img\s/i;
 
 const hasText = (value?: string | null): boolean => {
@@ -6,7 +8,11 @@ const hasText = (value?: string | null): boolean => {
 
 export const shouldEnablePhotoSwipe = (
 	markdownBody?: string,
-	coverImage?: string,
+	coverImage?: string | ImageMetadata,
 ): boolean => {
-	return hasText(coverImage) || MARKDOWN_IMAGE_PATTERN.test(markdownBody ?? "");
+	return (
+		(typeof coverImage === "string"
+			? hasText(coverImage)
+			: Boolean(coverImage)) || MARKDOWN_IMAGE_PATTERN.test(markdownBody ?? "")
+	);
 };

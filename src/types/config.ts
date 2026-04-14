@@ -1,3 +1,4 @@
+import type { ImageMetadata } from "astro";
 import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
 
 export type SiteConfig = {
@@ -96,7 +97,7 @@ export type BlogPostData = {
 	description: string;
 	tags: string[];
 	draft?: boolean;
-	image?: string;
+	image?: string | ImageMetadata;
 	category?: string;
 	prevTitle?: string;
 	prevSlug?: string;

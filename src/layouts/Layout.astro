@@ -20,12 +20,13 @@ import {
 } from "../constants/constants";
 import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
+import type { ImageMetadata } from "astro";
 import { pathsEqual, url } from "../utils/url-utils";
 import "katex/dist/katex.css";
 
 interface Props {
 	title?: string;
-	banner?: string;
+	banner?: string | ImageMetadata;
 	description?: string;
 	lang?: string;
 	setOGTypeArticle?: boolean;
