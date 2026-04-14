@@ -15,6 +15,44 @@
         transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.comment-root {
+    padding: 1rem;
+    border: 1px solid var(--line-divider);
+    border-radius: var(--radius-large);
+    background-color: var(--card-bg);
+}
+
+.comment-nested {
+    position: relative;
+    padding: 0.75rem 0 0 1.25rem;
+}
+
+.comment-nested::before {
+    content: "";
+    position: absolute;
+    left: 0.25rem;
+    top: 0.5rem;
+    bottom: 0.1rem;
+    width: 1px;
+    background-color: var(--line-divider);
+}
+
+.comment-children {
+    padding-left: 0.5rem;
+}
+
+.comment-body a {
+    color: var(--primary);
+}
+
+.comment-body p {
+    margin: 0;
+}
+
+.comment-body p + p {
+    margin-top: 0.75rem;
+}
+
 @layer base {
     h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th, td, strong {
         transition:

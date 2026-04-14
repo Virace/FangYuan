@@ -38,7 +38,7 @@ function triggerReply() {
 				src={comment.author.avatarUrl}
 			/>
 		{:else}
-			<div class="flex h-10 w-10 items-center justify-center rounded-full bg-soft-contrast text-sm font-semibold text-60">
+			<div class="flex h-10 w-10 items-center justify-center rounded-full bg-btn-plain-bg-hover text-sm font-semibold text-primary">
 				{comment.author.name.slice(0, 1).toUpperCase()}
 			</div>
 		{/if}
@@ -54,7 +54,7 @@ function triggerReply() {
 				{/if}
 			</div>
 
-			<div class="comment-body mt-2 text-sm leading-7">
+			<div class="comment-body mt-2 text-sm leading-7 text-75">
 				{@html comment.content.html}
 			</div>
 
@@ -88,64 +88,3 @@ function triggerReply() {
 		</div>
 	</div>
 </article>
-
-<style>
-	.comment-item {
-		color: rgb(0 0 0 / 0.9);
-	}
-
-	:global(.dark) .comment-item {
-		color: rgb(255 255 255 / 0.88);
-	}
-
-	.comment-root {
-		padding: 1rem;
-		border: 1px solid var(--line-divider);
-		border-radius: var(--radius-large);
-		background-color: var(--card-bg);
-	}
-
-	.comment-nested {
-		position: relative;
-		padding: 0.75rem 0 0 1.25rem;
-	}
-
-	.comment-nested::before {
-		content: "";
-		position: absolute;
-		left: 0.25rem;
-		top: 0.5rem;
-		bottom: 0.1rem;
-		width: 1px;
-		background: var(--line-divider);
-		opacity: 0.9;
-	}
-
-	.comment-children {
-		padding-left: 0.5rem;
-	}
-
-	.comment-body {
-		color: rgb(0 0 0 / 0.82);
-	}
-
-	:global(.dark) .comment-body {
-		color: rgb(255 255 255 / 0.78);
-	}
-
-	.comment-body :global(*) {
-		color: inherit;
-	}
-
-	.comment-body :global(a) {
-		color: var(--primary);
-	}
-
-	.comment-body :global(p) {
-		margin: 0;
-	}
-
-	.comment-body :global(p + p) {
-		margin-top: 0.75rem;
-	}
-</style>
