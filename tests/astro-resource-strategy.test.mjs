@@ -11,7 +11,7 @@ function readRepoFile(...segments) {
 	return readFile(path.join(repoRoot, ...segments), "utf8");
 }
 
-test("Astro resource strategy should use official Font API and centralized image codec defaults", async () => {
+test("Astro resource strategy should use official Font API and retain an opt-in image codec preset", async () => {
 	const [
 		astroConfigSource,
 		layoutSource,
@@ -56,32 +56,44 @@ test("Astro resource strategy should use official Font API and centralized image
 
 	assert.match(
 		astroConfigSource,
-		/image:\s*\{\s*service:\s*\{\s*config:\s*\{/s,
-		"astro.config.mjs should declare global image service codec defaults",
+		/const enableGlobalImageCodecDefaults = false;/,
+		"astro.config.mjs should keep global image codec defaults disabled by default",
+	);
+
+	assert.match(
+		astroConfigSource,
+		/const globalImageServiceConfig = \{/,
+		"astro.config.mjs should keep the optional image codec preset nearby for future opt-in use",
 	);
 
 	assert.match(
 		astroConfigSource,
 		/jpeg:\s*\{\s*mozjpeg:\s*true\s*\}/,
-		"JPEG defaults should enable mozjpeg",
+		"JPEG defaults should remain preserved in the opt-in preset",
 	);
 
 	assert.match(
 		astroConfigSource,
 		/webp:\s*\{\s*effort:\s*6,\s*alphaQuality:\s*80\s*\}/,
-		"WebP defaults should be centralized in astro.config.mjs",
+		"WebP defaults should remain preserved in the opt-in preset",
 	);
 
 	assert.match(
 		astroConfigSource,
 		/avif:\s*\{\s*effort:\s*4,\s*chromaSubsampling:\s*"4:2:0"\s*\}/,
-		"AVIF defaults should be centralized in astro.config.mjs",
+		"AVIF defaults should remain preserved in the opt-in preset",
 	);
 
 	assert.match(
 		astroConfigSource,
 		/png:\s*\{\s*compressionLevel:\s*9\s*\}/,
-		"PNG defaults should be centralized in astro.config.mjs",
+		"PNG defaults should remain preserved in the opt-in preset",
+	);
+
+	assert.match(
+		astroConfigSource,
+		/\.\.\.\(enableGlobalImageCodecDefaults\s*\?[\s\S]*image:\s*\{[\s\S]*config:\s*globalImageServiceConfig,[\s\S]*:\s*\{\}\)/,
+		"Astro config should gate image.service.config behind an explicit local switch",
 	);
 
 	assert.match(

@@ -71,7 +71,7 @@ node scripts/init-site.js
 ### Resource Strategy
 
 - 正文字体与代码字体通过 Astro Font API 注册，不再依赖直接 `@fontsource/*` CSS import
-- 进入 Astro 资产管线的本地图片统一使用 `astro.config.mjs` 中的全局编码默认值
+- `astro.config.mjs` 中保留了一组可选的全局图片编码默认值，但默认关闭，避免把不同图片用法强行收口到一套统一参数
 - `public/**` 图片路径继续按直接静态资源处理
 - 远程图片 URL 默认继续透传；只有未来单独规划并授权的可信来源，才会进一步纳入 Astro 处理
 - 浏览器视觉快照若因字体分发策略调整而变化，应先确认是预期设计结果，再决定是否更新 baseline

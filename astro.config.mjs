@@ -29,6 +29,13 @@ const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
+const enableGlobalImageCodecDefaults = false;
+const globalImageServiceConfig = {
+	jpeg: { mozjpeg: true },
+	webp: { effort: 6, alphaQuality: 80 },
+	avif: { effort: 4, chromaSubsampling: "4:2:0" },
+	png: { compressionLevel: 9 },
+};
 
 // https://astro.build/config
 export default defineConfig({
@@ -53,16 +60,15 @@ export default defineConfig({
 			fallbacks: ["monospace"],
 		},
 	],
-	image: {
-		service: {
-			config: {
-				jpeg: { mozjpeg: true },
-				webp: { effort: 6, alphaQuality: 80 },
-				avif: { effort: 4, chromaSubsampling: "4:2:0" },
-				png: { compressionLevel: 9 },
-			},
-		},
-	},
+	...(enableGlobalImageCodecDefaults
+		? {
+				image: {
+					service: {
+						config: globalImageServiceConfig,
+					},
+				},
+			}
+		: {}),
 	integrations: [
 		swup({
 			theme: false,
