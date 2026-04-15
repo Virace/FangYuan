@@ -1,18 +1,15 @@
 <script lang="ts">
 import { COMMENT_EMOJIS } from "@constants/comment-emojis";
-import { createEventDispatcher } from "svelte";
 
-const dispatch = createEventDispatcher<{
-	select: string;
-}>();
+export let onSelect: ((emoji: string) => void) | null = null;
 </script>
 
 <div class="flex flex-wrap gap-2">
 	{#each COMMENT_EMOJIS as emoji}
 		<button
 			type="button"
-			class="btn-plain rounded-lg px-2 h-8 text-base"
-			on:click={() => dispatch("select", emoji)}
+			class="comment-action comment-action-icon text-base"
+			on:click={() => onSelect?.(emoji)}
 		>
 			{emoji}
 		</button>

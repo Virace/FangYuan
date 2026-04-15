@@ -8,6 +8,36 @@ export type CommentCapability = {
 	message?: string;
 };
 
+export type CommentCaptchaChallenge = {
+	kind: string;
+	imageData?: string | null;
+	html?: string | null;
+	metadata?: Record<string, string>;
+};
+
+export type CommentCaptchaState = {
+	required: boolean;
+	verified: boolean;
+	challenge?: CommentCaptchaChallenge | null;
+};
+
+export type VerifyCommentCaptchaInput = {
+	kind: string;
+	value: string;
+};
+
+export type CommentSortBy = "date_desc" | "date_asc";
+
+export class CommentCaptchaRequiredError extends Error {
+	readonly state: CommentCaptchaState | null;
+
+	constructor(message: string, state: CommentCaptchaState | null = null) {
+		super(message);
+		this.name = "CommentCaptchaRequiredError";
+		this.state = state;
+	}
+}
+
 export type CreateCommentInput = {
 	postKey: string;
 	postTitle?: string;
@@ -18,6 +48,7 @@ export type CreateCommentInput = {
 		website?: string | null;
 	};
 	content: string;
+	captcha?: VerifyCommentCaptchaInput | null;
 };
 
 export type VoteCommentInput = {
@@ -25,12 +56,40 @@ export type VoteCommentInput = {
 	choice: "up" | "down";
 };
 
+export type GetCommentThreadInput = {
+	postKey: string;
+	sortBy?: CommentSortBy;
+	limit?: number;
+	offset?: number;
+};
+
+export type CommentThreadPage = {
+	comments: CanonicalComment[];
+	totalCount: number;
+	rootsCount: number;
+	offset: number;
+	limit: number;
+	sortBy: CommentSortBy;
+};
+
 export abstract class CommentProvider {
 	abstract readonly kind: string;
 
 	abstract getCapability(postKey: string): Promise<CommentCapability>;
-	abstract getThread(postKey: string): Promise<CanonicalComment[]>;
+	abstract getThread(input: GetCommentThreadInput): Promise<CommentThreadPage>;
 	abstract createComment(input: CreateCommentInput): Promise<CanonicalComment>;
+
+	async getCaptchaState(): Promise<CommentCaptchaState | null> {
+		return null;
+	}
+
+	async refreshCaptcha(): Promise<CommentCaptchaState | null> {
+		return this.getCaptchaState();
+	}
+
+	async verifyCaptcha(_input: VerifyCommentCaptchaInput): Promise<CommentCaptchaState> {
+		throw new Error("Comment captcha is not supported by this provider.");
+	}
 
 	async voteComment(_input: VoteCommentInput): Promise<CanonicalComment> {
 		throw new Error("Comment voting is not supported by this provider.");

@@ -1,9 +1,15 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { createEventDispatcher } from "svelte";
+import Icon from "@iconify/svelte";
+import type {
+	CommentCaptchaState,
+	VerifyCommentCaptchaInput,
+} from "@utils/comments/provider";
+import { fade } from "svelte/transition";
 import { validateCommentForm } from "@utils/comments/validation";
 import EmojiPicker from "./EmojiPicker.svelte";
+import InlineCommentCaptcha from "./InlineCommentCaptcha.svelte";
 
 type CommentComposerSubmitDetail = {
 	authorName: string;
@@ -12,13 +18,22 @@ type CommentComposerSubmitDetail = {
 	content: string;
 };
 
-const dispatch = createEventDispatcher<{
-	submit: CommentComposerSubmitDetail;
-	cancelReply: void;
-}>();
-
 export let submitting = false;
 export let replyParentId: string | null = null;
+export let showCaptcha = false;
+export let captchaState: CommentCaptchaState | null = null;
+export let captchaBusy = false;
+export let captchaError = "";
+export let captchaPrompt = "";
+export let onSubmit:
+	| ((detail: CommentComposerSubmitDetail) => boolean | Promise<boolean>)
+	| null = null;
+export let onDismissCaptcha: (() => void) | null = null;
+export let onCancelReply: (() => void) | null = null;
+export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
+export let onVerifyCaptcha:
+	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
+	| null = null;
 
 let authorName = "";
 let authorEmail = "";
@@ -33,7 +48,7 @@ $: canSubmit =
 	authorEmail.trim().length > 0 &&
 	content.trim().length > 0;
 
-function handleSubmit() {
+async function handleSubmit() {
 	const validationResult = validateCommentForm({
 		authorName,
 		authorEmail,
@@ -51,23 +66,25 @@ function handleSubmit() {
 	}
 
 	validationError = "";
-	dispatch("submit", {
+	const submitSucceeded = await onSubmit?.({
 		authorName: authorName.trim(),
 		authorEmail: authorEmail.trim(),
 		authorWebsite: authorWebsite.trim(),
 		content: content.trim(),
 	});
-	content = "";
+	if (submitSucceeded) {
+		content = "";
+	}
 }
 
 function handleCancelReply() {
 	validationError = "";
 	showEmojiPicker = false;
-	dispatch("cancelReply");
+	onCancelReply?.();
 }
 
-function insertEmoji(event: CustomEvent<string>) {
-	content = `${content}${event.detail}`;
+function insertEmoji(emoji: string) {
+	content = `${content}${emoji}`;
 	showEmojiPicker = false;
 }
 </script>
@@ -82,7 +99,7 @@ function insertEmoji(event: CustomEvent<string>) {
 		</div>
 		{#if replyParentId}
 			<button
-				class="btn-plain rounded-lg px-3 h-9 text-sm"
+				class="comment-action"
 				type="button"
 				on:click={handleCancelReply}
 			>
@@ -141,34 +158,60 @@ function insertEmoji(event: CustomEvent<string>) {
 		</label>
 	</div>
 
-	<div class="mt-4 flex items-center justify-end">
+	<div class="mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 		<div class="mr-auto">
 			<button
 				type="button"
-				class="btn-plain rounded-lg px-3 h-9 text-sm"
+				class="comment-action comment-action-icon"
+				class:comment-action-active={showEmojiPicker}
+				aria-label={i18n(I18nKey.commentsEmoji)}
 				aria-controls="comment-emojis-panel"
 				aria-expanded={showEmojiPicker}
+				title={i18n(I18nKey.commentsEmoji)}
 				on:click={() => (showEmojiPicker = !showEmojiPicker)}
 			>
-				{i18n(I18nKey.commentsEmoji)}
+				<Icon icon="material-symbols:heart-smile-rounded" class="text-lg" />
 			</button>
 		</div>
-		<button
-			class="btn-regular rounded-xl px-4 h-10 text-sm font-medium"
-			disabled={!canSubmit}
-			type="submit"
-		>
-			{#if submitting}
-				{i18n(I18nKey.commentsSubmitting)}
-			{:else}
-				{i18n(I18nKey.commentsSubmit)}
+
+		<div class="flex w-full flex-col gap-3 md:w-auto md:min-w-[32rem] md:flex-row md:items-center md:justify-end">
+			{#if showCaptcha}
+				<div
+					class="w-full"
+					data-comment-captcha-target="composer"
+					in:fade={{ duration: 180 }}
+					out:fade={{ duration: 180 }}
+				>
+					<InlineCommentCaptcha
+						compact={true}
+						captchaBusy={captchaBusy}
+						captchaError={captchaError}
+						captchaPrompt={captchaPrompt}
+						captchaState={captchaState}
+						onDismiss={onDismissCaptcha}
+						onRefreshCaptcha={onRefreshCaptcha}
+						onVerifyCaptcha={onVerifyCaptcha}
+					/>
+				</div>
 			{/if}
-		</button>
+
+			<button
+				class="btn-regular rounded-xl px-4 h-10 text-sm font-medium md:shrink-0"
+				disabled={!canSubmit}
+				type="submit"
+			>
+				{#if submitting}
+					{i18n(I18nKey.commentsSubmitting)}
+				{:else}
+					{i18n(I18nKey.commentsSubmit)}
+				{/if}
+			</button>
+		</div>
 	</div>
 
 	{#if showEmojiPicker}
 		<div id="comment-emojis-panel" class="mt-4 rounded-xl border border-line-divider p-3">
-			<EmojiPicker on:select={insertEmoji} />
+			<EmojiPicker onSelect={insertEmoji} />
 		</div>
 	{/if}
 </form>

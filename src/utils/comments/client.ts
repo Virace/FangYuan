@@ -1,7 +1,12 @@
 import { commentConfig } from "../../config";
 import { buildCommentTree } from "./tree";
 import { getCommentProvider } from "./provider";
-import type { CreateCommentInput, VoteCommentInput } from "./provider";
+import type {
+	CreateCommentInput,
+	GetCommentThreadInput,
+	VerifyCommentCaptchaInput,
+	VoteCommentInput,
+} from "./provider";
 
 export function getCommentClient() {
 	const provider = getCommentProvider(commentConfig);
@@ -13,9 +18,21 @@ export function getCommentClient() {
 		async getCapability(postKey: string) {
 			return provider.getCapability(postKey);
 		},
-		async getThread(postKey: string) {
-			const comments = await provider.getThread(postKey);
-			return buildCommentTree(comments);
+		async getThread(input: GetCommentThreadInput) {
+			const threadPage = await provider.getThread(input);
+			return {
+				...threadPage,
+				comments: buildCommentTree(threadPage.comments),
+			};
+		},
+		async getCaptchaState() {
+			return provider.getCaptchaState();
+		},
+		async refreshCaptcha() {
+			return provider.refreshCaptcha();
+		},
+		async verifyCaptcha(input: VerifyCommentCaptchaInput) {
+			return provider.verifyCaptcha(input);
 		},
 		async createComment(input: CreateCommentInput) {
 			return provider.createComment(input);

@@ -1,5 +1,12 @@
 import type { CanonicalComment } from "@/types/comment";
 
+export function countCommentsInTree(items: CanonicalComment[]): number {
+	return items.reduce(
+		(total, comment) => total + 1 + countCommentsInTree(comment.children),
+		0,
+	);
+}
+
 export function buildCommentTree(comments: CanonicalComment[]): CanonicalComment[] {
 	const commentMap = new Map(
 		comments.map((comment) => [comment.id, { ...comment, children: [] as CanonicalComment[] }]),

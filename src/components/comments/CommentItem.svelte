@@ -2,16 +2,30 @@
 import type { CanonicalComment } from "@/types/comment";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { createEventDispatcher } from "svelte";
-
-const dispatch = createEventDispatcher<{ reply: string }>();
+import type {
+	CommentCaptchaState,
+	VerifyCommentCaptchaInput,
+} from "@utils/comments/provider";
+import { slide } from "svelte/transition";
+import InlineCommentCaptcha from "./InlineCommentCaptcha.svelte";
 
 export let comment: CanonicalComment;
 export let activeReplyParentId: string | null = null;
+export let activeCaptchaCommentId: string | null = null;
 export let depth = 1;
 export let maxDepth = 3;
 export let supportsVote = false;
+export let captchaState: CommentCaptchaState | null = null;
+export let captchaBusy = false;
+export let captchaError = "";
+export let captchaPrompt = "";
 export let onVote: ((commentId: string, choice: "up" | "down") => void) | null = null;
+export let onReply: ((commentId: string) => void) | null = null;
+export let onDismissCaptcha: (() => void) | null = null;
+export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
+export let onVerifyCaptcha:
+	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
+	| null = null;
 
 function formatCommentDate(value: string): string {
 	const date = new Date(value);
@@ -23,7 +37,7 @@ function formatCommentDate(value: string): string {
 }
 
 function triggerReply() {
-	dispatch("reply", comment.id);
+	onReply?.(comment.id);
 }
 </script>
 
@@ -61,9 +75,10 @@ function triggerReply() {
 			</div>
 
 			{#if depth < maxDepth || supportsVote}
-				<div class="mt-3 flex flex-wrap items-center gap-2">
+				<div class="comment-actions mt-3">
 					<button
-						class="btn-plain rounded-lg px-3 h-8 text-sm"
+						class="comment-action"
+						class:comment-action-active={activeReplyParentId === comment.id}
 						type="button"
 						on:click={triggerReply}
 					>
@@ -75,23 +90,44 @@ function triggerReply() {
 					{#if supportsVote}
 						<button
 							type="button"
-							class={`btn-plain rounded-lg px-3 h-8 text-sm ${comment.viewerVote === "up" ? "bg-primary/10 text-primary" : ""}`}
+							class="comment-action"
+							class:comment-action-active={comment.viewerVote === "up"}
 							aria-label={i18n(I18nKey.commentsVoteUp)}
 							on:click={() => onVote?.(comment.id, "up")}
 						>
 							<span aria-hidden="true">👍</span>
-							<span class="ml-1">{comment.voteUp}</span>
+							<span class="comment-action-count">{comment.voteUp}</span>
 						</button>
 						<button
 							type="button"
-							class={`btn-plain rounded-lg px-3 h-8 text-sm ${comment.viewerVote === "down" ? "bg-primary/10 text-primary" : ""}`}
+							class="comment-action"
+							class:comment-action-active={comment.viewerVote === "down"}
 							aria-label={i18n(I18nKey.commentsVoteDown)}
 							on:click={() => onVote?.(comment.id, "down")}
 						>
 							<span aria-hidden="true">👎</span>
-							<span class="ml-1">{comment.voteDown}</span>
+							<span class="comment-action-count">{comment.voteDown}</span>
 						</button>
 					{/if}
+				</div>
+			{/if}
+
+			{#if comment.id === activeCaptchaCommentId && captchaState?.required}
+				<div
+					class="mt-3"
+					data-comment-captcha-target={comment.id}
+					transition:slide={{ duration: 180 }}
+				>
+					<InlineCommentCaptcha
+						compact={true}
+						captchaBusy={captchaBusy}
+						captchaError={captchaError}
+						captchaPrompt={captchaPrompt}
+						captchaState={captchaState}
+						onDismiss={onDismissCaptcha}
+						onRefreshCaptcha={onRefreshCaptcha}
+						onVerifyCaptcha={onVerifyCaptcha}
+					/>
 				</div>
 			{/if}
 
@@ -101,11 +137,18 @@ function triggerReply() {
 						<svelte:self
 							comment={child}
 							activeReplyParentId={activeReplyParentId}
+							activeCaptchaCommentId={activeCaptchaCommentId}
 							depth={depth + 1}
 							maxDepth={maxDepth}
 							supportsVote={supportsVote}
+							captchaState={captchaState}
+							captchaBusy={captchaBusy}
+							captchaError={captchaError}
+							captchaPrompt={captchaPrompt}
 							onVote={onVote}
-							on:reply
+							onReply={onReply}
+							onRefreshCaptcha={onRefreshCaptcha}
+							onVerifyCaptcha={onVerifyCaptcha}
 						/>
 					{/each}
 				</div>

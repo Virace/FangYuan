@@ -5,6 +5,24 @@ export type ArtalkApiConfig = {
 
 type ArtalkEndpointParams = Record<string, string | number | boolean | undefined>;
 
+export class ArtalkApiError extends Error {
+	readonly status: number | null;
+	readonly data: unknown;
+
+	constructor(
+		message: string,
+		options?: {
+			status?: number | null;
+			data?: unknown;
+		},
+	) {
+		super(message);
+		this.name = "ArtalkApiError";
+		this.status = options?.status ?? null;
+		this.data = options?.data;
+	}
+}
+
 export function normalizeArtalkApiConfig(
 	config: ArtalkApiConfig,
 ): Required<ArtalkApiConfig> {
@@ -35,6 +53,21 @@ export function buildArtalkEndpoint(
 	return url.toString();
 }
 
+function logArtalkRequestError(
+	config: Required<ArtalkApiConfig>,
+	pathname: string,
+	error: ArtalkApiError | Error,
+) {
+	console.error("[Artalk request failed]", {
+		apiBase: config.apiBase,
+		siteName: config.siteName,
+		pathname,
+		status: error instanceof ArtalkApiError ? error.status : null,
+		message: error.message,
+		data: error instanceof ArtalkApiError ? error.data : undefined,
+	});
+}
+
 export async function fetchArtalkJson<T>(
 	config: ArtalkApiConfig,
 	pathname: string,
@@ -50,6 +83,7 @@ export async function fetchArtalkJson<T>(
 			buildArtalkEndpoint(normalizedConfig, pathname, options?.params),
 			{
 				mode: "cors",
+				credentials: options?.init?.credentials ?? "include",
 				...options?.init,
 				headers: {
 					Accept: "application/json",
@@ -61,21 +95,35 @@ export async function fetchArtalkJson<T>(
 
 		if (!response.ok) {
 			const payload = await response.text();
+			let data: unknown = payload;
+			let message = payload || `Artalk API request failed: ${response.status}`;
 
 			try {
 				const parsed = JSON.parse(payload) as { msg?: string };
-				throw new Error(parsed.msg || `Artalk API request failed: ${response.status}`);
+				data = parsed;
+				message = parsed.msg || message;
 			} catch {
-				throw new Error(payload || `Artalk API request failed: ${response.status}`);
+				// keep plain text payload
 			}
+
+			throw new ArtalkApiError(message, {
+				status: response.status,
+				data,
+			});
 		}
 
 		return (await response.json()) as T;
 	} catch (error) {
+		if (error instanceof ArtalkApiError) {
+			logArtalkRequestError(normalizedConfig, pathname, error);
+			throw error;
+		}
+
 		if (error instanceof Error) {
-			throw new Error(
-				`Artalk API request failed. Verify apiBase, siteName, and trusted origin/CORS. ${error.message}`,
-			);
+			logArtalkRequestError(normalizedConfig, pathname, error);
+			throw new ArtalkApiError(error.message || "Artalk API request failed.", {
+				data: error,
+			});
 		}
 
 		throw error;

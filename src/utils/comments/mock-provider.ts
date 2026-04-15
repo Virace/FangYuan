@@ -1,5 +1,17 @@
 import type { CanonicalComment } from "@/types/comment";
-import { CommentProvider, type CommentCapability, type CreateCommentInput } from "./provider";
+import {
+	CommentProvider,
+	type CommentCapability,
+	type CommentSortBy,
+	type CommentThreadPage,
+	type CreateCommentInput,
+	type GetCommentThreadInput,
+} from "./provider";
+import {
+	DEFAULT_COMMENT_ROOT_LIMIT,
+	DEFAULT_COMMENT_SORT_BY,
+	normalizeCommentOffset,
+} from "./options";
 import { renderPlainCommentHtml } from "./validation";
 
 function createMockComment(
@@ -192,6 +204,61 @@ function createMockThread(postKey: string): CanonicalComment[] {
 	];
 }
 
+function sortMockRoots(
+	comments: CanonicalComment[],
+	sortBy: CommentSortBy,
+): CanonicalComment[] {
+	return [...comments].sort((left, right) => {
+		const leftTime = new Date(left.createdAt).getTime();
+		const rightTime = new Date(right.createdAt).getTime();
+
+		return sortBy === "date_asc" ? leftTime - rightTime : rightTime - leftTime;
+	});
+}
+
+function paginateMockThread(
+	comments: CanonicalComment[],
+	limit: number,
+	offset: number,
+	sortBy: CommentSortBy,
+): CommentThreadPage {
+	const roots = sortMockRoots(
+		comments.filter((comment) => !comment.parentId),
+		sortBy,
+	);
+	const pagedRoots = roots.slice(offset, offset + limit);
+	const pagedRootIdSet = new Set(pagedRoots.map((comment) => comment.id));
+	const commentMap = new Map(comments.map((comment) => [comment.id, comment]));
+
+	function belongsToPagedRoot(comment: CanonicalComment): boolean {
+		let parentId = comment.parentId;
+
+		while (parentId) {
+			if (pagedRootIdSet.has(parentId)) {
+				return true;
+			}
+
+			parentId = commentMap.get(parentId)?.parentId ?? null;
+		}
+
+		return false;
+	}
+
+	return {
+		comments: [
+			...pagedRoots,
+			...comments.filter(
+				(comment) => comment.parentId !== null && belongsToPagedRoot(comment),
+			),
+		],
+		totalCount: comments.length,
+		rootsCount: roots.length,
+		limit,
+		offset,
+		sortBy,
+	};
+}
+
 export class MockCommentProvider extends CommentProvider {
 	readonly kind = "mock";
 
@@ -204,8 +271,14 @@ export class MockCommentProvider extends CommentProvider {
 		} satisfies CommentCapability;
 	}
 
-	async getThread(postKey: string) {
-		return createMockThread(postKey);
+	async getThread(input: GetCommentThreadInput) {
+		const limit = Math.max(
+			1,
+			Math.floor(input.limit ?? DEFAULT_COMMENT_ROOT_LIMIT),
+		);
+		const offset = normalizeCommentOffset(input.offset);
+		const sortBy = input.sortBy ?? DEFAULT_COMMENT_SORT_BY;
+		return paginateMockThread(createMockThread(input.postKey), limit, offset, sortBy);
 	}
 
 	async createComment(input: CreateCommentInput) {

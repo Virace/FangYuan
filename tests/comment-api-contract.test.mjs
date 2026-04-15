@@ -34,14 +34,40 @@ test("comment provider layer should remove FangYuan server gateway and stay stat
 	assert.match(providerSource, /export abstract class CommentProvider \{/);
 	assert.match(providerSource, /readonly kind: string/);
 	assert.match(providerSource, /supportsVote:\s*boolean;/);
+	assert.match(providerSource, /export type CommentCaptchaChallenge = \{/);
+	assert.match(providerSource, /kind:\s*string;/);
+	assert.match(providerSource, /imageData\?:\s*string \| null;/);
+	assert.match(providerSource, /html\?:\s*string \| null;/);
+	assert.match(providerSource, /export type CommentCaptchaState = \{/);
+	assert.match(providerSource, /required:\s*boolean;/);
+	assert.match(providerSource, /verified:\s*boolean;/);
+	assert.match(providerSource, /export type VerifyCommentCaptchaInput = \{/);
+	assert.match(providerSource, /export class CommentCaptchaRequiredError extends Error \{/);
+	assert.match(providerSource, /readonly state: CommentCaptchaState \| null;/);
 	assert.match(providerSource, /export type VoteCommentInput = \{/);
+	assert.match(providerSource, /export type CommentSortBy = "date_desc" \| "date_asc";/);
+	assert.match(providerSource, /export type GetCommentThreadInput = \{/);
+	assert.match(providerSource, /export type CommentThreadPage = \{/);
+	assert.match(providerSource, /captcha\?:\s*VerifyCommentCaptchaInput \| null;/);
 	assert.match(
 		providerSource,
 		/export function getCommentProvider\(config: \{[\s\S]*enable: boolean;[\s\S]*provider\?: CommentProvider \| null[\s\S]*\): CommentProvider \| null \{/,
 	);
-	assert.doesNotMatch(providerSource, /challenge|pending-token|PUBLIC_WP_API_BASE|PUBLIC_FANGYUAN_COMMENT_PROVIDER/);
+	assert.match(
+		providerSource,
+		/abstract getThread\(input: GetCommentThreadInput\): Promise<CommentThreadPage>;/,
+	);
+	assert.match(providerSource, /async getCaptchaState\(\): Promise<CommentCaptchaState \| null> \{/);
+	assert.match(providerSource, /async refreshCaptcha\(\): Promise<CommentCaptchaState \| null> \{/);
+	assert.match(providerSource, /async verifyCaptcha\(_input: VerifyCommentCaptchaInput\): Promise<CommentCaptchaState> \{/);
+	assert.doesNotMatch(providerSource, /pending-token|PUBLIC_WP_API_BASE|PUBLIC_FANGYUAN_COMMENT_PROVIDER/);
 	assert.doesNotMatch(providerSource, /@\/config/);
 	assert.match(clientSource, /getCommentProvider\(commentConfig\)/);
+	assert.match(clientSource, /buildCommentTree\(threadPage\.comments\)/);
+	assert.match(clientSource, /async getThread\(input: GetCommentThreadInput\)/);
+	assert.match(clientSource, /async getCaptchaState\(\)/);
+	assert.match(clientSource, /async refreshCaptcha\(\)/);
+	assert.match(clientSource, /async verifyCaptcha\(input: VerifyCommentCaptchaInput\)/);
 	assert.match(clientSource, /async voteComment\(input: VoteCommentInput\)/);
 });
 
@@ -70,6 +96,11 @@ test("browser-side direct providers should own reads and writes without a FangYu
 	assert.match(artalkSource, /constructor\(config: ArtalkCommentProviderConfig\)/);
 	assert.match(artalkSource, /from "\.\.\/artalk\/comments"/);
 	assert.match(artalkSource, /createArtalkCommentService\(/);
+	assert.match(artalkCommentsSource, /sort_by/);
+	assert.match(artalkCommentsSource, /offset/);
+	assert.match(artalkCommentsSource, /limit/);
+	assert.match(artalkCommentsSource, /roots_count/);
+	assert.match(artalkCommentsSource, /totalCount/);
 	assert.match(artalkCommentsSource, /\/api\/v2\/comments/);
 	assert.match(artalkCommentsSource, /page_key/);
 	assert.match(artalkCommentsSource, /site_name/);

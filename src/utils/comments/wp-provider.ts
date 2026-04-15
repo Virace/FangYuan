@@ -1,5 +1,17 @@
 import type { CanonicalComment, CommentStatus } from "@/types/comment";
-import { CommentProvider, type CommentCapability, type CreateCommentInput } from "./provider";
+import {
+	CommentProvider,
+	type CommentCapability,
+	type CommentSortBy,
+	type CommentThreadPage,
+	type CreateCommentInput,
+	type GetCommentThreadInput,
+} from "./provider";
+import {
+	DEFAULT_COMMENT_ROOT_LIMIT,
+	DEFAULT_COMMENT_SORT_BY,
+	normalizeCommentOffset,
+} from "./options";
 
 export type WpCommentProviderConfig = {
 	apiBase: string;
@@ -100,6 +112,61 @@ function mapWpComment(postKey: string, comment: WpCommentRecord): CanonicalComme
 	};
 }
 
+function sortWpRoots(
+	comments: CanonicalComment[],
+	sortBy: CommentSortBy,
+): CanonicalComment[] {
+	return [...comments].sort((left, right) => {
+		const leftTime = new Date(left.createdAt).getTime();
+		const rightTime = new Date(right.createdAt).getTime();
+
+		return sortBy === "date_asc" ? leftTime - rightTime : rightTime - leftTime;
+	});
+}
+
+function paginateWpThread(
+	comments: CanonicalComment[],
+	limit: number,
+	offset: number,
+	sortBy: CommentSortBy,
+): CommentThreadPage {
+	const roots = sortWpRoots(
+		comments.filter((comment) => !comment.parentId),
+		sortBy,
+	);
+	const pagedRoots = roots.slice(offset, offset + limit);
+	const pagedRootIdSet = new Set(pagedRoots.map((comment) => comment.id));
+	const commentMap = new Map(comments.map((comment) => [comment.id, comment]));
+
+	function belongsToPagedRoot(comment: CanonicalComment): boolean {
+		let parentId = comment.parentId;
+
+		while (parentId) {
+			if (pagedRootIdSet.has(parentId)) {
+				return true;
+			}
+
+			parentId = commentMap.get(parentId)?.parentId ?? null;
+		}
+
+		return false;
+	}
+
+	return {
+		comments: [
+			...pagedRoots,
+			...comments.filter(
+				(comment) => comment.parentId !== null && belongsToPagedRoot(comment),
+			),
+		],
+		totalCount: comments.length,
+		rootsCount: roots.length,
+		limit,
+		offset,
+		sortBy,
+	};
+}
+
 export class WpCommentProvider extends CommentProvider {
 	readonly kind = "wp";
 	readonly config: WpCommentProviderConfig;
@@ -156,8 +223,8 @@ export class WpCommentProvider extends CommentProvider {
 		};
 	}
 
-	async getThread(postKey: string) {
-		const post = await this.resolvePost(postKey);
+	async getThread(input: GetCommentThreadInput) {
+		const post = await this.resolvePost(input.postKey);
 		const comments = await fetchWpJson<WpCommentRecord[]>(
 			this.buildEndpoint("/wp/v2/comments", {
 				post: post.id,
@@ -168,8 +235,19 @@ export class WpCommentProvider extends CommentProvider {
 					"id,post,parent,status,date,date_gmt,link,author_name,author_url,author_avatar_urls,content",
 			}),
 		);
+		const limit = Math.max(
+			1,
+			Math.floor(input.limit ?? DEFAULT_COMMENT_ROOT_LIMIT),
+		);
+		const offset = normalizeCommentOffset(input.offset);
+		const sortBy = input.sortBy ?? DEFAULT_COMMENT_SORT_BY;
 
-		return comments.map((comment) => mapWpComment(postKey, comment));
+		return paginateWpThread(
+			comments.map((comment) => mapWpComment(input.postKey, comment)),
+			limit,
+			offset,
+			sortBy,
+		);
 	}
 
 	async createComment(input: CreateCommentInput) {
