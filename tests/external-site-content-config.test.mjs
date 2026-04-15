@@ -159,14 +159,88 @@ test("runtime config should merge external overrides without leaking node-only l
 
 	assert.match(
 		astroConfigSource,
-		/import \{ loadExternalExpressiveCodeConfig \} from "\.\/src\/utils\/site-source\.ts";/,
+		/import \{[\s\S]*loadExternalExpressiveCodeConfig[\s\S]*\} from "\.\/src\/utils\/site-source\.ts";/,
 		"Astro config should use the node-side loader instead of the client-consumed runtime config module",
+	);
+
+	assert.match(
+		astroConfigSource,
+		/import \{[\s\S]*loadExternalArtalkDevProxyTarget[\s\S]*loadExternalExpressiveCodeConfig[\s\S]*\} from "\.\/src\/utils\/site-source\.ts";/,
+		"Astro config should also load the optional Artalk dev proxy target through the shared site-source helper",
+	);
+
+	assert.match(
+		astroConfigSource,
+		/const artalkDevProxyTarget = loadExternalArtalkDevProxyTarget\(\);/,
+		"Astro config should resolve the optional Artalk dev proxy target before building the Vite config",
+	);
+
+	assert.match(
+		astroConfigSource,
+		/artalkDevProxyTarget\s*\?\s*\{\s*"\/artalk-api": \{/,
+		"Astro config should wire a same-origin /artalk-api dev proxy when a local Artalk target is configured",
+	);
+
+	assert.match(
+		astroConfigSource,
+		/rewrite:\s*\(requestPath\)\s*=>\s*requestPath\.replace\(\s*\/\^\\\/artalk-api\/,\s*""\s*\)/,
+		"Artalk dev proxy should strip the local /artalk-api prefix before forwarding to Artalk",
 	);
 
 	assert.doesNotMatch(
 		astroConfigSource,
 		/import \{ expressiveCodeConfig \} from "\.\/src\/config\.ts";/,
 		"Astro config should stop importing expressiveCodeConfig from src/config.ts",
+	);
+});
+
+test("site-source should expose an optional literal Artalk dev proxy target loader for local same-origin testing", async () => {
+	const siteSource = await readRepoFile("src", "utils", "site-source.ts");
+
+	assert.match(
+		siteSource,
+		/export function loadExternalArtalkDevProxyTarget\(\): string \| null \{/,
+		"site-source should expose a loader for the optional Artalk dev proxy target",
+	);
+
+	assert.match(
+		siteSource,
+		/const targetMatch = source\.match\(/,
+		"site-source should parse site/config.ts for the optional Artalk dev proxy target",
+	);
+
+	assert.match(
+		siteSource,
+		/export const artalkDevProxyTarget = \["'`]\(\[\^"'`]\+\)\["'`];\?/,
+		"site-source should search for a literal artalkDevProxyTarget export in site/config.ts",
+	);
+});
+
+test("local site config should allow wiring page metrics through the same Artalk dev proxy surface", async () => {
+	const siteConfigSource = await readRepoFile("site", "config.ts");
+
+	assert.match(
+		siteConfigSource,
+		/import type \{ CommentConfig, PageMetricsConfig \} from "\.\.\/src\/types\/config";/,
+		"site/config.ts should type both comment and page metrics config exports",
+	);
+
+	assert.match(
+		siteConfigSource,
+		/import \{ ArtalkPageMetricsProvider \} from "\.\.\/src\/utils\/page-metrics\/artalk-provider";/,
+		"site/config.ts should import the dedicated Artalk page metrics adapter",
+	);
+
+	assert.match(
+		siteConfigSource,
+		/export const pageMetricsConfig: PageMetricsConfig = \{/,
+		"site/config.ts should expose a pageMetricsConfig override",
+	);
+
+	assert.match(
+		siteConfigSource,
+		/(const artalkBase = "\/artalk-api";|apiBase:\s*"\/artalk-api"|apiBase:\s*artalkBase)/,
+		"site/config.ts should point local Artalk verification through the same-origin /artalk-api proxy, either inline or via a shared constant",
 	);
 });
 

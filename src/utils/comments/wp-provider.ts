@@ -93,6 +93,9 @@ function mapWpComment(postKey: string, comment: WpCommentRecord): CanonicalComme
 		createdAt: comment.date_gmt || comment.date,
 		updatedAt: null,
 		replyCount: 0,
+		voteUp: 0,
+		voteDown: 0,
+		viewerVote: null,
 		children: [],
 	};
 }
@@ -148,6 +151,7 @@ export class WpCommentProvider extends CommentProvider {
 			enabled: commentsOpen,
 			provider: this.kind,
 			supportsReply: commentsOpen,
+			supportsVote: false,
 			message: commentsOpen ? undefined : "Comments are closed for this post.",
 		};
 	}

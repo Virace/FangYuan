@@ -22,6 +22,9 @@ export const th: Translation = {
 	[Key.commentsReply]: "Reply",
 	[Key.commentsReplying]: "Replying to this comment.",
 	[Key.commentsCancelReply]: "Cancel reply",
+	[Key.commentsEmoji]: "อีโมจิ",
+	[Key.commentsVoteUp]: "โหวตขึ้น",
+	[Key.commentsVoteDown]: "โหวตลง",
 	[Key.commentsModerationNotice]: "Awaiting moderation",
 	[Key.commentsFormName]: "Name",
 	[Key.commentsFormEmail]: "Email",
@@ -57,5 +60,6 @@ export const th: Translation = {
 
 	[Key.author]: "ผู้เขียน",
 	[Key.publishedAt]: "เผยแพร่เมื่อ",
+	[Key.pageViews]: "ยอดเข้าชม",
 	[Key.license]: "สัญญาอนุญาต",
 };

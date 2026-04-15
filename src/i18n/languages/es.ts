@@ -22,6 +22,9 @@ export const es: Translation = {
 	[Key.commentsReply]: "Reply",
 	[Key.commentsReplying]: "Replying to this comment.",
 	[Key.commentsCancelReply]: "Cancel reply",
+	[Key.commentsEmoji]: "Emoji",
+	[Key.commentsVoteUp]: "Voto positivo",
+	[Key.commentsVoteDown]: "Voto negativo",
 	[Key.commentsModerationNotice]: "Awaiting moderation",
 	[Key.commentsFormName]: "Name",
 	[Key.commentsFormEmail]: "Email",
@@ -57,5 +60,6 @@ export const es: Translation = {
 
 	[Key.author]: "Autor",
 	[Key.publishedAt]: "Publicado el",
+	[Key.pageViews]: "Vistas",
 	[Key.license]: "Licencia",
 };

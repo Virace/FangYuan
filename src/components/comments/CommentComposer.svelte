@@ -3,6 +3,7 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { createEventDispatcher } from "svelte";
 import { validateCommentForm } from "@utils/comments/validation";
+import EmojiPicker from "./EmojiPicker.svelte";
 
 type CommentComposerSubmitDetail = {
 	authorName: string;
@@ -24,6 +25,7 @@ let authorEmail = "";
 let authorWebsite = "";
 let content = "";
 let validationError = "";
+let showEmojiPicker = false;
 
 $: canSubmit =
 	!submitting &&
@@ -60,7 +62,13 @@ function handleSubmit() {
 
 function handleCancelReply() {
 	validationError = "";
+	showEmojiPicker = false;
 	dispatch("cancelReply");
+}
+
+function insertEmoji(event: CustomEvent<string>) {
+	content = `${content}${event.detail}`;
+	showEmojiPicker = false;
 }
 </script>
 
@@ -134,6 +142,17 @@ function handleCancelReply() {
 	</div>
 
 	<div class="mt-4 flex items-center justify-end">
+		<div class="mr-auto">
+			<button
+				type="button"
+				class="btn-plain rounded-lg px-3 h-9 text-sm"
+				aria-controls="comment-emojis-panel"
+				aria-expanded={showEmojiPicker}
+				on:click={() => (showEmojiPicker = !showEmojiPicker)}
+			>
+				{i18n(I18nKey.commentsEmoji)}
+			</button>
+		</div>
 		<button
 			class="btn-regular rounded-xl px-4 h-10 text-sm font-medium"
 			disabled={!canSubmit}
@@ -146,4 +165,10 @@ function handleCancelReply() {
 			{/if}
 		</button>
 	</div>
+
+	{#if showEmojiPicker}
+		<div id="comment-emojis-panel" class="mt-4 rounded-xl border border-line-divider p-3">
+			<EmojiPicker on:select={insertEmoji} />
+		</div>
+	{/if}
 </form>

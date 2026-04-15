@@ -22,6 +22,9 @@ export const id: Translation = {
 	[Key.commentsReply]: "Reply",
 	[Key.commentsReplying]: "Replying to this comment.",
 	[Key.commentsCancelReply]: "Cancel reply",
+	[Key.commentsEmoji]: "Emoji",
+	[Key.commentsVoteUp]: "Suka",
+	[Key.commentsVoteDown]: "Tidak suka",
 	[Key.commentsModerationNotice]: "Awaiting moderation",
 	[Key.commentsFormName]: "Name",
 	[Key.commentsFormEmail]: "Email",
@@ -57,5 +60,6 @@ export const id: Translation = {
 
 	[Key.author]: "Penulis",
 	[Key.publishedAt]: "Diterbitkan pada",
+	[Key.pageViews]: "Dilihat",
 	[Key.license]: "Lisensi",
 };

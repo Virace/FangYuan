@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { CanonicalComment } from "@/types/comment";
+import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getCommentClient } from "@utils/comments/client";
-import { insertPendingComment } from "@utils/comments/tree";
+import { insertPendingComment, replaceCommentInTree } from "@utils/comments/tree";
 import type { CommentCapability } from "@utils/comments/provider";
 import { onMount } from "svelte";
 import CommentComposer from "./CommentComposer.svelte";
@@ -34,6 +34,7 @@ let submitNotice = "";
 let activeReplyParentId: string | null = null;
 
 $: visibleComments = comments.slice(0, rootLimit);
+$: supportsVote = capability?.supportsVote ?? false;
 
 async function loadComments() {
 	loading = true;
@@ -71,6 +72,55 @@ function handleCancelReply() {
 	activeReplyParentId = null;
 }
 
+function getCommentById(
+	items: CanonicalComment[],
+	commentId: string,
+): CanonicalComment | null {
+	for (const comment of items) {
+		if (comment.id === commentId) {
+			return comment;
+		}
+
+		const childMatch = getCommentById(comment.children, commentId);
+		if (childMatch) {
+			return childMatch;
+		}
+	}
+
+	return null;
+}
+
+function buildOptimisticVoteComment(
+	comment: CanonicalComment,
+	choice: CommentVoteChoice,
+): CanonicalComment {
+	let voteUp = comment.voteUp;
+	let voteDown = comment.voteDown;
+
+	if (comment.viewerVote === "up" && choice !== "up") {
+		voteUp = Math.max(0, voteUp - 1);
+	}
+
+	if (comment.viewerVote === "down" && choice !== "down") {
+		voteDown = Math.max(0, voteDown - 1);
+	}
+
+	if (comment.viewerVote !== choice) {
+		if (choice === "up") {
+			voteUp += 1;
+		} else {
+			voteDown += 1;
+		}
+	}
+
+	return {
+		...comment,
+		voteUp,
+		voteDown,
+		viewerVote: choice,
+	};
+}
+
 async function handleSubmit(event: ComposerSubmitEvent) {
 	submitting = true;
 	submitError = "";
@@ -83,6 +133,7 @@ async function handleSubmit(event: ComposerSubmitEvent) {
 
 		const createdComment = await commentClient.createComment({
 			postKey,
+			postTitle,
 			parentId: activeReplyParentId,
 			author: {
 				name: event.detail.authorName,
@@ -103,6 +154,33 @@ async function handleSubmit(event: ComposerSubmitEvent) {
 			error instanceof Error ? error.message : i18n(I18nKey.commentsLoadFailed);
 	} finally {
 		submitting = false;
+	}
+}
+
+async function handleVote(commentId: string, choice: CommentVoteChoice) {
+	if (!commentClient || !capability?.supportsVote) {
+		return;
+	}
+
+	const previousComment = getCommentById(comments, commentId);
+	if (!previousComment) {
+		return;
+	}
+
+	submitError = "";
+	submitNotice = "";
+	comments = replaceCommentInTree(
+		comments,
+		buildOptimisticVoteComment(previousComment, choice),
+	);
+
+	try {
+		const updatedComment = await commentClient.voteComment({ commentId, choice });
+		comments = replaceCommentInTree(comments, updatedComment);
+	} catch (error) {
+		comments = replaceCommentInTree(comments, previousComment);
+		submitError =
+			error instanceof Error ? error.message : i18n(I18nKey.commentsLoadFailed);
 	}
 }
 
@@ -149,6 +227,8 @@ onMount(() => {
 				comments={visibleComments}
 				activeReplyParentId={activeReplyParentId}
 				maxDepth={maxDepth}
+				supportsVote={supportsVote}
+				onVote={handleVote}
 				on:reply={handleReply}
 			/>
 		{/if}

@@ -27,6 +27,9 @@ function createMockComment(
 		status: "local_pending",
 		createdAt: new Date().toISOString(),
 		replyCount: 0,
+		voteUp: 0,
+		voteDown: 0,
+		viewerVote: null,
 		children: [],
 	};
 }
@@ -48,6 +51,9 @@ function createMockThread(postKey: string): CanonicalComment[] {
 			status: "approved",
 			createdAt: "2026-04-14T10:00:00.000Z",
 			replyCount: 0,
+			voteUp: 0,
+			voteDown: 0,
+			viewerVote: null,
 			children: [],
 		},
 		{
@@ -64,6 +70,9 @@ function createMockThread(postKey: string): CanonicalComment[] {
 			status: "approved",
 			createdAt: "2026-04-14T10:05:00.000Z",
 			replyCount: 0,
+			voteUp: 0,
+			voteDown: 0,
+			viewerVote: null,
 			children: [],
 		},
 		{
@@ -80,6 +89,9 @@ function createMockThread(postKey: string): CanonicalComment[] {
 			status: "approved",
 			createdAt: "2026-04-14T10:06:00.000Z",
 			replyCount: 0,
+			voteUp: 0,
+			voteDown: 0,
+			viewerVote: null,
 			children: [],
 		},
 		{
@@ -96,6 +108,9 @@ function createMockThread(postKey: string): CanonicalComment[] {
 			status: "approved",
 			createdAt: "2026-04-14T10:10:00.000Z",
 			replyCount: 0,
+			voteUp: 0,
+			voteDown: 0,
+			viewerVote: null,
 			children: [],
 		},
 		{
@@ -112,6 +127,9 @@ function createMockThread(postKey: string): CanonicalComment[] {
 			status: "approved",
 			createdAt: "2026-04-14T10:20:00.000Z",
 			replyCount: 0,
+			voteUp: 0,
+			voteDown: 0,
+			viewerVote: null,
 			children: [],
 		},
 		{
@@ -128,6 +146,9 @@ function createMockThread(postKey: string): CanonicalComment[] {
 			status: "approved",
 			createdAt: "2026-04-14T10:30:00.000Z",
 			replyCount: 0,
+			voteUp: 0,
+			voteDown: 0,
+			viewerVote: null,
 			children: [],
 		},
 		{
@@ -144,6 +165,9 @@ function createMockThread(postKey: string): CanonicalComment[] {
 			status: "approved",
 			createdAt: "2026-04-14T10:40:00.000Z",
 			replyCount: 0,
+			voteUp: 0,
+			voteDown: 0,
+			viewerVote: null,
 			children: [],
 		},
 		{
@@ -160,6 +184,9 @@ function createMockThread(postKey: string): CanonicalComment[] {
 			status: "approved",
 			createdAt: "2026-04-14T10:50:00.000Z",
 			replyCount: 0,
+			voteUp: 0,
+			voteDown: 0,
+			viewerVote: null,
 			children: [],
 		},
 	];
@@ -173,6 +200,7 @@ export class MockCommentProvider extends CommentProvider {
 			enabled: true,
 			provider: this.kind,
 			supportsReply: true,
+			supportsVote: false,
 		} satisfies CommentCapability;
 	}
 

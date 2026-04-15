@@ -33,6 +33,8 @@ test("comment provider layer should remove FangYuan server gateway and stay stat
 	assert.equal(apiPendingExists, false);
 	assert.match(providerSource, /export abstract class CommentProvider \{/);
 	assert.match(providerSource, /readonly kind: string/);
+	assert.match(providerSource, /supportsVote:\s*boolean;/);
+	assert.match(providerSource, /export type VoteCommentInput = \{/);
 	assert.match(
 		providerSource,
 		/export function getCommentProvider\(config: \{[\s\S]*enable: boolean;[\s\S]*provider\?: CommentProvider \| null[\s\S]*\): CommentProvider \| null \{/,
@@ -40,13 +42,16 @@ test("comment provider layer should remove FangYuan server gateway and stay stat
 	assert.doesNotMatch(providerSource, /challenge|pending-token|PUBLIC_WP_API_BASE|PUBLIC_FANGYUAN_COMMENT_PROVIDER/);
 	assert.doesNotMatch(providerSource, /@\/config/);
 	assert.match(clientSource, /getCommentProvider\(commentConfig\)/);
+	assert.match(clientSource, /async voteComment\(input: VoteCommentInput\)/);
 });
 
-test("WordPress-compatible direct provider should own reads and writes from the browser", async () => {
-	const [providerSource, mockSource, wpSource] = await Promise.all([
+test("browser-side direct providers should own reads and writes without a FangYuan gateway", async () => {
+	const [providerSource, mockSource, wpSource, artalkSource, artalkCommentsSource] = await Promise.all([
 		readFile(path.join(repoRoot, "src", "utils", "comments", "provider.ts"), "utf8"),
 		readFile(path.join(repoRoot, "src", "utils", "comments", "mock-provider.ts"), "utf8"),
 		readFile(path.join(repoRoot, "src", "utils", "comments", "wp-provider.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "utils", "comments", "artalk-provider.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "utils", "artalk", "comments.ts"), "utf8"),
 	]);
 
 	assert.match(providerSource, /abstract getCapability\(postKey: string\)/);
@@ -61,4 +66,15 @@ test("WordPress-compatible direct provider should own reads and writes from the 
 	assert.match(wpSource, /author_name/);
 	assert.match(wpSource, /author_email/);
 	assert.match(wpSource, /parent/);
+	assert.match(artalkSource, /export class ArtalkCommentProvider extends CommentProvider \{/);
+	assert.match(artalkSource, /constructor\(config: ArtalkCommentProviderConfig\)/);
+	assert.match(artalkSource, /from "\.\.\/artalk\/comments"/);
+	assert.match(artalkSource, /createArtalkCommentService\(/);
+	assert.match(artalkCommentsSource, /\/api\/v2\/comments/);
+	assert.match(artalkCommentsSource, /page_key/);
+	assert.match(artalkCommentsSource, /site_name/);
+	assert.match(artalkCommentsSource, /page_title/);
+	assert.match(artalkCommentsSource, /email_encrypted/);
+	assert.match(artalkCommentsSource, /is_pending/);
+	assert.match(artalkCommentsSource, /is_allow_reply/);
 });

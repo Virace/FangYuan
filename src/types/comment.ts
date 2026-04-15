@@ -13,6 +13,8 @@ export type CommentAuthor = {
 	avatarUrl?: string | null;
 };
 
+export type CommentVoteChoice = "up" | "down";
+
 export type CanonicalComment = {
 	id: string;
 	postId: string;
@@ -26,6 +28,9 @@ export type CanonicalComment = {
 	createdAt: string;
 	updatedAt?: string | null;
 	replyCount: number;
+	voteUp: number;
+	voteDown: number;
+	viewerVote?: CommentVoteChoice | null;
 	children: CanonicalComment[];
 };
 

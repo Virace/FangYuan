@@ -27,15 +27,23 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /CommentComposer/);
 	assert.match(commentSectionSource, /CommentList/);
 	assert.match(commentSectionSource, /slice\(0,\s*rootLimit\)/);
+	assert.match(commentSectionSource, /postTitle,/);
+	assert.match(commentSectionSource, /voteComment\(/);
+	assert.match(commentSectionSource, /supportsVote/);
 	assert.match(commentSectionSource, /CommentList[\s\S]*CommentComposer/);
 	assert.match(commentSectionSource, /card-base/);
 	assert.match(commentComposerSource, /authorName|authorEmail|content/);
+	assert.match(commentComposerSource, /EmojiPicker/);
+	assert.match(commentComposerSource, /comment-emojis/);
+	assert.match(commentComposerSource, /commentsEmoji/);
 	assert.match(commentComposerSource, /validateCommentForm\(/);
 	assert.match(commentComposerSource, /validationError = i18n\(validationResult\)/);
 	assert.match(commentListSource, /CommentItem/);
 	assert.match(commentListSource, /maxDepth/);
 	assert.match(commentItemSource, /reply/);
 	assert.match(commentItemSource, /depth < maxDepth/);
+	assert.match(commentItemSource, /supportsVote/);
+	assert.match(commentItemSource, /voteUp|voteDown/);
 	assert.match(commentItemSource, /comment-body/);
 	assert.match(commentItemSource, /comment-root/);
 	assert.match(commentItemSource, /comment-nested/);
@@ -61,6 +69,9 @@ test("comment UI should expose dedicated translation keys", async () => {
 		"commentsSubmitting",
 		"commentsReply",
 		"commentsCancelReply",
+		"commentsEmoji",
+		"commentsVoteUp",
+		"commentsVoteDown",
 		"commentsFormName",
 		"commentsFormEmail",
 		"commentsFormWebsite",

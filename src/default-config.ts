@@ -4,6 +4,7 @@ import type {
 	FooterConfig,
 	LicenseConfig,
 	NavBarConfig,
+	PageMetricsConfig,
 	ProfileConfig,
 	SiteConfig,
 } from "./types/config";
@@ -101,4 +102,9 @@ export const defaultCommentConfig: CommentConfig = {
 	provider: mockCommentProvider,
 	rootLimit: DEFAULT_COMMENT_ROOT_LIMIT,
 	maxDepth: DEFAULT_COMMENT_MAX_DEPTH,
+};
+
+export const defaultPageMetricsConfig: PageMetricsConfig = {
+	enable: false,
+	provider: null,
 };

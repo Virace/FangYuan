@@ -22,6 +22,9 @@ export const ja: Translation = {
 	[Key.commentsReply]: "Reply",
 	[Key.commentsReplying]: "Replying to this comment.",
 	[Key.commentsCancelReply]: "Cancel reply",
+	[Key.commentsEmoji]: "絵文字",
+	[Key.commentsVoteUp]: "高評価",
+	[Key.commentsVoteDown]: "低評価",
 	[Key.commentsModerationNotice]: "Awaiting moderation",
 	[Key.commentsFormName]: "Name",
 	[Key.commentsFormEmail]: "Email",
@@ -57,5 +60,6 @@ export const ja: Translation = {
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "公開日",
+	[Key.pageViews]: "閲覧数",
 	[Key.license]: "ライセンス",
 };

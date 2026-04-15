@@ -31,7 +31,11 @@ test("comment domain should declare canonical types and pending token payload", 
 		source,
 		/export type CommentStatus =[\s\S]*"approved"[\s\S]*"pending_remote"[\s\S]*"local_pending"/,
 	);
+	assert.match(source, /export type CommentVoteChoice = "up" \| "down";/);
 	assert.match(source, /export type CanonicalComment = \{/);
+	assert.match(source, /voteUp:\s*number;/);
+	assert.match(source, /voteDown:\s*number;/);
+	assert.match(source, /viewerVote\?:\s*CommentVoteChoice \| null;/);
 	assert.match(source, /children:\s*CanonicalComment\[\];/);
 	assert.match(source, /export type PendingEditTokenPayload = \{/);
 });
@@ -45,6 +49,7 @@ test("comment helpers should expose postKey, tree, and config-driven comment set
 		defaultConfigSource,
 		typesConfigSource,
 		optionsSource,
+		providerSource,
 	] =
 		await Promise.all([
 			readFile(path.join(repoRoot, "src", "utils", "comments", "post-key.ts"), "utf8"),
@@ -54,22 +59,32 @@ test("comment helpers should expose postKey, tree, and config-driven comment set
 			readFile(path.join(repoRoot, "src", "default-config.ts"), "utf8"),
 			readFile(path.join(repoRoot, "src", "types", "config.ts"), "utf8"),
 			readFile(path.join(repoRoot, "src", "utils", "comments", "options.ts"), "utf8"),
+			readFile(path.join(repoRoot, "src", "utils", "comments", "provider.ts"), "utf8"),
 		]);
 
 	assert.match(postKeySource, /export function getPostKeyFromEntry\(/);
 	assert.match(treeSource, /export function buildCommentTree\(/);
 	assert.match(treeSource, /export function insertPendingComment\(/);
 	assert.equal(envExists, false, "comment system should no longer depend on src/env.d.ts");
+	assert.match(providerSource, /postTitle\?: string;/);
+	assert.match(providerSource, /supportsVote:\s*boolean;/);
+	assert.match(providerSource, /export type VoteCommentInput = \{/);
+	assert.match(providerSource, /abstract createComment\(input: CreateCommentInput\)/);
+	assert.match(providerSource, /async voteComment\(_input: VoteCommentInput\): Promise<CanonicalComment>/);
 	assert.match(typesConfigSource, /export type CommentConfig = \{/);
 	assert.match(typesConfigSource, /provider\?: CommentProvider \| null;/);
 	assert.match(typesConfigSource, /rootLimit\?: number;/);
 	assert.match(typesConfigSource, /maxDepth\?: number;/);
+	assert.match(typesConfigSource, /export type PageMetricsConfig = \{/);
+	assert.match(typesConfigSource, /provider\?: PageMetricsProvider \| null;/);
 	assert.match(defaultConfigSource, /export const defaultCommentConfig: CommentConfig = \{/);
 	assert.match(defaultConfigSource, /enable: true/);
 	assert.match(defaultConfigSource, /provider: mockCommentProvider/);
 	assert.match(defaultConfigSource, /rootLimit: DEFAULT_COMMENT_ROOT_LIMIT/);
 	assert.match(defaultConfigSource, /maxDepth: DEFAULT_COMMENT_MAX_DEPTH/);
+	assert.match(defaultConfigSource, /export const defaultPageMetricsConfig: PageMetricsConfig = \{/);
 	assert.match(appConfigSource, /export const commentConfig: CommentConfig =/);
+	assert.match(appConfigSource, /export const pageMetricsConfig: PageMetricsConfig =/);
 	assert.match(appConfigSource, /mergeCommentConfig\(/);
 	assert.match(optionsSource, /export const DEFAULT_COMMENT_ROOT_LIMIT = 5;/);
 	assert.match(optionsSource, /export const DEFAULT_COMMENT_MAX_DEPTH = 3;/);

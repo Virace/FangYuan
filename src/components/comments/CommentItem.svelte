@@ -10,6 +10,8 @@ export let comment: CanonicalComment;
 export let activeReplyParentId: string | null = null;
 export let depth = 1;
 export let maxDepth = 3;
+export let supportsVote = false;
+export let onVote: ((commentId: string, choice: "up" | "down") => void) | null = null;
 
 function formatCommentDate(value: string): string {
 	const date = new Date(value);
@@ -58,8 +60,8 @@ function triggerReply() {
 				{@html comment.content.html}
 			</div>
 
-			{#if depth < maxDepth}
-				<div class="mt-3 flex items-center gap-3">
+			{#if depth < maxDepth || supportsVote}
+				<div class="mt-3 flex flex-wrap items-center gap-2">
 					<button
 						class="btn-plain rounded-lg px-3 h-8 text-sm"
 						type="button"
@@ -69,6 +71,27 @@ function triggerReply() {
 							? i18n(I18nKey.commentsCancelReply)
 							: i18n(I18nKey.commentsReply)}
 					</button>
+
+					{#if supportsVote}
+						<button
+							type="button"
+							class={`btn-plain rounded-lg px-3 h-8 text-sm ${comment.viewerVote === "up" ? "bg-primary/10 text-primary" : ""}`}
+							aria-label={i18n(I18nKey.commentsVoteUp)}
+							on:click={() => onVote?.(comment.id, "up")}
+						>
+							<span aria-hidden="true">👍</span>
+							<span class="ml-1">{comment.voteUp}</span>
+						</button>
+						<button
+							type="button"
+							class={`btn-plain rounded-lg px-3 h-8 text-sm ${comment.viewerVote === "down" ? "bg-primary/10 text-primary" : ""}`}
+							aria-label={i18n(I18nKey.commentsVoteDown)}
+							on:click={() => onVote?.(comment.id, "down")}
+						>
+							<span aria-hidden="true">👎</span>
+							<span class="ml-1">{comment.voteDown}</span>
+						</button>
+					{/if}
 				</div>
 			{/if}
 
@@ -80,6 +103,8 @@ function triggerReply() {
 							activeReplyParentId={activeReplyParentId}
 							depth={depth + 1}
 							maxDepth={maxDepth}
+							supportsVote={supportsVote}
+							onVote={onVote}
 							on:reply
 						/>
 					{/each}

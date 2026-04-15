@@ -15,6 +15,7 @@
     "test:e2e:update": "pnpm build && playwright test tests/e2e/visual.spec.ts --update-snapshots",
     "type-check": "tsc --noEmit --isolatedDeclarations",
     "new-post": "node scripts/new-post.js",
+    "generate-pagination-test-posts": "node scripts/generate-pagination-test-posts.js",
     "format": "biome check --write ./src",
     "lint": "biome check ./src",
     "preinstall": "npx only-allow pnpm"

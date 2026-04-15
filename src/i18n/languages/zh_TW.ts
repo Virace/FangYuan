@@ -22,6 +22,9 @@ export const zh_TW: Translation = {
 	[Key.commentsReply]: "回覆",
 	[Key.commentsReplying]: "正在回覆這則留言。",
 	[Key.commentsCancelReply]: "取消回覆",
+	[Key.commentsEmoji]: "表情",
+	[Key.commentsVoteUp]: "按讚",
+	[Key.commentsVoteDown]: "倒讚",
 	[Key.commentsModerationNotice]: "等待審核",
 	[Key.commentsFormName]: "暱稱",
 	[Key.commentsFormEmail]: "電子郵件",
@@ -56,5 +59,6 @@ export const zh_TW: Translation = {
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "發佈於",
+	[Key.pageViews]: "瀏覽量",
 	[Key.license]: "許可協議",
 };

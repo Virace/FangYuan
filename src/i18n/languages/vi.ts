@@ -22,6 +22,9 @@ export const vi: Translation = {
 	[Key.commentsReply]: "Reply",
 	[Key.commentsReplying]: "Replying to this comment.",
 	[Key.commentsCancelReply]: "Cancel reply",
+	[Key.commentsEmoji]: "Emoji",
+	[Key.commentsVoteUp]: "Thích",
+	[Key.commentsVoteDown]: "Không thích",
 	[Key.commentsModerationNotice]: "Awaiting moderation",
 	[Key.commentsFormName]: "Name",
 	[Key.commentsFormEmail]: "Email",
@@ -57,5 +60,6 @@ export const vi: Translation = {
 
 	[Key.author]: "Tác giả",
 	[Key.publishedAt]: "Đăng vào lúc",
+	[Key.pageViews]: "Lượt xem",
 	[Key.license]: "Giấy phép bản quyền",
 };

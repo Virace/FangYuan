@@ -1,7 +1,7 @@
 import { commentConfig } from "../../config";
 import { buildCommentTree } from "./tree";
 import { getCommentProvider } from "./provider";
-import type { CreateCommentInput } from "./provider";
+import type { CreateCommentInput, VoteCommentInput } from "./provider";
 
 export function getCommentClient() {
 	const provider = getCommentProvider(commentConfig);
@@ -19,6 +19,9 @@ export function getCommentClient() {
 		},
 		async createComment(input: CreateCommentInput) {
 			return provider.createComment(input);
+		},
+		async voteComment(input: VoteCommentInput) {
+			return provider.voteComment(input);
 		},
 	};
 }

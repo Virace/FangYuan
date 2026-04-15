@@ -22,6 +22,9 @@ export const tr: Translation = {
 	[Key.commentsReply]: "Reply",
 	[Key.commentsReplying]: "Replying to this comment.",
 	[Key.commentsCancelReply]: "Cancel reply",
+	[Key.commentsEmoji]: "Emoji",
+	[Key.commentsVoteUp]: "Olumlu oy",
+	[Key.commentsVoteDown]: "Olumsuz oy",
 	[Key.commentsModerationNotice]: "Awaiting moderation",
 	[Key.commentsFormName]: "Name",
 	[Key.commentsFormEmail]: "Email",
@@ -57,5 +60,6 @@ export const tr: Translation = {
 
 	[Key.author]: "Yazar",
 	[Key.publishedAt]: "Yayınlanma:",
+	[Key.pageViews]: "Görüntülenme",
 	[Key.license]: "Lisans",
 };

@@ -22,6 +22,9 @@ export const ko: Translation = {
 	[Key.commentsReply]: "Reply",
 	[Key.commentsReplying]: "Replying to this comment.",
 	[Key.commentsCancelReply]: "Cancel reply",
+	[Key.commentsEmoji]: "이모지",
+	[Key.commentsVoteUp]: "추천",
+	[Key.commentsVoteDown]: "비추천",
 	[Key.commentsModerationNotice]: "Awaiting moderation",
 	[Key.commentsFormName]: "Name",
 	[Key.commentsFormEmail]: "Email",
@@ -57,5 +60,6 @@ export const ko: Translation = {
 
 	[Key.author]: "저자",
 	[Key.publishedAt]: "게시일",
+	[Key.pageViews]: "조회수",
 	[Key.license]: "라이선스",
 };

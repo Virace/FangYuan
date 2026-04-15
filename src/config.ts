@@ -4,6 +4,7 @@ import type {
 	FooterConfig,
 	LicenseConfig,
 	NavBarConfig,
+	PageMetricsConfig,
 	ProfileConfig,
 	SiteConfig,
 } from "./types/config";
@@ -13,6 +14,7 @@ import {
 	defaultFooterConfig,
 	defaultLicenseConfig,
 	defaultNavBarConfig,
+	defaultPageMetricsConfig,
 	defaultProfileConfig,
 	defaultSiteConfig,
 } from "./default-config";
@@ -42,6 +44,7 @@ type ExternalSiteConfigModule = {
 	licenseConfig?: Partial<LicenseConfig>;
 	expressiveCodeConfig?: Partial<ExpressiveCodeConfig>;
 	commentConfig?: CommentConfig;
+	pageMetricsConfig?: PageMetricsConfig;
 };
 
 const externalSiteConfigModules = import.meta.glob<ExternalSiteConfigModule>(
@@ -129,6 +132,21 @@ function mergeCommentConfig(
 	});
 }
 
+function mergePageMetricsConfig(
+	defaultConfig: PageMetricsConfig,
+	override?: PageMetricsConfig,
+): PageMetricsConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		provider: override.provider ?? defaultConfig.provider,
+	};
+}
+
 export const siteConfig: SiteConfig = mergeSiteConfig(
 	defaultSiteConfig,
 	externalSiteConfig?.siteConfig,
@@ -162,6 +180,11 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 export const commentConfig: CommentConfig = mergeCommentConfig(
 	defaultCommentConfig,
 	externalSiteConfig?.commentConfig,
+);
+
+export const pageMetricsConfig: PageMetricsConfig = mergePageMetricsConfig(
+	defaultPageMetricsConfig,
+	externalSiteConfig?.pageMetricsConfig,
 );
 
 export const configImageBaseRoots = {

@@ -53,3 +53,28 @@ export function insertPendingComment(
 		};
 	});
 }
+
+export function replaceCommentInTree(
+	tree: CanonicalComment[],
+	updatedComment: CanonicalComment,
+): CanonicalComment[] {
+	return tree.map((comment) => {
+		if (comment.id === updatedComment.id) {
+			return {
+				...comment,
+				...updatedComment,
+				replyCount: comment.children.length,
+				children: comment.children,
+			};
+		}
+
+		if (comment.children.length === 0) {
+			return comment;
+		}
+
+		return {
+			...comment,
+			children: replaceCommentInTree(comment.children, updatedComment),
+		};
+	});
+}

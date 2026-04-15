@@ -23,12 +23,16 @@ import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
-import { loadExternalExpressiveCodeConfig } from "./src/utils/site-source.ts";
+import {
+	loadExternalArtalkDevProxyTarget,
+	loadExternalExpressiveCodeConfig,
+} from "./src/utils/site-source.ts";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
+const artalkDevProxyTarget = loadExternalArtalkDevProxyTarget();
 const enableGlobalImageCodecDefaults = false;
 const globalImageServiceConfig = {
 	jpeg: { mozjpeg: true },
@@ -36,6 +40,15 @@ const globalImageServiceConfig = {
 	avif: { effort: 4, chromaSubsampling: "4:2:0" },
 	png: { compressionLevel: 9 },
 };
+const artalkDevProxy = artalkDevProxyTarget
+	? {
+			"/artalk-api": {
+				target: artalkDevProxyTarget,
+				changeOrigin: true,
+				rewrite: (requestPath) => requestPath.replace(/^\/artalk-api/, ""),
+			},
+		}
+	: undefined;
 
 // https://astro.build/config
 export default defineConfig({
@@ -193,6 +206,16 @@ export default defineConfig({
 	},
 	vite: {
 		plugins: [tailwindcss()],
+		...(artalkDevProxy
+			? {
+					server: {
+						proxy: artalkDevProxy,
+					},
+					preview: {
+						proxy: artalkDevProxy,
+					},
+				}
+			: {}),
 		build: {
 			rollupOptions: {
 				onwarn(warning, warn) {

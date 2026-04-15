@@ -22,6 +22,9 @@ export const zh_CN: Translation = {
 	[Key.commentsReply]: "回复",
 	[Key.commentsReplying]: "正在回复这条评论。",
 	[Key.commentsCancelReply]: "取消回复",
+	[Key.commentsEmoji]: "表情",
+	[Key.commentsVoteUp]: "点赞",
+	[Key.commentsVoteDown]: "点踩",
 	[Key.commentsModerationNotice]: "等待审核",
 	[Key.commentsFormName]: "昵称",
 	[Key.commentsFormEmail]: "邮箱",
@@ -56,5 +59,6 @@ export const zh_CN: Translation = {
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "发布于",
+	[Key.pageViews]: "浏览量",
 	[Key.license]: "许可协议",
 };

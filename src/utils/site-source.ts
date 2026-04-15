@@ -61,3 +61,16 @@ export function loadExternalExpressiveCodeConfig():
 		theme: themeMatch[1],
 	};
 }
+
+export function loadExternalArtalkDevProxyTarget(): string | null {
+	if (!existsSync(externalConfigPath)) {
+		return null;
+	}
+
+	const source = readFileSync(externalConfigPath, "utf8");
+	const targetMatch = source.match(
+		/export const artalkDevProxyTarget = ["'`]([^"'`]+)["'`];?/,
+	);
+
+	return targetMatch?.[1] ?? null;
+}

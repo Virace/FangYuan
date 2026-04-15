@@ -1,6 +1,7 @@
 import type { ImageMetadata } from "astro";
 import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
 import type { CommentProvider } from "@utils/comments/provider";
+import type { PageMetricsProvider } from "@utils/page-metrics/provider";
 
 export type SiteConfig = {
 	title: string;
@@ -115,4 +116,9 @@ export type CommentConfig = {
 	provider?: CommentProvider | null;
 	rootLimit?: number;
 	maxDepth?: number;
+};
+
+export type PageMetricsConfig = {
+	enable: boolean;
+	provider?: PageMetricsProvider | null;
 };

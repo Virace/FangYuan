@@ -19,6 +19,9 @@ enum I18nKey {
 	commentsReply = "commentsReply",
 	commentsReplying = "commentsReplying",
 	commentsCancelReply = "commentsCancelReply",
+	commentsEmoji = "commentsEmoji",
+	commentsVoteUp = "commentsVoteUp",
+	commentsVoteDown = "commentsVoteDown",
 	commentsModerationNotice = "commentsModerationNotice",
 	commentsFormName = "commentsFormName",
 	commentsFormEmail = "commentsFormEmail",
@@ -53,6 +56,7 @@ enum I18nKey {
 
 	author = "author",
 	publishedAt = "publishedAt",
+	pageViews = "pageViews",
 	license = "license",
 }
 
