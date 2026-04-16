@@ -268,6 +268,12 @@ export class MockCommentProvider extends CommentProvider {
 			provider: this.kind,
 			supportsReply: true,
 			supportsVote: false,
+			supportsCaptcha: false,
+			persistenceMode: "preview_only",
+			identityModel: "preview",
+			requiredAuthorFields: ["name", "email"],
+			optionalAuthorFields: ["website"],
+			message: "Preview provider: new comments are not persisted after reload.",
 		} satisfies CommentCapability;
 	}
 

@@ -126,10 +126,15 @@ function buildArtalkCapability(
 		provider: "artalk",
 		supportsReply: !adminOnly,
 		supportsVote: true,
+		supportsCaptcha: true,
+		persistenceMode: "persistent",
+		identityModel: "page_key",
+		requiredAuthorFields: ["name", "email"],
+		optionalAuthorFields: ["website"],
 		message: adminOnly
 			? "Comments are only available to administrators for this page."
 			: undefined,
-	};
+	} satisfies CommentCapability;
 }
 
 function mapArtalkComment(

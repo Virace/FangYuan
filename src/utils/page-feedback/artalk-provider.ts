@@ -5,6 +5,7 @@ import {
 import {
 	type GetPageFeedbackInput,
 	type LikePageInput,
+	type PageFeedbackCapability,
 	PageFeedbackProvider,
 	type PageFeedbackState,
 } from "./provider";
@@ -18,6 +19,12 @@ export class ArtalkPageFeedbackProvider extends PageFeedbackProvider {
 	constructor(config: ArtalkPageFeedbackServiceConfig) {
 		super();
 		this.artalkPageFeedbackService = createArtalkPageFeedbackService(config);
+	}
+
+	async getCapability(
+		_input: GetPageFeedbackInput,
+	): Promise<PageFeedbackCapability> {
+		return { supportsLike: true };
 	}
 
 	async getState(input: GetPageFeedbackInput): Promise<PageFeedbackState> {

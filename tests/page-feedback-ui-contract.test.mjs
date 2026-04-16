@@ -12,10 +12,11 @@ function readRepoFile(...segments) {
 }
 
 test("page feedback UI should render a one-time like button and a dialog-based reward modal", async () => {
-	const [postFeedbackSource, rewardModalSource, mainCssSource] = await Promise.all([
+	const [postFeedbackSource, rewardModalSource, mainCssSource, clientSource] = await Promise.all([
 		readRepoFile("src", "components", "page-feedback", "PostFeedback.svelte"),
 		readRepoFile("src", "components", "page-feedback", "RewardModal.svelte"),
 		readRepoFile("src", "styles", "main.css"),
+		readRepoFile("src", "utils", "page-feedback", "client.ts"),
 	]);
 
 	assert.match(postFeedbackSource, /getPageFeedbackClient\(\)/);
@@ -25,6 +26,8 @@ test("page feedback UI should render a one-time like button and a dialog-based r
 	assert.match(postFeedbackSource, /pageFeedbackLike|pageFeedbackLiked/);
 	assert.match(postFeedbackSource, /pageFeedbackReward/);
 	assert.match(postFeedbackSource, /liked = false/);
+	assert.match(clientSource, /async getCapability\(input: GetPageFeedbackInput\)/);
+	assert.match(clientSource, /provider\.getCapability\(input\)/);
 
 	assert.match(rewardModalSource, /<dialog/);
 	assert.match(rewardModalSource, /showModal\(\)/);

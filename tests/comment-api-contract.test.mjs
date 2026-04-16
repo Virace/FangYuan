@@ -117,4 +117,6 @@ test("browser-side direct providers should own reads and writes without a FangYu
 	assert.match(artalkCommentsSource, /email_encrypted/);
 	assert.match(artalkCommentsSource, /is_pending/);
 	assert.match(artalkCommentsSource, /is_allow_reply/);
+	assert.match(artalkCommentsSource, /supportsCaptcha:\s*true/);
+	assert.match(artalkCommentsSource, /identityModel:\s*"page_key"/);
 });

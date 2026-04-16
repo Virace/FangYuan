@@ -10,6 +10,9 @@ export function getPageFeedbackClient() {
 	}
 
 	return {
+		async getCapability(input: GetPageFeedbackInput) {
+			return provider.getCapability(input);
+		},
 		async getState(input: GetPageFeedbackInput) {
 			return provider.getState(input);
 		},

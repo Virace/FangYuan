@@ -226,8 +226,13 @@ export class WpCommentProvider extends CommentProvider {
 			provider: this.kind,
 			supportsReply: commentsOpen,
 			supportsVote: false,
+			supportsCaptcha: false,
+			persistenceMode: "persistent",
+			identityModel: "mirrored_post",
+			requiredAuthorFields: ["name", "email"],
+			optionalAuthorFields: ["website"],
 			message: commentsOpen ? undefined : "Comments are closed for this post.",
-		};
+		} satisfies CommentCapability;
 	}
 
 	async getThread(input: GetCommentThreadInput) {
