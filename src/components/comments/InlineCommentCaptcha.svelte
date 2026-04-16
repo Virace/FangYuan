@@ -106,15 +106,20 @@ async function handleVerifyCaptcha() {
 	{#if captchaState && !captchaState.verified}
 		{#if captchaChallenge?.kind === "image" && captchaChallenge.imageData}
 			<div class="mt-2 flex flex-wrap items-center gap-2">
-				<!-- Temporary workaround: the upstream captcha image itself acts as the refresh trigger until a more accessible captcha solution is integrated. -->
-				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interaction -->
-				<img
-					alt={i18n(I18nKey.commentsCaptcha)}
-					class="h-10 w-auto cursor-pointer rounded-md border border-line-divider bg-white/80 object-contain px-2 py-1"
-					src={captchaChallenge.imageData}
+				<button
+					type="button"
+					class="rounded-md border border-line-divider bg-white/80 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-60"
+					aria-label={i18n(I18nKey.commentsCaptchaRefresh)}
+					disabled={captchaBusy}
 					title={i18n(I18nKey.commentsCaptchaRefresh)}
 					on:click={handleRefreshCaptcha}
-				/>
+				>
+					<img
+						alt=""
+						class="block h-10 w-auto object-contain"
+						src={captchaChallenge.imageData}
+					/>
+				</button>
 				<input
 					bind:value={captchaValue}
 					class="min-w-24 flex-1 rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-sm text-90 outline-none md:max-w-36"
