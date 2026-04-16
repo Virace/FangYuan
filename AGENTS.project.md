@@ -50,6 +50,8 @@
   - JavaScript / TypeScript 默认双引号
   - 开启 organize imports
 - `format` 和 `lint` 脚本当前都只针对 `src/`，因此仓库根配置文件与 `scripts/` 下文件默认维持现状，不为“表面统一”做无关风格清洗。
+- 修改 `src/` 下代码后，如果已经知道存在 `Biome` 的 lint / format 问题，默认先执行 `pnpm run format`，先让 Biome 自动处理格式化、导入排序与 safe fixes。
+- 执行 `pnpm run format` 后若仍有剩余诊断，再按剩余问题手动修复；不要明知有现成自动修复入口时还直接跳过格式化阶段。
 - `.astro` / `.svelte` 文件存在针对未使用变量、未使用导入等规则的局部放宽；修改这些文件时，优先遵循当前项目现状，不要为了迎合通用 lint 习惯硬改结构。
 
 ### 目录与职责分层
