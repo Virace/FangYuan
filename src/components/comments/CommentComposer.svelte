@@ -1,13 +1,12 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import Icon from "@iconify/svelte";
 import type {
 	CommentCaptchaState,
 	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
 import { validateCommentForm } from "@utils/comments/validation";
-import { fade } from "svelte/transition";
+import { fade, scale } from "svelte/transition";
 import EmojiPicker from "./EmojiPicker.svelte";
 import InlineCommentCaptcha from "./InlineCommentCaptcha.svelte";
 
@@ -35,12 +34,16 @@ export let onVerifyCaptcha:
 	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
 	| null = null;
 
+const emojiPopoverDuration = 180;
+const emojiTriggerIcon = "\u{1F642}";
+
 let authorName = "";
 let authorEmail = "";
 let authorWebsite = "";
 let content = "";
 let validationError = "";
 let showEmojiPicker = false;
+let emojiTriggerWrap: HTMLDivElement | null = null;
 
 $: canSubmit =
 	!submitting &&
@@ -74,6 +77,7 @@ async function handleSubmit() {
 	});
 	if (submitSucceeded) {
 		content = "";
+		showEmojiPicker = false;
 	}
 }
 
@@ -85,6 +89,24 @@ function handleCancelReply() {
 
 function insertEmoji(emoji: string) {
 	content = `${content}${emoji}`;
+	showEmojiPicker = false;
+}
+
+function handleEmojiFocusOut(event: FocusEvent) {
+	const nextTarget = event.relatedTarget;
+
+	if (nextTarget instanceof Node && emojiTriggerWrap?.contains(nextTarget)) {
+		return;
+	}
+
+	showEmojiPicker = false;
+}
+
+function handleEmojiKeydown(event: KeyboardEvent) {
+	if (event.key !== "Escape") {
+		return;
+	}
+
 	showEmojiPicker = false;
 }
 </script>
@@ -158,11 +180,16 @@ function insertEmoji(emoji: string) {
 		</label>
 	</div>
 
-	<div class="mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-		<div class="mr-auto">
+	<div class="comment-composer-actions mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+		<div
+			bind:this={emojiTriggerWrap}
+			class="comment-emoji-trigger-wrap mr-auto"
+			on:focusout={handleEmojiFocusOut}
+			on:keydown={handleEmojiKeydown}
+		>
 			<button
 				type="button"
-				class="comment-action comment-action-icon"
+				class="comment-emoji-trigger comment-action"
 				class:comment-action-active={showEmojiPicker}
 				aria-label={i18n(I18nKey.commentsEmoji)}
 				aria-controls="comment-emojis-panel"
@@ -170,8 +197,25 @@ function insertEmoji(emoji: string) {
 				title={i18n(I18nKey.commentsEmoji)}
 				on:click={() => (showEmojiPicker = !showEmojiPicker)}
 			>
-				<Icon icon="material-symbols:heart-smile-rounded" class="text-lg" />
+				<span aria-hidden="true" class="comment-emoji-trigger-icon">{emojiTriggerIcon}</span>
 			</button>
+
+			{#if showEmojiPicker}
+				<div
+					id="comment-emojis-panel"
+					class="comment-emoji-popover-wrap"
+					in:fade={{ duration: emojiPopoverDuration }}
+					out:fade={{ duration: emojiPopoverDuration }}
+				>
+					<div
+						class="comment-emoji-popover"
+						in:scale={{ duration: emojiPopoverDuration, start: 0.92, opacity: 0.5 }}
+						out:scale={{ duration: 150, start: 1, opacity: 0.4 }}
+					>
+						<EmojiPicker onSelect={insertEmoji} />
+					</div>
+				</div>
+			{/if}
 		</div>
 
 		<div class="flex w-full flex-col gap-3 md:w-auto md:min-w-lg md:flex-row md:items-center md:justify-end">
@@ -208,10 +252,4 @@ function insertEmoji(emoji: string) {
 			</button>
 		</div>
 	</div>
-
-	{#if showEmojiPicker}
-		<div id="comment-emojis-panel" class="mt-4 rounded-xl border border-line-divider p-3">
-			<EmojiPicker onSelect={insertEmoji} />
-		</div>
-	{/if}
 </form>

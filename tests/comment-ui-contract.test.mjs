@@ -16,6 +16,7 @@ test("comment UI should render through focused Svelte components and mount on po
 		commentItemSource,
 		emojiPickerSource,
 		mainCssSource,
+		variablesCssSource,
 		postPageSource,
 	] = await Promise.all([
 		readFile(path.join(repoRoot, "src", "components", "comments", "CommentSection.svelte"), "utf8"),
@@ -28,6 +29,7 @@ test("comment UI should render through focused Svelte components and mount on po
 		readFile(path.join(repoRoot, "src", "components", "comments", "CommentItem.svelte"), "utf8"),
 		readFile(path.join(repoRoot, "src", "components", "comments", "EmojiPicker.svelte"), "utf8"),
 		readFile(path.join(repoRoot, "src", "styles", "main.css"), "utf8"),
+		readFile(path.join(repoRoot, "src", "styles", "variables.css"), "utf8"),
 		readFile(path.join(repoRoot, "src", "pages", "posts", "[...slug].astro"), "utf8"),
 	]);
 
@@ -51,11 +53,38 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /limit:/);
 	assert.match(commentSectionSource, /commentsSortNewest/);
 	assert.match(commentSectionSource, /commentsSortOldest/);
+	assert.match(commentSectionSource, /disabled=\{currentSortBy === "date_desc"\}/);
+	assert.match(commentSectionSource, /disabled=\{currentSortBy === "date_asc"\}/);
+	assert.match(commentSectionSource, /aria-pressed=\{currentSortBy === "date_desc"\}/);
+	assert.match(commentSectionSource, /aria-pressed=\{currentSortBy === "date_asc"\}/);
+	assert.match(commentSectionSource, /class:comment-sort-tab-active=\{currentSortBy === "date_desc"\}/);
+	assert.match(commentSectionSource, /class:comment-sort-tab-active=\{currentSortBy === "date_asc"\}/);
+	assert.match(commentSectionSource, /class:comment-sort-tab-idle=\{currentSortBy !== "date_desc"\}/);
+	assert.match(commentSectionSource, /class:comment-sort-tab-idle=\{currentSortBy !== "date_asc"\}/);
+	assert.match(commentSectionSource, /class:link-underline=\{currentSortBy !== "date_desc"\}/);
+	assert.match(commentSectionSource, /class:link-underline=\{currentSortBy !== "date_asc"\}/);
 	assert.match(commentSectionSource, /commentsPaginationPrevious/);
 	assert.match(commentSectionSource, /commentsPaginationNext/);
 	assert.match(commentSectionSource, /setTimeout\(/);
 	assert.match(commentSectionSource, /6000/);
 	assert.match(commentSectionSource, /transition:slide/);
+	assert.match(commentSectionSource, /const contentTransitionDuration = 180/);
+	assert.doesNotMatch(commentSectionSource, /commentContentMinHeightClass/);
+	assert.match(commentSectionSource, /in:fade=\{\{ duration: contentTransitionDuration \}\}/);
+	assert.match(commentSectionSource, /out:fade=\{\{ duration: contentTransitionDuration \}\}/);
+	assert.match(commentSectionSource, /aria-busy=\{loading\}/);
+	assert.doesNotMatch(commentSectionSource, /showCommentLoadingState = loading && comments.length > 0/);
+	assert.match(commentSectionSource, /showCommentEmptyState = !loading && comments.length === 0 && capability\?\.enabled/);
+	assert.match(commentSectionSource, /showCommentLoadingOverlay = loading && comments.length > 0/);
+	assert.match(commentSectionSource, /showCommentInitialSkeleton = loading && comments.length === 0/);
+	assert.match(commentSectionSource, /\{#if showCommentInitialSkeleton\}/);
+	assert.match(commentSectionSource, /\{:else if comments.length > 0\}/);
+	assert.match(commentSectionSource, /\{#if showCommentLoadingOverlay\}/);
+	assert.match(commentSectionSource, /comments-content-shell/);
+	assert.match(commentSectionSource, /comments-content-stack/);
+	assert.match(commentSectionSource, /comment-loading-overlay/);
+	assert.match(commentSectionSource, /comment-thread-skeleton/);
+	assert.match(commentSectionSource, /comment-empty-state/);
 	assert.match(commentSectionSource, /currentSortBy/);
 	assert.match(commentSectionSource, /currentOffset/);
 	assert.match(commentSectionSource, /totalRootCount/);
@@ -103,10 +132,29 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentComposerSource, /onVerifyCaptcha/);
 	assert.match(commentComposerSource, /onDismissCaptcha/);
 	assert.match(commentComposerSource, /comment-emojis/);
+	assert.match(commentComposerSource, /comment-composer-actions/);
+	assert.match(commentComposerSource, /comment-emoji-trigger/);
+	assert.match(commentComposerSource, /comment-emoji-trigger-icon/);
+	assert.match(commentComposerSource, /comment-emoji-popover-wrap/);
+	assert.match(commentComposerSource, /comment-emoji-popover/);
 	assert.match(commentComposerSource, /commentsEmoji/);
-	assert.match(commentComposerSource, /@iconify\/svelte/);
-	assert.match(commentComposerSource, /material-symbols:heart-smile-rounded/);
+	assert.match(commentComposerSource, /emojiTriggerIcon/);
+	assert.match(commentComposerSource, /\{emojiTriggerIcon\}/);
+	assert.match(commentComposerSource, /bind:this=\{emojiTriggerWrap\}/);
+	assert.match(commentComposerSource, /on:focusout=\{handleEmojiFocusOut\}/);
+	assert.match(commentComposerSource, /on:keydown=\{handleEmojiKeydown\}/);
+	assert.match(commentComposerSource, /class="comment-emoji-trigger comment-action"/);
+	assert.doesNotMatch(
+		commentComposerSource,
+		/class="comment-emoji-trigger comment-action comment-action-active"/,
+	);
+	assert.doesNotMatch(commentComposerSource, /@iconify\/svelte/);
+	assert.doesNotMatch(commentComposerSource, /material-symbols:/);
 	assert.match(commentComposerSource, /aria-label=\{i18n\(I18nKey\.commentsEmoji\)\}/);
+	assert.match(commentComposerSource, /in:fade/);
+	assert.match(commentComposerSource, /out:fade/);
+	assert.match(commentComposerSource, /in:scale/);
+	assert.match(commentComposerSource, /out:scale/);
 	assert.match(commentComposerSource, /onSubmit\?\.\(/);
 	assert.match(commentComposerSource, /const submitSucceeded = await onSubmit\?\.\(/);
 	assert.match(commentComposerSource, /if \(submitSucceeded\) \{[\s\S]*content = ""/);
@@ -116,6 +164,25 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentComposerSource, /validateCommentForm\(/);
 	assert.match(commentComposerSource, /validationError = i18n\(validationResult\)/);
 	assert.match(commentListSource, /CommentItem/);
+	assert.match(mainCssSource, /\.comment-sort-tab \{/);
+	assert.match(mainCssSource, /\.comment-sort-tab-active \{/);
+	assert.match(mainCssSource, /\.comment-sort-tab:disabled \{/);
+	assert.match(mainCssSource, /\.comments-content-shell \{/);
+	assert.match(mainCssSource, /\.comments-content-stack \{/);
+	assert.match(mainCssSource, /\.comment-loading-overlay \{/);
+	assert.match(mainCssSource, /\.comment-thread-skeleton \{/);
+	assert.match(mainCssSource, /\.comment-empty-state \{/);
+	assert.doesNotMatch(mainCssSource, /\.comment-empty-state \{[\s\S]*min-height:/);
+	assert.match(mainCssSource, /\.comment-sort-tab-active \{[\s\S]*color: var\(--comment-sort-active-content\);/);
+	assert.match(mainCssSource, /\.comment-composer-actions \{/);
+	assert.match(mainCssSource, /\.comment-emoji-trigger \{/);
+	assert.match(mainCssSource, /\.comment-emoji-trigger-icon \{/);
+	assert.match(mainCssSource, /\.comment-emoji-popover-wrap \{/);
+	assert.match(mainCssSource, /\.comment-emoji-popover \{/);
+	assert.match(mainCssSource, /\.comment-emoji-popover::after \{/);
+	assert.match(mainCssSource, /\.comment-emoji-popover \{[\s\S]*transform-origin: bottom left;/);
+	assert.match(variablesCssSource, /--comment-sort-active-content: rgb\(0 0 0 \/ 0\.9\);/);
+	assert.match(variablesCssSource, /:root\.dark \{[\s\S]*--comment-sort-active-content: rgb\(255 255 255 \/ 0\.9\);/);
 	assert.match(commentListSource, /maxDepth/);
 	assert.match(commentListSource, /export let onReply/);
 	assert.match(commentListSource, /export let activeCaptchaCommentId/);

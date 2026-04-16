@@ -29,6 +29,7 @@ import CommentHeader from "./CommentHeader.svelte";
 import CommentList from "./CommentList.svelte";
 
 const SUBMIT_NOTICE_TIMEOUT_MS = 6000;
+const contentTransitionDuration = 180;
 
 type CommentComposerSubmitDetail = {
 	authorName: string;
@@ -80,6 +81,9 @@ $: activeCaptchaCommentId =
 $: showComposerCaptcha =
 	activeCaptchaTarget?.kind === "composer" && Boolean(captchaState?.required);
 $: supportsVote = capability?.supportsVote ?? false;
+$: showCommentLoadingOverlay = loading && comments.length > 0;
+$: showCommentInitialSkeleton = loading && comments.length === 0;
+$: showCommentEmptyState = !loading && comments.length === 0 && capability?.enabled;
 
 function logCommentError(context: string, error: unknown) {
 	console.error(`[comments] ${context}`, error);
@@ -498,16 +502,24 @@ onDestroy(() => {
 			<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
 				<button
 					type="button"
-					class="link-underline"
-					class:text-primary={currentSortBy === "date_desc"}
+					class="comment-sort-tab"
+					class:link-underline={currentSortBy !== "date_desc"}
+					class:comment-sort-tab-active={currentSortBy === "date_desc"}
+					class:comment-sort-tab-idle={currentSortBy !== "date_desc"}
+					disabled={currentSortBy === "date_desc"}
+					aria-pressed={currentSortBy === "date_desc"}
 					on:click={() => void handleSortChange("date_desc")}
 				>
 					{i18n(I18nKey.commentsSortNewest)}
 				</button>
 				<button
 					type="button"
-					class="link-underline"
-					class:text-primary={currentSortBy === "date_asc"}
+					class="comment-sort-tab"
+					class:link-underline={currentSortBy !== "date_asc"}
+					class:comment-sort-tab-active={currentSortBy === "date_asc"}
+					class:comment-sort-tab-idle={currentSortBy !== "date_asc"}
+					disabled={currentSortBy === "date_asc"}
+					aria-pressed={currentSortBy === "date_asc"}
 					on:click={() => void handleSortChange("date_asc")}
 				>
 					{i18n(I18nKey.commentsSortOldest)}
@@ -540,36 +552,67 @@ onDestroy(() => {
 		</div>
 	{/if}
 
-	<div class="mt-5">
-		{#if !loading && comments.length === 0 && capability?.enabled}
-			<p class="text-sm text-50">{i18n(I18nKey.commentsEmpty)}</p>
-		{:else if comments.length > 0}
-			<CommentList
-				comments={comments}
-				activeReplyParentId={activeReplyParentId}
-				activeCaptchaCommentId={activeCaptchaCommentId}
-				maxDepth={maxDepth}
-				supportsVote={supportsVote}
-				captchaState={captchaState}
-				captchaBusy={captchaBusy}
-				captchaError={captchaError}
-				captchaPrompt={captchaPrompt}
-				onVote={handleVote}
-				onReply={handleReply}
-				onDismissCaptcha={handleDismissCaptcha}
-				onRefreshCaptcha={handleRefreshCaptcha}
-				onVerifyCaptcha={handleVerifyCaptcha}
+	<div
+		class="comments-content-shell mt-5"
+		aria-busy={loading}
+	>
+		{#if showCommentInitialSkeleton}
+			<div
+				class="comment-thread-skeleton"
+				in:fade={{ duration: contentTransitionDuration }}
+				out:fade={{ duration: contentTransitionDuration }}
 			/>
+		{:else if comments.length > 0}
+			<div
+				class="comments-content-stack"
+				in:fade={{ duration: contentTransitionDuration }}
+				out:fade={{ duration: contentTransitionDuration }}
+			>
+				<CommentList
+					comments={comments}
+					activeReplyParentId={activeReplyParentId}
+					activeCaptchaCommentId={activeCaptchaCommentId}
+					maxDepth={maxDepth}
+					supportsVote={supportsVote}
+					captchaState={captchaState}
+					captchaBusy={captchaBusy}
+					captchaError={captchaError}
+					captchaPrompt={captchaPrompt}
+					onVote={handleVote}
+					onReply={handleReply}
+					onDismissCaptcha={handleDismissCaptcha}
+					onRefreshCaptcha={handleRefreshCaptcha}
+					onVerifyCaptcha={handleVerifyCaptcha}
+				/>
+
+				{#if showCommentLoadingOverlay}
+					<div
+						class="comment-loading-overlay"
+						in:fade={{ duration: contentTransitionDuration }}
+						out:fade={{ duration: contentTransitionDuration }}
+					>
+						<div class="comment-thread-skeleton" />
+					</div>
+				{/if}
+			</div>
+		{:else if showCommentEmptyState}
+			<div
+				class="comment-empty-state"
+				in:fade={{ duration: contentTransitionDuration }}
+				out:fade={{ duration: contentTransitionDuration }}
+			>
+				<p class="text-sm text-50">{i18n(I18nKey.commentsEmpty)}</p>
+			</div>
 		{/if}
 	</div>
 
 	<div class="mt-6">
 		{#if submitNotice}
-			<div transition:slide={{ duration: 180 }}>
+			<div transition:slide={{ duration: contentTransitionDuration }}>
 				<p
 					class="mb-4 rounded-xl bg-primary/10 px-4 py-3 text-sm text-primary"
-					in:fade={{ duration: 180 }}
-					out:fade={{ duration: 180 }}
+					in:fade={{ duration: contentTransitionDuration }}
+					out:fade={{ duration: contentTransitionDuration }}
 				>
 					{submitNotice}
 				</p>
