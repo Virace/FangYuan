@@ -31,10 +31,13 @@ test("Artalk page feedback should reuse comment page snapshots and avoid private
 		commentsSource,
 		/import \{[\s\S]*setArtalkPageSnapshotLoad[\s\S]*\} from "\.\/page-snapshot";/,
 	);
-	assert.match(commentsSource, /setArtalkPageSnapshotLoad\(input\.postKey,/);
 	assert.match(
 		commentsSource,
-		/response\.page \? setArtalkPageSnapshot\(input\.postKey, mapArtalkPageSnapshot\(response\.page\)\) : null/,
+		/setArtalkPageSnapshotLoad\([\s\S]*input\.postKey,[\s\S]*\)/,
+	);
+	assert.match(
+		commentsSource,
+		/response\.page[\s\S]*setArtalkPageSnapshot\([\s\S]*input\.postKey,[\s\S]*mapArtalkPageSnapshot\(response\.page\)[\s\S]*: null/,
 	);
 
 	assert.match(pagesSource, /export function createArtalkPageFeedbackService\(/);
