@@ -31,7 +31,7 @@ export const ja: Translation = {
 	[Key.commentsCaptchaVerified]:
 		"認証コードを確認しました。コメントや投票を続けられます。",
 	[Key.commentsCaptchaRequiredTip]:
-		"Artalk では現在認証コードの確認が必要です。コメントや投票を続ける前にここで完了してください。",
+		"続行する前に、ここで必要な認証を完了してください。",
 	[Key.commentsCaptchaUnsupported]:
 		"現在の認証コード形式はこのフロントエンドでは未対応です。",
 	[Key.commentsCaptchaVerifyFailed]:
@@ -56,6 +56,8 @@ export const ja: Translation = {
 	[Key.commentsFormEmail]: "メールアドレス",
 	[Key.commentsFormWebsite]: "ウェブサイト",
 	[Key.commentsFormContent]: "コメント",
+	[Key.commentsPreviewWriteNotice]:
+		"プレビュープロバイダー: 送信したコメントは現在のブラウザーセッションでのみ保持されます。",
 	[Key.commentCountSingular]: "件のコメント",
 	[Key.commentCountPlural]: "件のコメント",
 	[Key.commentsValidationNameRequired]: "名前を入力してください。",

@@ -32,7 +32,7 @@ export const es: Translation = {
 	[Key.commentsCaptchaVerified]:
 		"Captcha verificado. Ya puedes comentar o votar.",
 	[Key.commentsCaptchaRequiredTip]:
-		"Artalk ahora requiere verificar el captcha. Complétalo aquí antes de volver a comentar o votar.",
+		"Completa aquí la verificación requerida antes de continuar.",
 	[Key.commentsCaptchaUnsupported]:
 		"Este frontend todavía no admite el tipo de captcha actual.",
 	[Key.commentsCaptchaVerifyFailed]:
@@ -57,6 +57,8 @@ export const es: Translation = {
 	[Key.commentsFormEmail]: "Correo electrónico",
 	[Key.commentsFormWebsite]: "Sitio web",
 	[Key.commentsFormContent]: "Comentario",
+	[Key.commentsPreviewWriteNotice]:
+		"Proveedor de vista previa: los comentarios enviados solo existen en la sesión actual del navegador.",
 	[Key.commentCountSingular]: "comentario",
 	[Key.commentCountPlural]: "comentarios",
 	[Key.commentsValidationNameRequired]: "Introduce un nombre.",

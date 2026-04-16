@@ -28,8 +28,7 @@ export const zh_CN: Translation = {
 	[Key.commentsCaptchaRefresh]: "刷新验证码",
 	[Key.commentsCaptchaVerify]: "验证验证码",
 	[Key.commentsCaptchaVerified]: "验证码已通过，可以继续评论或互动。",
-	[Key.commentsCaptchaRequiredTip]:
-		"当前需要先完成验证码，请先在这里输入验证码，再继续评论、点赞或点踩。",
+	[Key.commentsCaptchaRequiredTip]: "请先在这里完成所需验证，再继续操作。",
 	[Key.commentsCaptchaUnsupported]: "当前验证码类型暂未接入这个前端。",
 	[Key.commentsCaptchaVerifyFailed]: "验证码校验失败，请重试。",
 	[Key.commentsVoteUp]: "点赞",
@@ -49,6 +48,8 @@ export const zh_CN: Translation = {
 	[Key.commentsFormEmail]: "邮箱",
 	[Key.commentsFormWebsite]: "网站",
 	[Key.commentsFormContent]: "评论内容",
+	[Key.commentsPreviewWriteNotice]:
+		"预览数据源：提交的评论只会保留在当前浏览器会话中。",
 	[Key.commentCountSingular]: "条评论",
 	[Key.commentCountPlural]: "条评论",
 	[Key.commentsValidationNameRequired]: "请输入昵称。",

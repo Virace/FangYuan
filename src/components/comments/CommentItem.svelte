@@ -88,16 +88,18 @@ $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
 
 			{#if depth < maxDepth || supportsVote}
 				<div class="comment-actions mt-3">
-					<button
-						class="comment-action"
-						class:comment-action-active={activeReplyParentId === comment.id}
-						type="button"
-						on:click={triggerReply}
-					>
-						{activeReplyParentId === comment.id
-							? i18n(I18nKey.commentsCancelReply)
-							: i18n(I18nKey.commentsReply)}
-					</button>
+					{#if depth < maxDepth}
+						<button
+							class="comment-action"
+							class:comment-action-active={activeReplyParentId === comment.id}
+							type="button"
+							on:click={triggerReply}
+						>
+							{activeReplyParentId === comment.id
+								? i18n(I18nKey.commentsCancelReply)
+								: i18n(I18nKey.commentsReply)}
+						</button>
+					{/if}
 
 					{#if supportsVote}
 						<button

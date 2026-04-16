@@ -28,8 +28,7 @@ export const zh_TW: Translation = {
 	[Key.commentsCaptchaRefresh]: "重新整理驗證碼",
 	[Key.commentsCaptchaVerify]: "驗證驗證碼",
 	[Key.commentsCaptchaVerified]: "驗證碼已通過，可以繼續留言或互動。",
-	[Key.commentsCaptchaRequiredTip]:
-		"目前需要先完成驗證碼，請先在這裡輸入驗證碼，再繼續留言、按讚或點踩。",
+	[Key.commentsCaptchaRequiredTip]: "請先在這裡完成所需驗證，再繼續操作。",
 	[Key.commentsCaptchaUnsupported]: "目前的驗證碼類型尚未接入這個前端。",
 	[Key.commentsCaptchaVerifyFailed]: "驗證碼驗證失敗，請再試一次。",
 	[Key.commentsVoteUp]: "按讚",
@@ -49,6 +48,8 @@ export const zh_TW: Translation = {
 	[Key.commentsFormEmail]: "電子郵件",
 	[Key.commentsFormWebsite]: "網站",
 	[Key.commentsFormContent]: "留言內容",
+	[Key.commentsPreviewWriteNotice]:
+		"預覽資料源：送出的留言只會保留在目前瀏覽器工作階段中。",
 	[Key.commentCountSingular]: "則留言",
 	[Key.commentCountPlural]: "則留言",
 	[Key.commentsValidationNameRequired]: "請輸入暱稱。",

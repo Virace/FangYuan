@@ -90,9 +90,16 @@ $: activeCaptchaCommentId =
 		: null;
 $: activeVoteConfirmCommentId = pendingVoteTarget?.commentId ?? null;
 $: pendingVoteChoice = pendingVoteTarget?.choice ?? null;
-$: showComposerCaptcha =
-	activeCaptchaTarget?.kind === "composer" && Boolean(captchaState?.required);
 $: supportsVote = capability?.supportsVote ?? false;
+$: supportsCaptcha = capability?.supportsCaptcha ?? false;
+$: persistenceMode = capability?.persistenceMode ?? "persistent";
+$: requiredAuthorFields = capability?.requiredAuthorFields ?? ["name", "email"];
+$: optionalAuthorFields = capability?.optionalAuthorFields ?? ["website"];
+$: showWebsiteField = optionalAuthorFields.includes("website");
+$: showComposerCaptcha =
+	supportsCaptcha &&
+	activeCaptchaTarget?.kind === "composer" &&
+	Boolean(captchaState?.required);
 $: showCommentLoadingOverlay = loading && comments.length > 0;
 $: showCommentInitialSkeleton = loading && comments.length === 0;
 $: showCommentEmptyState =
@@ -179,6 +186,10 @@ async function promptForCaptcha(
 	nextState: CommentCaptchaState | null,
 	target: CaptchaTarget,
 ) {
+	if (!supportsCaptcha) {
+		return;
+	}
+
 	try {
 		activeCaptchaTarget = target;
 		captchaState =
@@ -227,6 +238,9 @@ async function loadComments(nextOptions?: {
 			comments = [];
 			totalRootCount = 0;
 			captchaState = null;
+			activeCaptchaTarget = null;
+			captchaPrompt = "";
+			captchaError = "";
 			return;
 		}
 
@@ -235,7 +249,12 @@ async function loadComments(nextOptions?: {
 		totalRootCount = threadPage.rootsCount;
 		comments = applyPersistedViewerVotes(postKey, threadPage.comments);
 
-		if (!captchaState) {
+		if (!nextCapability.supportsCaptcha) {
+			captchaState = null;
+			activeCaptchaTarget = null;
+			captchaPrompt = "";
+			captchaError = "";
+		} else if (!captchaState) {
 			captchaState = await commentClient.getCaptchaState();
 		}
 	} catch (error) {
@@ -261,7 +280,7 @@ async function handleRefreshCaptcha() {
 	captchaError = "";
 
 	try {
-		if (!commentClient) {
+		if (!commentClient || !supportsCaptcha) {
 			return;
 		}
 
@@ -279,7 +298,7 @@ async function handleVerifyCaptcha(input: VerifyCommentCaptchaInput) {
 	captchaError = "";
 
 	try {
-		if (!commentClient) {
+		if (!commentClient || !supportsCaptcha) {
 			return;
 		}
 
@@ -393,10 +412,14 @@ async function handleSubmit(
 		activeCaptchaTarget = null;
 		captchaError = "";
 		captchaPrompt = "";
-		try {
-			captchaState = await commentClient.getCaptchaState();
-		} catch (error) {
-			logCommentError("refresh captcha state after submit failed", error);
+		if (supportsCaptcha) {
+			try {
+				captchaState = await commentClient.getCaptchaState();
+			} catch (error) {
+				logCommentError("refresh captcha state after submit failed", error);
+			}
+		} else {
+			captchaState = null;
 		}
 		setTransientSubmitNotice(
 			createdComment.status === "approved"
@@ -413,7 +436,7 @@ async function handleSubmit(
 		}
 
 		try {
-			if (commentClient && !captchaState?.required) {
+			if (commentClient && supportsCaptcha && !captchaState?.required) {
 				captchaState = await commentClient.getCaptchaState();
 			}
 		} catch {
@@ -450,7 +473,7 @@ async function submitVote(commentId: string, choice: CommentVoteChoice) {
 		comments = replaceCommentInTree(comments, updatedComment);
 		persistViewerVote(postKey, commentId, updatedComment.viewerVote ?? choice);
 		activeCaptchaTarget = null;
-		if (captchaState?.required) {
+		if (supportsCaptcha && captchaState?.required) {
 			try {
 				captchaState = await commentClient.getCaptchaState();
 			} catch (error) {
@@ -663,6 +686,9 @@ onDestroy(() => {
 
 		<CommentComposer
 			showCaptcha={showComposerCaptcha}
+			requiredAuthorFields={requiredAuthorFields}
+			showWebsiteField={showWebsiteField}
+			persistenceMode={persistenceMode}
 			captchaState={captchaState}
 			captchaBusy={captchaBusy}
 			captchaError={captchaError}

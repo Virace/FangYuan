@@ -31,7 +31,7 @@ export const id: Translation = {
 	[Key.commentsCaptchaVerified]:
 		"Captcha terverifikasi. Anda dapat melanjutkan komentar atau voting.",
 	[Key.commentsCaptchaRequiredTip]:
-		"Artalk sekarang memerlukan verifikasi captcha. Selesaikan di sini sebelum berkomentar atau voting lagi.",
+		"Selesaikan verifikasi yang diperlukan di sini sebelum melanjutkan.",
 	[Key.commentsCaptchaUnsupported]:
 		"Jenis captcha saat ini belum didukung oleh frontend ini.",
 	[Key.commentsCaptchaVerifyFailed]:
@@ -55,6 +55,8 @@ export const id: Translation = {
 	[Key.commentsFormEmail]: "Email",
 	[Key.commentsFormWebsite]: "Situs web",
 	[Key.commentsFormContent]: "Komentar",
+	[Key.commentsPreviewWriteNotice]:
+		"Penyedia pratinjau: komentar yang dikirim hanya ada di sesi browser saat ini.",
 	[Key.commentCountSingular]: "komentar",
 	[Key.commentCountPlural]: "komentar",
 	[Key.commentsValidationNameRequired]: "Masukkan nama panggilan.",

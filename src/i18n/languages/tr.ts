@@ -31,7 +31,7 @@ export const tr: Translation = {
 	[Key.commentsCaptchaVerified]:
 		"Doğrulama tamamlandı. Yorum yapmaya veya oy vermeye devam edebilirsiniz.",
 	[Key.commentsCaptchaRequiredTip]:
-		"Artalk artık captcha doğrulaması istiyor. Yorum yapmaya veya oy vermeye devam etmeden önce burada tamamlayın.",
+		"Devam etmeden önce gerekli doğrulamayı burada tamamlayın.",
 	[Key.commentsCaptchaUnsupported]:
 		"Mevcut captcha türü bu arayüzde henüz desteklenmiyor.",
 	[Key.commentsCaptchaVerifyFailed]:
@@ -56,6 +56,8 @@ export const tr: Translation = {
 	[Key.commentsFormEmail]: "E-posta",
 	[Key.commentsFormWebsite]: "Web sitesi",
 	[Key.commentsFormContent]: "Yorum",
+	[Key.commentsPreviewWriteNotice]:
+		"Önizleme sağlayıcısı: gönderilen yorumlar yalnızca mevcut tarayıcı oturumunda bulunur.",
 	[Key.commentCountSingular]: "yorum",
 	[Key.commentCountPlural]: "yorum",
 	[Key.commentsValidationNameRequired]: "Lütfen bir ad girin.",

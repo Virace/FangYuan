@@ -31,7 +31,7 @@ export const en: Translation = {
 	[Key.commentsCaptchaVerified]:
 		"Captcha verified. You can continue commenting or voting.",
 	[Key.commentsCaptchaRequiredTip]:
-		"Artalk now requires captcha verification. Please complete it here before commenting or voting again.",
+		"Please complete the required verification here before continuing.",
 	[Key.commentsCaptchaUnsupported]:
 		"The current captcha type is not supported by this frontend yet.",
 	[Key.commentsCaptchaVerifyFailed]:
@@ -56,6 +56,8 @@ export const en: Translation = {
 	[Key.commentsFormEmail]: "Email",
 	[Key.commentsFormWebsite]: "Website",
 	[Key.commentsFormContent]: "Comment",
+	[Key.commentsPreviewWriteNotice]:
+		"Preview provider: comment submissions only exist in the current browser session.",
 	[Key.commentCountSingular]: "comment",
 	[Key.commentCountPlural]: "comments",
 	[Key.commentsValidationNameRequired]: "Please enter a nickname.",

@@ -113,6 +113,8 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /submitVote[\s\S]*CommentCaptchaRequiredError/);
 	assert.match(commentSectionSource, /voteComment\(/);
 	assert.match(commentSectionSource, /supportsVote/);
+	assert.match(commentSectionSource, /supportsCaptcha/);
+	assert.match(commentSectionSource, /persistenceMode/);
 	assert.match(commentSectionSource, /CommentList[\s\S]*CommentComposer/);
 	assert.match(commentSectionSource, /submitNotice[\s\S]*CommentComposer/);
 	assert.match(commentSectionSource, /card-base/);
@@ -176,6 +178,9 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.doesNotMatch(commentComposerSource, /createEventDispatcher/);
 	assert.match(commentComposerSource, /validateCommentForm\(/);
 	assert.match(commentComposerSource, /validationError = i18n\(validationResult\)/);
+	assert.match(commentComposerSource, /requiredAuthorFields/);
+	assert.match(commentComposerSource, /showWebsiteField/);
+	assert.match(commentComposerSource, /commentsPreviewWriteNotice/);
 	assert.match(commentListSource, /CommentItem/);
 	assert.match(mainCssSource, /\.comment-sort-tab \{/);
 	assert.match(mainCssSource, /\.comment-sort-tab-active \{/);
@@ -262,6 +267,7 @@ test("comment UI should expose dedicated translation keys", async () => {
 		"commentsFormEmail",
 		"commentsFormWebsite",
 		"commentsFormContent",
+		"commentsPreviewWriteNotice",
 		"commentsValidationNameRequired",
 		"commentsValidationEmailInvalid",
 		"commentsValidationContentRequired",
@@ -272,4 +278,6 @@ test("comment UI should expose dedicated translation keys", async () => {
 		assert.match(i18nKeySource, new RegExp(`${key}\\s*=`));
 		assert.match(enSource, new RegExp(`\\[Key\\.${key}\\]`));
 	}
+
+	assert.doesNotMatch(enSource, /Artalk now requires captcha verification/);
 });

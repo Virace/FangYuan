@@ -28,8 +28,7 @@ export const th: Translation = {
 	[Key.commentsCaptchaRefresh]: "รีเฟรชรหัสยืนยัน",
 	[Key.commentsCaptchaVerify]: "ยืนยันรหัส",
 	[Key.commentsCaptchaVerified]: "ยืนยันรหัสแล้ว คุณสามารถแสดงความคิดเห็นหรือโหวตต่อได้",
-	[Key.commentsCaptchaRequiredTip]:
-		"Artalk ต้องการการยืนยันรหัสก่อน โปรดดำเนินการที่นี่ก่อนแสดงความคิดเห็นหรือโหวตอีกครั้ง",
+	[Key.commentsCaptchaRequiredTip]: "โปรดยืนยันที่จำเป็นให้เสร็จที่นี่ก่อนดำเนินการต่อ",
 	[Key.commentsCaptchaUnsupported]: "ฟรอนต์เอนด์นี้ยังไม่รองรับรูปแบบรหัสยืนยันปัจจุบัน",
 	[Key.commentsCaptchaVerifyFailed]: "การยืนยันรหัสล้มเหลว กรุณาลองใหม่",
 	[Key.commentsVoteUp]: "โหวตขึ้น",
@@ -51,6 +50,8 @@ export const th: Translation = {
 	[Key.commentsFormEmail]: "อีเมล",
 	[Key.commentsFormWebsite]: "เว็บไซต์",
 	[Key.commentsFormContent]: "ความคิดเห็น",
+	[Key.commentsPreviewWriteNotice]:
+		"ผู้ให้บริการโหมดพรีวิว: ความคิดเห็นที่ส่งจะอยู่เฉพาะในเซสชันเบราว์เซอร์ปัจจุบันเท่านั้น",
 	[Key.commentCountSingular]: "ความคิดเห็น",
 	[Key.commentCountPlural]: "ความคิดเห็น",
 	[Key.commentsValidationNameRequired]: "กรุณากรอกชื่อ",

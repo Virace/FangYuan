@@ -30,7 +30,7 @@ export const vi: Translation = {
 	[Key.commentsCaptchaVerified]:
 		"Đã xác minh mã. Bạn có thể tiếp tục bình luận hoặc bỏ phiếu.",
 	[Key.commentsCaptchaRequiredTip]:
-		"Artalk hiện yêu cầu xác minh captcha. Hãy hoàn tất tại đây trước khi tiếp tục bình luận hoặc bỏ phiếu.",
+		"Hãy hoàn tất bước xác minh cần thiết tại đây trước khi tiếp tục.",
 	[Key.commentsCaptchaUnsupported]:
 		"Loại captcha hiện tại chưa được frontend này hỗ trợ.",
 	[Key.commentsCaptchaVerifyFailed]:
@@ -55,6 +55,8 @@ export const vi: Translation = {
 	[Key.commentsFormEmail]: "Email",
 	[Key.commentsFormWebsite]: "Trang web",
 	[Key.commentsFormContent]: "Bình luận",
+	[Key.commentsPreviewWriteNotice]:
+		"Nhà cung cấp xem trước: bình luận gửi đi chỉ tồn tại trong phiên trình duyệt hiện tại.",
 	[Key.commentCountSingular]: "bình luận",
 	[Key.commentCountPlural]: "bình luận",
 	[Key.commentsValidationNameRequired]: "Vui lòng nhập tên hiển thị.",

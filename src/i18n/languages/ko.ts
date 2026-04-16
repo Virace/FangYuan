@@ -31,7 +31,7 @@ export const ko: Translation = {
 	[Key.commentsCaptchaVerified]:
 		"인증 코드가 확인되었습니다. 댓글이나 투표를 계속할 수 있습니다.",
 	[Key.commentsCaptchaRequiredTip]:
-		"Artalk는 이제 인증 코드 확인이 필요합니다. 댓글이나 투표를 계속하기 전에 여기서 완료해 주세요.",
+		"계속하기 전에 여기에서 필요한 인증을 완료해 주세요.",
 	[Key.commentsCaptchaUnsupported]:
 		"현재 인증 코드 유형은 이 프런트엔드에서 아직 지원되지 않습니다.",
 	[Key.commentsCaptchaVerifyFailed]:
@@ -56,6 +56,8 @@ export const ko: Translation = {
 	[Key.commentsFormEmail]: "이메일",
 	[Key.commentsFormWebsite]: "웹사이트",
 	[Key.commentsFormContent]: "댓글",
+	[Key.commentsPreviewWriteNotice]:
+		"미리보기 제공자: 제출한 댓글은 현재 브라우저 세션에만 유지됩니다.",
 	[Key.commentCountSingular]: "댓글",
 	[Key.commentCountPlural]: "댓글",
 	[Key.commentsValidationNameRequired]: "이름을 입력해 주세요.",

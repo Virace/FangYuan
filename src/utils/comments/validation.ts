@@ -1,10 +1,15 @@
 import I18nKey from "../../i18n/i18nKey";
+import type { CommentAuthorField } from "./provider";
 
 export type CommentFormInput = {
 	authorName: string;
 	authorEmail: string;
 	authorWebsite: string;
 	content: string;
+};
+
+export type CommentFormValidationRules = {
+	requiredAuthorFields: CommentAuthorField[];
 };
 
 const suspiciousSqlPattern =
@@ -25,17 +30,23 @@ export function renderPlainCommentHtml(value: string): string {
 	return `<p>${escapeHtml(value).replaceAll("\n", "<br />")}</p>`;
 }
 
-export function validateCommentForm(input: CommentFormInput): I18nKey | null {
+export function validateCommentForm(
+	input: CommentFormInput,
+	rules: CommentFormValidationRules,
+): I18nKey | null {
 	const authorName = input.authorName.trim();
 	const authorEmail = input.authorEmail.trim();
 	const authorWebsite = input.authorWebsite.trim();
 	const content = input.content.trim();
 
-	if (!authorName) {
+	if (rules.requiredAuthorFields.includes("name") && !authorName) {
 		return I18nKey.commentsValidationNameRequired;
 	}
 
-	if (!emailPattern.test(authorEmail)) {
+	if (
+		rules.requiredAuthorFields.includes("email") &&
+		!emailPattern.test(authorEmail)
+	) {
 		return I18nKey.commentsValidationEmailInvalid;
 	}
 
