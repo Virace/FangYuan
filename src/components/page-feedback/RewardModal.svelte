@@ -149,7 +149,7 @@ onDestroy(() => {
 	on:click={handleBackdropClick}
 >
 	<div
-		class="feedback-dialog-panel card-base border border-line-divider bg-card-bg text-75 shadow-[0_32px_90px_-40px_rgb(15_23_42_/_0.45)]"
+		class="feedback-dialog-panel card-base border border-line-divider bg-card-bg text-75 shadow-[0_32px_90px_-40px_rgb(15_23_42/0.45)]"
 		class:feedback-dialog-panel-open={modalActive}
 	>
 		<div class="flex items-start justify-between gap-4 border-b border-line-divider px-6 py-5">
@@ -160,7 +160,7 @@ onDestroy(() => {
 				<h3 class="mt-2 text-2xl font-bold tracking-tight text-90">
 					{i18n(I18nKey.pageFeedbackRewardTitle)}
 				</h3>
-				<p class="mt-2 max-w-[30rem] text-sm leading-7 text-50">
+				<p class="mt-2 max-w-120 text-sm leading-7 text-50">
 					{i18n(I18nKey.pageFeedbackRewardDescription)}
 				</p>
 			</div>
@@ -192,7 +192,7 @@ onDestroy(() => {
 
 				<div class="rounded-[1.75rem] border border-line-divider bg-soft-contrast p-4">
 					<div
-						class="relative flex min-h-[20rem] items-center justify-center rounded-[1.25rem] bg-card-bg p-4"
+						class="relative flex min-h-80 items-center justify-center rounded-[1.25rem] bg-card-bg p-4"
 					>
 						{#if displayedImage}
 							<img

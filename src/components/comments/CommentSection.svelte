@@ -356,14 +356,16 @@ function buildOptimisticVoteComment(
 	};
 }
 
-async function handleSubmit(detail: CommentComposerSubmitDetail) {
+async function handleSubmit(
+	detail: CommentComposerSubmitDetail,
+): Promise<boolean> {
 	submitting = true;
 	submitError = "";
 	submitNotice = "";
 
 	try {
 		if (!commentClient) {
-			return;
+			return false;
 		}
 
 		const createdComment = await commentClient.createComment({
@@ -562,7 +564,7 @@ onDestroy(() => {
 				class="comment-thread-skeleton"
 				in:fade={{ duration: contentTransitionDuration }}
 				out:fade={{ duration: contentTransitionDuration }}
-			/>
+			></div>
 		{:else if comments.length > 0}
 			<div
 				class="comments-content-stack"
@@ -592,7 +594,7 @@ onDestroy(() => {
 						in:fade={{ duration: contentTransitionDuration }}
 						out:fade={{ duration: contentTransitionDuration }}
 					>
-						<div class="comment-thread-skeleton" />
+						<div class="comment-thread-skeleton"></div>
 					</div>
 				{/if}
 			</div>

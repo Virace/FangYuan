@@ -74,7 +74,7 @@ async function handleLike() {
 				<h2 class="text-xl font-bold tracking-tight text-90 md:text-2xl">
 					{i18n(I18nKey.pageFeedbackRewardTitle)}
 				</h2>
-				<p class="mt-2 max-w-[44rem] text-sm leading-7 text-50 md:text-base">
+				<p class="mt-2 max-w-176 text-sm leading-7 text-50 md:text-base">
 					{i18n(I18nKey.pageFeedbackRewardDescription)}
 				</p>
 			</div>

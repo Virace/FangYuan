@@ -74,7 +74,10 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /out:fade=\{\{ duration: contentTransitionDuration \}\}/);
 	assert.match(commentSectionSource, /aria-busy=\{loading\}/);
 	assert.doesNotMatch(commentSectionSource, /showCommentLoadingState = loading && comments.length > 0/);
-	assert.match(commentSectionSource, /showCommentEmptyState = !loading && comments.length === 0 && capability\?\.enabled/);
+	assert.match(
+		commentSectionSource,
+		/showCommentEmptyState =\s*!loading && comments.length === 0 && capability\?\.enabled/,
+	);
 	assert.match(commentSectionSource, /showCommentLoadingOverlay = loading && comments.length > 0/);
 	assert.match(commentSectionSource, /showCommentInitialSkeleton = loading && comments.length === 0/);
 	assert.match(commentSectionSource, /\{#if showCommentInitialSkeleton\}/);
@@ -85,6 +88,15 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /comment-loading-overlay/);
 	assert.match(commentSectionSource, /comment-thread-skeleton/);
 	assert.match(commentSectionSource, /comment-empty-state/);
+	assert.match(
+		commentSectionSource,
+		/async function handleSubmit\(\s*detail: CommentComposerSubmitDetail,\s*\): Promise<boolean>/,
+	);
+	assert.match(commentSectionSource, /if \(!commentClient\) \{\s*return false;\s*\}/);
+	assert.doesNotMatch(
+		commentSectionSource,
+		/<div[^>]*class="comment-thread-skeleton"[^>]*\/>/,
+	);
 	assert.match(commentSectionSource, /currentSortBy/);
 	assert.match(commentSectionSource, /currentOffset/);
 	assert.match(commentSectionSource, /totalRootCount/);
@@ -142,7 +154,7 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentComposerSource, /\{emojiTriggerIcon\}/);
 	assert.match(commentComposerSource, /bind:this=\{emojiTriggerWrap\}/);
 	assert.match(commentComposerSource, /on:focusout=\{handleEmojiFocusOut\}/);
-	assert.match(commentComposerSource, /on:keydown=\{handleEmojiKeydown\}/);
+	assert.match(commentComposerSource, /<svelte:window on:keydown=\{handleEmojiKeydown\} \/>/);
 	assert.match(commentComposerSource, /class="comment-emoji-trigger comment-action"/);
 	assert.doesNotMatch(
 		commentComposerSource,

@@ -103,13 +103,15 @@ function handleEmojiFocusOut(event: FocusEvent) {
 }
 
 function handleEmojiKeydown(event: KeyboardEvent) {
-	if (event.key !== "Escape") {
+	if (!showEmojiPicker || event.key !== "Escape") {
 		return;
 	}
 
 	showEmojiPicker = false;
 }
 </script>
+
+<svelte:window on:keydown={handleEmojiKeydown} />
 
 <form class="card-base rounded-panel p-5" on:submit|preventDefault={handleSubmit}>
 	<div class="flex items-start justify-between gap-3 mb-4">
@@ -183,9 +185,9 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 	<div class="comment-composer-actions mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 		<div
 			bind:this={emojiTriggerWrap}
+			role="group"
 			class="comment-emoji-trigger-wrap mr-auto"
 			on:focusout={handleEmojiFocusOut}
-			on:keydown={handleEmojiKeydown}
 		>
 			<button
 				type="button"

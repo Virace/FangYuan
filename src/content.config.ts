@@ -1,4 +1,8 @@
-import { defineCollection } from "astro:content";
+import {
+	defineCollection,
+	type ImageFunction,
+	type SchemaContext,
+} from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { resolveContentRoot } from "./utils/site-source";
@@ -35,13 +39,10 @@ const dataImageSchema = z.string().regex(/^data:.+/, {
 	message: "Data image URLs must start with data:.",
 });
 
-const relativeCoverImageSchema = (image: () => z.ZodTypeAny) =>
-	z
-		.string()
-		.regex(/^(?:\.\.?\/).+/, {
-			message: "Relative cover images must start with ./ or ../.",
-		})
-		.pipe(image());
+function relativeCoverImageSchema(image: ImageFunction) {
+	// Astro's official image() helper already models relative content images.
+	return image();
+}
 
 const localAliasImageSchema = z
 	.string()
@@ -56,7 +57,7 @@ const postsCollection = defineCollection({
 		pattern: "**/*.md",
 		generateId: ({ entry }) => generateMarkdownId(entry),
 	}),
-	schema: ({ image }) =>
+	schema: ({ image }: SchemaContext) =>
 		z.object({
 			title: z.string(),
 			published: z.date(),
