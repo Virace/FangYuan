@@ -7,9 +7,14 @@ export function countCommentsInTree(items: CanonicalComment[]): number {
 	);
 }
 
-export function buildCommentTree(comments: CanonicalComment[]): CanonicalComment[] {
+export function buildCommentTree(
+	comments: CanonicalComment[],
+): CanonicalComment[] {
 	const commentMap = new Map(
-		comments.map((comment) => [comment.id, { ...comment, children: [] as CanonicalComment[] }]),
+		comments.map((comment) => [
+			comment.id,
+			{ ...comment, children: [] as CanonicalComment[] },
+		]),
 	);
 	const roots: CanonicalComment[] = [];
 

@@ -3,7 +3,10 @@ export type ArtalkApiConfig = {
 	siteName: string;
 };
 
-type ArtalkEndpointParams = Record<string, string | number | boolean | undefined>;
+type ArtalkEndpointParams = Record<
+	string,
+	string | number | boolean | undefined
+>;
 
 export class ArtalkApiError extends Error {
 	readonly status: number | null;

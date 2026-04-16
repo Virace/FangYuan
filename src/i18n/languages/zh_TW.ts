@@ -28,7 +28,8 @@ export const zh_TW: Translation = {
 	[Key.commentsCaptchaRefresh]: "重新整理驗證碼",
 	[Key.commentsCaptchaVerify]: "驗證驗證碼",
 	[Key.commentsCaptchaVerified]: "驗證碼已通過，可以繼續留言或互動。",
-	[Key.commentsCaptchaRequiredTip]: "目前需要先完成驗證碼，請先在這裡輸入驗證碼，再繼續留言、按讚或點踩。",
+	[Key.commentsCaptchaRequiredTip]:
+		"目前需要先完成驗證碼，請先在這裡輸入驗證碼，再繼續留言、按讚或點踩。",
 	[Key.commentsCaptchaUnsupported]: "目前的驗證碼類型尚未接入這個前端。",
 	[Key.commentsCaptchaVerifyFailed]: "驗證碼驗證失敗，請再試一次。",
 	[Key.commentsVoteUp]: "按讚",

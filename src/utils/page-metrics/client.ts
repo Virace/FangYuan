@@ -1,7 +1,9 @@
 import { pageMetricsConfig } from "../../config";
 
 export function getPageMetricsClient() {
-	const provider = pageMetricsConfig.enable ? pageMetricsConfig.provider ?? null : null;
+	const provider = pageMetricsConfig.enable
+		? (pageMetricsConfig.provider ?? null)
+		: null;
 
 	if (!provider) {
 		return null;

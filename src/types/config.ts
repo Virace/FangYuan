@@ -1,7 +1,7 @@
-import type { ImageMetadata } from "astro";
 import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
 import type { CommentProvider } from "@utils/comments/provider";
 import type { PageMetricsProvider } from "@utils/page-metrics/provider";
+import type { ImageMetadata } from "astro";
 
 export type SiteConfig = {
 	title: string;

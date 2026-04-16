@@ -1,7 +1,5 @@
-import {
-	createArtalkPageMetricsService,
-} from "../artalk/pages";
-import { PageMetricsProvider, type PageMetrics } from "./provider";
+import { createArtalkPageMetricsService } from "../artalk/pages";
+import { type PageMetrics, PageMetricsProvider } from "./provider";
 
 type ArtalkPageMetricsProviderConfig = {
 	apiBase: string;

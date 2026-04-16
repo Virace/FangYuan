@@ -36,17 +36,19 @@ const dataImageSchema = z.string().regex(/^data:.+/, {
 });
 
 const relativeCoverImageSchema = (image: any) =>
-	z.string().regex(/^(?:\.\.?\/).+/, {
-		message: "Relative cover images must start with ./ or ../.",
-	}).pipe(image());
+	z
+		.string()
+		.regex(/^(?:\.\.?\/).+/, {
+			message: "Relative cover images must start with ./ or ../.",
+		})
+		.pipe(image());
 
-const localAliasImageSchema = z.string().regex(
-	/^(?!\.{1,2}\/)(?!\/)(?!public\/)(?!https?:\/\/)(?!data:).+/,
-	{
+const localAliasImageSchema = z
+	.string()
+	.regex(/^(?!\.{1,2}\/)(?!\/)(?!public\/)(?!https?:\/\/)(?!data:).+/, {
 		message:
 			"Non-relative local cover images are treated as root aliases under src/ or site/.",
-	},
-);
+	});
 
 const postsCollection = defineCollection({
 	loader: glob({

@@ -1,12 +1,12 @@
 import { commentConfig } from "../../config";
-import { buildCommentTree } from "./tree";
-import { getCommentProvider } from "./provider";
 import type {
 	CreateCommentInput,
 	GetCommentThreadInput,
 	VerifyCommentCaptchaInput,
 	VoteCommentInput,
 } from "./provider";
+import { getCommentProvider } from "./provider";
+import { buildCommentTree } from "./tree";
 
 export function getCommentClient() {
 	const provider = getCommentProvider(commentConfig);

@@ -1,17 +1,17 @@
 import type { CanonicalComment, CommentStatus } from "@/types/comment";
 import {
-	CommentProvider,
+	DEFAULT_COMMENT_ROOT_LIMIT,
+	DEFAULT_COMMENT_SORT_BY,
+	normalizeCommentOffset,
+} from "./options";
+import {
 	type CommentCapability,
+	CommentProvider,
 	type CommentSortBy,
 	type CommentThreadPage,
 	type CreateCommentInput,
 	type GetCommentThreadInput,
 } from "./provider";
-import {
-	DEFAULT_COMMENT_ROOT_LIMIT,
-	DEFAULT_COMMENT_SORT_BY,
-	normalizeCommentOffset,
-} from "./options";
 
 export type WpCommentProviderConfig = {
 	apiBase: string;
@@ -56,9 +56,13 @@ async function fetchWpJson<T>(url: string, init?: RequestInit): Promise<T> {
 
 		try {
 			const parsed = JSON.parse(payload) as { message?: string };
-			throw new Error(parsed.message || `WordPress API request failed: ${response.status}`);
+			throw new Error(
+				parsed.message || `WordPress API request failed: ${response.status}`,
+			);
 		} catch {
-			throw new Error(payload || `WordPress API request failed: ${response.status}`);
+			throw new Error(
+				payload || `WordPress API request failed: ${response.status}`,
+			);
 		}
 	}
 
@@ -84,7 +88,10 @@ function mapWpStatus(status?: string): CommentStatus {
 	}
 }
 
-function mapWpComment(postKey: string, comment: WpCommentRecord): CanonicalComment {
+function mapWpComment(
+	postKey: string,
+	comment: WpCommentRecord,
+): CanonicalComment {
 	const html = comment.content?.rendered ?? "";
 	const avatarCandidates = Object.values(comment.author_avatar_urls ?? {});
 

@@ -1,26 +1,29 @@
 <script lang="ts">
-import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { ArtalkApiError } from "@utils/artalk/core";
 import { getCommentClient } from "@utils/comments/client";
 import {
-	CommentCaptchaRequiredError,
-	type CommentSortBy,
-} from "@utils/comments/provider";
-import { DEFAULT_COMMENT_SORT_BY, normalizeCommentOffset } from "@utils/comments/options";
-import {
-	countCommentsInTree,
-	insertPendingComment,
-	replaceCommentInTree,
-} from "@utils/comments/tree";
+	DEFAULT_COMMENT_SORT_BY,
+	normalizeCommentOffset,
+} from "@utils/comments/options";
 import type {
 	CommentCapability,
 	CommentCaptchaState,
 	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
+import {
+	CommentCaptchaRequiredError,
+	type CommentSortBy,
+} from "@utils/comments/provider";
+import {
+	countCommentsInTree,
+	insertPendingComment,
+	replaceCommentInTree,
+} from "@utils/comments/tree";
 import { onDestroy, onMount, tick } from "svelte";
 import { fade, slide } from "svelte/transition";
+import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
 import CommentComposer from "./CommentComposer.svelte";
 import CommentHeader from "./CommentHeader.svelte";
 import CommentList from "./CommentList.svelte";
@@ -65,12 +68,15 @@ let totalRootCount = 0;
 let submitNoticeTimer: ReturnType<typeof setTimeout> | null = null;
 
 $: pageSize = Math.max(1, rootLimit);
-$: currentPage = totalRootCount === 0 ? 1 : Math.floor(currentOffset / pageSize) + 1;
+$: currentPage =
+	totalRootCount === 0 ? 1 : Math.floor(currentOffset / pageSize) + 1;
 $: totalPages = Math.max(1, Math.ceil(totalRootCount / pageSize));
 $: hasPreviousPage = currentOffset > 0;
 $: hasNextPage = currentOffset + pageSize < totalRootCount;
 $: activeCaptchaCommentId =
-	activeCaptchaTarget?.kind === "comment" ? activeCaptchaTarget.commentId : null;
+	activeCaptchaTarget?.kind === "comment"
+		? activeCaptchaTarget.commentId
+		: null;
 $: showComposerCaptcha =
 	activeCaptchaTarget?.kind === "composer" && Boolean(captchaState?.required);
 $: supportsVote = capability?.supportsVote ?? false;
@@ -149,7 +155,8 @@ async function promptForCaptcha(
 	try {
 		activeCaptchaTarget = target;
 		captchaState =
-			nextState ?? (commentClient ? await commentClient.refreshCaptcha() : null);
+			nextState ??
+			(commentClient ? await commentClient.refreshCaptcha() : null);
 		captchaPrompt = i18n(I18nKey.commentsCaptchaRequiredTip);
 		captchaError = "";
 		submitError = "";
@@ -177,7 +184,9 @@ async function loadComments(nextOptions?: {
 		}
 
 		const nextSortBy = nextOptions?.sortBy ?? currentSortBy;
-		const nextOffset = normalizeCommentOffset(nextOptions?.offset ?? currentOffset);
+		const nextOffset = normalizeCommentOffset(
+			nextOptions?.offset ?? currentOffset,
+		);
 		const [nextCapability, threadPage] = await Promise.all([
 			commentClient.getCapability(postKey),
 			commentClient.getThread({
@@ -387,10 +396,7 @@ async function handleSubmit(detail: CommentComposerSubmitDetail) {
 			await promptForCaptcha(error.state, { kind: "composer" });
 		} else {
 			logCommentError("submit comment failed", error);
-			submitError = toCommentErrorMessage(
-				error,
-				I18nKey.commentsSubmitFailed,
-			);
+			submitError = toCommentErrorMessage(error, I18nKey.commentsSubmitFailed);
 		}
 
 		try {
@@ -424,7 +430,10 @@ async function handleVote(commentId: string, choice: CommentVoteChoice) {
 	);
 
 	try {
-		const updatedComment = await commentClient.voteComment({ commentId, choice });
+		const updatedComment = await commentClient.voteComment({
+			commentId,
+			choice,
+		});
 		comments = replaceCommentInTree(comments, updatedComment);
 		activeCaptchaTarget = null;
 		if (captchaState?.required) {

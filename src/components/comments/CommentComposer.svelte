@@ -6,8 +6,8 @@ import type {
 	CommentCaptchaState,
 	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
-import { fade } from "svelte/transition";
 import { validateCommentForm } from "@utils/comments/validation";
+import { fade } from "svelte/transition";
 import EmojiPicker from "./EmojiPicker.svelte";
 import InlineCommentCaptcha from "./InlineCommentCaptcha.svelte";
 

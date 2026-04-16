@@ -1,13 +1,3 @@
-import type {
-	CommentConfig,
-	ExpressiveCodeConfig,
-	FooterConfig,
-	LicenseConfig,
-	NavBarConfig,
-	PageMetricsConfig,
-	ProfileConfig,
-	SiteConfig,
-} from "./types/config";
 import {
 	defaultCommentConfig,
 	defaultExpressiveCodeConfig,
@@ -18,9 +8,22 @@ import {
 	defaultProfileConfig,
 	defaultSiteConfig,
 } from "./default-config";
+import type {
+	CommentConfig,
+	ExpressiveCodeConfig,
+	FooterConfig,
+	LicenseConfig,
+	NavBarConfig,
+	PageMetricsConfig,
+	ProfileConfig,
+	SiteConfig,
+} from "./types/config";
 import { normalizeCommentConfig } from "./utils/comments/options";
 
-type ExternalSiteConfig = Omit<Partial<SiteConfig>, "themeColor" | "banner" | "toc"> & {
+type ExternalSiteConfig = Omit<
+	Partial<SiteConfig>,
+	"themeColor" | "banner" | "toc"
+> & {
 	themeColor?: Partial<SiteConfig["themeColor"]>;
 	banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
 		credit?: Partial<SiteConfig["banner"]["credit"]>;
@@ -53,8 +56,9 @@ const externalSiteConfigModules = import.meta.glob<ExternalSiteConfigModule>(
 );
 
 const externalSiteConfig =
-	(Object.values(externalSiteConfigModules)[0] as ExternalSiteConfigModule | undefined) ??
-	null;
+	(Object.values(externalSiteConfigModules)[0] as
+		| ExternalSiteConfigModule
+		| undefined) ?? null;
 
 function mergeSiteConfig(
 	defaultConfig: SiteConfig,

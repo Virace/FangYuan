@@ -1,19 +1,19 @@
 import { createArtalkCaptchaService } from "../artalk/captcha";
 import {
-	createArtalkCommentService,
 	type ArtalkCommentServiceConfig,
+	createArtalkCommentService,
 } from "../artalk/comments";
+import { ArtalkApiError } from "../artalk/core";
 import {
-	CommentCaptchaRequiredError,
-	CommentProvider,
-	type CommentCaptchaState,
 	type CommentCapability,
+	CommentCaptchaRequiredError,
+	type CommentCaptchaState,
+	CommentProvider,
 	type CreateCommentInput,
 	type GetCommentThreadInput,
 	type VerifyCommentCaptchaInput,
 	type VoteCommentInput,
 } from "./provider";
-import { ArtalkApiError } from "../artalk/core";
 
 export type ArtalkCommentProviderConfig = ArtalkCommentServiceConfig;
 
@@ -28,8 +28,12 @@ function looksLikeCaptchaRequired(error: unknown): error is ArtalkApiError {
 
 export class ArtalkCommentProvider extends CommentProvider {
 	readonly kind = "artalk";
-	private readonly artalkCommentService: ReturnType<typeof createArtalkCommentService>;
-	private readonly artalkCaptchaService: ReturnType<typeof createArtalkCaptchaService>;
+	private readonly artalkCommentService: ReturnType<
+		typeof createArtalkCommentService
+	>;
+	private readonly artalkCaptchaService: ReturnType<
+		typeof createArtalkCaptchaService
+	>;
 
 	constructor(config: ArtalkCommentProviderConfig) {
 		super();
@@ -49,7 +53,10 @@ export class ArtalkCommentProvider extends CommentProvider {
 		try {
 			return await this.artalkCaptchaService.refresh();
 		} catch (error) {
-			console.error("[Artalk captcha] refresh failed after captcha requirement", error);
+			console.error(
+				"[Artalk captcha] refresh failed after captcha requirement",
+				error,
+			);
 			return null;
 		}
 	}
@@ -75,7 +82,9 @@ export class ArtalkCommentProvider extends CommentProvider {
 		return this.artalkCaptchaService.refresh();
 	}
 
-	async verifyCaptcha(input: VerifyCommentCaptchaInput): Promise<CommentCaptchaState> {
+	async verifyCaptcha(
+		input: VerifyCommentCaptchaInput,
+	): Promise<CommentCaptchaState> {
 		return this.artalkCaptchaService.verify(input);
 	}
 

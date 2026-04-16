@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { CanonicalComment } from "@/types/comment";
 import type {
 	CommentCaptchaState,
 	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
+import type { CanonicalComment } from "@/types/comment";
 import CommentItem from "./CommentItem.svelte";
 
 export let comments: CanonicalComment[] = [];
@@ -15,7 +15,8 @@ export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
 export let captchaError = "";
 export let captchaPrompt = "";
-export let onVote: ((commentId: string, choice: "up" | "down") => void) | null = null;
+export let onVote: ((commentId: string, choice: "up" | "down") => void) | null =
+	null;
 export let onReply: ((commentId: string) => void) | null = null;
 export let onDismissCaptcha: (() => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;

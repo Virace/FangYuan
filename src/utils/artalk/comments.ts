@@ -1,4 +1,8 @@
 import type { CanonicalComment, CommentStatus } from "@/types/comment";
+import {
+	DEFAULT_COMMENT_SORT_BY,
+	normalizeCommentOffset,
+} from "../comments/options";
 import type {
 	CommentCapability,
 	CommentSortBy,
@@ -7,15 +11,11 @@ import type {
 	GetCommentThreadInput,
 	VoteCommentInput,
 } from "../comments/provider";
-import {
-	DEFAULT_COMMENT_SORT_BY,
-	normalizeCommentOffset,
-} from "../comments/options";
 import { renderPlainCommentHtml } from "../comments/validation";
 import {
+	type ArtalkApiConfig,
 	fetchArtalkJson,
 	normalizeArtalkApiConfig,
-	type ArtalkApiConfig,
 } from "./core";
 
 const DEFAULT_ARTALK_PAGE_SIZE = 100;
@@ -118,7 +118,8 @@ function mapArtalkComment(
 		},
 		content: {
 			raw: comment.content || "",
-			html: comment.content_marked || renderPlainCommentHtml(comment.content || ""),
+			html:
+				comment.content_marked || renderPlainCommentHtml(comment.content || ""),
 		},
 		status: mapArtalkStatus(comment),
 		createdAt: normalizeArtalkDate(comment.date),
@@ -243,10 +244,7 @@ export function createArtalkCommentService(config: ArtalkCommentServiceConfig) {
 		},
 
 		async getThread(input: GetCommentThreadInput): Promise<CommentThreadPage> {
-			const limit = Math.max(
-				1,
-				Math.floor(input.limit ?? pageSize),
-			);
+			const limit = Math.max(1, Math.floor(input.limit ?? pageSize));
 			const offset = normalizeCommentOffset(input.offset);
 			const sortBy = input.sortBy ?? DEFAULT_COMMENT_SORT_BY;
 			const response = await artalkCommentsApi.listComments({
@@ -260,7 +258,10 @@ export function createArtalkCommentService(config: ArtalkCommentServiceConfig) {
 					const mappedComment = mapArtalkComment(input.postKey, comment);
 
 					try {
-						const vote = await artalkCommentsApi.getVote("comment", mappedComment.id);
+						const vote = await artalkCommentsApi.getVote(
+							"comment",
+							mappedComment.id,
+						);
 						return {
 							...mappedComment,
 							voteUp: vote.up,

@@ -1,6 +1,5 @@
 ---
 import { render } from "astro:content";
-import type { ImageMetadata, MarkdownHeading } from "astro";
 import CommentSection from "@components/comments/CommentSection.svelte";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
@@ -13,11 +12,17 @@ import { getSortedPosts } from "@utils/content-utils";
 import { resolveContentImage } from "@utils/image-source";
 import { shouldEnablePhotoSwipe } from "@utils/photoswipe-utils";
 import { getPostUrlBySlug } from "@utils/url-utils";
+import type { ImageMetadata, MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import { licenseConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
-import { commentConfig, pageMetricsConfig, profileConfig, siteConfig } from "../../config";
+import {
+	commentConfig,
+	pageMetricsConfig,
+	profileConfig,
+	siteConfig,
+} from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 
 export async function getStaticPaths() {

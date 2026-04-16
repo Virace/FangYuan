@@ -27,7 +27,8 @@ export const vi: Translation = {
 	[Key.commentsCaptcha]: "Mã xác minh",
 	[Key.commentsCaptchaRefresh]: "Làm mới mã xác minh",
 	[Key.commentsCaptchaVerify]: "Xác minh mã",
-	[Key.commentsCaptchaVerified]: "Đã xác minh mã. Bạn có thể tiếp tục bình luận hoặc bỏ phiếu.",
+	[Key.commentsCaptchaVerified]:
+		"Đã xác minh mã. Bạn có thể tiếp tục bình luận hoặc bỏ phiếu.",
 	[Key.commentsCaptchaRequiredTip]:
 		"Artalk hiện yêu cầu xác minh captcha. Hãy hoàn tất tại đây trước khi tiếp tục bình luận hoặc bỏ phiếu.",
 	[Key.commentsCaptchaUnsupported]:
@@ -36,7 +37,8 @@ export const vi: Translation = {
 		"Xác minh captcha thất bại. Vui lòng thử lại.",
 	[Key.commentsVoteUp]: "Thích",
 	[Key.commentsVoteDown]: "Không thích",
-	[Key.commentsVoteFailed]: "Không thể gửi lượt bình chọn. Vui lòng thử lại sau.",
+	[Key.commentsVoteFailed]:
+		"Không thể gửi lượt bình chọn. Vui lòng thử lại sau.",
 	[Key.commentsSortNewest]: "Mới nhất trước",
 	[Key.commentsSortOldest]: "Cũ nhất trước",
 	[Key.commentsPaginationPrevious]: "Trang trước",
@@ -51,7 +53,8 @@ export const vi: Translation = {
 	[Key.commentCountPlural]: "bình luận",
 	[Key.commentsValidationNameRequired]: "Vui lòng nhập tên hiển thị.",
 	[Key.commentsValidationEmailInvalid]: "Vui lòng nhập địa chỉ email hợp lệ.",
-	[Key.commentsValidationContentRequired]: "Nội dung bình luận không được để trống.",
+	[Key.commentsValidationContentRequired]:
+		"Nội dung bình luận không được để trống.",
 	[Key.commentsValidationCaptchaRequired]: "Vui lòng nhập mã captcha.",
 	[Key.commentsValidationContentUnsafe]:
 		"Bình luận chứa nội dung đáng ngờ. Vui lòng chỉnh sửa trước khi gửi.",

@@ -1,17 +1,17 @@
 import type { CanonicalComment } from "@/types/comment";
 import {
-	CommentProvider,
+	DEFAULT_COMMENT_ROOT_LIMIT,
+	DEFAULT_COMMENT_SORT_BY,
+	normalizeCommentOffset,
+} from "./options";
+import {
 	type CommentCapability,
+	CommentProvider,
 	type CommentSortBy,
 	type CommentThreadPage,
 	type CreateCommentInput,
 	type GetCommentThreadInput,
 } from "./provider";
-import {
-	DEFAULT_COMMENT_ROOT_LIMIT,
-	DEFAULT_COMMENT_SORT_BY,
-	normalizeCommentOffset,
-} from "./options";
 import { renderPlainCommentHtml } from "./validation";
 
 function createMockComment(
@@ -278,7 +278,12 @@ export class MockCommentProvider extends CommentProvider {
 		);
 		const offset = normalizeCommentOffset(input.offset);
 		const sortBy = input.sortBy ?? DEFAULT_COMMENT_SORT_BY;
-		return paginateMockThread(createMockThread(input.postKey), limit, offset, sortBy);
+		return paginateMockThread(
+			createMockThread(input.postKey),
+			limit,
+			offset,
+			sortBy,
+		);
 	}
 
 	async createComment(input: CreateCommentInput) {

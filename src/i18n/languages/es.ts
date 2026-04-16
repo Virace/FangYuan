@@ -14,11 +14,13 @@ export const es: Translation = {
 	[Key.comments]: "Comentarios",
 	[Key.commentsLoading]: "Cargando comentarios...",
 	[Key.commentsEmpty]: "Aún no hay comentarios. Sé el primero en participar.",
-	[Key.commentsDisabled]: "Los comentarios no están disponibles en este momento.",
+	[Key.commentsDisabled]:
+		"Los comentarios no están disponibles en este momento.",
 	[Key.commentsLoadFailed]: "No se pudieron cargar los comentarios.",
 	[Key.commentsSubmit]: "Publicar comentario",
 	[Key.commentsSubmitting]: "Publicando...",
-	[Key.commentsSubmitFailed]: "No se pudo enviar el comentario. Inténtalo de nuevo más tarde.",
+	[Key.commentsSubmitFailed]:
+		"No se pudo enviar el comentario. Inténtalo de nuevo más tarde.",
 	[Key.commentsSubmitSuccess]: "Comentario enviado correctamente.",
 	[Key.commentsReply]: "Responder",
 	[Key.commentsReplying]: "Respondiendo a este comentario.",
@@ -27,7 +29,8 @@ export const es: Translation = {
 	[Key.commentsCaptcha]: "Captcha",
 	[Key.commentsCaptchaRefresh]: "Actualizar captcha",
 	[Key.commentsCaptchaVerify]: "Verificar captcha",
-	[Key.commentsCaptchaVerified]: "Captcha verificado. Ya puedes comentar o votar.",
+	[Key.commentsCaptchaVerified]:
+		"Captcha verificado. Ya puedes comentar o votar.",
 	[Key.commentsCaptchaRequiredTip]:
 		"Artalk ahora requiere verificar el captcha. Complétalo aquí antes de volver a comentar o votar.",
 	[Key.commentsCaptchaUnsupported]:
@@ -36,7 +39,8 @@ export const es: Translation = {
 		"La verificación del captcha falló. Inténtalo de nuevo.",
 	[Key.commentsVoteUp]: "Voto positivo",
 	[Key.commentsVoteDown]: "Voto negativo",
-	[Key.commentsVoteFailed]: "No se pudo enviar el voto. Inténtalo de nuevo más tarde.",
+	[Key.commentsVoteFailed]:
+		"No se pudo enviar el voto. Inténtalo de nuevo más tarde.",
 	[Key.commentsSortNewest]: "Más recientes primero",
 	[Key.commentsSortOldest]: "Más antiguos primero",
 	[Key.commentsPaginationPrevious]: "Anterior",
@@ -50,12 +54,15 @@ export const es: Translation = {
 	[Key.commentCountSingular]: "comentario",
 	[Key.commentCountPlural]: "comentarios",
 	[Key.commentsValidationNameRequired]: "Introduce un nombre.",
-	[Key.commentsValidationEmailInvalid]: "Introduce una dirección de correo válida.",
-	[Key.commentsValidationContentRequired]: "El contenido del comentario no puede estar vacío.",
+	[Key.commentsValidationEmailInvalid]:
+		"Introduce una dirección de correo válida.",
+	[Key.commentsValidationContentRequired]:
+		"El contenido del comentario no puede estar vacío.",
 	[Key.commentsValidationCaptchaRequired]: "Introduce el código del captcha.",
 	[Key.commentsValidationContentUnsafe]:
 		"El comentario contiene contenido sospechoso. Revísalo antes de enviarlo.",
-	[Key.commentsValidationWebsiteInvalid]: "Introduce una URL de sitio web válida.",
+	[Key.commentsValidationWebsiteInvalid]:
+		"Introduce una URL de sitio web válida.",
 
 	[Key.untitled]: "Sin título",
 	[Key.uncategorized]: "Sin categoría",

@@ -18,7 +18,8 @@ export const tr: Translation = {
 	[Key.commentsLoadFailed]: "Yorumlar yüklenemedi.",
 	[Key.commentsSubmit]: "Yorum gönder",
 	[Key.commentsSubmitting]: "Gönderiliyor...",
-	[Key.commentsSubmitFailed]: "Yorum gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+	[Key.commentsSubmitFailed]:
+		"Yorum gönderilemedi. Lütfen daha sonra tekrar deneyin.",
 	[Key.commentsSubmitSuccess]: "Yorum başarıyla gönderildi.",
 	[Key.commentsReply]: "Yanıtla",
 	[Key.commentsReplying]: "Bu yoruma yanıt yazılıyor.",
@@ -27,7 +28,8 @@ export const tr: Translation = {
 	[Key.commentsCaptcha]: "Doğrulama kodu",
 	[Key.commentsCaptchaRefresh]: "Doğrulama kodunu yenile",
 	[Key.commentsCaptchaVerify]: "Doğrula",
-	[Key.commentsCaptchaVerified]: "Doğrulama tamamlandı. Yorum yapmaya veya oy vermeye devam edebilirsiniz.",
+	[Key.commentsCaptchaVerified]:
+		"Doğrulama tamamlandı. Yorum yapmaya veya oy vermeye devam edebilirsiniz.",
 	[Key.commentsCaptchaRequiredTip]:
 		"Artalk artık captcha doğrulaması istiyor. Yorum yapmaya veya oy vermeye devam etmeden önce burada tamamlayın.",
 	[Key.commentsCaptchaUnsupported]:
@@ -36,7 +38,8 @@ export const tr: Translation = {
 		"Captcha doğrulaması başarısız oldu. Lütfen tekrar deneyin.",
 	[Key.commentsVoteUp]: "Olumlu oy",
 	[Key.commentsVoteDown]: "Olumsuz oy",
-	[Key.commentsVoteFailed]: "Oy gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+	[Key.commentsVoteFailed]:
+		"Oy gönderilemedi. Lütfen daha sonra tekrar deneyin.",
 	[Key.commentsSortNewest]: "En yeni önce",
 	[Key.commentsSortOldest]: "En eski önce",
 	[Key.commentsPaginationPrevious]: "Önceki",
@@ -50,12 +53,14 @@ export const tr: Translation = {
 	[Key.commentCountSingular]: "yorum",
 	[Key.commentCountPlural]: "yorum",
 	[Key.commentsValidationNameRequired]: "Lütfen bir ad girin.",
-	[Key.commentsValidationEmailInvalid]: "Lütfen geçerli bir e-posta adresi girin.",
+	[Key.commentsValidationEmailInvalid]:
+		"Lütfen geçerli bir e-posta adresi girin.",
 	[Key.commentsValidationContentRequired]: "Yorum içeriği boş olamaz.",
 	[Key.commentsValidationCaptchaRequired]: "Lütfen captcha kodunu girin.",
 	[Key.commentsValidationContentUnsafe]:
 		"Yorum şüpheli içerik içeriyor. Lütfen düzenleyip tekrar deneyin.",
-	[Key.commentsValidationWebsiteInvalid]: "Lütfen geçerli bir web sitesi URL’si girin.",
+	[Key.commentsValidationWebsiteInvalid]:
+		"Lütfen geçerli bir web sitesi URL’si girin.",
 
 	[Key.untitled]: "Başlıksız",
 	[Key.uncategorized]: "Katagorisiz",

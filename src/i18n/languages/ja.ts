@@ -18,7 +18,8 @@ export const ja: Translation = {
 	[Key.commentsLoadFailed]: "コメントの読み込みに失敗しました。",
 	[Key.commentsSubmit]: "コメントを投稿",
 	[Key.commentsSubmitting]: "投稿中...",
-	[Key.commentsSubmitFailed]: "コメントの送信に失敗しました。後でもう一度お試しください。",
+	[Key.commentsSubmitFailed]:
+		"コメントの送信に失敗しました。後でもう一度お試しください。",
 	[Key.commentsSubmitSuccess]: "コメントを送信しました。",
 	[Key.commentsReply]: "返信",
 	[Key.commentsReplying]: "このコメントに返信しています。",
@@ -27,7 +28,8 @@ export const ja: Translation = {
 	[Key.commentsCaptcha]: "認証コード",
 	[Key.commentsCaptchaRefresh]: "認証コードを更新",
 	[Key.commentsCaptchaVerify]: "認証コードを確認",
-	[Key.commentsCaptchaVerified]: "認証コードを確認しました。コメントや投票を続けられます。",
+	[Key.commentsCaptchaVerified]:
+		"認証コードを確認しました。コメントや投票を続けられます。",
 	[Key.commentsCaptchaRequiredTip]:
 		"Artalk では現在認証コードの確認が必要です。コメントや投票を続ける前にここで完了してください。",
 	[Key.commentsCaptchaUnsupported]:
@@ -36,7 +38,8 @@ export const ja: Translation = {
 		"認証コードの確認に失敗しました。もう一度お試しください。",
 	[Key.commentsVoteUp]: "高評価",
 	[Key.commentsVoteDown]: "低評価",
-	[Key.commentsVoteFailed]: "投票の送信に失敗しました。後でもう一度お試しください。",
+	[Key.commentsVoteFailed]:
+		"投票の送信に失敗しました。後でもう一度お試しください。",
 	[Key.commentsSortNewest]: "新しい順",
 	[Key.commentsSortOldest]: "古い順",
 	[Key.commentsPaginationPrevious]: "前へ",
@@ -50,12 +53,14 @@ export const ja: Translation = {
 	[Key.commentCountSingular]: "件のコメント",
 	[Key.commentCountPlural]: "件のコメント",
 	[Key.commentsValidationNameRequired]: "名前を入力してください。",
-	[Key.commentsValidationEmailInvalid]: "有効なメールアドレスを入力してください。",
+	[Key.commentsValidationEmailInvalid]:
+		"有効なメールアドレスを入力してください。",
 	[Key.commentsValidationContentRequired]: "コメント内容を入力してください。",
 	[Key.commentsValidationCaptchaRequired]: "認証コードを入力してください。",
 	[Key.commentsValidationContentUnsafe]:
 		"コメントに不審な内容が含まれています。修正してから送信してください。",
-	[Key.commentsValidationWebsiteInvalid]: "有効なウェブサイト URL を入力してください。",
+	[Key.commentsValidationWebsiteInvalid]:
+		"有効なウェブサイト URL を入力してください。",
 
 	[Key.untitled]: "タイトルなし",
 	[Key.uncategorized]: "カテゴリなし",

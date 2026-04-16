@@ -35,9 +35,7 @@ export function resolveContentRoot(): ContentRoot {
 	return hasExternalSiteContent() ? "./site/content" : "./src/content";
 }
 
-export function loadExternalExpressiveCodeConfig():
-	| { theme?: string }
-	| null {
+export function loadExternalExpressiveCodeConfig(): { theme?: string } | null {
 	if (!existsSync(externalConfigPath)) {
 		return null;
 	}
@@ -53,7 +51,7 @@ export function loadExternalExpressiveCodeConfig():
 	const themeMatch = exportMatch[1].match(/theme:\s*["'`]([^"'`]+)["'`]/);
 	if (!themeMatch) {
 		throw new Error(
-			'site/config.ts 中的 expressiveCodeConfig.theme 需要保持字符串字面量。',
+			"site/config.ts 中的 expressiveCodeConfig.theme 需要保持字符串字面量。",
 		);
 	}
 

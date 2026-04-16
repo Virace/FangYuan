@@ -30,10 +30,8 @@ export const th: Translation = {
 	[Key.commentsCaptchaVerified]: "ยืนยันรหัสแล้ว คุณสามารถแสดงความคิดเห็นหรือโหวตต่อได้",
 	[Key.commentsCaptchaRequiredTip]:
 		"Artalk ต้องการการยืนยันรหัสก่อน โปรดดำเนินการที่นี่ก่อนแสดงความคิดเห็นหรือโหวตอีกครั้ง",
-	[Key.commentsCaptchaUnsupported]:
-		"ฟรอนต์เอนด์นี้ยังไม่รองรับรูปแบบรหัสยืนยันปัจจุบัน",
-	[Key.commentsCaptchaVerifyFailed]:
-		"การยืนยันรหัสล้มเหลว กรุณาลองใหม่",
+	[Key.commentsCaptchaUnsupported]: "ฟรอนต์เอนด์นี้ยังไม่รองรับรูปแบบรหัสยืนยันปัจจุบัน",
+	[Key.commentsCaptchaVerifyFailed]: "การยืนยันรหัสล้มเหลว กรุณาลองใหม่",
 	[Key.commentsVoteUp]: "โหวตขึ้น",
 	[Key.commentsVoteDown]: "โหวตลง",
 	[Key.commentsVoteFailed]: "ส่งการโหวตไม่สำเร็จ กรุณาลองใหม่ภายหลัง",
@@ -53,8 +51,7 @@ export const th: Translation = {
 	[Key.commentsValidationEmailInvalid]: "กรุณากรอกอีเมลที่ถูกต้อง",
 	[Key.commentsValidationContentRequired]: "เนื้อหาความคิดเห็นต้องไม่ว่าง",
 	[Key.commentsValidationCaptchaRequired]: "กรุณากรอกรหัสยืนยัน",
-	[Key.commentsValidationContentUnsafe]:
-		"ความคิดเห็นมีเนื้อหาที่น่าสงสัย กรุณาแก้ไขก่อนส่ง",
+	[Key.commentsValidationContentUnsafe]: "ความคิดเห็นมีเนื้อหาที่น่าสงสัย กรุณาแก้ไขก่อนส่ง",
 	[Key.commentsValidationWebsiteInvalid]: "กรุณากรอก URL เว็บไซต์ที่ถูกต้อง",
 
 	[Key.untitled]: "ไม่ได้ตั้งชื่อ",

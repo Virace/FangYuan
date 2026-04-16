@@ -87,7 +87,9 @@ export abstract class CommentProvider {
 		return this.getCaptchaState();
 	}
 
-	async verifyCaptcha(_input: VerifyCommentCaptchaInput): Promise<CommentCaptchaState> {
+	async verifyCaptcha(
+		_input: VerifyCommentCaptchaInput,
+	): Promise<CommentCaptchaState> {
 		throw new Error("Comment captcha is not supported by this provider.");
 	}
 

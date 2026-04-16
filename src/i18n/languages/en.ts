@@ -18,7 +18,8 @@ export const en: Translation = {
 	[Key.commentsLoadFailed]: "Failed to load comments.",
 	[Key.commentsSubmit]: "Post Comment",
 	[Key.commentsSubmitting]: "Posting...",
-	[Key.commentsSubmitFailed]: "Failed to submit the comment. Please try again later.",
+	[Key.commentsSubmitFailed]:
+		"Failed to submit the comment. Please try again later.",
 	[Key.commentsSubmitSuccess]: "Comment submitted successfully.",
 	[Key.commentsReply]: "Reply",
 	[Key.commentsReplying]: "Replying to this comment.",
@@ -27,7 +28,8 @@ export const en: Translation = {
 	[Key.commentsCaptcha]: "Captcha",
 	[Key.commentsCaptchaRefresh]: "Refresh captcha",
 	[Key.commentsCaptchaVerify]: "Verify captcha",
-	[Key.commentsCaptchaVerified]: "Captcha verified. You can continue commenting or voting.",
+	[Key.commentsCaptchaVerified]:
+		"Captcha verified. You can continue commenting or voting.",
 	[Key.commentsCaptchaRequiredTip]:
 		"Artalk now requires captcha verification. Please complete it here before commenting or voting again.",
 	[Key.commentsCaptchaUnsupported]:
@@ -36,7 +38,8 @@ export const en: Translation = {
 		"Captcha verification failed. Please try again.",
 	[Key.commentsVoteUp]: "Upvote",
 	[Key.commentsVoteDown]: "Downvote",
-	[Key.commentsVoteFailed]: "Failed to submit the vote. Please try again later.",
+	[Key.commentsVoteFailed]:
+		"Failed to submit the vote. Please try again later.",
 	[Key.commentsSortNewest]: "Newest first",
 	[Key.commentsSortOldest]: "Oldest first",
 	[Key.commentsPaginationPrevious]: "Previous",

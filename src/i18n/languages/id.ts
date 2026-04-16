@@ -18,7 +18,8 @@ export const id: Translation = {
 	[Key.commentsLoadFailed]: "Gagal memuat komentar.",
 	[Key.commentsSubmit]: "Kirim komentar",
 	[Key.commentsSubmitting]: "Mengirim...",
-	[Key.commentsSubmitFailed]: "Gagal mengirim komentar. Silakan coba lagi nanti.",
+	[Key.commentsSubmitFailed]:
+		"Gagal mengirim komentar. Silakan coba lagi nanti.",
 	[Key.commentsSubmitSuccess]: "Komentar berhasil dikirim.",
 	[Key.commentsReply]: "Balas",
 	[Key.commentsReplying]: "Sedang membalas komentar ini.",
@@ -27,7 +28,8 @@ export const id: Translation = {
 	[Key.commentsCaptcha]: "Captcha",
 	[Key.commentsCaptchaRefresh]: "Muat ulang captcha",
 	[Key.commentsCaptchaVerify]: "Verifikasi captcha",
-	[Key.commentsCaptchaVerified]: "Captcha terverifikasi. Anda dapat melanjutkan komentar atau voting.",
+	[Key.commentsCaptchaVerified]:
+		"Captcha terverifikasi. Anda dapat melanjutkan komentar atau voting.",
 	[Key.commentsCaptchaRequiredTip]:
 		"Artalk sekarang memerlukan verifikasi captcha. Selesaikan di sini sebelum berkomentar atau voting lagi.",
 	[Key.commentsCaptchaUnsupported]:

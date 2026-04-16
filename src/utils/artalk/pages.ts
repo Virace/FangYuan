@@ -1,9 +1,9 @@
+import type { PageMetrics } from "../page-metrics/provider";
 import {
+	type ArtalkApiConfig,
 	fetchArtalkJson,
 	normalizeArtalkApiConfig,
-	type ArtalkApiConfig,
 } from "./core";
-import type { PageMetrics } from "../page-metrics/provider";
 
 export type ArtalkPageMetricsResponse = {
 	pv: number;
