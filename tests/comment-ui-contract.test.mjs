@@ -37,6 +37,15 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /CommentList/);
 	assert.match(commentSectionSource, /countCommentsInTree\(/);
 	assert.match(commentSectionSource, /commentClient\.getThread\(\{/);
+	assert.match(
+		commentSectionSource,
+		/const nextCapability =\s*capability \?\? \(await commentClient\.getCapability\(postKey\)\)/,
+	);
+	assert.doesNotMatch(
+		commentSectionSource,
+		/Promise\.all\(\[\s*commentClient\.getCapability\(postKey\),\s*commentClient\.getThread\(\{/,
+		"comment loading should avoid a second parallel capability fetch when the thread response can seed Artalk capability cache",
+	);
 	assert.match(commentSectionSource, /sortBy:/);
 	assert.match(commentSectionSource, /offset:/);
 	assert.match(commentSectionSource, /limit:/);

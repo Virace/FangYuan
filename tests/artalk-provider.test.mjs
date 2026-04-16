@@ -51,8 +51,17 @@ test("standalone Artalk comments module should own raw comments and vote endpoin
 	assert.match(source, /vote_down/);
 	assert.match(source, /roots_count/);
 	assert.match(source, /export function createArtalkCommentService\(/);
+	assert.match(source, /function buildArtalkCapability\(/);
+	assert.match(source, /const capabilityCache = new Map<string, CommentCapability>\(\)/);
+	assert.match(source, /const cachedCapability = capabilityCache\.get\(postKey\)/);
+	assert.match(source, /capabilityCache\.set\(input\.postKey, capability\)/);
 	assert.match(source, /supportsVote:\s*true/);
 	assert.match(source, /renderPlainCommentHtml/);
+	assert.doesNotMatch(
+		source,
+		/getThread[\s\S]*artalkCommentsApi\.getVote/,
+		"thread loading should trust vote_up and vote_down from the comments payload instead of refetching every comment vote",
+	);
 });
 
 test("standalone Artalk captcha module should own captcha status, image challenge, and verification endpoints", async () => {

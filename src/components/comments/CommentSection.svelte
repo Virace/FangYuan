@@ -187,15 +187,14 @@ async function loadComments(nextOptions?: {
 		const nextOffset = normalizeCommentOffset(
 			nextOptions?.offset ?? currentOffset,
 		);
-		const [nextCapability, threadPage] = await Promise.all([
-			commentClient.getCapability(postKey),
-			commentClient.getThread({
-				postKey,
-				sortBy: nextSortBy,
-				limit: pageSize,
-				offset: nextOffset,
-			}),
-		]);
+		const threadPage = await commentClient.getThread({
+			postKey,
+			sortBy: nextSortBy,
+			limit: pageSize,
+			offset: nextOffset,
+		});
+		const nextCapability =
+			capability ?? (await commentClient.getCapability(postKey));
 
 		capability = nextCapability;
 		if (!nextCapability.enabled) {

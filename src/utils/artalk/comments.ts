@@ -44,6 +44,9 @@ export type ArtalkCommentListResponse = {
 	roots_count: number;
 	page?: {
 		admin_only?: boolean;
+		pv?: number;
+		vote_up?: number;
+		vote_down?: number;
 	};
 };
 
@@ -101,6 +104,22 @@ function mapArtalkViewerVote(vote: ArtalkVoteResponse): "up" | "down" | null {
 	}
 
 	return null;
+}
+
+function buildArtalkCapability(
+	page?: ArtalkCommentListResponse["page"],
+): CommentCapability {
+	const adminOnly = page?.admin_only ?? false;
+
+	return {
+		enabled: !adminOnly,
+		provider: "artalk",
+		supportsReply: !adminOnly,
+		supportsVote: true,
+		message: adminOnly
+			? "Comments are only available to administrators for this page."
+			: undefined,
+	};
 }
 
 function mapArtalkComment(
@@ -221,26 +240,24 @@ export function createArtalkCommentService(config: ArtalkCommentServiceConfig) {
 		Math.floor(config.pageSize ?? DEFAULT_ARTALK_PAGE_SIZE),
 	);
 	const artalkCommentsApi = createArtalkCommentsApi(normalizedConfig);
+	const capabilityCache = new Map<string, CommentCapability>();
 
 	return {
 		async getCapability(postKey: string): Promise<CommentCapability> {
+			const cachedCapability = capabilityCache.get(postKey);
+			if (cachedCapability) {
+				return cachedCapability;
+			}
+
 			const response = await artalkCommentsApi.listComments({
 				postKey,
 				sortBy: DEFAULT_COMMENT_SORT_BY,
 				limit: 1,
 				offset: 0,
 			});
-			const adminOnly = response.page?.admin_only ?? false;
-
-			return {
-				enabled: !adminOnly,
-				provider: "artalk",
-				supportsReply: !adminOnly,
-				supportsVote: true,
-				message: adminOnly
-					? "Comments are only available to administrators for this page."
-					: undefined,
-			};
+			const capability = buildArtalkCapability(response.page);
+			capabilityCache.set(postKey, capability);
+			return capability;
 		},
 
 		async getThread(input: GetCommentThreadInput): Promise<CommentThreadPage> {
@@ -253,25 +270,10 @@ export function createArtalkCommentService(config: ArtalkCommentServiceConfig) {
 				limit,
 				offset,
 			});
-			const comments = await Promise.all(
-				response.comments.map(async (comment) => {
-					const mappedComment = mapArtalkComment(input.postKey, comment);
-
-					try {
-						const vote = await artalkCommentsApi.getVote(
-							"comment",
-							mappedComment.id,
-						);
-						return {
-							...mappedComment,
-							voteUp: vote.up,
-							voteDown: vote.down,
-							viewerVote: mapArtalkViewerVote(vote),
-						};
-					} catch {
-						return mappedComment;
-					}
-				}),
+			const capability = buildArtalkCapability(response.page);
+			capabilityCache.set(input.postKey, capability);
+			const comments = response.comments.map((comment) =>
+				mapArtalkComment(input.postKey, comment),
 			);
 
 			return {
