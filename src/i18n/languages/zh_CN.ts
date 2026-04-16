@@ -76,5 +76,13 @@ export const zh_CN: Translation = {
 	[Key.author]: "作者",
 	[Key.publishedAt]: "发布于",
 	[Key.pageViews]: "浏览量",
+	[Key.pageFeedbackLike]: "点赞",
+	[Key.pageFeedbackLiked]: "已点赞",
+	[Key.pageFeedbackLikeFailed]: "点赞失败，请稍后再试。",
+	[Key.pageFeedbackReward]: "请作者喝杯咖啡",
+	[Key.pageFeedbackRewardTitle]: "支持这篇文章",
+	[Key.pageFeedbackRewardDescription]:
+		"如果这篇内容对你有帮助，欢迎通过下方渠道支持作者。",
+	[Key.pageFeedbackClose]: "关闭",
 	[Key.license]: "许可协议",
 };

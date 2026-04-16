@@ -4,6 +4,7 @@ import type {
 	FooterConfig,
 	LicenseConfig,
 	NavBarConfig,
+	PageFeedbackConfig,
 	PageMetricsConfig,
 	ProfileConfig,
 	SiteConfig,
@@ -107,4 +108,10 @@ export const defaultCommentConfig: CommentConfig = {
 export const defaultPageMetricsConfig: PageMetricsConfig = {
 	enable: false,
 	provider: null,
+};
+
+export const defaultPageFeedbackConfig: PageFeedbackConfig = {
+	enable: false,
+	provider: null,
+	rewardOptions: [],
 };

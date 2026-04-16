@@ -4,6 +4,7 @@ import {
 	defaultFooterConfig,
 	defaultLicenseConfig,
 	defaultNavBarConfig,
+	defaultPageFeedbackConfig,
 	defaultPageMetricsConfig,
 	defaultProfileConfig,
 	defaultSiteConfig,
@@ -14,6 +15,7 @@ import type {
 	FooterConfig,
 	LicenseConfig,
 	NavBarConfig,
+	PageFeedbackConfig,
 	PageMetricsConfig,
 	ProfileConfig,
 	SiteConfig,
@@ -48,6 +50,7 @@ type ExternalSiteConfigModule = {
 	expressiveCodeConfig?: Partial<ExpressiveCodeConfig>;
 	commentConfig?: CommentConfig;
 	pageMetricsConfig?: PageMetricsConfig;
+	pageFeedbackConfig?: PageFeedbackConfig;
 };
 
 const externalSiteConfigModules = import.meta.glob<ExternalSiteConfigModule>(
@@ -151,6 +154,22 @@ function mergePageMetricsConfig(
 	};
 }
 
+function mergePageFeedbackConfig(
+	defaultConfig: PageFeedbackConfig,
+	override?: PageFeedbackConfig,
+): PageFeedbackConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		provider: override.provider ?? defaultConfig.provider,
+		rewardOptions: override.rewardOptions ?? defaultConfig.rewardOptions,
+	};
+}
+
 export const siteConfig: SiteConfig = mergeSiteConfig(
 	defaultSiteConfig,
 	externalSiteConfig?.siteConfig,
@@ -189,6 +208,11 @@ export const commentConfig: CommentConfig = mergeCommentConfig(
 export const pageMetricsConfig: PageMetricsConfig = mergePageMetricsConfig(
 	defaultPageMetricsConfig,
 	externalSiteConfig?.pageMetricsConfig,
+);
+
+export const pageFeedbackConfig: PageFeedbackConfig = mergePageFeedbackConfig(
+	defaultPageFeedbackConfig,
+	externalSiteConfig?.pageFeedbackConfig,
 );
 
 export const configImageBaseRoots = {

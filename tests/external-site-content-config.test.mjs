@@ -221,8 +221,8 @@ test("local site config should allow wiring page metrics through the same Artalk
 
 	assert.match(
 		siteConfigSource,
-		/import type \{ CommentConfig, PageMetricsConfig \} from "\.\.\/src\/types\/config";/,
-		"site/config.ts should type both comment and page metrics config exports",
+		/import type \{ CommentConfig, PageFeedbackConfig, PageMetricsConfig \} from "\.\.\/src\/types\/config";/,
+		"site/config.ts should type the page feedback config alongside comments and page metrics",
 	);
 
 	assert.match(
@@ -241,6 +241,24 @@ test("local site config should allow wiring page metrics through the same Artalk
 		siteConfigSource,
 		/(const artalkBase = "\/artalk-api";|apiBase:\s*"\/artalk-api"|apiBase:\s*artalkBase)/,
 		"site/config.ts should point local Artalk verification through the same-origin /artalk-api proxy, either inline or via a shared constant",
+	);
+
+	assert.match(
+		siteConfigSource,
+		/import \{ ArtalkPageFeedbackProvider \} from "\.\.\/src\/utils\/page-feedback\/artalk-provider";/,
+		"site/config.ts should import the dedicated Artalk page feedback adapter",
+	);
+
+	assert.match(
+		siteConfigSource,
+		/export const pageFeedbackConfig: PageFeedbackConfig = \{/,
+		"site/config.ts should expose a pageFeedbackConfig override",
+	);
+
+	assert.match(
+		siteConfigSource,
+		/rewardOptions:\s*\[[\s\S]*wechat-placeholder\.svg[\s\S]*alipay-placeholder\.svg[\s\S]*\]/,
+		"site/config.ts should wire the default two reward options through local placeholder assets",
 	);
 });
 

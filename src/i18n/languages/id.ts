@@ -81,5 +81,14 @@ export const id: Translation = {
 	[Key.author]: "Penulis",
 	[Key.publishedAt]: "Diterbitkan pada",
 	[Key.pageViews]: "Dilihat",
+	[Key.pageFeedbackLike]: "Like",
+	[Key.pageFeedbackLiked]: "Liked",
+	[Key.pageFeedbackLikeFailed]:
+		"Failed to submit the like. Please try again later.",
+	[Key.pageFeedbackReward]: "Buy the author a coffee",
+	[Key.pageFeedbackRewardTitle]: "Support this post",
+	[Key.pageFeedbackRewardDescription]:
+		"If this post helped you, you can support the author through the channels below.",
+	[Key.pageFeedbackClose]: "Close",
 	[Key.license]: "Lisensi",
 };

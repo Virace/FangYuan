@@ -76,5 +76,13 @@ export const zh_TW: Translation = {
 	[Key.author]: "作者",
 	[Key.publishedAt]: "發佈於",
 	[Key.pageViews]: "瀏覽量",
+	[Key.pageFeedbackLike]: "點讚",
+	[Key.pageFeedbackLiked]: "已點讚",
+	[Key.pageFeedbackLikeFailed]: "點讚失敗，請稍後再試。",
+	[Key.pageFeedbackReward]: "請作者喝杯咖啡",
+	[Key.pageFeedbackRewardTitle]: "支持這篇文章",
+	[Key.pageFeedbackRewardDescription]:
+		"如果這篇內容對你有幫助，歡迎透過下方渠道支持作者。",
+	[Key.pageFeedbackClose]: "關閉",
 	[Key.license]: "許可協議",
 };

@@ -72,6 +72,13 @@ enum I18nKey {
 	author = "author",
 	publishedAt = "publishedAt",
 	pageViews = "pageViews",
+	pageFeedbackLike = "pageFeedbackLike",
+	pageFeedbackLiked = "pageFeedbackLiked",
+	pageFeedbackLikeFailed = "pageFeedbackLikeFailed",
+	pageFeedbackReward = "pageFeedbackReward",
+	pageFeedbackRewardTitle = "pageFeedbackRewardTitle",
+	pageFeedbackRewardDescription = "pageFeedbackRewardDescription",
+	pageFeedbackClose = "pageFeedbackClose",
 	license = "license",
 }
 

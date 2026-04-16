@@ -82,5 +82,14 @@ export const vi: Translation = {
 	[Key.author]: "Tác giả",
 	[Key.publishedAt]: "Đăng vào lúc",
 	[Key.pageViews]: "Lượt xem",
+	[Key.pageFeedbackLike]: "Like",
+	[Key.pageFeedbackLiked]: "Liked",
+	[Key.pageFeedbackLikeFailed]:
+		"Failed to submit the like. Please try again later.",
+	[Key.pageFeedbackReward]: "Buy the author a coffee",
+	[Key.pageFeedbackRewardTitle]: "Support this post",
+	[Key.pageFeedbackRewardDescription]:
+		"If this post helped you, you can support the author through the channels below.",
+	[Key.pageFeedbackClose]: "Close",
 	[Key.license]: "Giấy phép bản quyền",
 };

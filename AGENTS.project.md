@@ -149,3 +149,6 @@
 - 与文章强绑定的图片资源优先和文章 Markdown 同目录共置，例如 `src/content/posts/<slug>/cover.jpeg`。
 - 需要公开绝对路径访问的静态资源放在 `public/`，当前典型用法是 favicon。
 - 样式以 Tailwind utility class 为主，配合 `src/styles/` 下的全局 CSS / Stylus 文件；新增样式时优先复用现有变量和样式入口，不新开重复主题系统。
+- 对 `client:only="svelte"` island 中在 Swup 切页后仍必须稳定生效的 UI 行为，关键样式不要放在组件局部 `<style>` 中；应下沉到 `src/styles/main.css` 或其他全局样式入口。
+- 这条规则尤其适用于 `dialog/modal/drawer/popover` 这类依赖 `dialog[open]`、`::backdrop`、动画类名、定位类名的交互；若关键样式只存在于组件局部作用域，Swup 路由切换后可能出现“弹层跑到左上角、动画丢失、backdrop 失效”这类回归。
+- 组件局部 `<style>` 只适合不影响跨页交互稳定性的局部装饰；涉及切页后仍要复用的关键布局、定位、状态和过渡样式，默认走全局样式并补回归验证。

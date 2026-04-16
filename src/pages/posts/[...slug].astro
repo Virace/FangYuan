@@ -3,6 +3,7 @@ import { render } from "astro:content";
 import CommentSection from "@components/comments/CommentSection.svelte";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
+import PostFeedback from "@components/page-feedback/PostFeedback.svelte";
 import PageViewCounter from "@components/page-metrics/PageViewCounter.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
@@ -14,11 +15,12 @@ import { shouldEnablePhotoSwipe } from "@utils/photoswipe-utils";
 import { getPostUrlBySlug } from "@utils/url-utils";
 import type { ImageMetadata, MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
-import { licenseConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import {
 	commentConfig,
+	licenseConfig,
+	pageFeedbackConfig,
 	pageMetricsConfig,
 	profileConfig,
 	siteConfig,
@@ -130,6 +132,15 @@ const jsonLd = {
             <Markdown class="mb-6 markdown-content onload-animation">
                 <Content />
             </Markdown>
+
+            {pageFeedbackConfig.enable && (
+                <PostFeedback
+                    client:only="svelte"
+                    postKey={postKey}
+                    postTitle={entry.data.title}
+                    rewardOptions={pageFeedbackConfig.rewardOptions ?? []}
+                />
+            )}
 
             {licenseConfig.enable && <License title={entry.data.title} slug={entry.id} pubDate={entry.data.published} class="mb-6 rounded-xl license-container onload-animation"></License>}
 

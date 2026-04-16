@@ -1,0 +1,23 @@
+import { pageFeedbackConfig } from "../../config";
+import {
+	type GetPageFeedbackInput,
+	type LikePageInput,
+} from "./provider";
+
+export function getPageFeedbackClient() {
+	const provider = pageFeedbackConfig.enable
+		? (pageFeedbackConfig.provider ?? null)
+		: null;
+	if (!provider) {
+		return null;
+	}
+
+	return {
+		async getState(input: GetPageFeedbackInput) {
+			return provider.getState(input);
+		},
+		async likePage(input: LikePageInput) {
+			return provider.likePage(input);
+		},
+	};
+}

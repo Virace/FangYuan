@@ -17,6 +17,11 @@ import {
 	fetchArtalkJson,
 	normalizeArtalkApiConfig,
 } from "./core";
+import {
+	mapArtalkPageSnapshot,
+	setArtalkPageSnapshot,
+	setArtalkPageSnapshotLoad,
+} from "./page-snapshot";
 
 const DEFAULT_ARTALK_PAGE_SIZE = 100;
 
@@ -43,10 +48,15 @@ export type ArtalkCommentListResponse = {
 	count: number;
 	roots_count: number;
 	page?: {
-		admin_only?: boolean;
-		pv?: number;
-		vote_up?: number;
-		vote_down?: number;
+		id: number;
+		key: string;
+		site_name: string;
+		admin_only: boolean;
+		pv: number;
+		vote_up: number;
+		vote_down: number;
+		title?: string;
+		url?: string;
 	};
 };
 
@@ -255,6 +265,9 @@ export function createArtalkCommentService(config: ArtalkCommentServiceConfig) {
 				limit: 1,
 				offset: 0,
 			});
+			if (response.page) {
+				setArtalkPageSnapshot(postKey, mapArtalkPageSnapshot(response.page));
+			}
 			const capability = buildArtalkCapability(response.page);
 			capabilityCache.set(postKey, capability);
 			return capability;
@@ -264,12 +277,16 @@ export function createArtalkCommentService(config: ArtalkCommentServiceConfig) {
 			const limit = Math.max(1, Math.floor(input.limit ?? pageSize));
 			const offset = normalizeCommentOffset(input.offset);
 			const sortBy = input.sortBy ?? DEFAULT_COMMENT_SORT_BY;
-			const response = await artalkCommentsApi.listComments({
+			const responsePromise = artalkCommentsApi.listComments({
 				postKey: input.postKey,
 				sortBy,
 				limit,
 				offset,
 			});
+			setArtalkPageSnapshotLoad(input.postKey, responsePromise.then((response) =>
+				response.page ? setArtalkPageSnapshot(input.postKey, mapArtalkPageSnapshot(response.page)) : null,
+			));
+			const response = await responsePromise;
 			const capability = buildArtalkCapability(response.page);
 			capabilityCache.set(input.postKey, capability);
 			const comments = response.comments.map((comment) =>
