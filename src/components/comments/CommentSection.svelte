@@ -83,7 +83,8 @@ $: showComposerCaptcha =
 $: supportsVote = capability?.supportsVote ?? false;
 $: showCommentLoadingOverlay = loading && comments.length > 0;
 $: showCommentInitialSkeleton = loading && comments.length === 0;
-$: showCommentEmptyState = !loading && comments.length === 0 && capability?.enabled;
+$: showCommentEmptyState =
+	!loading && comments.length === 0 && capability?.enabled;
 
 function logCommentError(context: string, error: unknown) {
 	console.error(`[comments] ${context}`, error);

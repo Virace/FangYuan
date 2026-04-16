@@ -1,8 +1,5 @@
 import { pageFeedbackConfig } from "../../config";
-import {
-	type GetPageFeedbackInput,
-	type LikePageInput,
-} from "./provider";
+import type { GetPageFeedbackInput, LikePageInput } from "./provider";
 
 export function getPageFeedbackClient() {
 	const provider = pageFeedbackConfig.enable

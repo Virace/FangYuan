@@ -1,10 +1,7 @@
 import { DEFAULT_COMMENT_SORT_BY } from "../comments/options";
 import type { PageFeedbackState } from "../page-feedback/provider";
 import type { PageMetrics } from "../page-metrics/provider";
-import {
-	createArtalkCommentsApi,
-	type ArtalkVoteResponse,
-} from "./comments";
+import { type ArtalkVoteResponse, createArtalkCommentsApi } from "./comments";
 import {
 	type ArtalkApiConfig,
 	fetchArtalkJson,

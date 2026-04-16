@@ -11,13 +11,18 @@ export type ArtalkPageSnapshot = {
 };
 
 const snapshotCache = new Map<string, ArtalkPageSnapshot>();
-const pendingSnapshotLoads = new Map<string, Promise<ArtalkPageSnapshot | null>>();
+const pendingSnapshotLoads = new Map<
+	string,
+	Promise<ArtalkPageSnapshot | null>
+>();
 const snapshotWaiters = new Map<
 	string,
 	Set<(snapshot: ArtalkPageSnapshot | null) => void>
 >();
 
-export function getArtalkPageSnapshot(postKey: string): ArtalkPageSnapshot | null {
+export function getArtalkPageSnapshot(
+	postKey: string,
+): ArtalkPageSnapshot | null {
 	return snapshotCache.get(postKey) ?? null;
 }
 

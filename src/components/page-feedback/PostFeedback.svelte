@@ -1,70 +1,70 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
-	import I18nKey from "@i18n/i18nKey";
-	import { i18n } from "@i18n/translation";
-	import { getPageFeedbackClient } from "@utils/page-feedback/client";
-	import type { RewardOption } from "@utils/page-feedback/provider";
-	import { onMount } from "svelte";
-	import RewardModal from "./RewardModal.svelte";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import Icon from "@iconify/svelte";
+import { getPageFeedbackClient } from "@utils/page-feedback/client";
+import type { RewardOption } from "@utils/page-feedback/provider";
+import { onMount } from "svelte";
+import RewardModal from "./RewardModal.svelte";
 
-	export let postKey: string;
-	export let postTitle = "";
-	export let rewardOptions: RewardOption[] = [];
+export let postKey: string;
+export let postTitle = "";
+export let rewardOptions: RewardOption[] = [];
 
-	const pageFeedbackClient = getPageFeedbackClient();
+const pageFeedbackClient = getPageFeedbackClient();
 
-	let likeCount = 0;
-	let liked = false;
-	let loading = true;
-	let likeBusy = false;
-	let error = "";
-	let rewardOpen = false;
+let likeCount = 0;
+let liked = false;
+let loading = true;
+let likeBusy = false;
+let error = "";
+let rewardOpen = false;
 
-	const showLike = !!pageFeedbackClient;
-	$: showReward = rewardOptions.length > 0;
-	$: showCard = showLike || showReward;
+const showLike = !!pageFeedbackClient;
+$: showReward = rewardOptions.length > 0;
+$: showCard = showLike || showReward;
 
-	onMount(() => {
-		if (!pageFeedbackClient) {
-			loading = false;
-			return;
-		}
-
-		void pageFeedbackClient
-			.getState({ postKey, postTitle })
-			.then((state) => {
-				likeCount = state.likeCount;
-				liked = state.liked;
-			})
-			.catch(() => {
-				error = i18n(I18nKey.pageFeedbackLikeFailed);
-			})
-			.finally(() => {
-				loading = false;
-			});
-	});
-
-	async function handleLike() {
-		if (!pageFeedbackClient || liked || likeBusy) {
-			return;
-		}
-
-		likeBusy = true;
-		error = "";
-
-		try {
-			const nextState = await pageFeedbackClient.likePage({
-				postKey,
-				postTitle,
-			});
-			likeCount = nextState.likeCount;
-			liked = nextState.liked;
-		} catch {
-			error = i18n(I18nKey.pageFeedbackLikeFailed);
-		} finally {
-			likeBusy = false;
-		}
+onMount(() => {
+	if (!pageFeedbackClient) {
+		loading = false;
+		return;
 	}
+
+	void pageFeedbackClient
+		.getState({ postKey, postTitle })
+		.then((state) => {
+			likeCount = state.likeCount;
+			liked = state.liked;
+		})
+		.catch(() => {
+			error = i18n(I18nKey.pageFeedbackLikeFailed);
+		})
+		.finally(() => {
+			loading = false;
+		});
+});
+
+async function handleLike() {
+	if (!pageFeedbackClient || liked || likeBusy) {
+		return;
+	}
+
+	likeBusy = true;
+	error = "";
+
+	try {
+		const nextState = await pageFeedbackClient.likePage({
+			postKey,
+			postTitle,
+		});
+		likeCount = nextState.likeCount;
+		liked = nextState.liked;
+	} catch {
+		error = i18n(I18nKey.pageFeedbackLikeFailed);
+	} finally {
+		likeBusy = false;
+	}
+}
 </script>
 
 {#if showCard}

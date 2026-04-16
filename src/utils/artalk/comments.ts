@@ -283,9 +283,17 @@ export function createArtalkCommentService(config: ArtalkCommentServiceConfig) {
 				limit,
 				offset,
 			});
-			setArtalkPageSnapshotLoad(input.postKey, responsePromise.then((response) =>
-				response.page ? setArtalkPageSnapshot(input.postKey, mapArtalkPageSnapshot(response.page)) : null,
-			));
+			setArtalkPageSnapshotLoad(
+				input.postKey,
+				responsePromise.then((response) =>
+					response.page
+						? setArtalkPageSnapshot(
+								input.postKey,
+								mapArtalkPageSnapshot(response.page),
+							)
+						: null,
+				),
+			);
 			const response = await responsePromise;
 			const capability = buildArtalkCapability(response.page);
 			capabilityCache.set(input.postKey, capability);

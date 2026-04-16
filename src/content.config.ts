@@ -35,7 +35,7 @@ const dataImageSchema = z.string().regex(/^data:.+/, {
 	message: "Data image URLs must start with data:.",
 });
 
-const relativeCoverImageSchema = (image: any) =>
+const relativeCoverImageSchema = (image: () => z.ZodTypeAny) =>
 	z
 		.string()
 		.regex(/^(?:\.\.?\/).+/, {

@@ -1,12 +1,12 @@
 import {
-	createArtalkPageFeedbackService,
 	type ArtalkPageFeedbackServiceConfig,
+	createArtalkPageFeedbackService,
 } from "../artalk/pages";
 import {
 	type GetPageFeedbackInput,
 	type LikePageInput,
-	type PageFeedbackState,
 	PageFeedbackProvider,
+	type PageFeedbackState,
 } from "./provider";
 
 export class ArtalkPageFeedbackProvider extends PageFeedbackProvider {

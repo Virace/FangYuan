@@ -1,144 +1,144 @@
 <script lang="ts">
-	import I18nKey from "@i18n/i18nKey";
-	import { i18n } from "@i18n/translation";
-	import type { RewardOption } from "@utils/page-feedback/provider";
-	import { onDestroy, tick } from "svelte";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import type { RewardOption } from "@utils/page-feedback/provider";
+import { onDestroy, tick } from "svelte";
 
-	export let open = false;
-	export let options: RewardOption[] = [];
-	export let onClose: (() => void) | null = null;
+export let open = false;
+export let options: RewardOption[] = [];
+export let onClose: (() => void) | null = null;
 
-	let dialogEl: HTMLDialogElement | null = null;
-	let activeRewardId = "";
-	let modalActive = false;
-	let closeTimer: ReturnType<typeof setTimeout> | null = null;
-	let displayedImage = "";
-	let imageLoading = false;
-	let imagePresented = false;
-	let imageRequestToken = 0;
+let dialogEl: HTMLDialogElement | null = null;
+let activeRewardId = "";
+let modalActive = false;
+let closeTimer: ReturnType<typeof setTimeout> | null = null;
+let displayedImage = "";
+let imageLoading = false;
+let imagePresented = false;
+let imageRequestToken = 0;
 
-	$: if (!activeRewardId && options.length > 0) {
-		activeRewardId = options[0].id;
+$: if (!activeRewardId && options.length > 0) {
+	activeRewardId = options[0].id;
+}
+
+$: activeOption =
+	options.find((option) => option.id === activeRewardId) ?? options[0] ?? null;
+
+$: if (activeOption?.image) {
+	void syncRewardImage(activeOption.image);
+}
+
+$: if (open && dialogEl && !dialogEl.open) {
+	void openDialog();
+}
+
+$: if (!open && dialogEl?.open) {
+	closeDialog(false);
+}
+
+async function openDialog() {
+	if (!dialogEl) {
+		return;
 	}
 
-	$: activeOption =
-		options.find((option) => option.id === activeRewardId) ?? options[0] ?? null;
-
-	$: if (activeOption?.image) {
-		void syncRewardImage(activeOption.image);
+	if (closeTimer) {
+		clearTimeout(closeTimer);
+		closeTimer = null;
 	}
 
-	$: if (open && dialogEl && !dialogEl.open) {
-		void openDialog();
+	if (!dialogEl.open) {
+		dialogEl.showModal();
 	}
 
-	$: if (!open && dialogEl?.open) {
-		closeDialog(false);
+	modalActive = false;
+	await tick();
+	requestAnimationFrame(() => {
+		modalActive = true;
+	});
+}
+
+function closeDialog(notify = true) {
+	if (!dialogEl?.open) {
+		return;
 	}
 
-	async function openDialog() {
-		if (!dialogEl) {
-			return;
+	modalActive = false;
+	if (closeTimer) {
+		clearTimeout(closeTimer);
+	}
+	closeTimer = setTimeout(() => {
+		dialogEl?.close();
+		closeTimer = null;
+		if (notify) {
+			onClose?.();
 		}
+	}, 180);
+}
 
-		if (closeTimer) {
-			clearTimeout(closeTimer);
-			closeTimer = null;
-		}
+function handleBackdropClick(event: MouseEvent) {
+	if (event.target === dialogEl) {
+		closeDialog();
+	}
+}
 
-		if (!dialogEl.open) {
-			dialogEl.showModal();
-		}
+function preloadImage(src: string) {
+	return new Promise<void>((resolve) => {
+		const image = new Image();
+		image.onload = () => resolve();
+		image.onerror = () => resolve();
+		image.src = src;
+	});
+}
 
-		modalActive = false;
+async function syncRewardImage(src: string) {
+	if (!src) {
+		return;
+	}
+
+	if (!displayedImage) {
+		imageRequestToken += 1;
+		imageLoading = false;
+		displayedImage = src;
+		imagePresented = false;
 		await tick();
 		requestAnimationFrame(() => {
-			modalActive = true;
-		});
-	}
-
-	function closeDialog(notify = true) {
-		if (!dialogEl?.open) {
-			return;
-		}
-
-		modalActive = false;
-		if (closeTimer) {
-			clearTimeout(closeTimer);
-		}
-		closeTimer = setTimeout(() => {
-			dialogEl?.close();
-			closeTimer = null;
-			if (notify) {
-				onClose?.();
-			}
-		}, 180);
-	}
-
-	function handleBackdropClick(event: MouseEvent) {
-		if (event.target === dialogEl) {
-			closeDialog();
-		}
-	}
-
-	function preloadImage(src: string) {
-		return new Promise<void>((resolve) => {
-			const image = new Image();
-			image.onload = () => resolve();
-			image.onerror = () => resolve();
-			image.src = src;
-		});
-	}
-
-	async function syncRewardImage(src: string) {
-		if (!src) {
-			return;
-		}
-
-		if (!displayedImage) {
-			imageRequestToken += 1;
-			imageLoading = false;
-			displayedImage = src;
-			imagePresented = false;
-			await tick();
-			requestAnimationFrame(() => {
-				imagePresented = true;
-			});
-			return;
-		}
-
-		if (displayedImage === src) {
-			imageRequestToken += 1;
-			imageLoading = false;
 			imagePresented = true;
-			return;
-		}
+		});
+		return;
+	}
 
-		const token = ++imageRequestToken;
-		imageLoading = true;
-		await preloadImage(src);
+	if (displayedImage === src) {
+		imageRequestToken += 1;
+		imageLoading = false;
+		imagePresented = true;
+		return;
+	}
 
+	const token = ++imageRequestToken;
+	imageLoading = true;
+	await preloadImage(src);
+
+	if (token !== imageRequestToken) {
+		return;
+	}
+
+	imagePresented = false;
+	displayedImage = src;
+	await tick();
+	requestAnimationFrame(() => {
 		if (token !== imageRequestToken) {
 			return;
 		}
-
-		imagePresented = false;
-		displayedImage = src;
-		await tick();
-		requestAnimationFrame(() => {
-			if (token !== imageRequestToken) {
-				return;
-			}
-			imagePresented = true;
-			imageLoading = false;
-		});
-	}
-
-	onDestroy(() => {
-		if (closeTimer) {
-			clearTimeout(closeTimer);
-		}
+		imagePresented = true;
+		imageLoading = false;
 	});
+}
+
+onDestroy(() => {
+	if (closeTimer) {
+		clearTimeout(closeTimer);
+	}
+});
 </script>
 
 <dialog
