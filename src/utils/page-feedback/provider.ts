@@ -27,7 +27,9 @@ export type LikePageInput = {
 export abstract class PageFeedbackProvider {
 	abstract readonly kind: string;
 
-	abstract getCapability(input: GetPageFeedbackInput): Promise<PageFeedbackCapability>;
+	abstract getCapability(
+		input: GetPageFeedbackInput,
+	): Promise<PageFeedbackCapability>;
 	abstract getState(input: GetPageFeedbackInput): Promise<PageFeedbackState>;
 	abstract likePage(input: LikePageInput): Promise<PageFeedbackState>;
 }

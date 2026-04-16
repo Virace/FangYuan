@@ -41,7 +41,7 @@ test("page feedback config should expose reward options and provider contracts",
 	assert.match(providerSource, /liked:\s*boolean;/);
 	assert.match(
 		providerSource,
-		/abstract getCapability\(input: GetPageFeedbackInput\): Promise<PageFeedbackCapability>;/,
+		/abstract getCapability\([\s\S]*input: GetPageFeedbackInput,[\s\S]*\): Promise<PageFeedbackCapability>;/,
 	);
 	assert.match(
 		providerSource,

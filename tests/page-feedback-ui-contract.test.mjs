@@ -20,12 +20,16 @@ test("page feedback UI should render a one-time like button and a dialog-based r
 	]);
 
 	assert.match(postFeedbackSource, /getPageFeedbackClient\(\)/);
+	assert.match(postFeedbackSource, /getCapability\(/);
 	assert.match(postFeedbackSource, /likePage\(/);
 	assert.match(postFeedbackSource, /RewardModal/);
 	assert.match(postFeedbackSource, /rewardOptions/);
 	assert.match(postFeedbackSource, /pageFeedbackLike|pageFeedbackLiked/);
 	assert.match(postFeedbackSource, /pageFeedbackReward/);
 	assert.match(postFeedbackSource, /liked = false/);
+	assert.match(postFeedbackSource, /supportsLike/);
+	assert.match(postFeedbackSource, /showReward = rewardOptions.length > 0/);
+	assert.match(postFeedbackSource, /showLike = capability\?\.supportsLike \?\? false/);
 	assert.match(clientSource, /async getCapability\(input: GetPageFeedbackInput\)/);
 	assert.match(clientSource, /provider\.getCapability\(input\)/);
 

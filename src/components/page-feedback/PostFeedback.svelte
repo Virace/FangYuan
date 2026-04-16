@@ -3,7 +3,10 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
 import { getPageFeedbackClient } from "@utils/page-feedback/client";
-import type { RewardOption } from "@utils/page-feedback/provider";
+import type {
+	PageFeedbackCapability,
+	RewardOption,
+} from "@utils/page-feedback/provider";
 import { onMount } from "svelte";
 import RewardModal from "./RewardModal.svelte";
 
@@ -13,6 +16,7 @@ export let rewardOptions: RewardOption[] = [];
 
 const pageFeedbackClient = getPageFeedbackClient();
 
+let capability: PageFeedbackCapability | null = null;
 let likeCount = 0;
 let liked = false;
 let loading = true;
@@ -20,7 +24,7 @@ let likeBusy = false;
 let error = "";
 let rewardOpen = false;
 
-const showLike = !!pageFeedbackClient;
+$: showLike = capability?.supportsLike ?? false;
 $: showReward = rewardOptions.length > 0;
 $: showCard = showLike || showReward;
 
@@ -31,7 +35,11 @@ onMount(() => {
 	}
 
 	void pageFeedbackClient
-		.getState({ postKey, postTitle })
+		.getCapability({ postKey, postTitle })
+		.then((nextCapability) => {
+			capability = nextCapability;
+		})
+		.then(() => pageFeedbackClient.getState({ postKey, postTitle }))
 		.then((state) => {
 			likeCount = state.likeCount;
 			liked = state.liked;
@@ -45,7 +53,7 @@ onMount(() => {
 });
 
 async function handleLike() {
-	if (!pageFeedbackClient || liked || likeBusy) {
+	if (!pageFeedbackClient || !showLike || liked || likeBusy) {
 		return;
 	}
 
