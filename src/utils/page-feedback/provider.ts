@@ -5,6 +5,10 @@ export type RewardOption = {
 	alt?: string;
 };
 
+export type PageFeedbackCapability = {
+	supportsLike: boolean;
+};
+
 export type PageFeedbackState = {
 	likeCount: number;
 	liked: boolean;
@@ -23,6 +27,7 @@ export type LikePageInput = {
 export abstract class PageFeedbackProvider {
 	abstract readonly kind: string;
 
+	abstract getCapability(input: GetPageFeedbackInput): Promise<PageFeedbackCapability>;
 	abstract getState(input: GetPageFeedbackInput): Promise<PageFeedbackState>;
 	abstract likePage(input: LikePageInput): Promise<PageFeedbackState>;
 }

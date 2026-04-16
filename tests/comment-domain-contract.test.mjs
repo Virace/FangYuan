@@ -74,6 +74,12 @@ test("comment helpers should expose postKey, tree, and config-driven comment set
 	assert.match(providerSource, /postTitle\?: string;/);
 	assert.match(providerSource, /captcha\?:\s*VerifyCommentCaptchaInput \| null;/);
 	assert.match(providerSource, /supportsVote:\s*boolean;/);
+	assert.match(
+		providerSource,
+		/export type CommentPersistenceMode = "persistent" \| "preview_only";/,
+	);
+	assert.match(providerSource, /supportsCaptcha:\s*boolean;/);
+	assert.match(providerSource, /requiredAuthorFields:\s*CommentAuthorField\[\];/);
 	assert.match(providerSource, /export type CommentCaptchaChallenge = \{/);
 	assert.match(providerSource, /export type CommentCaptchaState = \{/);
 	assert.match(providerSource, /export type VerifyCommentCaptchaInput = \{/);

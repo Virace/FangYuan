@@ -28,16 +28,21 @@ test("page feedback config should expose reward options and provider contracts",
 
 	assert.match(
 		configTypeSource,
-		/import type \{ PageFeedbackProvider, RewardOption \} from "@utils\/page-feedback\/provider";/,
+		/import type \{[\s\S]*PageFeedbackProvider,[\s\S]*RewardOption,[\s\S]*\} from "@utils\/page-feedback\/provider";/,
 	);
 	assert.match(configTypeSource, /export type PageFeedbackConfig = \{/);
 	assert.match(configTypeSource, /rewardOptions\?: RewardOption\[];/);
 
 	assert.match(providerSource, /export type RewardOption = \{/);
 	assert.match(providerSource, /image:\s*string;/);
+	assert.match(providerSource, /export type PageFeedbackCapability = \{/);
 	assert.match(providerSource, /export type PageFeedbackState = \{/);
 	assert.match(providerSource, /likeCount:\s*number;/);
 	assert.match(providerSource, /liked:\s*boolean;/);
+	assert.match(
+		providerSource,
+		/abstract getCapability\(input: GetPageFeedbackInput\): Promise<PageFeedbackCapability>;/,
+	);
 	assert.match(
 		providerSource,
 		/abstract getState\(input: GetPageFeedbackInput\): Promise<PageFeedbackState>;/,

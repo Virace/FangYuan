@@ -1,10 +1,21 @@
 import type { CanonicalComment } from "@/types/comment";
 
+export type CommentAuthorField = "name" | "email" | "website";
+
+export type CommentPersistenceMode = "persistent" | "preview_only";
+
+export type CommentIdentityModel = "page_key" | "mirrored_post" | "preview";
+
 export type CommentCapability = {
 	enabled: boolean;
 	provider: string;
 	supportsReply: boolean;
 	supportsVote: boolean;
+	supportsCaptcha: boolean;
+	persistenceMode: CommentPersistenceMode;
+	identityModel: CommentIdentityModel;
+	requiredAuthorFields: CommentAuthorField[];
+	optionalAuthorFields: CommentAuthorField[];
 	message?: string;
 };
 

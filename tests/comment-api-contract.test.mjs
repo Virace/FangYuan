@@ -34,6 +34,12 @@ test("comment provider layer should remove FangYuan server gateway and stay stat
 	assert.match(providerSource, /export abstract class CommentProvider \{/);
 	assert.match(providerSource, /readonly kind: string/);
 	assert.match(providerSource, /supportsVote:\s*boolean;/);
+	assert.match(
+		providerSource,
+		/export type CommentPersistenceMode = "persistent" \| "preview_only";/,
+	);
+	assert.match(providerSource, /supportsCaptcha:\s*boolean;/);
+	assert.match(providerSource, /requiredAuthorFields:\s*CommentAuthorField\[\];/);
 	assert.match(providerSource, /export type CommentCaptchaChallenge = \{/);
 	assert.match(providerSource, /kind:\s*string;/);
 	assert.match(providerSource, /imageData\?:\s*string \| null;/);
