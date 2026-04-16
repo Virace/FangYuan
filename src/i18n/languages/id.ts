@@ -39,6 +39,12 @@ export const id: Translation = {
 	[Key.commentsVoteUp]: "Suka",
 	[Key.commentsVoteDown]: "Tidak suka",
 	[Key.commentsVoteFailed]: "Gagal mengirim vote. Silakan coba lagi nanti.",
+	[Key.commentsVoteConfirmTipUp]:
+		"Confirm this upvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Confirm this downvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmProceed]: "Confirm",
+	[Key.commentsVoteConfirmCancel]: "Cancel",
 	[Key.commentsSortNewest]: "Terbaru dulu",
 	[Key.commentsSortOldest]: "Terlama dulu",
 	[Key.commentsPaginationPrevious]: "Sebelumnya",

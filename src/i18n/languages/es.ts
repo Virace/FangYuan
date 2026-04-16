@@ -41,6 +41,12 @@ export const es: Translation = {
 	[Key.commentsVoteDown]: "Voto negativo",
 	[Key.commentsVoteFailed]:
 		"No se pudo enviar el voto. Inténtalo de nuevo más tarde.",
+	[Key.commentsVoteConfirmTipUp]:
+		"Confirm this upvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Confirm this downvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmProceed]: "Confirm",
+	[Key.commentsVoteConfirmCancel]: "Cancel",
 	[Key.commentsSortNewest]: "Más recientes primero",
 	[Key.commentsSortOldest]: "Más antiguos primero",
 	[Key.commentsPaginationPrevious]: "Anterior",

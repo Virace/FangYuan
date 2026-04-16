@@ -40,6 +40,12 @@ export const en: Translation = {
 	[Key.commentsVoteDown]: "Downvote",
 	[Key.commentsVoteFailed]:
 		"Failed to submit the vote. Please try again later.",
+	[Key.commentsVoteConfirmTipUp]:
+		"Confirm this upvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Confirm this downvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmProceed]: "Confirm",
+	[Key.commentsVoteConfirmCancel]: "Cancel",
 	[Key.commentsSortNewest]: "Newest first",
 	[Key.commentsSortOldest]: "Oldest first",
 	[Key.commentsPaginationPrevious]: "Previous",

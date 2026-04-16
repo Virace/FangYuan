@@ -40,6 +40,12 @@ export const ja: Translation = {
 	[Key.commentsVoteDown]: "低評価",
 	[Key.commentsVoteFailed]:
 		"投票の送信に失敗しました。後でもう一度お試しください。",
+	[Key.commentsVoteConfirmTipUp]:
+		"Confirm this upvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Confirm this downvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmProceed]: "Confirm",
+	[Key.commentsVoteConfirmCancel]: "Cancel",
 	[Key.commentsSortNewest]: "新しい順",
 	[Key.commentsSortOldest]: "古い順",
 	[Key.commentsPaginationPrevious]: "前へ",

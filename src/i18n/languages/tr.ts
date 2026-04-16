@@ -40,6 +40,12 @@ export const tr: Translation = {
 	[Key.commentsVoteDown]: "Olumsuz oy",
 	[Key.commentsVoteFailed]:
 		"Oy gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+	[Key.commentsVoteConfirmTipUp]:
+		"Confirm this upvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Confirm this downvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmProceed]: "Confirm",
+	[Key.commentsVoteConfirmCancel]: "Cancel",
 	[Key.commentsSortNewest]: "En yeni önce",
 	[Key.commentsSortOldest]: "En eski önce",
 	[Key.commentsPaginationPrevious]: "Önceki",

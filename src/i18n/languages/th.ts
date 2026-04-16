@@ -35,6 +35,12 @@ export const th: Translation = {
 	[Key.commentsVoteUp]: "โหวตขึ้น",
 	[Key.commentsVoteDown]: "โหวตลง",
 	[Key.commentsVoteFailed]: "ส่งการโหวตไม่สำเร็จ กรุณาลองใหม่ภายหลัง",
+	[Key.commentsVoteConfirmTipUp]:
+		"Confirm this upvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Confirm this downvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmProceed]: "Confirm",
+	[Key.commentsVoteConfirmCancel]: "Cancel",
 	[Key.commentsSortNewest]: "ใหม่ล่าสุดก่อน",
 	[Key.commentsSortOldest]: "เก่าสุดก่อน",
 	[Key.commentsPaginationPrevious]: "ก่อนหน้า",

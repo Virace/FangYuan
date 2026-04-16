@@ -92,7 +92,10 @@ test("comment helpers should expose postKey, tree, and config-driven comment set
 		/abstract getThread\(input: GetCommentThreadInput\): Promise<CommentThreadPage>;/,
 	);
 	assert.match(providerSource, /async getCaptchaState\(\): Promise<CommentCaptchaState \| null>/);
-	assert.match(providerSource, /async verifyCaptcha\(_input: VerifyCommentCaptchaInput\): Promise<CommentCaptchaState>/);
+	assert.match(
+		providerSource,
+		/async verifyCaptcha\(\s*_input: VerifyCommentCaptchaInput,\s*\): Promise<CommentCaptchaState>/,
+	);
 	assert.match(providerSource, /async voteComment\(_input: VoteCommentInput\): Promise<CanonicalComment>/);
 	assert.match(typesConfigSource, /export type CommentConfig = \{/);
 	assert.match(typesConfigSource, /provider\?: CommentProvider \| null;/);

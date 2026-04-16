@@ -21,6 +21,10 @@ import {
 	insertPendingComment,
 	replaceCommentInTree,
 } from "@utils/comments/tree";
+import {
+	applyPersistedViewerVotes,
+	persistViewerVote,
+} from "@utils/comments/vote-state";
 import { onDestroy, onMount, tick } from "svelte";
 import { fade, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
@@ -44,6 +48,10 @@ type CaptchaTarget =
 	| { kind: "composer" }
 	| { kind: "comment"; commentId: string }
 	| null;
+type VoteConfirmTarget = {
+	commentId: string;
+	choice: CommentVoteChoice;
+} | null;
 
 export let postKey: string;
 export let postTitle = "";
@@ -67,6 +75,8 @@ let currentSortBy: CommentSortBy = DEFAULT_COMMENT_SORT_BY;
 let currentOffset = 0;
 let totalRootCount = 0;
 let submitNoticeTimer: ReturnType<typeof setTimeout> | null = null;
+let voteBusyCommentId: string | null = null;
+let pendingVoteTarget: VoteConfirmTarget = null;
 
 $: pageSize = Math.max(1, rootLimit);
 $: currentPage =
@@ -78,6 +88,8 @@ $: activeCaptchaCommentId =
 	activeCaptchaTarget?.kind === "comment"
 		? activeCaptchaTarget.commentId
 		: null;
+$: activeVoteConfirmCommentId = pendingVoteTarget?.commentId ?? null;
+$: pendingVoteChoice = pendingVoteTarget?.choice ?? null;
 $: showComposerCaptcha =
 	activeCaptchaTarget?.kind === "composer" && Boolean(captchaState?.required);
 $: supportsVote = capability?.supportsVote ?? false;
@@ -100,10 +112,20 @@ function setTransientSubmitNotice(message: string) {
 	}, SUBMIT_NOTICE_TIMEOUT_MS);
 }
 
+function clearVoteTransientState() {
+	pendingVoteTarget = null;
+	submitError = "";
+	submitNotice = "";
+}
+
 function handleDismissCaptcha() {
 	activeCaptchaTarget = null;
 	captchaPrompt = "";
 	captchaError = "";
+}
+
+function handleCancelVoteConfirm() {
+	pendingVoteTarget = null;
 }
 
 function toCommentErrorMessage(error: unknown, fallbackKey: I18nKey): string {
@@ -164,8 +186,7 @@ async function promptForCaptcha(
 			(commentClient ? await commentClient.refreshCaptcha() : null);
 		captchaPrompt = i18n(I18nKey.commentsCaptchaRequiredTip);
 		captchaError = "";
-		submitError = "";
-		submitNotice = "";
+		clearVoteTransientState();
 		await revealCaptchaTarget(target);
 	} catch (error) {
 		logCommentError("prepare captcha prompt failed", error);
@@ -212,7 +233,7 @@ async function loadComments(nextOptions?: {
 		currentSortBy = threadPage.sortBy;
 		currentOffset = threadPage.offset;
 		totalRootCount = threadPage.rootsCount;
-		comments = threadPage.comments;
+		comments = applyPersistedViewerVotes(postKey, threadPage.comments);
 
 		if (!captchaState) {
 			captchaState = await commentClient.getCaptchaState();
@@ -227,12 +248,12 @@ async function loadComments(nextOptions?: {
 
 function handleReply(commentId: string) {
 	activeReplyParentId = activeReplyParentId === commentId ? null : commentId;
-	submitError = "";
-	submitNotice = "";
+	clearVoteTransientState();
 }
 
 function handleCancelReply() {
 	activeReplyParentId = null;
+	clearVoteTransientState();
 }
 
 async function handleRefreshCaptcha() {
@@ -286,8 +307,7 @@ async function handleSortChange(sortBy: CommentSortBy) {
 
 	activeReplyParentId = null;
 	activeCaptchaTarget = null;
-	submitError = "";
-	submitNotice = "";
+	clearVoteTransientState();
 	await loadComments({
 		sortBy,
 		offset: 0,
@@ -302,8 +322,7 @@ async function handlePageChange(offset: number) {
 
 	activeReplyParentId = null;
 	activeCaptchaTarget = null;
-	submitError = "";
-	submitNotice = "";
+	clearVoteTransientState();
 	await loadComments({ offset: nextOffset });
 }
 
@@ -329,39 +348,27 @@ function buildOptimisticVoteComment(
 	comment: CanonicalComment,
 	choice: CommentVoteChoice,
 ): CanonicalComment {
-	let voteUp = comment.voteUp;
-	let voteDown = comment.voteDown;
-
-	if (comment.viewerVote === "up" && choice !== "up") {
-		voteUp = Math.max(0, voteUp - 1);
-	}
-
-	if (comment.viewerVote === "down" && choice !== "down") {
-		voteDown = Math.max(0, voteDown - 1);
-	}
-
-	if (comment.viewerVote !== choice) {
-		if (choice === "up") {
-			voteUp += 1;
-		} else {
-			voteDown += 1;
-		}
-	}
-
 	return {
 		...comment,
-		voteUp,
-		voteDown,
+		voteUp: comment.voteUp + (choice === "up" ? 1 : 0),
+		voteDown: comment.voteDown + (choice === "down" ? 1 : 0),
 		viewerVote: choice,
 	};
+}
+
+function requestVoteConfirm(commentId: string, choice: CommentVoteChoice) {
+	activeCaptchaTarget = null;
+	captchaPrompt = "";
+	captchaError = "";
+	clearVoteTransientState();
+	pendingVoteTarget = { commentId, choice };
 }
 
 async function handleSubmit(
 	detail: CommentComposerSubmitDetail,
 ): Promise<boolean> {
 	submitting = true;
-	submitError = "";
-	submitNotice = "";
+	clearVoteTransientState();
 
 	try {
 		if (!commentClient) {
@@ -418,18 +425,18 @@ async function handleSubmit(
 	}
 }
 
-async function handleVote(commentId: string, choice: CommentVoteChoice) {
-	if (!commentClient || !capability?.supportsVote) {
+async function submitVote(commentId: string, choice: CommentVoteChoice) {
+	if (!commentClient || !capability?.supportsVote || voteBusyCommentId) {
 		return;
 	}
 
 	const previousComment = getCommentById(comments, commentId);
-	if (!previousComment) {
+	if (!previousComment || previousComment.viewerVote) {
 		return;
 	}
 
-	submitError = "";
-	submitNotice = "";
+	voteBusyCommentId = commentId;
+	clearVoteTransientState();
 	comments = replaceCommentInTree(
 		comments,
 		buildOptimisticVoteComment(previousComment, choice),
@@ -441,6 +448,7 @@ async function handleVote(commentId: string, choice: CommentVoteChoice) {
 			choice,
 		});
 		comments = replaceCommentInTree(comments, updatedComment);
+		persistViewerVote(postKey, commentId, updatedComment.viewerVote ?? choice);
 		activeCaptchaTarget = null;
 		if (captchaState?.required) {
 			try {
@@ -462,7 +470,33 @@ async function handleVote(commentId: string, choice: CommentVoteChoice) {
 			logCommentError("vote comment failed", error);
 			submitError = toCommentErrorMessage(error, I18nKey.commentsVoteFailed);
 		}
+	} finally {
+		voteBusyCommentId = null;
 	}
+}
+
+async function handleVote(commentId: string, choice: CommentVoteChoice) {
+	if (!commentClient || !capability?.supportsVote || voteBusyCommentId) {
+		return;
+	}
+
+	const previousComment = getCommentById(comments, commentId);
+	if (!previousComment || previousComment.viewerVote) {
+		return;
+	}
+
+	requestVoteConfirm(commentId, choice);
+}
+
+async function handleConfirmVote(commentId: string, choice: CommentVoteChoice) {
+	if (
+		pendingVoteTarget?.commentId !== commentId ||
+		pendingVoteTarget.choice !== choice
+	) {
+		return;
+	}
+
+	await submitVote(commentId, choice);
 }
 
 onMount(() => {
@@ -575,13 +609,18 @@ onDestroy(() => {
 					comments={comments}
 					activeReplyParentId={activeReplyParentId}
 					activeCaptchaCommentId={activeCaptchaCommentId}
+					activeVoteConfirmCommentId={activeVoteConfirmCommentId}
 					maxDepth={maxDepth}
 					supportsVote={supportsVote}
+					voteBusy={Boolean(voteBusyCommentId)}
+					pendingVoteChoice={pendingVoteChoice}
 					captchaState={captchaState}
 					captchaBusy={captchaBusy}
 					captchaError={captchaError}
 					captchaPrompt={captchaPrompt}
 					onVote={handleVote}
+					onConfirmVote={handleConfirmVote}
+					onCancelVoteConfirm={handleCancelVoteConfirm}
 					onReply={handleReply}
 					onDismissCaptcha={handleDismissCaptcha}
 					onRefreshCaptcha={handleRefreshCaptcha}

@@ -109,7 +109,8 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /commentsCaptchaRequiredTip/);
 	assert.match(commentSectionSource, /captchaPrompt/);
 	assert.match(commentSectionSource, /scrollIntoView/);
-	assert.match(commentSectionSource, /handleVote[\s\S]*CommentCaptchaRequiredError/);
+	assert.match(commentSectionSource, /handleVote[\s\S]*requestVoteConfirm/);
+	assert.match(commentSectionSource, /submitVote[\s\S]*CommentCaptchaRequiredError/);
 	assert.match(commentSectionSource, /voteComment\(/);
 	assert.match(commentSectionSource, /supportsVote/);
 	assert.match(commentSectionSource, /CommentList[\s\S]*CommentComposer/);

@@ -40,6 +40,12 @@ export const ko: Translation = {
 	[Key.commentsVoteDown]: "비추천",
 	[Key.commentsVoteFailed]:
 		"투표를 전송하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+	[Key.commentsVoteConfirmTipUp]:
+		"Confirm this upvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Confirm this downvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmProceed]: "Confirm",
+	[Key.commentsVoteConfirmCancel]: "Cancel",
 	[Key.commentsSortNewest]: "최신순",
 	[Key.commentsSortOldest]: "오래된순",
 	[Key.commentsPaginationPrevious]: "이전",

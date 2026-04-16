@@ -39,6 +39,12 @@ export const vi: Translation = {
 	[Key.commentsVoteDown]: "Không thích",
 	[Key.commentsVoteFailed]:
 		"Không thể gửi lượt bình chọn. Vui lòng thử lại sau.",
+	[Key.commentsVoteConfirmTipUp]:
+		"Confirm this upvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Confirm this downvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmProceed]: "Confirm",
+	[Key.commentsVoteConfirmCancel]: "Cancel",
 	[Key.commentsSortNewest]: "Mới nhất trước",
 	[Key.commentsSortOldest]: "Cũ nhất trước",
 	[Key.commentsPaginationPrevious]: "Trang trước",

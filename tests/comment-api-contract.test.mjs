@@ -59,7 +59,10 @@ test("comment provider layer should remove FangYuan server gateway and stay stat
 	);
 	assert.match(providerSource, /async getCaptchaState\(\): Promise<CommentCaptchaState \| null> \{/);
 	assert.match(providerSource, /async refreshCaptcha\(\): Promise<CommentCaptchaState \| null> \{/);
-	assert.match(providerSource, /async verifyCaptcha\(_input: VerifyCommentCaptchaInput\): Promise<CommentCaptchaState> \{/);
+	assert.match(
+		providerSource,
+		/async verifyCaptcha\(\s*_input: VerifyCommentCaptchaInput,\s*\): Promise<CommentCaptchaState> \{/,
+	);
 	assert.doesNotMatch(providerSource, /pending-token|PUBLIC_WP_API_BASE|PUBLIC_FANGYUAN_COMMENT_PROVIDER/);
 	assert.doesNotMatch(providerSource, /@\/config/);
 	assert.match(clientSource, /getCommentProvider\(commentConfig\)/);
