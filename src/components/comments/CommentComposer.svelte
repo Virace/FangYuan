@@ -174,7 +174,7 @@ function insertEmoji(emoji: string) {
 			</button>
 		</div>
 
-		<div class="flex w-full flex-col gap-3 md:w-auto md:min-w-[32rem] md:flex-row md:items-center md:justify-end">
+		<div class="flex w-full flex-col gap-3 md:w-auto md:min-w-lg md:flex-row md:items-center md:justify-end">
 			{#if showCaptcha}
 				<div
 					class="w-full"
