@@ -221,7 +221,7 @@ test("local site config should allow wiring page metrics through the same Artalk
 
 	assert.match(
 		siteConfigSource,
-		/import type \{ CommentConfig, PageFeedbackConfig, PageMetricsConfig \} from "\.\.\/src\/types\/config";/,
+		/import type \{[\s\S]*CommentConfig,[\s\S]*PageFeedbackConfig,[\s\S]*PageMetricsConfig,[\s\S]*\} from "\.\.\/src\/types\/config";/,
 		"site/config.ts should type the page feedback config alongside comments and page metrics",
 	);
 
