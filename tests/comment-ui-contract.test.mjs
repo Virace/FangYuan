@@ -90,14 +90,18 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.doesNotMatch(commentSectionSource, /showCommentLoadingState = loading && comments.length > 0/);
 	assert.match(
 		commentSectionSource,
-		/showCommentEmptyState =\s*!loading && comments.length === 0 && capability\?\.enabled/,
+		/showCommentEmptyState = comments.length === 0 && capability\?\.enabled/,
 	);
 	assert.match(commentSectionSource, /showCommentLoadingOverlay = loading && comments.length > 0/);
-	assert.match(commentSectionSource, /showCommentInitialSkeleton = loading && comments.length === 0/);
+	assert.match(
+		commentSectionSource,
+		/showCommentInitialSkeleton = loading && comments.length === 0 && !capability/,
+	);
 	assert.match(commentSectionSource, /\{#if showCommentInitialSkeleton\}/);
 	assert.match(commentSectionSource, /\{:else if comments.length > 0\}/);
 	assert.match(commentSectionSource, /\{#if showCommentLoadingOverlay\}/);
 	assert.match(commentSectionSource, /comments-content-shell/);
+	assert.doesNotMatch(commentSectionSource, /comments-content-shell-stable-empty/);
 	assert.match(commentSectionSource, /comments-content-stack/);
 	assert.match(commentSectionSource, /comment-loading-overlay/);
 	assert.match(commentSectionSource, /comment-thread-skeleton/);
@@ -236,6 +240,7 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(mainCssSource, /\.comment-sort-tab-active \{/);
 	assert.match(mainCssSource, /\.comment-sort-tab:disabled \{/);
 	assert.match(mainCssSource, /\.comments-content-shell \{/);
+	assert.doesNotMatch(mainCssSource, /\.comments-content-shell-stable-empty \{/);
 	assert.match(mainCssSource, /\.comments-content-stack \{/);
 	assert.match(mainCssSource, /\.comment-loading-overlay \{/);
 	assert.match(mainCssSource, /\.comment-thread-skeleton \{/);

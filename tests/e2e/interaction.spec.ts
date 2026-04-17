@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
 	SITE_ROUTES,
 	VIEWPORTS,
@@ -8,6 +8,114 @@ import {
 	prepareStablePage,
 	waitForPagefind,
 } from "./support/site-fixtures";
+
+function buildEmptyCommentsBootstrapResponse() {
+	return {
+		capability: {
+			enabled: true,
+			supportsReply: true,
+			supportsVote: false,
+			supportsCaptcha: false,
+			defaultStatus: "approved",
+		},
+		commentForm: {
+			allow: ["nickname", "email", "website"],
+			require: ["nickname", "email"],
+		},
+		thread: {
+			siteKey: "fangyuan",
+			pageKey: "markdown",
+			pageTitle: "Markdown Syntax Guide",
+		},
+		pagination: {
+			sortBy: "newest",
+			limit: 5,
+			offset: 0,
+			totalCount: 0,
+			rootCount: 0,
+		},
+		comments: [],
+		pageMetrics: {
+			pageViewCount: 12,
+		},
+		pageFeedback: {
+			supportsLike: true,
+			likeCount: 0,
+			liked: false,
+		},
+		captcha: {
+			required: false,
+			verified: false,
+			mode: null,
+			challenge: null,
+		},
+	};
+}
+
+function buildEmptyCommentsThreadResponse(sortBy: "newest" | "oldest") {
+	return {
+		thread: {
+			siteKey: "fangyuan",
+			pageKey: "markdown",
+			pageTitle: "Markdown Syntax Guide",
+		},
+		pagination: {
+			sortBy,
+			limit: 5,
+			offset: 0,
+			totalCount: 0,
+			rootCount: 0,
+		},
+		comments: [],
+	};
+}
+
+async function installEmptyCommentsApiStub(page: Page) {
+	let notifyThreadRequestSeen: (() => void) | undefined;
+	const threadRequestSeen = new Promise<void>((resolve) => {
+		notifyThreadRequestSeen = resolve;
+	});
+	let releaseThreadResponse: (() => void) | undefined;
+	const threadResponseGate = new Promise<void>((resolve) => {
+		releaseThreadResponse = resolve;
+	});
+
+	await page.route("**/api/comments/bootstrap/**", async (route) => {
+		await route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify(buildEmptyCommentsBootstrapResponse()),
+		});
+	});
+
+	await page.route("**/api/comments/thread/**", async (route) => {
+		notifyThreadRequestSeen?.();
+		notifyThreadRequestSeen = undefined;
+		await threadResponseGate;
+
+		const url = new URL(route.request().url());
+		const requestedSort = url.searchParams.get("sortBy") === "oldest"
+			? "oldest"
+			: "newest";
+		await route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify(buildEmptyCommentsThreadResponse(requestedSort)),
+		});
+	});
+
+	return {
+		threadRequestSeen,
+		releaseThreadResponse: () => releaseThreadResponse?.(),
+	};
+}
+
+async function readDocumentTop(locator: Locator) {
+	return locator.evaluate((node) => {
+		const rect = node.getBoundingClientRect();
+		return rect.top + window.scrollY;
+	});
+}
 
 test("mobile search panel opens and shows search results", async ({ page }) => {
 	await page.setViewportSize(VIEWPORTS.mobile);
@@ -102,4 +210,45 @@ test("photoswipe assets are scoped to image pages and cover click opens lightbox
 
 	await page.locator("#post-cover img").click();
 	await expect(page.locator(".pswp")).toBeVisible();
+});
+
+test("empty comment sort switch keeps composer position stable", async ({
+	page,
+}) => {
+	const commentTestRoute = "/posts/welcome/";
+
+	await page.setViewportSize(VIEWPORTS.desktop);
+	const commentApiStub = await installEmptyCommentsApiStub(page);
+	await prepareStablePage(page, commentTestRoute);
+
+	const commentSection = page.locator('section[data-post-title]');
+	const contentShell = commentSection.locator(".comments-content-shell");
+	const emptyState = commentSection.locator(".comment-empty-state");
+	const composerForm = commentSection.locator("form");
+	const submitButton = composerForm.locator('button[type="submit"]');
+	const sortOldestButton = commentSection.getByRole("button", {
+		name: /最早在前|Oldest first/,
+	});
+
+	await expect(emptyState).toBeVisible();
+	await expect(submitButton).toBeVisible();
+	const beforeTop = await readDocumentTop(submitButton);
+
+	const triggerSortSwitch = sortOldestButton.click();
+	await commentApiStub.threadRequestSeen;
+
+	await expect(contentShell).toHaveAttribute("aria-busy", "true");
+	await expect(emptyState).toBeVisible();
+	await expect(commentSection.locator(".comment-thread-skeleton")).toHaveCount(0);
+	await expect(submitButton).toBeVisible();
+	const loadingTop = await readDocumentTop(submitButton);
+	expect(Math.abs(loadingTop - beforeTop)).toBeLessThanOrEqual(1);
+
+	commentApiStub.releaseThreadResponse();
+	await triggerSortSwitch;
+	await expect(sortOldestButton).toBeDisabled();
+	await expect(emptyState).toBeVisible();
+	await expect(submitButton).toBeVisible();
+	const afterTop = await readDocumentTop(submitButton);
+	expect(Math.abs(afterTop - beforeTop)).toBeLessThanOrEqual(1);
 });

@@ -7,8 +7,8 @@ import {
 } from "@utils/comments/options";
 import type {
 	CommentCapability,
-	CommentForm,
 	CommentCaptchaState,
+	CommentForm,
 	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
 import {
@@ -103,9 +103,8 @@ $: showComposerCaptcha =
 	activeCaptchaTarget?.kind === "composer" &&
 	Boolean(captchaState?.required);
 $: showCommentLoadingOverlay = loading && comments.length > 0;
-$: showCommentInitialSkeleton = loading && comments.length === 0;
-$: showCommentEmptyState =
-	!loading && comments.length === 0 && capability?.enabled;
+$: showCommentInitialSkeleton = loading && comments.length === 0 && !capability;
+$: showCommentEmptyState = comments.length === 0 && capability?.enabled;
 
 function logCommentError(context: string, error: unknown) {
 	console.error(`[comments] ${context}`, error);
