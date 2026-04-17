@@ -58,8 +58,6 @@ export const ko: Translation = {
 	[Key.commentsFormWebsite]: "웹사이트",
 	[Key.commentsFormOptionalSuffix]: " (선택)",
 	[Key.commentsFormContent]: "댓글",
-	[Key.commentsPreviewWriteNotice]:
-		"미리보기 제공자: 제출한 댓글은 현재 브라우저 세션에만 유지됩니다.",
 	[Key.commentCountSingular]: "댓글",
 	[Key.commentCountPlural]: "댓글",
 	[Key.commentsValidationNameRequired]: "이름을 입력해 주세요.",

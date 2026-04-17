@@ -28,6 +28,10 @@ import {
 	normalizeQingYanDevProxyRequestPath,
 } from "./src/utils/qingyan/dev-proxy.mjs";
 import {
+	createQingYanMockPlugin,
+	isQingYanMockTarget,
+} from "./src/utils/qingyan/mock-api.mjs";
+import {
 	loadExternalQingYanDevProxyTarget,
 	loadExternalExpressiveCodeConfig,
 } from "./src/utils/site-source.ts";
@@ -36,7 +40,9 @@ const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
-const qingyanDevProxyTarget = loadExternalQingYanDevProxyTarget();
+const qingyanDevProxyTarget =
+	process.env.QINGYAN_DEV_PROXY_TARGET ?? loadExternalQingYanDevProxyTarget();
+const useQingYanMock = isQingYanMockTarget(qingyanDevProxyTarget);
 const enableGlobalImageCodecDefaults = false;
 const globalImageServiceConfig = {
 	jpeg: { mozjpeg: true },
@@ -44,7 +50,7 @@ const globalImageServiceConfig = {
 	avif: { effort: 4, chromaSubsampling: "4:2:0" },
 	png: { compressionLevel: 9 },
 };
-const qingyanDevProxy = qingyanDevProxyTarget
+const qingyanDevProxy = qingyanDevProxyTarget && !useQingYanMock
 	? {
 			"/api": {
 				target: qingyanDevProxyTarget,
@@ -53,7 +59,7 @@ const qingyanDevProxy = qingyanDevProxyTarget
 			},
 		}
 	: undefined;
-const qingyanDevProxyMiddlewarePlugin = qingyanDevProxyTarget
+const qingyanDevProxyMiddlewarePlugin = qingyanDevProxyTarget && !useQingYanMock
 	? {
 			name: "fangyuan-qingyan-dev-proxy-normalizer",
 			configureServer(server) {
@@ -86,6 +92,7 @@ const qingyanDevProxyMiddlewarePlugin = qingyanDevProxyTarget
 			},
 		}
 	: null;
+const qingyanMockPlugin = useQingYanMock ? createQingYanMockPlugin() : null;
 
 // https://astro.build/config
 export default defineConfig({
@@ -245,6 +252,7 @@ export default defineConfig({
 		plugins: [
 			tailwindcss(),
 			...(qingyanDevProxyMiddlewarePlugin ? [qingyanDevProxyMiddlewarePlugin] : []),
+			...(qingyanMockPlugin ? [qingyanMockPlugin] : []),
 		],
 		...(qingyanDevProxy
 			? {

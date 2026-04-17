@@ -30,6 +30,21 @@ test("page feedback UI should render a one-time like button and a dialog-based r
 	assert.match(postFeedbackSource, /supportsLike/);
 	assert.match(postFeedbackSource, /showReward = rewardOptions.length > 0/);
 	assert.match(postFeedbackSource, /showLike = capability\?\.supportsLike \?\? false/);
+	assert.match(postFeedbackSource, /InlineCommentCaptcha/);
+	assert.match(postFeedbackSource, /InlineFeedbackNotice/);
+	assert.match(postFeedbackSource, /CommentCaptchaRequiredError/);
+	assert.match(postFeedbackSource, /let captchaState = null/);
+	assert.match(postFeedbackSource, /let showCaptcha = false/);
+	assert.match(postFeedbackSource, /getAutoDismissMs/);
+	assert.match(postFeedbackSource, /let noticeMessage = ""/);
+	assert.match(postFeedbackSource, /let noticeTone: AutoDismissTone = "info"/);
+	assert.match(
+		postFeedbackSource,
+		/<InlineCommentCaptcha[\s\S]*onDismiss=\{handleDismissCaptcha\}[\s\S]*onRefreshCaptcha=\{handleRefreshCaptcha\}[\s\S]*onVerifyCaptcha=\{handleVerifyCaptcha\}/,
+	);
+	assert.match(postFeedbackSource, /in:fade=\{\{ duration: 180 \}\}/);
+	assert.match(postFeedbackSource, /out:fade=\{\{ duration: 180 \}\}/);
+	assert.match(postFeedbackSource, /transition:slide=\{\{ duration: 180 \}\}/);
 	assert.match(
 		postFeedbackSource,
 		/<p class="text-base font-semibold text-90 md:text-lg">/,

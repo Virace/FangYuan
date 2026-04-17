@@ -4,11 +4,13 @@ import { i18n } from "@i18n/translation";
 import type {
 	CommentAuthorField,
 	CommentCaptchaState,
-	CommentPersistenceMode,
 	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
 import { validateCommentForm } from "@utils/comments/validation";
-import { fade, scale } from "svelte/transition";
+import { type AutoDismissTone, getAutoDismissMs } from "@utils/notice";
+import { onDestroy } from "svelte";
+import { fade, scale, slide } from "svelte/transition";
+import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
 import EmojiPicker from "./EmojiPicker.svelte";
 import InlineCommentCaptcha from "./InlineCommentCaptcha.svelte";
 
@@ -22,13 +24,18 @@ type CommentComposerSubmitDetail = {
 export let submitting = false;
 export let replyParentId: string | null = null;
 export let showCaptcha = false;
-export let allowedFields: CommentAuthorField[] = ["nickname", "email", "website"];
+export let allowedFields: CommentAuthorField[] = [
+	"nickname",
+	"email",
+	"website",
+];
 export let requiredFields: CommentAuthorField[] = ["nickname", "email"];
-export let persistenceMode: CommentPersistenceMode = "persistent";
 export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
 export let captchaError = "";
 export let captchaPrompt = "";
+export let noticeMessage = "";
+export let noticeTone: AutoDismissTone = "info";
 export let onSubmit:
 	| ((detail: CommentComposerSubmitDetail) => boolean | Promise<boolean>)
 	| null = null;
@@ -50,11 +57,11 @@ let content = "";
 let validationError = "";
 let showEmojiPicker = false;
 let emojiTriggerWrap: HTMLDivElement | null = null;
+let validationErrorTimer: ReturnType<typeof setTimeout> | null = null;
 
 $: showNameField = allowedFields.includes("nickname");
 $: showEmailField = allowedFields.includes("email");
 $: showWebsiteField = allowedFields.includes("website");
-$: showPreviewNotice = persistenceMode === "preview_only";
 $: canSubmit =
 	!submitting &&
 	(!requiredFields.includes("nickname") || authorName.trim().length > 0) &&
@@ -62,14 +69,29 @@ $: canSubmit =
 	(!requiredFields.includes("website") || authorWebsite.trim().length > 0) &&
 	content.trim().length > 0;
 
-function formatFieldLabel(
-	key: I18nKey,
-	field: CommentAuthorField,
-): string {
+function formatFieldLabel(key: I18nKey, field: CommentAuthorField): string {
 	const label = i18n(key);
 	return requiredFields.includes(field)
 		? `${label}*`
 		: `${label}${i18n(I18nKey.commentsFormOptionalSuffix)}`;
+}
+
+function clearValidationErrorTimer() {
+	if (validationErrorTimer) {
+		clearTimeout(validationErrorTimer);
+		validationErrorTimer = null;
+	}
+}
+
+function setValidationErrorNotice(message: string) {
+	validationError = message;
+	clearValidationErrorTimer();
+	validationErrorTimer = setTimeout(
+		() => {
+			validationError = "";
+		},
+		getAutoDismissMs(message, "error"),
+	);
 }
 
 async function handleSubmit() {
@@ -86,7 +108,7 @@ async function handleSubmit() {
 	);
 
 	if (validationResult) {
-		validationError = i18n(validationResult);
+		setValidationErrorNotice(i18n(validationResult));
 		return;
 	}
 
@@ -95,6 +117,7 @@ async function handleSubmit() {
 	}
 
 	validationError = "";
+	clearValidationErrorTimer();
 	const submitSucceeded = await onSubmit?.({
 		authorName: authorName.trim(),
 		authorEmail: authorEmail.trim(),
@@ -109,6 +132,7 @@ async function handleSubmit() {
 
 function handleCancelReply() {
 	validationError = "";
+	clearValidationErrorTimer();
 	showEmojiPicker = false;
 	onCancelReply?.();
 }
@@ -135,11 +159,35 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 
 	showEmojiPicker = false;
 }
+
+onDestroy(() => {
+	clearValidationErrorTimer();
+});
 </script>
 
 <svelte:window on:keydown={handleEmojiKeydown} />
 
 <form class="card-base rounded-panel p-5" on:submit|preventDefault={handleSubmit}>
+	{#if noticeMessage}
+		<div class="mb-4">
+			<InlineFeedbackNotice
+				message={noticeMessage}
+				tone={noticeTone}
+				duration={180}
+			/>
+		</div>
+	{/if}
+
+	{#if validationError}
+		<div class="mb-4">
+			<InlineFeedbackNotice
+				message={validationError}
+				tone="error"
+				duration={180}
+			/>
+		</div>
+	{/if}
+
 	<div class="flex items-start justify-between gap-3 mb-4">
 		<div>
 			<h3 class="font-semibold text-90">{i18n(I18nKey.commentsSubmit)}</h3>
@@ -157,18 +205,6 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 			</button>
 		{/if}
 	</div>
-
-	{#if validationError}
-		<p class="mb-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-500">
-			{validationError}
-		</p>
-	{/if}
-
-	{#if showPreviewNotice}
-		<p class="mb-4 rounded-xl bg-primary/10 px-4 py-3 text-sm text-primary">
-			{i18n(I18nKey.commentsPreviewWriteNotice)}
-		</p>
-	{/if}
 
 	<div class="grid gap-3 md:grid-cols-2">
 		{#if showNameField}
@@ -222,6 +258,45 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 	</div>
 
 	<div class="comment-composer-actions mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+		<div class="w-full md:order-2 md:flex-1 md:min-w-0">
+			<div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
+				{#if showCaptcha}
+					<div
+						class="w-full overflow-hidden md:flex-1 md:min-w-0"
+						data-comment-captcha-target="composer"
+						transition:slide={{ duration: 180 }}
+					>
+						<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
+							<InlineCommentCaptcha
+								compact={true}
+								variant="inline"
+								captchaBusy={captchaBusy}
+								captchaError={captchaError}
+								captchaPrompt={captchaPrompt}
+								captchaState={captchaState}
+								onDismiss={onDismissCaptcha}
+								onRefreshCaptcha={onRefreshCaptcha}
+								onPollCaptchaStatus={onPollCaptchaStatus}
+								onVerifyCaptcha={onVerifyCaptcha}
+							/>
+						</div>
+					</div>
+				{/if}
+
+				<button
+					class="btn-regular rounded-xl px-4 h-10 text-sm font-medium w-full md:w-auto md:shrink-0"
+					disabled={!canSubmit}
+					type="submit"
+				>
+					{#if submitting}
+						{i18n(I18nKey.commentsSubmitting)}
+					{:else}
+						{i18n(I18nKey.commentsSubmit)}
+					{/if}
+				</button>
+			</div>
+		</div>
+
 		<div
 			bind:this={emojiTriggerWrap}
 			role="group"
@@ -257,41 +332,6 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 					</div>
 				</div>
 			{/if}
-		</div>
-
-		<div class="flex w-full flex-col gap-3 md:w-auto md:min-w-lg md:flex-row md:items-center md:justify-end">
-			{#if showCaptcha}
-				<div
-					class="w-full"
-					data-comment-captcha-target="composer"
-					in:fade={{ duration: 180 }}
-					out:fade={{ duration: 180 }}
-				>
-					<InlineCommentCaptcha
-						compact={true}
-						captchaBusy={captchaBusy}
-						captchaError={captchaError}
-						captchaPrompt={captchaPrompt}
-						captchaState={captchaState}
-						onDismiss={onDismissCaptcha}
-						onRefreshCaptcha={onRefreshCaptcha}
-						onPollCaptchaStatus={onPollCaptchaStatus}
-						onVerifyCaptcha={onVerifyCaptcha}
-					/>
-				</div>
-			{/if}
-
-			<button
-				class="btn-regular rounded-xl px-4 h-10 text-sm font-medium md:shrink-0"
-				disabled={!canSubmit}
-				type="submit"
-			>
-				{#if submitting}
-					{i18n(I18nKey.commentsSubmitting)}
-				{:else}
-					{i18n(I18nKey.commentsSubmit)}
-				{/if}
-			</button>
 		</div>
 	</div>
 </form>

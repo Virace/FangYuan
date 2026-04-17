@@ -1,7 +1,7 @@
 import type {
 	CommentCapability,
-	CommentForm,
 	CommentCaptchaState,
+	CommentForm,
 	CommentSortBy,
 } from "@utils/comments/provider";
 import type {

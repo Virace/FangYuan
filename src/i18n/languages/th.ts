@@ -52,8 +52,6 @@ export const th: Translation = {
 	[Key.commentsFormWebsite]: "เว็บไซต์",
 	[Key.commentsFormOptionalSuffix]: " (ไม่บังคับ)",
 	[Key.commentsFormContent]: "ความคิดเห็น",
-	[Key.commentsPreviewWriteNotice]:
-		"ผู้ให้บริการโหมดพรีวิว: ความคิดเห็นที่ส่งจะอยู่เฉพาะในเซสชันเบราว์เซอร์ปัจจุบันเท่านั้น",
 	[Key.commentCountSingular]: "ความคิดเห็น",
 	[Key.commentCountPlural]: "ความคิดเห็น",
 	[Key.commentsValidationNameRequired]: "กรุณากรอกชื่อ",

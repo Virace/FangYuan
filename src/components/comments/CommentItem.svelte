@@ -5,14 +5,17 @@ import type {
 	CommentCaptchaState,
 	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
-import { slide } from "svelte/transition";
+import type { AutoDismissTone } from "@utils/notice";
+import { fade, scale, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
+import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
 import InlineCommentCaptcha from "./InlineCommentCaptcha.svelte";
 
 export let comment: CanonicalComment;
 export let activeReplyParentId: string | null = null;
 export let activeCaptchaCommentId: string | null = null;
 export let activeVoteConfirmCommentId: string | null = null;
+export let activeCommentNoticeId: string | null = null;
 export let depth = 1;
 export let maxDepth = 3;
 export let supportsVote = false;
@@ -22,6 +25,8 @@ export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
 export let captchaError = "";
 export let captchaPrompt = "";
+export let commentNoticeMessage = "";
+export let commentNoticeTone: AutoDismissTone = "info";
 export let onVote: ((commentId: string, choice: "up" | "down") => void) | null =
 	null;
 export let onConfirmVote:
@@ -52,6 +57,8 @@ function triggerReply() {
 $: showVoteConfirm =
 	comment.id === activeVoteConfirmCommentId && pendingVoteChoice !== null;
 $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
+$: showCommentNotice =
+	comment.id === activeCommentNoticeId && commentNoticeMessage.length > 0;
 </script>
 
 <article
@@ -88,92 +95,155 @@ $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
 			</div>
 
 			{#if depth < maxDepth || supportsVote}
-				<div class="comment-actions mt-3">
-					{#if depth < maxDepth}
-						<button
-							class="comment-action"
-							class:comment-action-active={activeReplyParentId === comment.id}
-							type="button"
-							on:click={triggerReply}
-						>
-							{activeReplyParentId === comment.id
-								? i18n(I18nKey.commentsCancelReply)
-								: i18n(I18nKey.commentsReply)}
-						</button>
-					{/if}
+				<div class="comment-actions-shell mt-3">
+					<div class="comment-actions">
+						{#if depth < maxDepth}
+							<button
+								class="comment-action"
+								class:comment-action-active={activeReplyParentId === comment.id}
+								type="button"
+								on:click={triggerReply}
+							>
+								{activeReplyParentId === comment.id
+									? i18n(I18nKey.commentsCancelReply)
+									: i18n(I18nKey.commentsReply)}
+							</button>
+						{/if}
 
 					{#if supportsVote}
-						<button
-							type="button"
-							class="comment-action"
-							class:comment-action-active={comment.viewerVote === "up"}
-							aria-label={i18n(I18nKey.commentsVoteUp)}
-							disabled={voteDisabled}
-							on:click={() => onVote?.(comment.id, "up")}
-						>
-							<span aria-hidden="true">👍</span>
-							<span class="comment-action-count">{comment.voteUp}</span>
-						</button>
-						<button
-							type="button"
-							class="comment-action"
-							class:comment-action-active={comment.viewerVote === "down"}
-							aria-label={i18n(I18nKey.commentsVoteDown)}
-							disabled={voteDisabled}
-							on:click={() => onVote?.(comment.id, "down")}
-						>
-							<span aria-hidden="true">👎</span>
-							<span class="comment-action-count">{comment.voteDown}</span>
-						</button>
+						<div class="comment-action-anchor">
+							<button
+								type="button"
+								class="comment-action"
+								class:comment-action-active={comment.viewerVote === "up"}
+								aria-label={i18n(I18nKey.commentsVoteUp)}
+								disabled={voteDisabled}
+								on:click={() => onVote?.(comment.id, "up")}
+							>
+								<span aria-hidden="true">👍</span>
+								<span class="comment-action-count">{comment.voteUp}</span>
+							</button>
+
+							{#if showVoteConfirm && pendingVoteChoice === "up"}
+								<div
+									class="comment-vote-popover-wrap comment-vote-popover-wrap-start"
+									data-comment-vote-confirm-target={comment.id}
+								>
+									<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
+										<div
+											class="comment-vote-popover"
+											in:scale={{ duration: 180, start: 0.96 }}
+											out:scale={{ duration: 180, start: 0.96 }}
+										>
+											<p class="text-xs leading-6 text-60">
+												{i18n(I18nKey.commentsVoteConfirmTipUp)}
+											</p>
+											<div class="mt-3 flex flex-wrap gap-2">
+												<button
+													type="button"
+													class="comment-action"
+													on:click={() =>
+														onConfirmVote?.(comment.id, pendingVoteChoice)}
+												>
+													{i18n(I18nKey.commentsVoteConfirmProceed)}
+												</button>
+												<button
+													type="button"
+													class="comment-action"
+													on:click={() => onCancelVoteConfirm?.()}
+												>
+													{i18n(I18nKey.commentsVoteConfirmCancel)}
+												</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							{/if}
+						</div>
+
+						<div class="comment-action-anchor">
+							<button
+								type="button"
+								class="comment-action"
+								class:comment-action-active={comment.viewerVote === "down"}
+								aria-label={i18n(I18nKey.commentsVoteDown)}
+								disabled={voteDisabled}
+								on:click={() => onVote?.(comment.id, "down")}
+							>
+								<span aria-hidden="true">👎</span>
+								<span class="comment-action-count">{comment.voteDown}</span>
+							</button>
+
+							{#if showVoteConfirm && pendingVoteChoice === "down"}
+								<div
+									class="comment-vote-popover-wrap comment-vote-popover-wrap-end"
+									data-comment-vote-confirm-target={comment.id}
+								>
+									<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
+										<div
+											class="comment-vote-popover"
+											in:scale={{ duration: 180, start: 0.96 }}
+											out:scale={{ duration: 180, start: 0.96 }}
+										>
+											<p class="text-xs leading-6 text-60">
+												{i18n(I18nKey.commentsVoteConfirmTipDown)}
+											</p>
+											<div class="mt-3 flex flex-wrap gap-2">
+												<button
+													type="button"
+													class="comment-action"
+													on:click={() =>
+														onConfirmVote?.(comment.id, pendingVoteChoice)}
+												>
+													{i18n(I18nKey.commentsVoteConfirmProceed)}
+												</button>
+												<button
+													type="button"
+													class="comment-action"
+													on:click={() => onCancelVoteConfirm?.()}
+												>
+													{i18n(I18nKey.commentsVoteConfirmCancel)}
+												</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							{/if}
+						</div>
 					{/if}
 				</div>
-			{/if}
-
-			{#if showVoteConfirm && pendingVoteChoice}
-				<div class="mt-3" transition:slide={{ duration: 180 }}>
-					<div class="rounded-xl border border-line-divider bg-soft-contrast px-4 py-3">
-						<p class="text-xs leading-6 text-60">
-							{pendingVoteChoice === "up"
-								? i18n(I18nKey.commentsVoteConfirmTipUp)
-								: i18n(I18nKey.commentsVoteConfirmTipDown)}
-						</p>
-						<div class="mt-3 flex flex-wrap gap-2">
-							<button
-								type="button"
-								class="comment-action"
-								on:click={() =>
-									onConfirmVote?.(comment.id, pendingVoteChoice)}
-							>
-								{i18n(I18nKey.commentsVoteConfirmProceed)}
-							</button>
-							<button
-								type="button"
-								class="comment-action"
-								on:click={() => onCancelVoteConfirm?.()}
-							>
-								{i18n(I18nKey.commentsVoteConfirmCancel)}
-							</button>
-						</div>
-					</div>
 				</div>
 			{/if}
 
 			{#if comment.id === activeCaptchaCommentId && captchaState?.required}
 				<div
-					class="mt-3"
+					class="mt-3 overflow-hidden"
 					data-comment-captcha-target={comment.id}
 					transition:slide={{ duration: 180 }}
 				>
-					<InlineCommentCaptcha
+					<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
+						<InlineCommentCaptcha
+							compact={true}
+							captchaBusy={captchaBusy}
+							captchaError={captchaError}
+							captchaPrompt={captchaPrompt}
+							captchaState={captchaState}
+							onDismiss={onDismissCaptcha}
+							onRefreshCaptcha={onRefreshCaptcha}
+							onPollCaptchaStatus={onPollCaptchaStatus}
+							onVerifyCaptcha={onVerifyCaptcha}
+						/>
+					</div>
+				</div>
+			{/if}
+
+			{#if showCommentNotice}
+				<div class="mt-3">
+					<InlineFeedbackNotice
+						message={commentNoticeMessage}
+						tone={commentNoticeTone}
 						compact={true}
-						captchaBusy={captchaBusy}
-						captchaError={captchaError}
-						captchaPrompt={captchaPrompt}
-						captchaState={captchaState}
-						onDismiss={onDismissCaptcha}
-						onRefreshCaptcha={onRefreshCaptcha}
-						onPollCaptchaStatus={onPollCaptchaStatus}
-						onVerifyCaptcha={onVerifyCaptcha}
+						duration={180}
 					/>
 				</div>
 			{/if}
@@ -186,6 +256,7 @@ $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
 							activeReplyParentId={activeReplyParentId}
 							activeCaptchaCommentId={activeCaptchaCommentId}
 							activeVoteConfirmCommentId={activeVoteConfirmCommentId}
+							activeCommentNoticeId={activeCommentNoticeId}
 							depth={depth + 1}
 							maxDepth={maxDepth}
 							supportsVote={supportsVote}
@@ -195,6 +266,8 @@ $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
 							captchaBusy={captchaBusy}
 							captchaError={captchaError}
 							captchaPrompt={captchaPrompt}
+							commentNoticeMessage={commentNoticeMessage}
+							commentNoticeTone={commentNoticeTone}
 							onVote={onVote}
 							onConfirmVote={onConfirmVote}
 							onCancelVoteConfirm={onCancelVoteConfirm}

@@ -58,8 +58,6 @@ export const en: Translation = {
 	[Key.commentsFormWebsite]: "Website",
 	[Key.commentsFormOptionalSuffix]: " (optional)",
 	[Key.commentsFormContent]: "Comment",
-	[Key.commentsPreviewWriteNotice]:
-		"Preview provider: comment submissions only exist in the current browser session.",
 	[Key.commentCountSingular]: "comment",
 	[Key.commentCountPlural]: "comments",
 	[Key.commentsValidationNameRequired]: "Please enter a nickname.",

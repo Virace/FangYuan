@@ -57,8 +57,6 @@ export const id: Translation = {
 	[Key.commentsFormWebsite]: "Situs web",
 	[Key.commentsFormOptionalSuffix]: " (opsional)",
 	[Key.commentsFormContent]: "Komentar",
-	[Key.commentsPreviewWriteNotice]:
-		"Penyedia pratinjau: komentar yang dikirim hanya ada di sesi browser saat ini.",
 	[Key.commentCountSingular]: "komentar",
 	[Key.commentCountPlural]: "komentar",
 	[Key.commentsValidationNameRequired]: "Masukkan nama panggilan.",

@@ -10,9 +10,9 @@ import {
 } from "../../config";
 import {
 	type CommentAuthorField,
-	type CommentForm,
 	CommentCaptchaRequiredError,
 	type CommentCaptchaState,
+	type CommentForm,
 	type CommentSortBy,
 	type CreateCommentInput,
 	type VerifyCommentCaptchaInput,
@@ -158,6 +158,12 @@ export class QingYanApiError extends Error {
 	}
 }
 
+function isCaptchaRequiredCode(code: string | null): boolean {
+	return (
+		code === "COMMENT_CAPTCHA_REQUIRED" || code === "VOTE_CAPTCHA_REQUIRED"
+	);
+}
+
 function toBackendSortBy(sortBy: CommentSortBy | undefined): BackendSortBy {
 	return sortBy === "date_asc" ? "oldest" : "newest";
 }
@@ -221,9 +227,7 @@ function normalizeCapability(
 	};
 }
 
-function normalizeCommentForm(
-	commentForm: RawQingYanCommentForm,
-): CommentForm {
+function normalizeCommentForm(commentForm: RawQingYanCommentForm): CommentForm {
 	return {
 		allow: commentForm.allow,
 		require: commentForm.require,
@@ -436,6 +440,28 @@ export function createQingYanClient(config: QingYanClientConfig) {
 		}
 	}
 
+	async function createCaptchaRequiredError(
+		error: QingYanApiError,
+		input: {
+			pageKey: string;
+			pageTitle?: string;
+			pageUrl?: string;
+		},
+	) {
+		const state = await fetchJson<RawQingYanCaptchaState>(
+			`/comments/captcha/state/?${buildQueryString({
+				siteKey: resolvedConfig.siteKey,
+				pageKey: input.pageKey,
+				pageTitle: input.pageTitle,
+				pageUrl: resolvePageUrl(input.pageUrl),
+			})}`,
+		);
+		return new CommentCaptchaRequiredError(
+			error.message,
+			normalizeCaptchaState(state),
+		);
+	}
+
 	return {
 		async fetchPostEngagementBootstrap(
 			input: QingYanBootstrapInput,
@@ -635,14 +661,13 @@ export function createQingYanClient(config: QingYanClientConfig) {
 			} catch (error) {
 				if (
 					error instanceof QingYanApiError &&
-					error.code === "COMMENT_CAPTCHA_REQUIRED"
+					isCaptchaRequiredCode(error.code)
 				) {
-					const state = await this.getCaptchaState({
+					throw await createCaptchaRequiredError(error, {
 						pageKey: input.postKey,
 						pageTitle: input.postTitle,
 						pageUrl: input.pageUrl,
 					});
-					throw new CommentCaptchaRequiredError(error.message, state);
 				}
 				throw error;
 			}
@@ -672,14 +697,13 @@ export function createQingYanClient(config: QingYanClientConfig) {
 			} catch (error) {
 				if (
 					error instanceof QingYanApiError &&
-					error.code === "COMMENT_CAPTCHA_REQUIRED"
+					isCaptchaRequiredCode(error.code)
 				) {
-					const state = await this.getCaptchaState({
+					throw await createCaptchaRequiredError(error, {
 						pageKey: input.pageKey,
 						pageTitle: input.pageTitle,
 						pageUrl: input.pageUrl,
 					});
-					throw new CommentCaptchaRequiredError(error.message, state);
 				}
 				throw error;
 			}
@@ -690,22 +714,32 @@ export function createQingYanClient(config: QingYanClientConfig) {
 			pageTitle?: string;
 			pageUrl?: string;
 		}): Promise<QingYanPageFeedbackState> {
-			const response = await fetchJson<RawQingYanLikeResponse>(
-				"/page-feedback/like/",
-				{
-					method: "POST",
-					body: JSON.stringify({
-						siteKey: resolvedConfig.siteKey,
-						pageKey: input.pageKey,
-						pageTitle: input.pageTitle ?? input.pageKey,
-						pageUrl:
-							resolvePageUrl(input.pageUrl) ??
-							`https://example.invalid/posts/${input.pageKey}/`,
-					}),
-				},
-			);
-			invalidateBootstrap(input.pageKey);
-			return response.pageFeedback;
+			try {
+				const response = await fetchJson<RawQingYanLikeResponse>(
+					"/page-feedback/like/",
+					{
+						method: "POST",
+						body: JSON.stringify({
+							siteKey: resolvedConfig.siteKey,
+							pageKey: input.pageKey,
+							pageTitle: input.pageTitle ?? input.pageKey,
+							pageUrl:
+								resolvePageUrl(input.pageUrl) ??
+								`https://example.invalid/posts/${input.pageKey}/`,
+						}),
+					},
+				);
+				invalidateBootstrap(input.pageKey);
+				return response.pageFeedback;
+			} catch (error) {
+				if (
+					error instanceof QingYanApiError &&
+					isCaptchaRequiredCode(error.code)
+				) {
+					throw await createCaptchaRequiredError(error, input);
+				}
+				throw error;
+			}
 		},
 
 		invalidateBootstrap,

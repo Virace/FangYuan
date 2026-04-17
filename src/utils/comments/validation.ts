@@ -43,7 +43,10 @@ export function validateCommentForm(
 		return I18nKey.commentsValidationNameRequired;
 	}
 
-	if (rules.requiredFields.includes("email") && !emailPattern.test(authorEmail)) {
+	if (
+		rules.requiredFields.includes("email") &&
+		!emailPattern.test(authorEmail)
+	) {
 		return I18nKey.commentsValidationEmailInvalid;
 	}
 

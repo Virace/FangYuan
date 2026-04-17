@@ -58,5 +58,11 @@ test("QingYan client should keep captcha handling on backend session verificatio
 	assert.match(qingyanClientSource, /challengeId/);
 	assert.match(qingyanClientSource, /\/comments\/captcha\/state/);
 	assert.match(qingyanClientSource, /\/comments\/captcha\/verify/);
+	assert.match(qingyanClientSource, /"VOTE_CAPTCHA_REQUIRED"/);
+	assert.match(qingyanClientSource, /createCaptchaRequiredError/);
+	assert.match(
+		qingyanClientSource,
+		/async likePage[\s\S]*createCaptchaRequiredError/,
+	);
 	assert.doesNotMatch(qingyanClientSource, /iframeSrc:\s*build[A-Z]\w+/);
 });

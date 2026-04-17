@@ -50,8 +50,6 @@ export const zh_CN: Translation = {
 	[Key.commentsFormWebsite]: "网站",
 	[Key.commentsFormOptionalSuffix]: "（可选）",
 	[Key.commentsFormContent]: "评论内容",
-	[Key.commentsPreviewWriteNotice]:
-		"预览数据源：提交的评论只会保留在当前浏览器会话中。",
 	[Key.commentCountSingular]: "条评论",
 	[Key.commentCountPlural]: "条评论",
 	[Key.commentsValidationNameRequired]: "请输入昵称。",

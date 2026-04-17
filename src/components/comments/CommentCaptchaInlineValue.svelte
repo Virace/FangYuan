@@ -6,6 +6,7 @@ export let imageData: string | null = null;
 export let captchaBusy = false;
 export let value = "";
 export let placeholder = "";
+export let inline = false;
 export let onRefresh: (() => void | Promise<void>) | null = null;
 export let onVerify: ((value: string) => void | Promise<void>) | null = null;
 
@@ -14,7 +15,7 @@ function handleVerify() {
 }
 </script>
 
-<div class="mt-2 flex flex-wrap items-center gap-2">
+<div class="flex flex-wrap items-center gap-2" class:mt-2={!inline}>
 	<button
 		type="button"
 		class="rounded-md border border-line-divider bg-white/80 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-60"

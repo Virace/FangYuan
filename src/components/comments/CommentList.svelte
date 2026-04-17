@@ -3,6 +3,7 @@ import type {
 	CommentCaptchaState,
 	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
+import type { AutoDismissTone } from "@utils/notice";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
 import CommentItem from "./CommentItem.svelte";
 
@@ -10,6 +11,7 @@ export let comments: CanonicalComment[] = [];
 export let activeReplyParentId: string | null = null;
 export let activeCaptchaCommentId: string | null = null;
 export let activeVoteConfirmCommentId: string | null = null;
+export let activeCommentNoticeId: string | null = null;
 export let maxDepth = 3;
 export let supportsVote = false;
 export let voteBusy = false;
@@ -18,6 +20,8 @@ export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
 export let captchaError = "";
 export let captchaPrompt = "";
+export let commentNoticeMessage = "";
+export let commentNoticeTone: AutoDismissTone = "info";
 export let onVote: ((commentId: string, choice: "up" | "down") => void) | null =
 	null;
 export let onConfirmVote:
@@ -40,6 +44,7 @@ export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 			activeReplyParentId={activeReplyParentId}
 			activeCaptchaCommentId={activeCaptchaCommentId}
 			activeVoteConfirmCommentId={activeVoteConfirmCommentId}
+			activeCommentNoticeId={activeCommentNoticeId}
 			depth={1}
 			maxDepth={maxDepth}
 			supportsVote={supportsVote}
@@ -49,6 +54,8 @@ export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 			captchaBusy={captchaBusy}
 			captchaError={captchaError}
 			captchaPrompt={captchaPrompt}
+			commentNoticeMessage={commentNoticeMessage}
+			commentNoticeTone={commentNoticeTone}
 			onVote={onVote}
 			onConfirmVote={onConfirmVote}
 			onCancelVoteConfirm={onCancelVoteConfirm}

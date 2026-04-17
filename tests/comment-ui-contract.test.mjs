@@ -19,6 +19,7 @@ test("comment UI should render through focused Svelte components and mount on po
 		commentItemSource,
 		emojiPickerSource,
 		mainCssSource,
+		tailwindThemeSource,
 		variablesCssSource,
 		postPageSource,
 	] = await Promise.all([
@@ -50,6 +51,7 @@ test("comment UI should render through focused Svelte components and mount on po
 		readFile(path.join(repoRoot, "src", "components", "comments", "CommentItem.svelte"), "utf8"),
 		readFile(path.join(repoRoot, "src", "components", "comments", "EmojiPicker.svelte"), "utf8"),
 		readFile(path.join(repoRoot, "src", "styles", "main.css"), "utf8"),
+		readFile(path.join(repoRoot, "src", "styles", "tailwind-theme.css"), "utf8"),
 		readFile(path.join(repoRoot, "src", "styles", "variables.css"), "utf8"),
 		readFile(path.join(repoRoot, "src", "pages", "posts", "[...slug].astro"), "utf8"),
 	]);
@@ -80,8 +82,8 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /commentsPaginationPrevious/);
 	assert.match(commentSectionSource, /commentsPaginationNext/);
 	assert.match(commentSectionSource, /setTimeout\(/);
-	assert.match(commentSectionSource, /6000/);
-	assert.match(commentSectionSource, /transition:slide/);
+	assert.match(commentSectionSource, /getAutoDismissMs/);
+	assert.match(commentSectionSource, /InlineFeedbackNotice/);
 	assert.match(commentSectionSource, /const contentTransitionDuration = 180/);
 	assert.doesNotMatch(commentSectionSource, /commentContentMinHeightClass/);
 	assert.match(commentSectionSource, /in:fade=\{\{ duration: contentTransitionDuration \}\}/);
@@ -137,7 +139,6 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /voteComment\(/);
 	assert.match(commentSectionSource, /supportsVote/);
 	assert.match(commentSectionSource, /supportsCaptcha/);
-	assert.match(commentSectionSource, /persistenceMode/);
 	assert.match(commentSectionSource, /commentForm/);
 	assert.match(commentSectionSource, /allowedFields = commentForm\?\.allow \?\? \["nickname", "email", "website"\]/);
 	assert.match(commentSectionSource, /requiredFields = commentForm\?\.require \?\? \["nickname", "email"\]/);
@@ -145,31 +146,44 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.doesNotMatch(commentSectionSource, /optionalAuthorFields = capability\?\.optionalAuthorFields/);
 	assert.doesNotMatch(commentSectionSource, /requiredFields = capability\?\.require/);
 	assert.match(commentSectionSource, /CommentList[\s\S]*CommentComposer/);
-	assert.match(commentSectionSource, /submitNotice[\s\S]*CommentComposer/);
+	assert.match(commentSectionSource, /setComposerNotice/);
+	assert.match(commentSectionSource, /setCommentNotice/);
+	assert.match(commentSectionSource, /activeCommentNoticeId/);
+	assert.match(commentSectionSource, /commentNoticeMessage/);
+	assert.doesNotMatch(commentSectionSource, /\{#if submitError\}/);
+	assert.doesNotMatch(commentSectionSource, /\{#if submitNotice\}/);
 	assert.match(commentSectionSource, /card-base/);
 	assert.match(inlineCommentCaptchaSource, /captchaState/);
 	assert.match(inlineCommentCaptchaSource, /captchaBusy/);
 	assert.match(inlineCommentCaptchaSource, /captchaError/);
 	assert.match(inlineCommentCaptchaSource, /captchaPrompt/);
 	assert.match(inlineCommentCaptchaSource, /compact/);
+	assert.match(inlineCommentCaptchaSource, /export let variant: "card" \| "inline" = "card"/);
+	assert.match(inlineCommentCaptchaSource, /variant === "inline"/);
 	assert.match(inlineCommentCaptchaSource, /onRefreshCaptcha/);
 	assert.match(inlineCommentCaptchaSource, /onVerifyCaptcha/);
 	assert.match(inlineCommentCaptchaSource, /commentsCaptcha/);
 	assert.match(inlineCommentCaptchaSource, /commentsCaptchaVerified/);
 	assert.match(inlineCommentCaptchaSource, /commentsCaptchaUnsupported/);
 	assert.match(inlineCommentCaptchaSource, /CommentCaptchaHost/);
+	assert.match(inlineCommentCaptchaSource, /InlineFeedbackNotice/);
+	assert.match(inlineCommentCaptchaSource, /getAutoDismissMs/);
 	assert.match(inlineCommentCaptchaSource, /setTimeout\(/);
-	assert.match(inlineCommentCaptchaSource, /6000/);
+	assert.doesNotMatch(inlineCommentCaptchaSource, /6000/);
 	assert.match(inlineCommentCaptchaSource, /onDismiss/);
 	assert.match(inlineCommentCaptchaSource, /in:fade/);
 	assert.match(commentCaptchaHostSource, /CommentCaptchaInlineValue/);
 	assert.match(commentCaptchaHostSource, /CommentCaptchaIframeWidget/);
+	assert.match(commentCaptchaHostSource, /export let inline = false/);
 	assert.match(commentCaptchaHostSource, /challenge\?\.mode === "inline_value"/);
 	assert.match(commentCaptchaHostSource, /challenge\?\.mode === "iframe_widget"/);
+	assert.match(commentCaptchaHostSource, /inline=\{inline\}/);
 	assert.match(commentCaptchaHostSource, /iframeSrc/);
 	assert.match(commentCaptchaInlineValueSource, /imageData/);
+	assert.match(commentCaptchaInlineValueSource, /export let inline = false/);
 	assert.match(commentCaptchaInlineValueSource, /onRefresh/);
 	assert.match(commentCaptchaInlineValueSource, /onVerify/);
+	assert.match(commentCaptchaInlineValueSource, /class:mt-2=\{!inline\}/);
 	assert.match(commentCaptchaInlineValueSource, /commentsCaptchaRefresh/);
 	assert.match(commentCaptchaInlineValueSource, /commentsCaptchaVerify/);
 	assert.match(commentCaptchaIframeWidgetSource, /iframe/);
@@ -182,6 +196,30 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentComposerSource, /EmojiPicker/);
 	assert.match(commentComposerSource, /InlineCommentCaptcha/);
 	assert.match(commentComposerSource, /showCaptcha/);
+	assert.match(commentComposerSource, /InlineFeedbackNotice/);
+	assert.match(commentComposerSource, /noticeMessage/);
+	assert.match(commentComposerSource, /noticeTone/);
+	assert.match(
+		commentComposerSource,
+		/import \{ fade, scale, slide \} from "svelte\/transition"/,
+	);
+	assert.match(
+		commentComposerSource,
+		/\{#if noticeMessage\}[\s\S]*message=\{noticeMessage\}[\s\S]*<div class="flex items-start justify-between gap-3 mb-4">/,
+	);
+	assert.match(
+		commentComposerSource,
+		/\{#if validationError\}[\s\S]*message=\{validationError\}[\s\S]*<div class="flex items-start justify-between gap-3 mb-4">/,
+	);
+	assert.doesNotMatch(
+		commentComposerSource,
+		/comment-composer-actions[\s\S]*message=\{noticeMessage\}/,
+	);
+	assert.doesNotMatch(
+		commentComposerSource,
+		/comment-composer-actions[\s\S]*message=\{validationError\}/,
+	);
+	assert.match(commentComposerSource, /getAutoDismissMs/);
 	assert.match(commentComposerSource, /captchaState/);
 	assert.match(commentComposerSource, /captchaBusy/);
 	assert.match(commentComposerSource, /captchaError/);
@@ -190,6 +228,7 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentComposerSource, /onVerifyCaptcha/);
 	assert.match(commentComposerSource, /onPollCaptchaStatus/);
 	assert.match(commentComposerSource, /onDismissCaptcha/);
+	assert.match(commentComposerSource, /<InlineCommentCaptcha[\s\S]*variant="inline"/);
 	assert.match(commentComposerSource, /comment-emojis/);
 	assert.match(commentComposerSource, /comment-composer-actions/);
 	assert.match(commentComposerSource, /comment-emoji-trigger/);
@@ -211,6 +250,7 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.doesNotMatch(commentComposerSource, /material-symbols:/);
 	assert.match(commentComposerSource, /aria-label=\{i18n\(I18nKey\.commentsEmoji\)\}/);
 	assert.match(commentComposerSource, /in:fade/);
+	assert.match(commentComposerSource, /transition:slide/);
 	assert.match(commentComposerSource, /out:fade/);
 	assert.match(commentComposerSource, /in:scale/);
 	assert.match(commentComposerSource, /out:scale/);
@@ -221,7 +261,10 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentComposerSource, /onCancelReply\?\.\(/);
 	assert.doesNotMatch(commentComposerSource, /createEventDispatcher/);
 	assert.match(commentComposerSource, /validateCommentForm\(/);
-	assert.match(commentComposerSource, /validationError = i18n\(validationResult\)/);
+	assert.match(
+		commentComposerSource,
+		/setValidationErrorNotice\(i18n\(validationResult\)\)/,
+	);
 	assert.match(commentComposerSource, /requiredFields/);
 	assert.match(commentComposerSource, /allowedFields/);
 	assert.match(commentComposerSource, /formatFieldLabel\(/);
@@ -234,7 +277,6 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentComposerSource, /requiredFields\.includes\("website"\)/);
 	assert.match(commentComposerSource, /\{#if showEmailField\}/);
 	assert.match(commentComposerSource, /\{#if showWebsiteField\}/);
-	assert.match(commentComposerSource, /commentsPreviewWriteNotice/);
 	assert.match(commentListSource, /CommentItem/);
 	assert.match(mainCssSource, /\.comment-sort-tab \{/);
 	assert.match(mainCssSource, /\.comment-sort-tab-active \{/);
@@ -259,10 +301,15 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentListSource, /maxDepth/);
 	assert.match(commentListSource, /export let onReply/);
 	assert.match(commentListSource, /export let activeCaptchaCommentId/);
+	assert.match(commentListSource, /export let activeCommentNoticeId/);
+	assert.match(commentListSource, /export let commentNoticeMessage/);
 	assert.match(commentListSource, /export let onPollCaptchaStatus/);
 	assert.doesNotMatch(commentListSource, /createEventDispatcher/);
 	assert.match(commentItemSource, /onReply|commentsReply|commentsCancelReply/);
 	assert.match(commentItemSource, /InlineCommentCaptcha/);
+	assert.match(commentItemSource, /InlineFeedbackNotice/);
+	assert.match(commentItemSource, /activeCommentNoticeId/);
+	assert.match(commentItemSource, /commentNoticeMessage/);
 	assert.match(commentItemSource, /comment-action/);
 	assert.match(commentItemSource, /onReply\?\.\(comment\.id\)/);
 	assert.doesNotMatch(commentItemSource, /createEventDispatcher/);
@@ -273,6 +320,22 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentItemSource, /onDismissCaptcha/);
 	assert.match(commentItemSource, /onPollCaptchaStatus/);
 	assert.match(commentItemSource, /transition:slide/);
+	assert.match(commentItemSource, /comment-actions-shell/);
+	assert.match(commentItemSource, /comment-action-anchor/);
+	assert.match(commentItemSource, /comment-vote-popover-wrap/);
+	assert.match(commentItemSource, /comment-vote-popover-wrap-start/);
+	assert.match(commentItemSource, /comment-vote-popover-wrap-end/);
+	assert.match(commentItemSource, /comment-vote-popover/);
+	assert.match(
+		commentItemSource,
+		/pendingVoteChoice === "up"[\s\S]*comment-vote-popover-wrap comment-vote-popover-wrap-start/,
+	);
+	assert.match(
+		commentItemSource,
+		/pendingVoteChoice === "down"[\s\S]*comment-vote-popover-wrap comment-vote-popover-wrap-end/,
+	);
+	assert.match(commentItemSource, /in:scale/);
+	assert.match(commentItemSource, /out:scale/);
 	assert.match(commentItemSource, /voteUp|voteDown/);
 	assert.match(commentItemSource, /comment-body/);
 	assert.match(commentItemSource, /comment-root/);
@@ -282,6 +345,30 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(mainCssSource, /\.comment-action\s*\{/);
 	assert.match(mainCssSource, /\.comment-action-icon\s*\{/);
 	assert.match(mainCssSource, /\.comment-action-active\s*\{/);
+	assert.match(mainCssSource, /\.comment-actions-shell\s*\{/);
+	assert.match(mainCssSource, /\.comment-action-anchor\s*\{/);
+	assert.match(mainCssSource, /\.comment-vote-popover-wrap\s*\{/);
+	assert.match(mainCssSource, /\.comment-vote-popover-wrap-start\s*\{/);
+	assert.match(mainCssSource, /\.comment-vote-popover-wrap-end\s*\{/);
+	assert.match(mainCssSource, /\.comment-vote-popover\s*\{/);
+	assert.match(mainCssSource, /\.comment-vote-popover::before\s*\{/);
+	assert.doesNotMatch(
+		mainCssSource,
+		/\.comment-vote-popover-wrap\s*\{[\s\S]*max-width:\s*100%;/,
+	);
+	assert.match(
+		mainCssSource,
+		/\.comment-vote-popover\s*\{[\s\S]*background-color: var\(--float-panel-bg\);[\s\S]*transform-origin: top left;/,
+	);
+	assert.match(
+		mainCssSource,
+		/\.comment-vote-popover-wrap-end \.comment-vote-popover::before\s*\{/,
+	);
+	assert.match(tailwindThemeSource, /@utility text-60\s*\{/);
+	assert.match(
+		tailwindThemeSource,
+		/@utility text-60\s*\{[\s\S]*color:\s*rgb\(0 0 0 \/ 0\.6\);[\s\S]*@variant dark \{[\s\S]*color:\s*rgb\(255 255 255 \/ 0\.6\);/,
+	);
 	assert.match(postPageSource, /CommentSection[\s\S]*client:only="svelte"/);
 	assert.match(postPageSource, /getPostKeyFromEntry\(entry.id\)/);
 	assert.match(postPageSource, /commentConfig\.enable && commentConfig\.qingyan/);
@@ -326,7 +413,6 @@ test("comment UI should expose dedicated translation keys", async () => {
 		"commentsFormWebsite",
 		"commentsFormOptionalSuffix",
 		"commentsFormContent",
-		"commentsPreviewWriteNotice",
 		"commentsValidationNameRequired",
 		"commentsValidationEmailInvalid",
 		"commentsValidationContentRequired",

@@ -6,6 +6,7 @@ import CommentCaptchaInlineValue from "./CommentCaptchaInlineValue.svelte";
 export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
 export let captchaValue = "";
+export let inline = false;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 export let onVerifyCaptchaValue:
 	| ((value: string) => void | Promise<void>)
@@ -19,6 +20,7 @@ $: challenge = captchaState?.challenge ?? null;
 {#if challenge?.mode === "inline_value"}
 	<CommentCaptchaInlineValue
 		bind:value={captchaValue}
+		inline={inline}
 		imageData={challenge.imageData ?? null}
 		captchaBusy={captchaBusy}
 		placeholder={challenge.placeholder ?? ""}

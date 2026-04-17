@@ -24,15 +24,16 @@ import {
 	applyPersistedViewerVotes,
 	persistViewerVote,
 } from "@utils/comments/vote-state";
+import { type AutoDismissTone, getAutoDismissMs } from "@utils/notice";
 import { getQingYanClient, QingYanApiError } from "@utils/qingyan/client";
 import { onDestroy, onMount, tick } from "svelte";
 import { fade, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
+import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
 import CommentComposer from "./CommentComposer.svelte";
 import CommentHeader from "./CommentHeader.svelte";
 import CommentList from "./CommentList.svelte";
 
-const SUBMIT_NOTICE_TIMEOUT_MS = 6000;
 const contentTransitionDuration = 180;
 
 type CommentComposerSubmitDetail = {
@@ -52,6 +53,17 @@ type VoteConfirmTarget = {
 	choice: CommentVoteChoice;
 } | null;
 
+type ComposerNotice = {
+	message: string;
+	tone: AutoDismissTone;
+} | null;
+
+type CommentNotice = {
+	commentId: string;
+	message: string;
+	tone: AutoDismissTone;
+} | null;
+
 const qingyanClient = getQingYanClient();
 
 export let postKey: string;
@@ -67,8 +79,6 @@ let loading = true;
 let submitting = false;
 let captchaBusy = false;
 let loadError = "";
-let submitError = "";
-let submitNotice = "";
 let captchaError = "";
 let captchaPrompt = "";
 let activeReplyParentId: string | null = null;
@@ -77,7 +87,11 @@ let activeCaptchaTarget: CaptchaTarget = null;
 let currentSortBy: CommentSortBy = DEFAULT_COMMENT_SORT_BY;
 let currentOffset = 0;
 let totalRootCount = 0;
-let submitNoticeTimer: ReturnType<typeof setTimeout> | null = null;
+let composerNotice: ComposerNotice = null;
+let commentNotice: CommentNotice = null;
+let composerNoticeTimer: ReturnType<typeof setTimeout> | null = null;
+let commentNoticeTimer: ReturnType<typeof setTimeout> | null = null;
+let captchaFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 let voteBusyCommentId: string | null = null;
 let pendingVoteTarget: VoteConfirmTarget = null;
 
@@ -91,11 +105,15 @@ $: activeCaptchaCommentId =
 	activeCaptchaTarget?.kind === "comment"
 		? activeCaptchaTarget.commentId
 		: null;
+$: activeCommentNoticeId = commentNotice?.commentId ?? null;
 $: activeVoteConfirmCommentId = pendingVoteTarget?.commentId ?? null;
+$: composerNoticeMessage = composerNotice?.message ?? "";
+$: composerNoticeTone = composerNotice?.tone ?? "info";
+$: commentNoticeMessage = commentNotice?.message ?? "";
+$: commentNoticeTone = commentNotice?.tone ?? "info";
 $: pendingVoteChoice = pendingVoteTarget?.choice ?? null;
 $: supportsVote = capability?.supportsVote ?? false;
 $: supportsCaptcha = capability?.supportsCaptcha ?? false;
-$: persistenceMode = capability?.persistenceMode ?? "persistent";
 $: allowedFields = commentForm?.allow ?? ["nickname", "email", "website"];
 $: requiredFields = commentForm?.require ?? ["nickname", "email"];
 $: showComposerCaptcha =
@@ -110,26 +128,110 @@ function logCommentError(context: string, error: unknown) {
 	console.error(`[comments] ${context}`, error);
 }
 
-function setTransientSubmitNotice(message: string) {
-	submitNotice = message;
-	if (submitNoticeTimer) {
-		clearTimeout(submitNoticeTimer);
+function clearComposerNoticeTimer() {
+	if (composerNoticeTimer) {
+		clearTimeout(composerNoticeTimer);
+		composerNoticeTimer = null;
 	}
-	submitNoticeTimer = setTimeout(() => {
-		submitNotice = "";
-	}, SUBMIT_NOTICE_TIMEOUT_MS);
+}
+
+function clearCommentNoticeTimer() {
+	if (commentNoticeTimer) {
+		clearTimeout(commentNoticeTimer);
+		commentNoticeTimer = null;
+	}
+}
+
+function clearCaptchaFeedbackTimer() {
+	if (captchaFeedbackTimer) {
+		clearTimeout(captchaFeedbackTimer);
+		captchaFeedbackTimer = null;
+	}
+}
+
+function setComposerNotice(message: string, tone: AutoDismissTone) {
+	composerNotice = { message, tone };
+	clearComposerNoticeTimer();
+	composerNoticeTimer = setTimeout(
+		() => {
+			composerNotice = null;
+		},
+		getAutoDismissMs(message, tone),
+	);
+}
+
+function setCommentNotice(
+	commentId: string,
+	message: string,
+	tone: AutoDismissTone,
+) {
+	commentNotice = { commentId, message, tone };
+	clearCommentNoticeTimer();
+	commentNoticeTimer = setTimeout(
+		() => {
+			commentNotice = null;
+		},
+		getAutoDismissMs(message, tone),
+	);
+}
+
+function clearCaptchaFeedback() {
+	captchaPrompt = "";
+	captchaError = "";
+	clearCaptchaFeedbackTimer();
+}
+
+function setCaptchaPrompt(message: string) {
+	captchaPrompt = message;
+	captchaError = "";
+	clearCaptchaFeedbackTimer();
+	captchaFeedbackTimer = setTimeout(
+		() => {
+			captchaPrompt = "";
+		},
+		getAutoDismissMs(message, "info"),
+	);
+}
+
+function setCaptchaError(message: string) {
+	captchaError = message;
+	clearCaptchaFeedbackTimer();
+	captchaFeedbackTimer = setTimeout(
+		() => {
+			captchaError = "";
+		},
+		getAutoDismissMs(message, "error"),
+	);
+}
+
+function clearActionNotices() {
+	composerNotice = null;
+	commentNotice = null;
+	clearComposerNoticeTimer();
+	clearCommentNoticeTimer();
+}
+
+function setTargetedNotice(
+	target: CaptchaTarget,
+	message: string,
+	tone: AutoDismissTone,
+) {
+	if (target?.kind === "comment") {
+		setCommentNotice(target.commentId, message, tone);
+		return;
+	}
+
+	setComposerNotice(message, tone);
 }
 
 function clearVoteTransientState() {
 	pendingVoteTarget = null;
-	submitError = "";
-	submitNotice = "";
+	clearActionNotices();
 }
 
 function handleDismissCaptcha() {
 	activeCaptchaTarget = null;
-	captchaPrompt = "";
-	captchaError = "";
+	clearCaptchaFeedback();
 }
 
 function handleCancelVoteConfirm() {
@@ -219,13 +321,16 @@ async function promptForCaptcha(
 						pageUrl: postUrl,
 					})
 				: null);
-		captchaPrompt = i18n(I18nKey.commentsCaptchaRequiredTip);
-		captchaError = "";
+		setCaptchaPrompt(i18n(I18nKey.commentsCaptchaRequiredTip));
 		clearVoteTransientState();
 		await revealCaptchaTarget(target);
 	} catch (error) {
 		logCommentError("prepare captcha prompt failed", error);
-		submitError = toCommentErrorMessage(error, I18nKey.commentsLoadFailed);
+		setTargetedNotice(
+			target,
+			toCommentErrorMessage(error, I18nKey.commentsLoadFailed),
+			"error",
+		);
 	}
 }
 
@@ -253,8 +358,7 @@ async function loadInitialState() {
 			totalRootCount = 0;
 			captchaState = null;
 			activeCaptchaTarget = null;
-			captchaPrompt = "";
-			captchaError = "";
+			clearCaptchaFeedback();
 		}
 	} catch (error) {
 		logCommentError("load comments failed", error);
@@ -331,7 +435,7 @@ async function handleRefreshCaptcha() {
 		});
 	} catch (error) {
 		logCommentError("refresh captcha failed", error);
-		captchaError = toCommentErrorMessage(error, I18nKey.commentsLoadFailed);
+		setCaptchaError(toCommentErrorMessage(error, I18nKey.commentsLoadFailed));
 	} finally {
 		captchaBusy = false;
 	}
@@ -354,15 +458,15 @@ async function handleVerifyCaptcha(input: VerifyCommentCaptchaInput) {
 			verification: input,
 		});
 		if (!captchaState?.verified) {
-			captchaError = i18n(I18nKey.commentsCaptchaVerifyFailed);
+			setCaptchaError(i18n(I18nKey.commentsCaptchaVerifyFailed));
 		} else {
 			captchaPrompt = "";
+			clearCaptchaFeedbackTimer();
 		}
 	} catch (error) {
 		logCommentError("verify captcha failed", error);
-		captchaError = toCommentErrorMessage(
-			error,
-			I18nKey.commentsCaptchaVerifyFailed,
+		setCaptchaError(
+			toCommentErrorMessage(error, I18nKey.commentsCaptchaVerifyFailed),
 		);
 	} finally {
 		captchaBusy = false;
@@ -395,12 +499,12 @@ async function handlePollCaptchaStatus() {
 					required: true,
 				};
 		captchaPrompt = "";
+		clearCaptchaFeedbackTimer();
 		captchaError = "";
 	} catch (error) {
 		logCommentError("poll captcha status failed", error);
-		captchaError = toCommentErrorMessage(
-			error,
-			I18nKey.commentsCaptchaVerifyFailed,
+		setCaptchaError(
+			toCommentErrorMessage(error, I18nKey.commentsCaptchaVerifyFailed),
 		);
 	}
 }
@@ -463,8 +567,7 @@ function buildOptimisticVoteComment(
 
 function requestVoteConfirm(commentId: string, choice: CommentVoteChoice) {
 	activeCaptchaTarget = null;
-	captchaPrompt = "";
-	captchaError = "";
+	clearCaptchaFeedback();
 	clearVoteTransientState();
 	pendingVoteTarget = { commentId, choice };
 }
@@ -498,8 +601,7 @@ async function handleSubmit(
 		totalRootCount = result.thread.rootCommentCount;
 		activeReplyParentId = null;
 		activeCaptchaTarget = null;
-		captchaError = "";
-		captchaPrompt = "";
+		clearCaptchaFeedback();
 		qingyanClient.invalidateBootstrap(postKey);
 		if (supportsCaptcha) {
 			try {
@@ -514,10 +616,11 @@ async function handleSubmit(
 		} else {
 			captchaState = null;
 		}
-		setTransientSubmitNotice(
+		setComposerNotice(
 			result.comment.status === "approved"
 				? i18n(I18nKey.commentsSubmitSuccess)
 				: i18n(I18nKey.commentsModerationNotice),
+			"success",
 		);
 		return true;
 	} catch (error) {
@@ -525,7 +628,10 @@ async function handleSubmit(
 			await promptForCaptcha(error.state, { kind: "composer" });
 		} else {
 			logCommentError("submit comment failed", error);
-			submitError = toCommentErrorMessage(error, I18nKey.commentsSubmitFailed);
+			setComposerNotice(
+				toCommentErrorMessage(error, I18nKey.commentsSubmitFailed),
+				"error",
+			);
 		}
 
 		try {
@@ -589,8 +695,7 @@ async function submitVote(commentId: string, choice: CommentVoteChoice) {
 			} catch (error) {
 				logCommentError("refresh captcha state after vote failed", error);
 			}
-			captchaPrompt = "";
-			captchaError = "";
+			clearCaptchaFeedback();
 		}
 	} catch (error) {
 		comments = replaceCommentInTree(comments, previousComment);
@@ -601,7 +706,11 @@ async function submitVote(commentId: string, choice: CommentVoteChoice) {
 			});
 		} else {
 			logCommentError("vote comment failed", error);
-			submitError = toCommentErrorMessage(error, I18nKey.commentsVoteFailed);
+			setCommentNotice(
+				commentId,
+				toCommentErrorMessage(error, I18nKey.commentsVoteFailed),
+				"error",
+			);
 		}
 	} finally {
 		voteBusyCommentId = null;
@@ -637,9 +746,9 @@ onMount(() => {
 });
 
 onDestroy(() => {
-	if (submitNoticeTimer) {
-		clearTimeout(submitNoticeTimer);
-	}
+	clearComposerNoticeTimer();
+	clearCommentNoticeTimer();
+	clearCaptchaFeedbackTimer();
 });
 </script>
 
@@ -656,15 +765,13 @@ onDestroy(() => {
 	{/if}
 
 	{#if loadError}
-		<p class="mb-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-500">
-			{loadError || i18n(I18nKey.commentsLoadFailed)}
-		</p>
-	{/if}
-
-	{#if submitError}
-		<p class="mb-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-500">
-			{submitError}
-		</p>
+		<div class="mb-4">
+			<InlineFeedbackNotice
+				message={loadError || i18n(I18nKey.commentsLoadFailed)}
+				tone="error"
+				duration={contentTransitionDuration}
+			/>
+		</div>
 	{/if}
 
 	{#if capability?.enabled}
@@ -743,6 +850,7 @@ onDestroy(() => {
 					activeReplyParentId={activeReplyParentId}
 					activeCaptchaCommentId={activeCaptchaCommentId}
 					activeVoteConfirmCommentId={activeVoteConfirmCommentId}
+					activeCommentNoticeId={activeCommentNoticeId}
 					maxDepth={maxDepth}
 					supportsVote={supportsVote}
 					voteBusy={Boolean(voteBusyCommentId)}
@@ -751,6 +859,8 @@ onDestroy(() => {
 					captchaBusy={captchaBusy}
 					captchaError={captchaError}
 					captchaPrompt={captchaPrompt}
+					commentNoticeMessage={commentNoticeMessage}
+					commentNoticeTone={commentNoticeTone}
 					onVote={handleVote}
 					onConfirmVote={handleConfirmVote}
 					onCancelVoteConfirm={handleCancelVoteConfirm}
@@ -783,27 +893,16 @@ onDestroy(() => {
 	</div>
 
 	<div class="mt-6">
-		{#if submitNotice}
-			<div transition:slide={{ duration: contentTransitionDuration }}>
-				<p
-					class="mb-4 rounded-xl bg-primary/10 px-4 py-3 text-sm text-primary"
-					in:fade={{ duration: contentTransitionDuration }}
-					out:fade={{ duration: contentTransitionDuration }}
-				>
-					{submitNotice}
-				</p>
-			</div>
-		{/if}
-
 		<CommentComposer
 			showCaptcha={showComposerCaptcha}
 			allowedFields={allowedFields}
 			requiredFields={requiredFields}
-			persistenceMode={persistenceMode}
 			captchaState={captchaState}
 			captchaBusy={captchaBusy}
 			captchaError={captchaError}
 			captchaPrompt={captchaPrompt}
+			noticeMessage={composerNoticeMessage}
+			noticeTone={composerNoticeTone}
 			replyParentId={activeReplyParentId}
 			submitting={submitting}
 			onSubmit={handleSubmit}

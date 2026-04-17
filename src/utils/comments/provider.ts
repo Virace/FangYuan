@@ -5,9 +5,9 @@ export type CommentForm = {
 	require: CommentAuthorField[];
 };
 
-export type CommentPersistenceMode = "persistent" | "preview_only";
+export type CommentPersistenceMode = "persistent";
 
-export type CommentIdentityModel = "page_key" | "mirrored_post" | "preview";
+export type CommentIdentityModel = "page_key" | "mirrored_post";
 
 export type CommentCapability = {
 	enabled: boolean;

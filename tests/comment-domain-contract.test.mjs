@@ -67,8 +67,8 @@ test("comment domain should keep canonical UI types and QingYan-backed config sh
 	assert.match(treeSource, /export function insertPendingComment\(/);
 	assert.equal(envExists, false);
 
-	assert.match(commentsProviderSource, /export type CommentPersistenceMode = "persistent" \| "preview_only";/);
-	assert.match(commentsProviderSource, /export type CommentIdentityModel = "page_key" \| "mirrored_post" \| "preview";/);
+	assert.match(commentsProviderSource, /export type CommentPersistenceMode = "persistent";/);
+	assert.match(commentsProviderSource, /export type CommentIdentityModel = "page_key" \| "mirrored_post";/);
 	assert.match(
 		commentsProviderSource,
 		/export type CommentAuthorField = "nickname" \| "email" \| "website";/,

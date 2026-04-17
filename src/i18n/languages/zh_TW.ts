@@ -50,8 +50,6 @@ export const zh_TW: Translation = {
 	[Key.commentsFormWebsite]: "網站",
 	[Key.commentsFormOptionalSuffix]: "（可選）",
 	[Key.commentsFormContent]: "留言內容",
-	[Key.commentsPreviewWriteNotice]:
-		"預覽資料源：送出的留言只會保留在目前瀏覽器工作階段中。",
 	[Key.commentCountSingular]: "則留言",
 	[Key.commentCountPlural]: "則留言",
 	[Key.commentsValidationNameRequired]: "請輸入暱稱。",
