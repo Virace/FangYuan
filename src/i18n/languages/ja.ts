@@ -28,6 +28,7 @@ export const ja: Translation = {
 	[Key.commentsCaptcha]: "認証コード",
 	[Key.commentsCaptchaRefresh]: "認証コードを更新",
 	[Key.commentsCaptchaVerify]: "認証コードを確認",
+	[Key.commentsCaptchaCancel]: "認証をキャンセル",
 	[Key.commentsCaptchaVerified]:
 		"認証コードを確認しました。コメントや投票を続けられます。",
 	[Key.commentsCaptchaRequiredTip]:

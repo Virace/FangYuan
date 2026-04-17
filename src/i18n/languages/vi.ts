@@ -27,6 +27,7 @@ export const vi: Translation = {
 	[Key.commentsCaptcha]: "Mã xác minh",
 	[Key.commentsCaptchaRefresh]: "Làm mới mã xác minh",
 	[Key.commentsCaptchaVerify]: "Xác minh mã",
+	[Key.commentsCaptchaCancel]: "Hủy xác minh",
 	[Key.commentsCaptchaVerified]:
 		"Đã xác minh mã. Bạn có thể tiếp tục bình luận hoặc bỏ phiếu.",
 	[Key.commentsCaptchaRequiredTip]:

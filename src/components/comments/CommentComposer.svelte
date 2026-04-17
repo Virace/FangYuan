@@ -38,6 +38,7 @@ export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 export let onVerifyCaptcha:
 	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
 	| null = null;
+export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 
 const emojiPopoverDuration = 180;
 const emojiTriggerIcon = "\u{1F642}";
@@ -258,6 +259,7 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 						captchaState={captchaState}
 						onDismiss={onDismissCaptcha}
 						onRefreshCaptcha={onRefreshCaptcha}
+						onPollCaptchaStatus={onPollCaptchaStatus}
 						onVerifyCaptcha={onVerifyCaptcha}
 					/>
 				</div>

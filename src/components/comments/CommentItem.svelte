@@ -34,6 +34,7 @@ export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 export let onVerifyCaptcha:
 	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
 	| null = null;
+export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 
 function formatCommentDate(value: string): string {
 	const date = new Date(value);
@@ -171,6 +172,7 @@ $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
 						captchaState={captchaState}
 						onDismiss={onDismissCaptcha}
 						onRefreshCaptcha={onRefreshCaptcha}
+						onPollCaptchaStatus={onPollCaptchaStatus}
 						onVerifyCaptcha={onVerifyCaptcha}
 					/>
 				</div>
@@ -199,6 +201,7 @@ $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
 							onReply={onReply}
 							onDismissCaptcha={onDismissCaptcha}
 							onRefreshCaptcha={onRefreshCaptcha}
+							onPollCaptchaStatus={onPollCaptchaStatus}
 							onVerifyCaptcha={onVerifyCaptcha}
 						/>
 					{/each}

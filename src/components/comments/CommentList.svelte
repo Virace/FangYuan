@@ -30,6 +30,7 @@ export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 export let onVerifyCaptcha:
 	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
 	| null = null;
+export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 </script>
 
 <div class="space-y-3">
@@ -54,6 +55,7 @@ export let onVerifyCaptcha:
 			onReply={onReply}
 			onDismissCaptcha={onDismissCaptcha}
 			onRefreshCaptcha={onRefreshCaptcha}
+			onPollCaptchaStatus={onPollCaptchaStatus}
 			onVerifyCaptcha={onVerifyCaptcha}
 		/>
 	{/each}

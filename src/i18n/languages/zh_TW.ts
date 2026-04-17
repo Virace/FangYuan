@@ -27,6 +27,7 @@ export const zh_TW: Translation = {
 	[Key.commentsCaptcha]: "驗證碼",
 	[Key.commentsCaptchaRefresh]: "重新整理驗證碼",
 	[Key.commentsCaptchaVerify]: "驗證驗證碼",
+	[Key.commentsCaptchaCancel]: "取消驗證",
 	[Key.commentsCaptchaVerified]: "驗證碼已通過，可以繼續留言或互動。",
 	[Key.commentsCaptchaRequiredTip]: "請先在這裡完成所需驗證，再繼續操作。",
 	[Key.commentsCaptchaUnsupported]: "目前的驗證碼類型尚未接入這個前端。",

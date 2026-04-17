@@ -24,7 +24,11 @@ import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 import {
-	loadExternalArtalkDevProxyTarget,
+	normalizeQingYanDevProxyPath,
+	normalizeQingYanDevProxyRequestPath,
+} from "./src/utils/qingyan/dev-proxy.mjs";
+import {
+	loadExternalQingYanDevProxyTarget,
 	loadExternalExpressiveCodeConfig,
 } from "./src/utils/site-source.ts";
 
@@ -32,7 +36,7 @@ const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
-const artalkDevProxyTarget = loadExternalArtalkDevProxyTarget();
+const qingyanDevProxyTarget = loadExternalQingYanDevProxyTarget();
 const enableGlobalImageCodecDefaults = false;
 const globalImageServiceConfig = {
 	jpeg: { mozjpeg: true },
@@ -40,15 +44,48 @@ const globalImageServiceConfig = {
 	avif: { effort: 4, chromaSubsampling: "4:2:0" },
 	png: { compressionLevel: 9 },
 };
-const artalkDevProxy = artalkDevProxyTarget
+const qingyanDevProxy = qingyanDevProxyTarget
 	? {
-			"/artalk-api": {
-				target: artalkDevProxyTarget,
+			"/api": {
+				target: qingyanDevProxyTarget,
 				changeOrigin: true,
-				rewrite: (requestPath) => requestPath.replace(/^\/artalk-api/, ""),
+				rewrite: normalizeQingYanDevProxyPath,
 			},
 		}
 	: undefined;
+const qingyanDevProxyMiddlewarePlugin = qingyanDevProxyTarget
+	? {
+			name: "fangyuan-qingyan-dev-proxy-normalizer",
+			configureServer(server) {
+				const normalizeMiddleware = (req, _res, next) => {
+					if (req.url) {
+						req.url = normalizeQingYanDevProxyRequestPath(req.url);
+					}
+					next();
+				};
+
+				server.middlewares.stack.unshift({
+					route: "",
+					handle: normalizeMiddleware,
+				});
+			},
+			configurePreviewServer(server) {
+				return () => {
+					const normalizeMiddleware = (req, _res, next) => {
+						if (req.url) {
+							req.url = normalizeQingYanDevProxyRequestPath(req.url);
+						}
+						next();
+					};
+
+					server.middlewares.stack.unshift({
+						route: "",
+						handle: normalizeMiddleware,
+					});
+				};
+			},
+		}
+	: null;
 
 // https://astro.build/config
 export default defineConfig({
@@ -205,14 +242,17 @@ export default defineConfig({
 		],
 	},
 	vite: {
-		plugins: [tailwindcss()],
-		...(artalkDevProxy
+		plugins: [
+			tailwindcss(),
+			...(qingyanDevProxyMiddlewarePlugin ? [qingyanDevProxyMiddlewarePlugin] : []),
+		],
+		...(qingyanDevProxy
 			? {
 					server: {
-						proxy: artalkDevProxy,
+						proxy: qingyanDevProxy,
 					},
 					preview: {
-						proxy: artalkDevProxy,
+						proxy: qingyanDevProxy,
 					},
 				}
 			: {}),

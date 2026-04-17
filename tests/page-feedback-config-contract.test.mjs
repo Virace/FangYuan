@@ -11,26 +11,25 @@ function readRepoFile(...segments) {
 	return readFile(path.join(repoRoot, ...segments), "utf8");
 }
 
-test("page feedback config should expose reward options and provider contracts", async () => {
+test("page feedback config should expose reward options and QingYan-facing thin contracts", async () => {
 	const [
 		configTypeSource,
 		defaultConfigSource,
 		appConfigSource,
 		providerSource,
-		clientSource,
 	] = await Promise.all([
 		readRepoFile("src", "types", "config.ts"),
 		readRepoFile("src", "default-config.ts"),
 		readRepoFile("src", "config.ts"),
 		readRepoFile("src", "utils", "page-feedback", "provider.ts"),
-		readRepoFile("src", "utils", "page-feedback", "client.ts"),
 	]);
 
 	assert.match(
 		configTypeSource,
-		/import type \{[\s\S]*PageFeedbackProvider,[\s\S]*RewardOption,[\s\S]*\} from "@utils\/page-feedback\/provider";/,
+		/import type \{ RewardOption \} from "@utils\/page-feedback\/provider";/,
 	);
 	assert.match(configTypeSource, /export type PageFeedbackConfig = \{/);
+	assert.match(configTypeSource, /qingyan\?: QingYanClientConfig \| null;/);
 	assert.match(configTypeSource, /rewardOptions\?: RewardOption\[];/);
 
 	assert.match(providerSource, /export type RewardOption = \{/);
@@ -39,28 +38,13 @@ test("page feedback config should expose reward options and provider contracts",
 	assert.match(providerSource, /export type PageFeedbackState = \{/);
 	assert.match(providerSource, /likeCount:\s*number;/);
 	assert.match(providerSource, /liked:\s*boolean;/);
-	assert.match(
-		providerSource,
-		/abstract getCapability\([\s\S]*input: GetPageFeedbackInput,[\s\S]*\): Promise<PageFeedbackCapability>;/,
-	);
-	assert.match(
-		providerSource,
-		/abstract getState\(input: GetPageFeedbackInput\): Promise<PageFeedbackState>;/,
-	);
-	assert.match(
-		providerSource,
-		/abstract likePage\(input: LikePageInput\): Promise<PageFeedbackState>;/,
-	);
-
-	assert.match(clientSource, /export function getPageFeedbackClient\(\)/);
-	assert.match(clientSource, /const provider = pageFeedbackConfig\.enable/);
-	assert.match(clientSource, /async getState\(input: GetPageFeedbackInput\)/);
-	assert.match(clientSource, /async likePage\(input: LikePageInput\)/);
+	assert.doesNotMatch(providerSource, /export abstract class PageFeedbackProvider \{/);
 
 	assert.match(
 		defaultConfigSource,
 		/export const defaultPageFeedbackConfig: PageFeedbackConfig = \{/,
 	);
+	assert.match(defaultConfigSource, /qingyan: null,/);
 	assert.match(defaultConfigSource, /rewardOptions:\s*\[\],/);
 	assert.match(
 		appConfigSource,

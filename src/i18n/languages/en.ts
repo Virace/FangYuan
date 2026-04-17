@@ -28,6 +28,7 @@ export const en: Translation = {
 	[Key.commentsCaptcha]: "Captcha",
 	[Key.commentsCaptchaRefresh]: "Refresh captcha",
 	[Key.commentsCaptchaVerify]: "Verify captcha",
+	[Key.commentsCaptchaCancel]: "Cancel verification",
 	[Key.commentsCaptchaVerified]:
 		"Captcha verified. You can continue commenting or voting.",
 	[Key.commentsCaptchaRequiredTip]:

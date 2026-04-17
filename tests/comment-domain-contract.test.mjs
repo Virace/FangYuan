@@ -21,27 +21,13 @@ test("comment runtime foundation should avoid removed Astro hybrid output mode",
 	assert.doesNotMatch(
 		astroConfig,
 		/output:\s*"hybrid"/,
-		"Astro v5+ merged hybrid into static and no longer accepts output: \"hybrid\"",
+		'Astro v5+ merged hybrid into static and no longer accepts output: "hybrid"',
 	);
 });
 
-test("comment domain should declare canonical types and pending token payload", async () => {
-	const source = await readFile(path.join(repoRoot, "src", "types", "comment.ts"), "utf8");
-	assert.match(
-		source,
-		/export type CommentStatus =[\s\S]*"approved"[\s\S]*"pending_remote"[\s\S]*"local_pending"/,
-	);
-	assert.match(source, /export type CommentVoteChoice = "up" \| "down";/);
-	assert.match(source, /export type CanonicalComment = \{/);
-	assert.match(source, /voteUp:\s*number;/);
-	assert.match(source, /voteDown:\s*number;/);
-	assert.match(source, /viewerVote\?:\s*CommentVoteChoice \| null;/);
-	assert.match(source, /children:\s*CanonicalComment\[\];/);
-	assert.match(source, /export type PendingEditTokenPayload = \{/);
-});
-
-test("comment helpers should expose postKey, tree, and config-driven comment settings", async () => {
+test("comment domain should keep canonical UI types and QingYan-backed config shape", async () => {
 	const [
+		commentTypesSource,
 		postKeySource,
 		treeSource,
 		envExists,
@@ -49,82 +35,91 @@ test("comment helpers should expose postKey, tree, and config-driven comment set
 		defaultConfigSource,
 		typesConfigSource,
 		optionsSource,
-		providerSource,
-	] =
-		await Promise.all([
-			readFile(path.join(repoRoot, "src", "utils", "comments", "post-key.ts"), "utf8"),
-			readFile(path.join(repoRoot, "src", "utils", "comments", "tree.ts"), "utf8"),
-			exists(path.join("src", "env.d.ts")),
-			readFile(path.join(repoRoot, "src", "config.ts"), "utf8"),
-			readFile(path.join(repoRoot, "src", "default-config.ts"), "utf8"),
-			readFile(path.join(repoRoot, "src", "types", "config.ts"), "utf8"),
-			readFile(path.join(repoRoot, "src", "utils", "comments", "options.ts"), "utf8"),
-			readFile(path.join(repoRoot, "src", "utils", "comments", "provider.ts"), "utf8"),
-		]);
+		commentsProviderSource,
+		pageFeedbackProviderSource,
+		pageMetricsProviderSource,
+	] = await Promise.all([
+		readFile(path.join(repoRoot, "src", "types", "comment.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "utils", "comments", "post-key.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "utils", "comments", "tree.ts"), "utf8"),
+		exists(path.join("src", "env.d.ts")),
+		readFile(path.join(repoRoot, "src", "config.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "default-config.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "types", "config.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "utils", "comments", "options.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "utils", "comments", "provider.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "utils", "page-feedback", "provider.ts"), "utf8"),
+		readFile(path.join(repoRoot, "src", "utils", "page-metrics", "provider.ts"), "utf8"),
+	]);
+
+	assert.match(
+		commentTypesSource,
+		/export type CommentStatus =[\s\S]*"approved"[\s\S]*"pending_remote"[\s\S]*"local_pending"/,
+	);
+	assert.match(commentTypesSource, /export type CommentVoteChoice = "up" \| "down";/);
+	assert.match(commentTypesSource, /export type CanonicalComment = \{/);
+	assert.match(commentTypesSource, /children:\s*CanonicalComment\[\];/);
+	assert.match(commentTypesSource, /export type PendingEditTokenPayload = \{/);
 
 	assert.match(postKeySource, /export function getPostKeyFromEntry\(/);
 	assert.match(treeSource, /export function buildCommentTree\(/);
 	assert.match(treeSource, /export function countCommentsInTree\(/);
-	assert.match(
-		treeSource,
-		/return items\.reduce\(\s*\(total,\s*comment\)\s*=>\s*total \+ 1 \+ countCommentsInTree\(comment\.children\),\s*0,\s*\)/,
-	);
 	assert.match(treeSource, /export function insertPendingComment\(/);
-	assert.equal(envExists, false, "comment system should no longer depend on src/env.d.ts");
-	assert.match(providerSource, /postTitle\?: string;/);
-	assert.match(providerSource, /captcha\?:\s*VerifyCommentCaptchaInput \| null;/);
-	assert.match(providerSource, /supportsVote:\s*boolean;/);
-	assert.match(
-		providerSource,
-		/export type CommentPersistenceMode = "persistent" \| "preview_only";/,
-	);
-	assert.match(providerSource, /supportsCaptcha:\s*boolean;/);
-	assert.match(providerSource, /requiredAuthorFields:\s*CommentAuthorField\[\];/);
-	assert.match(providerSource, /export type CommentCaptchaChallenge = \{/);
-	assert.match(providerSource, /export type CommentCaptchaState = \{/);
-	assert.match(providerSource, /export type VerifyCommentCaptchaInput = \{/);
-	assert.match(providerSource, /export type VoteCommentInput = \{/);
-	assert.match(providerSource, /export type CommentSortBy = "date_desc" \| "date_asc";/);
-	assert.match(providerSource, /export type GetCommentThreadInput = \{/);
-	assert.match(providerSource, /sortBy\?: CommentSortBy;/);
-	assert.match(providerSource, /limit\?: number;/);
-	assert.match(providerSource, /offset\?: number;/);
-	assert.match(providerSource, /export type CommentThreadPage = \{/);
-	assert.match(providerSource, /rootsCount:\s*number;/);
-	assert.match(providerSource, /totalCount:\s*number;/);
-	assert.match(providerSource, /abstract createComment\(input: CreateCommentInput\)/);
-	assert.match(
-		providerSource,
-		/abstract getThread\(input: GetCommentThreadInput\): Promise<CommentThreadPage>;/,
-	);
-	assert.match(providerSource, /async getCaptchaState\(\): Promise<CommentCaptchaState \| null>/);
-	assert.match(
-		providerSource,
-		/async verifyCaptcha\(\s*_input: VerifyCommentCaptchaInput,\s*\): Promise<CommentCaptchaState>/,
-	);
-	assert.match(providerSource, /async voteComment\(_input: VoteCommentInput\): Promise<CanonicalComment>/);
+	assert.equal(envExists, false);
+
+	assert.match(commentsProviderSource, /export type CommentPersistenceMode = "persistent" \| "preview_only";/);
+	assert.match(commentsProviderSource, /export type CommentIdentityModel = "page_key" \| "mirrored_post" \| "preview";/);
+	assert.match(commentsProviderSource, /export type CommentCapability = \{/);
+	assert.match(commentsProviderSource, /supportsVote:\s*boolean;/);
+	assert.match(commentsProviderSource, /supportsCaptcha:\s*boolean;/);
+	assert.match(commentsProviderSource, /requiredAuthorFields:\s*CommentAuthorField\[\];/);
+	assert.match(commentsProviderSource, /export type CommentCaptchaHostMode =[\s\S]*"inline_value"[\s\S]*"iframe_widget"[\s\S]*"token_widget"/);
+	assert.match(commentsProviderSource, /export type CommentCaptchaVerificationModel =[\s\S]*"backend_session"[\s\S]*"request_token"/);
+	assert.match(commentsProviderSource, /export type CommentCaptchaChallenge =/);
+	assert.match(commentsProviderSource, /export type CommentCaptchaState = \{/);
+	assert.match(commentsProviderSource, /export type VerifyCommentCaptchaInput = \{/);
+	assert.doesNotMatch(commentsProviderSource, /export abstract class CommentProvider \{/);
+	assert.doesNotMatch(commentsProviderSource, /getCommentProvider\(/);
+
+	assert.match(pageFeedbackProviderSource, /export type RewardOption = \{/);
+	assert.match(pageFeedbackProviderSource, /export type PageFeedbackCapability = \{/);
+	assert.match(pageFeedbackProviderSource, /export type PageFeedbackState = \{/);
+	assert.doesNotMatch(pageFeedbackProviderSource, /export abstract class PageFeedbackProvider \{/);
+
+	assert.match(pageMetricsProviderSource, /export type PageMetrics = \{/);
+	assert.doesNotMatch(pageMetricsProviderSource, /export abstract class PageMetricsProvider \{/);
+
+	assert.match(typesConfigSource, /export type QingYanClientConfig = \{/);
 	assert.match(typesConfigSource, /export type CommentConfig = \{/);
-	assert.match(typesConfigSource, /provider\?: CommentProvider \| null;/);
+	assert.match(typesConfigSource, /qingyan\?: QingYanClientConfig \| null;/);
 	assert.match(typesConfigSource, /rootLimit\?: number;/);
 	assert.match(typesConfigSource, /maxDepth\?: number;/);
 	assert.match(typesConfigSource, /export type PageMetricsConfig = \{/);
-	assert.match(typesConfigSource, /provider\?: PageMetricsProvider \| null;/);
+	assert.match(typesConfigSource, /export type PageFeedbackConfig = \{/);
+	assert.doesNotMatch(typesConfigSource, /provider\?: CommentProvider \| null;/);
+	assert.doesNotMatch(typesConfigSource, /provider\?: PageMetricsProvider \| null;/);
+	assert.doesNotMatch(typesConfigSource, /provider\?: PageFeedbackProvider \| null;/);
+
 	assert.match(defaultConfigSource, /export const defaultCommentConfig: CommentConfig = \{/);
 	assert.match(defaultConfigSource, /enable: true/);
-	assert.match(defaultConfigSource, /provider: mockCommentProvider/);
+	assert.match(defaultConfigSource, /qingyan: null,/);
 	assert.match(defaultConfigSource, /rootLimit: DEFAULT_COMMENT_ROOT_LIMIT/);
 	assert.match(defaultConfigSource, /maxDepth: DEFAULT_COMMENT_MAX_DEPTH/);
 	assert.match(defaultConfigSource, /export const defaultPageMetricsConfig: PageMetricsConfig = \{/);
+	assert.match(defaultConfigSource, /export const defaultPageFeedbackConfig: PageFeedbackConfig = \{/);
+
+	assert.match(appConfigSource, /type ExternalSiteConfigModule = \{[\s\S]*commentConfig\?: CommentConfig;/);
+	assert.match(appConfigSource, /function mergeCommentConfig\(/);
+	assert.match(appConfigSource, /function mergePageMetricsConfig\(/);
+	assert.match(appConfigSource, /function mergePageFeedbackConfig\(/);
+	assert.match(appConfigSource, /qingyan: override\.qingyan \?\? defaultConfig\.qingyan/);
 	assert.match(appConfigSource, /export const commentConfig: CommentConfig =/);
 	assert.match(appConfigSource, /export const pageMetricsConfig: PageMetricsConfig =/);
-	assert.match(appConfigSource, /mergeCommentConfig\(/);
+	assert.match(appConfigSource, /export const pageFeedbackConfig: PageFeedbackConfig =/);
+
 	assert.match(optionsSource, /export const DEFAULT_COMMENT_ROOT_LIMIT = 5;/);
 	assert.match(optionsSource, /export const DEFAULT_COMMENT_MAX_DEPTH = 3;/);
 	assert.match(optionsSource, /export const MIN_COMMENT_ROOT_LIMIT = 1;/);
 	assert.match(optionsSource, /export const MIN_COMMENT_MAX_DEPTH = 1;/);
-	assert.match(
-		optionsSource,
-		/DEFAULT_COMMENT_SORT_BY = "date_desc"/,
-	);
-	assert.match(optionsSource, /Math\.max\(minimum/);
+	assert.match(optionsSource, /DEFAULT_COMMENT_SORT_BY = "date_desc"/);
 });

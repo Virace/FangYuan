@@ -1,10 +1,5 @@
 import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
-import type { CommentProvider } from "@utils/comments/provider";
-import type {
-	PageFeedbackProvider,
-	RewardOption,
-} from "@utils/page-feedback/provider";
-import type { PageMetricsProvider } from "@utils/page-metrics/provider";
+import type { RewardOption } from "@utils/page-feedback/provider";
 import type { ImageMetadata } from "astro";
 
 export type SiteConfig = {
@@ -115,20 +110,25 @@ export type ExpressiveCodeConfig = {
 	theme: string;
 };
 
+export type QingYanClientConfig = {
+	siteKey: string;
+	apiBase?: string;
+};
+
 export type CommentConfig = {
 	enable: boolean;
-	provider?: CommentProvider | null;
+	qingyan?: QingYanClientConfig | null;
 	rootLimit?: number;
 	maxDepth?: number;
 };
 
 export type PageMetricsConfig = {
 	enable: boolean;
-	provider?: PageMetricsProvider | null;
+	qingyan?: QingYanClientConfig | null;
 };
 
 export type PageFeedbackConfig = {
 	enable: boolean;
-	provider?: PageFeedbackProvider | null;
+	qingyan?: QingYanClientConfig | null;
 	rewardOptions?: RewardOption[];
 };

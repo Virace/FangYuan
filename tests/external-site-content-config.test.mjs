@@ -165,26 +165,20 @@ test("runtime config should merge external overrides without leaking node-only l
 
 	assert.match(
 		astroConfigSource,
-		/import \{[\s\S]*loadExternalArtalkDevProxyTarget[\s\S]*loadExternalExpressiveCodeConfig[\s\S]*\} from "\.\/src\/utils\/site-source\.ts";/,
-		"Astro config should also load the optional Artalk dev proxy target through the shared site-source helper",
+		/import \{[\s\S]*loadExternalQingYanDevProxyTarget[\s\S]*loadExternalExpressiveCodeConfig[\s\S]*\} from "\.\/src\/utils\/site-source\.ts";/,
+		"Astro config should also load the optional QingYan dev proxy target through the shared site-source helper",
 	);
 
 	assert.match(
 		astroConfigSource,
-		/const artalkDevProxyTarget = loadExternalArtalkDevProxyTarget\(\);/,
-		"Astro config should resolve the optional Artalk dev proxy target before building the Vite config",
+		/const qingyanDevProxyTarget = loadExternalQingYanDevProxyTarget\(\);/,
+		"Astro config should resolve the optional QingYan dev proxy target before building the Vite config",
 	);
 
 	assert.match(
 		astroConfigSource,
-		/artalkDevProxyTarget\s*\?\s*\{\s*"\/artalk-api": \{/,
-		"Astro config should wire a same-origin /artalk-api dev proxy when a local Artalk target is configured",
-	);
-
-	assert.match(
-		astroConfigSource,
-		/rewrite:\s*\(requestPath\)\s*=>\s*requestPath\.replace\(\s*\/\^\\\/artalk-api\/,\s*""\s*\)/,
-		"Artalk dev proxy should strip the local /artalk-api prefix before forwarding to Artalk",
+		/qingyanDevProxyTarget\s*\?\s*\{\s*"\/api": \{/,
+		"Astro config should wire a same-origin /api dev proxy when a local QingYan target is configured",
 	);
 
 	assert.doesNotMatch(
@@ -194,29 +188,29 @@ test("runtime config should merge external overrides without leaking node-only l
 	);
 });
 
-test("site-source should expose an optional literal Artalk dev proxy target loader for local same-origin testing", async () => {
+test("site-source should expose an optional literal QingYan dev proxy target loader for local same-origin testing", async () => {
 	const siteSource = await readRepoFile("src", "utils", "site-source.ts");
 
 	assert.match(
 		siteSource,
-		/export function loadExternalArtalkDevProxyTarget\(\): string \| null \{/,
-		"site-source should expose a loader for the optional Artalk dev proxy target",
+		/export function loadExternalQingYanDevProxyTarget\(\): string \| null \{/,
+		"site-source should expose a loader for the optional QingYan dev proxy target",
 	);
 
 	assert.match(
 		siteSource,
 		/const targetMatch = source\.match\(/,
-		"site-source should parse site/config.ts for the optional Artalk dev proxy target",
+		"site-source should parse site/config.ts for the optional QingYan dev proxy target",
 	);
 
 	assert.match(
 		siteSource,
-		/export const artalkDevProxyTarget = \["'`]\(\[\^"'`]\+\)\["'`];\?/,
-		"site-source should search for a literal artalkDevProxyTarget export in site/config.ts",
+		/export const qingyanDevProxyTarget = \["'`]\(\[\^"'`]\+\)\["'`];\?/,
+		"site-source should search for a literal qingyanDevProxyTarget export in site/config.ts",
 	);
 });
 
-test("local site config should allow wiring page metrics through the same Artalk dev proxy surface", async () => {
+test("local site config should wire comments, page metrics, and page feedback through QingYan", async () => {
 	const siteConfigSource = await readRepoFile("site", "config.ts");
 
 	assert.match(
@@ -227,8 +221,8 @@ test("local site config should allow wiring page metrics through the same Artalk
 
 	assert.match(
 		siteConfigSource,
-		/import \{ ArtalkPageMetricsProvider \} from "\.\.\/src\/utils\/page-metrics\/artalk-provider";/,
-		"site/config.ts should import the dedicated Artalk page metrics adapter",
+		/export const qingyanDevProxyTarget = ["'`]http:\/\/localhost:4401["'`];/,
+		"site/config.ts should expose a literal local QingYan dev proxy target",
 	);
 
 	assert.match(
@@ -239,20 +233,20 @@ test("local site config should allow wiring page metrics through the same Artalk
 
 	assert.match(
 		siteConfigSource,
-		/(const artalkBase = "\/artalk-api";|apiBase:\s*"\/artalk-api"|apiBase:\s*artalkBase)/,
-		"site/config.ts should point local Artalk verification through the same-origin /artalk-api proxy, either inline or via a shared constant",
-	);
-
-	assert.match(
-		siteConfigSource,
-		/import \{ ArtalkPageFeedbackProvider \} from "\.\.\/src\/utils\/page-feedback\/artalk-provider";/,
-		"site/config.ts should import the dedicated Artalk page feedback adapter",
+		/(const qingyanBase = "\/api";|apiBase:\s*"\/api"|apiBase:\s*qingyanBase)/,
+		"site/config.ts should point local QingYan access through the same-origin /api surface",
 	);
 
 	assert.match(
 		siteConfigSource,
 		/export const pageFeedbackConfig: PageFeedbackConfig = \{/,
 		"site/config.ts should expose a pageFeedbackConfig override",
+	);
+
+	assert.match(
+		siteConfigSource,
+		/siteKey:\s*qingyanSiteKey|siteKey:\s*"fangyuan"/,
+		"site/config.ts should wire a FangYuan site key into QingYan-backed configs",
 	);
 
 	assert.match(

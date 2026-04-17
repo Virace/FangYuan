@@ -28,6 +28,7 @@ export const id: Translation = {
 	[Key.commentsCaptcha]: "Captcha",
 	[Key.commentsCaptchaRefresh]: "Muat ulang captcha",
 	[Key.commentsCaptchaVerify]: "Verifikasi captcha",
+	[Key.commentsCaptchaCancel]: "Batalkan verifikasi",
 	[Key.commentsCaptchaVerified]:
 		"Captcha terverifikasi. Anda dapat melanjutkan komentar atau voting.",
 	[Key.commentsCaptchaRequiredTip]:

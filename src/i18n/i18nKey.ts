@@ -24,6 +24,7 @@ enum I18nKey {
 	commentsCaptcha = "commentsCaptcha",
 	commentsCaptchaRefresh = "commentsCaptchaRefresh",
 	commentsCaptchaVerify = "commentsCaptchaVerify",
+	commentsCaptchaCancel = "commentsCaptchaCancel",
 	commentsCaptchaVerified = "commentsCaptchaVerified",
 	commentsCaptchaRequiredTip = "commentsCaptchaRequiredTip",
 	commentsCaptchaUnsupported = "commentsCaptchaUnsupported",

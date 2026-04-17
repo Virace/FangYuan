@@ -28,6 +28,7 @@ export const ko: Translation = {
 	[Key.commentsCaptcha]: "인증 코드",
 	[Key.commentsCaptchaRefresh]: "인증 코드 새로고침",
 	[Key.commentsCaptchaVerify]: "인증 코드 확인",
+	[Key.commentsCaptchaCancel]: "인증 취소",
 	[Key.commentsCaptchaVerified]:
 		"인증 코드가 확인되었습니다. 댓글이나 투표를 계속할 수 있습니다.",
 	[Key.commentsCaptchaRequiredTip]:

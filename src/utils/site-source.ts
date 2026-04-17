@@ -60,14 +60,14 @@ export function loadExternalExpressiveCodeConfig(): { theme?: string } | null {
 	};
 }
 
-export function loadExternalArtalkDevProxyTarget(): string | null {
+export function loadExternalQingYanDevProxyTarget(): string | null {
 	if (!existsSync(externalConfigPath)) {
 		return null;
 	}
 
 	const source = readFileSync(externalConfigPath, "utf8");
 	const targetMatch = source.match(
-		/export const artalkDevProxyTarget = ["'`]([^"'`]+)["'`];?/,
+		/export const qingyanDevProxyTarget = ["'`]([^"'`]+)["'`];?/,
 	);
 
 	return targetMatch?.[1] ?? null;

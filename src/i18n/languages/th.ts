@@ -27,6 +27,7 @@ export const th: Translation = {
 	[Key.commentsCaptcha]: "รหัสยืนยัน",
 	[Key.commentsCaptchaRefresh]: "รีเฟรชรหัสยืนยัน",
 	[Key.commentsCaptchaVerify]: "ยืนยันรหัส",
+	[Key.commentsCaptchaCancel]: "ยกเลิกการยืนยัน",
 	[Key.commentsCaptchaVerified]: "ยืนยันรหัสแล้ว คุณสามารถแสดงความคิดเห็นหรือโหวตต่อได้",
 	[Key.commentsCaptchaRequiredTip]: "โปรดยืนยันที่จำเป็นให้เสร็จที่นี่ก่อนดำเนินการต่อ",
 	[Key.commentsCaptchaUnsupported]: "ฟรอนต์เอนด์นี้ยังไม่รองรับรูปแบบรหัสยืนยันปัจจุบัน",

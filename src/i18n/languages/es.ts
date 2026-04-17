@@ -29,6 +29,7 @@ export const es: Translation = {
 	[Key.commentsCaptcha]: "Captcha",
 	[Key.commentsCaptchaRefresh]: "Actualizar captcha",
 	[Key.commentsCaptchaVerify]: "Verificar captcha",
+	[Key.commentsCaptchaCancel]: "Cancelar verificación",
 	[Key.commentsCaptchaVerified]:
 		"Captcha verificado. Ya puedes comentar o votar.",
 	[Key.commentsCaptchaRequiredTip]:

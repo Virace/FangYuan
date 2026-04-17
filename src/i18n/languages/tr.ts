@@ -28,6 +28,7 @@ export const tr: Translation = {
 	[Key.commentsCaptcha]: "Doğrulama kodu",
 	[Key.commentsCaptchaRefresh]: "Doğrulama kodunu yenile",
 	[Key.commentsCaptchaVerify]: "Doğrula",
+	[Key.commentsCaptchaCancel]: "Doğrulamayı iptal et",
 	[Key.commentsCaptchaVerified]:
 		"Doğrulama tamamlandı. Yorum yapmaya veya oy vermeye devam edebilirsiniz.",
 	[Key.commentsCaptchaRequiredTip]:

@@ -10,7 +10,6 @@ import type {
 	SiteConfig,
 } from "./types/config";
 import { LinkPreset } from "./types/config";
-import { mockCommentProvider } from "./utils/comments/mock-provider";
 import {
 	DEFAULT_COMMENT_MAX_DEPTH,
 	DEFAULT_COMMENT_ROOT_LIMIT,
@@ -100,18 +99,18 @@ export const defaultExpressiveCodeConfig: ExpressiveCodeConfig = {
 
 export const defaultCommentConfig: CommentConfig = {
 	enable: true,
-	provider: mockCommentProvider,
+	qingyan: null,
 	rootLimit: DEFAULT_COMMENT_ROOT_LIMIT,
 	maxDepth: DEFAULT_COMMENT_MAX_DEPTH,
 };
 
 export const defaultPageMetricsConfig: PageMetricsConfig = {
 	enable: false,
-	provider: null,
+	qingyan: null,
 };
 
 export const defaultPageFeedbackConfig: PageFeedbackConfig = {
 	enable: false,
-	provider: null,
+	qingyan: null,
 	rewardOptions: [],
 };

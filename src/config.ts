@@ -135,7 +135,7 @@ function mergeCommentConfig(
 	return normalizeCommentConfig({
 		...defaultConfig,
 		...override,
-		provider: override.provider ?? defaultConfig.provider,
+		qingyan: override.qingyan ?? defaultConfig.qingyan,
 	});
 }
 
@@ -150,7 +150,7 @@ function mergePageMetricsConfig(
 	return {
 		...defaultConfig,
 		...override,
-		provider: override.provider ?? defaultConfig.provider,
+		qingyan: override.qingyan ?? defaultConfig.qingyan,
 	};
 }
 
@@ -165,7 +165,7 @@ function mergePageFeedbackConfig(
 	return {
 		...defaultConfig,
 		...override,
-		provider: override.provider ?? defaultConfig.provider,
+		qingyan: override.qingyan ?? defaultConfig.qingyan,
 		rewardOptions: override.rewardOptions ?? defaultConfig.rewardOptions,
 	};
 }

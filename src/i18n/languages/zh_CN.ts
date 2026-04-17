@@ -27,6 +27,7 @@ export const zh_CN: Translation = {
 	[Key.commentsCaptcha]: "验证码",
 	[Key.commentsCaptchaRefresh]: "刷新验证码",
 	[Key.commentsCaptchaVerify]: "验证验证码",
+	[Key.commentsCaptchaCancel]: "取消验证",
 	[Key.commentsCaptchaVerified]: "验证码已通过，可以继续评论或互动。",
 	[Key.commentsCaptchaRequiredTip]: "请先在这里完成所需验证，再继续操作。",
 	[Key.commentsCaptchaUnsupported]: "当前验证码类型暂未接入这个前端。",

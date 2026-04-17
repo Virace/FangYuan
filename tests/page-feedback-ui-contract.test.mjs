@@ -12,15 +12,15 @@ function readRepoFile(...segments) {
 }
 
 test("page feedback UI should render a one-time like button and a dialog-based reward modal", async () => {
-	const [postFeedbackSource, rewardModalSource, mainCssSource, clientSource] = await Promise.all([
+	const [postFeedbackSource, rewardModalSource, mainCssSource, qingyanClientSource] = await Promise.all([
 		readRepoFile("src", "components", "page-feedback", "PostFeedback.svelte"),
 		readRepoFile("src", "components", "page-feedback", "RewardModal.svelte"),
 		readRepoFile("src", "styles", "main.css"),
-		readRepoFile("src", "utils", "page-feedback", "client.ts"),
+		readRepoFile("src", "utils", "qingyan", "client.ts"),
 	]);
 
-	assert.match(postFeedbackSource, /getPageFeedbackClient\(\)/);
-	assert.match(postFeedbackSource, /getCapability\(/);
+	assert.match(postFeedbackSource, /getQingYanClient\(\)/);
+	assert.match(postFeedbackSource, /fetchPostEngagementBootstrap\(/);
 	assert.match(postFeedbackSource, /likePage\(/);
 	assert.match(postFeedbackSource, /RewardModal/);
 	assert.match(postFeedbackSource, /rewardOptions/);
@@ -30,8 +30,8 @@ test("page feedback UI should render a one-time like button and a dialog-based r
 	assert.match(postFeedbackSource, /supportsLike/);
 	assert.match(postFeedbackSource, /showReward = rewardOptions.length > 0/);
 	assert.match(postFeedbackSource, /showLike = capability\?\.supportsLike \?\? false/);
-	assert.match(clientSource, /async getCapability\(input: GetPageFeedbackInput\)/);
-	assert.match(clientSource, /provider\.getCapability\(input\)/);
+	assert.match(qingyanClientSource, /fetchPostEngagementBootstrap/);
+	assert.match(qingyanClientSource, /likePage/);
 
 	assert.match(rewardModalSource, /<dialog/);
 	assert.match(rewardModalSource, /showModal\(\)/);

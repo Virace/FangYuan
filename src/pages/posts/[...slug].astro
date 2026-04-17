@@ -46,6 +46,7 @@ const resolvedCoverImage = await resolveContentImage(
 	entry.filePath?.replace(/\\/g, "/"),
 );
 const postKey = getPostKeyFromEntry(entry.id);
+const postUrl = Astro.url.toString();
 
 const jsonLd = {
 	"@context": "https://schema.org",
@@ -114,9 +115,9 @@ const jsonLd = {
                         tags={entry.data.tags}
                         category={entry.data.category}
                 ></PostMetadata>
-                {pageMetricsConfig.enable && pageMetricsConfig.provider && (
+                {pageMetricsConfig.enable && pageMetricsConfig.qingyan && (
                     <div class="mb-5">
-                        <PageViewCounter client:only="svelte" postKey={postKey} postTitle={entry.data.title} />
+                        <PageViewCounter client:only="svelte" postKey={postKey} postTitle={entry.data.title} postUrl={postUrl} />
                     </div>
                 )}
                 {!entry.data.image && <div class="border-line-divider border-dashed border-b mb-5"></div>}
@@ -133,11 +134,12 @@ const jsonLd = {
                 <Content />
             </Markdown>
 
-            {pageFeedbackConfig.enable && (
+            {pageFeedbackConfig.enable && pageFeedbackConfig.qingyan && (
                 <PostFeedback
                     client:only="svelte"
                     postKey={postKey}
                     postTitle={entry.data.title}
+                    postUrl={postUrl}
                     rewardOptions={pageFeedbackConfig.rewardOptions ?? []}
                 />
             )}
@@ -171,11 +173,12 @@ const jsonLd = {
         </div>
     </div>
 
-    {commentConfig.enable && commentConfig.provider && (
+    {commentConfig.enable && commentConfig.qingyan && (
         <CommentSection
             client:only="svelte"
             postKey={postKey}
             postTitle={entry.data.title}
+            postUrl={postUrl}
             rootLimit={commentConfig.rootLimit}
             maxDepth={commentConfig.maxDepth}
         />

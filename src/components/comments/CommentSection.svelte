@@ -1,8 +1,6 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { ArtalkApiError } from "@utils/artalk/core";
-import { getCommentClient } from "@utils/comments/client";
 import {
 	DEFAULT_COMMENT_SORT_BY,
 	normalizeCommentOffset,
@@ -25,6 +23,7 @@ import {
 	applyPersistedViewerVotes,
 	persistViewerVote,
 } from "@utils/comments/vote-state";
+import { getQingYanClient, QingYanApiError } from "@utils/qingyan/client";
 import { onDestroy, onMount, tick } from "svelte";
 import { fade, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
@@ -42,19 +41,21 @@ type CommentComposerSubmitDetail = {
 	content: string;
 };
 
-const commentClient = getCommentClient();
-
 type CaptchaTarget =
 	| { kind: "composer" }
 	| { kind: "comment"; commentId: string }
 	| null;
+
 type VoteConfirmTarget = {
 	commentId: string;
 	choice: CommentVoteChoice;
 } | null;
 
+const qingyanClient = getQingYanClient();
+
 export let postKey: string;
 export let postTitle = "";
+export let postUrl = "";
 export let rootLimit = 5;
 export let maxDepth = 3;
 
@@ -140,7 +141,7 @@ function toCommentErrorMessage(error: unknown, fallbackKey: I18nKey): string {
 		return i18n(fallbackKey);
 	}
 
-	if (error instanceof ArtalkApiError) {
+	if (error instanceof QingYanApiError) {
 		const message = error.message.trim();
 		const normalizedMessage = message.toLowerCase();
 		if (
@@ -182,6 +183,22 @@ async function revealCaptchaTarget(target: CaptchaTarget) {
 	});
 }
 
+function applyBootstrap(
+	payload: Awaited<
+		ReturnType<
+			NonNullable<typeof qingyanClient>["fetchPostEngagementBootstrap"]
+		>
+	>,
+) {
+	capability = payload.capability;
+	comments = applyPersistedViewerVotes(postKey, payload.comments);
+	currentSortBy = payload.pagination.sortBy;
+	currentOffset = payload.pagination.offset;
+	totalRootCount = payload.pagination.rootCount;
+	captchaState = payload.captcha;
+	loadError = "";
+}
+
 async function promptForCaptcha(
 	nextState: CommentCaptchaState | null,
 	target: CaptchaTarget,
@@ -194,7 +211,13 @@ async function promptForCaptcha(
 		activeCaptchaTarget = target;
 		captchaState =
 			nextState ??
-			(commentClient ? await commentClient.refreshCaptcha() : null);
+			(qingyanClient
+				? await qingyanClient.refreshCaptcha({
+						pageKey: postKey,
+						pageTitle: postTitle,
+						pageUrl: postUrl,
+					})
+				: null);
 		captchaPrompt = i18n(I18nKey.commentsCaptchaRequiredTip);
 		captchaError = "";
 		clearVoteTransientState();
@@ -202,6 +225,40 @@ async function promptForCaptcha(
 	} catch (error) {
 		logCommentError("prepare captcha prompt failed", error);
 		submitError = toCommentErrorMessage(error, I18nKey.commentsLoadFailed);
+	}
+}
+
+async function loadInitialState() {
+	loading = true;
+	loadError = "";
+
+	try {
+		if (!qingyanClient) {
+			capability = null;
+			comments = [];
+			captchaState = null;
+			return;
+		}
+
+		const bootstrap = await qingyanClient.fetchPostEngagementBootstrap({
+			pageKey: postKey,
+			pageTitle: postTitle,
+			pageUrl: postUrl,
+		});
+		applyBootstrap(bootstrap);
+		if (!bootstrap.capability.enabled) {
+			comments = [];
+			totalRootCount = 0;
+			captchaState = null;
+			activeCaptchaTarget = null;
+			captchaPrompt = "";
+			captchaError = "";
+		}
+	} catch (error) {
+		logCommentError("load comments failed", error);
+		loadError = toCommentErrorMessage(error, I18nKey.commentsLoadFailed);
+	} finally {
+		loading = false;
 	}
 }
 
@@ -213,7 +270,7 @@ async function loadComments(nextOptions?: {
 	loadError = "";
 
 	try {
-		if (!commentClient) {
+		if (!qingyanClient) {
 			capability = null;
 			comments = [];
 			captchaState = null;
@@ -224,39 +281,19 @@ async function loadComments(nextOptions?: {
 		const nextOffset = normalizeCommentOffset(
 			nextOptions?.offset ?? currentOffset,
 		);
-		const threadPage = await commentClient.getThread({
-			postKey,
+		const threadPage = await qingyanClient.fetchCommentThread({
+			pageKey: postKey,
+			pageTitle: postTitle,
+			pageUrl: postUrl,
 			sortBy: nextSortBy,
 			limit: pageSize,
 			offset: nextOffset,
 		});
-		const nextCapability =
-			capability ?? (await commentClient.getCapability(postKey));
 
-		capability = nextCapability;
-		if (!nextCapability.enabled) {
-			comments = [];
-			totalRootCount = 0;
-			captchaState = null;
-			activeCaptchaTarget = null;
-			captchaPrompt = "";
-			captchaError = "";
-			return;
-		}
-
-		currentSortBy = threadPage.sortBy;
-		currentOffset = threadPage.offset;
-		totalRootCount = threadPage.rootsCount;
+		currentSortBy = threadPage.pagination.sortBy;
+		currentOffset = threadPage.pagination.offset;
+		totalRootCount = threadPage.pagination.rootCount;
 		comments = applyPersistedViewerVotes(postKey, threadPage.comments);
-
-		if (!nextCapability.supportsCaptcha) {
-			captchaState = null;
-			activeCaptchaTarget = null;
-			captchaPrompt = "";
-			captchaError = "";
-		} else if (!captchaState) {
-			captchaState = await commentClient.getCaptchaState();
-		}
 	} catch (error) {
 		logCommentError("load comments failed", error);
 		loadError = toCommentErrorMessage(error, I18nKey.commentsLoadFailed);
@@ -280,11 +317,15 @@ async function handleRefreshCaptcha() {
 	captchaError = "";
 
 	try {
-		if (!commentClient || !supportsCaptcha) {
+		if (!qingyanClient || !supportsCaptcha) {
 			return;
 		}
 
-		captchaState = await commentClient.refreshCaptcha();
+		captchaState = await qingyanClient.refreshCaptcha({
+			pageKey: postKey,
+			pageTitle: postTitle,
+			pageUrl: postUrl,
+		});
 	} catch (error) {
 		logCommentError("refresh captcha failed", error);
 		captchaError = toCommentErrorMessage(error, I18nKey.commentsLoadFailed);
@@ -298,12 +339,18 @@ async function handleVerifyCaptcha(input: VerifyCommentCaptchaInput) {
 	captchaError = "";
 
 	try {
-		if (!commentClient || !supportsCaptcha) {
+		if (!qingyanClient || !supportsCaptcha) {
 			return;
 		}
 
-		captchaState = await commentClient.verifyCaptcha(input);
-		if (!captchaState.verified) {
+		captchaState = await qingyanClient.verifyCaptcha({
+			pageKey: postKey,
+			pageTitle: postTitle,
+			pageUrl: postUrl,
+			captchaState,
+			verification: input,
+		});
+		if (!captchaState?.verified) {
 			captchaError = i18n(I18nKey.commentsCaptchaVerifyFailed);
 		} else {
 			captchaPrompt = "";
@@ -316,6 +363,42 @@ async function handleVerifyCaptcha(input: VerifyCommentCaptchaInput) {
 		);
 	} finally {
 		captchaBusy = false;
+	}
+}
+
+async function handlePollCaptchaStatus() {
+	if (!qingyanClient || !supportsCaptcha || !activeCaptchaTarget) {
+		return;
+	}
+
+	try {
+		const nextStatus = await qingyanClient.getCaptchaStatus({
+			pageKey: postKey,
+			pageTitle: postTitle,
+			pageUrl: postUrl,
+		});
+		if (!nextStatus?.verified) {
+			return;
+		}
+
+		captchaState = captchaState
+			? {
+					...captchaState,
+					required: true,
+					verified: true,
+				}
+			: {
+					...nextStatus,
+					required: true,
+				};
+		captchaPrompt = "";
+		captchaError = "";
+	} catch (error) {
+		logCommentError("poll captcha status failed", error);
+		captchaError = toCommentErrorMessage(
+			error,
+			I18nKey.commentsCaptchaVerifyFailed,
+		);
 	}
 }
 
@@ -390,13 +473,14 @@ async function handleSubmit(
 	clearVoteTransientState();
 
 	try {
-		if (!commentClient) {
+		if (!qingyanClient) {
 			return false;
 		}
 
-		const createdComment = await commentClient.createComment({
+		const result = await qingyanClient.createComment({
 			postKey,
 			postTitle,
+			pageUrl: postUrl,
 			parentId: activeReplyParentId,
 			author: {
 				name: detail.authorName,
@@ -407,14 +491,20 @@ async function handleSubmit(
 			captcha: null,
 		});
 
-		comments = insertPendingComment(comments, createdComment);
+		comments = insertPendingComment(comments, result.createdComment);
+		totalRootCount = result.thread.rootCommentCount;
 		activeReplyParentId = null;
 		activeCaptchaTarget = null;
 		captchaError = "";
 		captchaPrompt = "";
+		qingyanClient.invalidateBootstrap(postKey);
 		if (supportsCaptcha) {
 			try {
-				captchaState = await commentClient.getCaptchaState();
+				captchaState = await qingyanClient.getCaptchaState({
+					pageKey: postKey,
+					pageTitle: postTitle,
+					pageUrl: postUrl,
+				});
 			} catch (error) {
 				logCommentError("refresh captcha state after submit failed", error);
 			}
@@ -422,7 +512,7 @@ async function handleSubmit(
 			captchaState = null;
 		}
 		setTransientSubmitNotice(
-			createdComment.status === "approved"
+			result.comment.status === "approved"
 				? i18n(I18nKey.commentsSubmitSuccess)
 				: i18n(I18nKey.commentsModerationNotice),
 		);
@@ -436,8 +526,12 @@ async function handleSubmit(
 		}
 
 		try {
-			if (commentClient && supportsCaptcha && !captchaState?.required) {
-				captchaState = await commentClient.getCaptchaState();
+			if (qingyanClient && supportsCaptcha && !captchaState?.required) {
+				captchaState = await qingyanClient.getCaptchaState({
+					pageKey: postKey,
+					pageTitle: postTitle,
+					pageUrl: postUrl,
+				});
 			}
 		} catch {
 			// ignore captcha refresh failures after submit errors
@@ -449,7 +543,7 @@ async function handleSubmit(
 }
 
 async function submitVote(commentId: string, choice: CommentVoteChoice) {
-	if (!commentClient || !capability?.supportsVote || voteBusyCommentId) {
+	if (!qingyanClient || !capability?.supportsVote || voteBusyCommentId) {
 		return;
 	}
 
@@ -466,16 +560,29 @@ async function submitVote(commentId: string, choice: CommentVoteChoice) {
 	);
 
 	try {
-		const updatedComment = await commentClient.voteComment({
+		const updatedVote = await qingyanClient.voteComment({
+			pageKey: postKey,
+			pageTitle: postTitle,
+			pageUrl: postUrl,
 			commentId,
 			choice,
 		});
-		comments = replaceCommentInTree(comments, updatedComment);
-		persistViewerVote(postKey, commentId, updatedComment.viewerVote ?? choice);
+		comments = replaceCommentInTree(comments, {
+			...previousComment,
+			voteUp: updatedVote.voteUp,
+			voteDown: updatedVote.voteDown,
+			viewerVote: updatedVote.viewerVote ?? choice,
+		});
+		persistViewerVote(postKey, commentId, updatedVote.viewerVote ?? choice);
+		qingyanClient.invalidateBootstrap(postKey);
 		activeCaptchaTarget = null;
 		if (supportsCaptcha && captchaState?.required) {
 			try {
-				captchaState = await commentClient.getCaptchaState();
+				captchaState = await qingyanClient.getCaptchaState({
+					pageKey: postKey,
+					pageTitle: postTitle,
+					pageUrl: postUrl,
+				});
 			} catch (error) {
 				logCommentError("refresh captcha state after vote failed", error);
 			}
@@ -499,7 +606,7 @@ async function submitVote(commentId: string, choice: CommentVoteChoice) {
 }
 
 async function handleVote(commentId: string, choice: CommentVoteChoice) {
-	if (!commentClient || !capability?.supportsVote || voteBusyCommentId) {
+	if (!qingyanClient || !capability?.supportsVote || voteBusyCommentId) {
 		return;
 	}
 
@@ -523,7 +630,7 @@ async function handleConfirmVote(commentId: string, choice: CommentVoteChoice) {
 }
 
 onMount(() => {
-	void loadComments();
+	void loadInitialState();
 });
 
 onDestroy(() => {
@@ -647,6 +754,7 @@ onDestroy(() => {
 					onReply={handleReply}
 					onDismissCaptcha={handleDismissCaptcha}
 					onRefreshCaptcha={handleRefreshCaptcha}
+					onPollCaptchaStatus={handlePollCaptchaStatus}
 					onVerifyCaptcha={handleVerifyCaptcha}
 				/>
 
@@ -699,6 +807,7 @@ onDestroy(() => {
 			onDismissCaptcha={handleDismissCaptcha}
 			onCancelReply={handleCancelReply}
 			onRefreshCaptcha={handleRefreshCaptcha}
+			onPollCaptchaStatus={handlePollCaptchaStatus}
 			onVerifyCaptcha={handleVerifyCaptcha}
 		/>
 	</div>

@@ -11,6 +11,9 @@ test("comment UI should render through focused Svelte components and mount on po
 	const [
 		commentSectionSource,
 		inlineCommentCaptchaSource,
+		commentCaptchaHostSource,
+		commentCaptchaInlineValueSource,
+		commentCaptchaIframeWidgetSource,
 		commentComposerSource,
 		commentListSource,
 		commentItemSource,
@@ -24,6 +27,24 @@ test("comment UI should render through focused Svelte components and mount on po
 			path.join(repoRoot, "src", "components", "comments", "InlineCommentCaptcha.svelte"),
 			"utf8",
 		),
+		readFile(
+			path.join(repoRoot, "src", "components", "comments", "CommentCaptchaHost.svelte"),
+			"utf8",
+		),
+		readFile(
+			path.join(repoRoot, "src", "components", "comments", "CommentCaptchaInlineValue.svelte"),
+			"utf8",
+		),
+		readFile(
+			path.join(
+				repoRoot,
+				"src",
+				"components",
+				"comments",
+				"CommentCaptchaIframeWidget.svelte",
+			),
+			"utf8",
+		),
 		readFile(path.join(repoRoot, "src", "components", "comments", "CommentComposer.svelte"), "utf8"),
 		readFile(path.join(repoRoot, "src", "components", "comments", "CommentList.svelte"), "utf8"),
 		readFile(path.join(repoRoot, "src", "components", "comments", "CommentItem.svelte"), "utf8"),
@@ -34,20 +55,13 @@ test("comment UI should render through focused Svelte components and mount on po
 	]);
 
 	assert.match(commentSectionSource, /onMount/);
-	assert.match(commentSectionSource, /getCommentClient\(\)/);
+	assert.match(commentSectionSource, /getQingYanClient\(\)/);
 	assert.match(commentSectionSource, /CommentComposer/);
 	assert.match(commentSectionSource, /CommentList/);
 	assert.match(commentSectionSource, /countCommentsInTree\(/);
-	assert.match(commentSectionSource, /commentClient\.getThread\(\{/);
-	assert.match(
-		commentSectionSource,
-		/const nextCapability =\s*capability \?\? \(await commentClient\.getCapability\(postKey\)\)/,
-	);
-	assert.doesNotMatch(
-		commentSectionSource,
-		/Promise\.all\(\[\s*commentClient\.getCapability\(postKey\),\s*commentClient\.getThread\(\{/,
-		"comment loading should avoid a second parallel capability fetch when the thread response can seed Artalk capability cache",
-	);
+	assert.match(commentSectionSource, /fetchPostEngagementBootstrap\(/);
+	assert.match(commentSectionSource, /qingyanClient\.fetchCommentThread\(\{/);
+	assert.match(commentSectionSource, /function applyBootstrap\(/);
 	assert.match(commentSectionSource, /sortBy:/);
 	assert.match(commentSectionSource, /offset:/);
 	assert.match(commentSectionSource, /limit:/);
@@ -92,7 +106,7 @@ test("comment UI should render through focused Svelte components and mount on po
 		commentSectionSource,
 		/async function handleSubmit\(\s*detail: CommentComposerSubmitDetail,\s*\): Promise<boolean>/,
 	);
-	assert.match(commentSectionSource, /if \(!commentClient\) \{\s*return false;\s*\}/);
+	assert.match(commentSectionSource, /if \(!qingyanClient\) \{\s*return false;\s*\}/);
 	assert.doesNotMatch(
 		commentSectionSource,
 		/<div[^>]*class="comment-thread-skeleton"[^>]*\/>/,
@@ -106,6 +120,11 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /getCaptchaState\(/);
 	assert.match(commentSectionSource, /refreshCaptcha\(/);
 	assert.match(commentSectionSource, /verifyCaptcha\(/);
+	assert.match(commentSectionSource, /async function handlePollCaptchaStatus\(\)/);
+	assert.match(commentSectionSource, /qingyanClient\.getCaptchaStatus\(\{/);
+	assert.match(commentSectionSource, /if \(!nextStatus\?\.verified\) \{/);
+	assert.match(commentSectionSource, /captchaState = captchaState/);
+	assert.match(commentSectionSource, /onPollCaptchaStatus=\{handlePollCaptchaStatus\}/);
 	assert.match(commentSectionSource, /commentsCaptchaRequiredTip/);
 	assert.match(commentSectionSource, /captchaPrompt/);
 	assert.match(commentSectionSource, /scrollIntoView/);
@@ -126,15 +145,29 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(inlineCommentCaptchaSource, /onRefreshCaptcha/);
 	assert.match(inlineCommentCaptchaSource, /onVerifyCaptcha/);
 	assert.match(inlineCommentCaptchaSource, /commentsCaptcha/);
-	assert.match(inlineCommentCaptchaSource, /commentsCaptchaRefresh/);
-	assert.match(inlineCommentCaptchaSource, /commentsCaptchaVerify/);
 	assert.match(inlineCommentCaptchaSource, /commentsCaptchaVerified/);
 	assert.match(inlineCommentCaptchaSource, /commentsCaptchaUnsupported/);
+	assert.match(inlineCommentCaptchaSource, /CommentCaptchaHost/);
 	assert.match(inlineCommentCaptchaSource, /setTimeout\(/);
 	assert.match(inlineCommentCaptchaSource, /6000/);
 	assert.match(inlineCommentCaptchaSource, /onDismiss/);
-	assert.match(inlineCommentCaptchaSource, /img[\s\S]*on:click=\{handleRefreshCaptcha\}/);
 	assert.match(inlineCommentCaptchaSource, /in:fade/);
+	assert.match(commentCaptchaHostSource, /CommentCaptchaInlineValue/);
+	assert.match(commentCaptchaHostSource, /CommentCaptchaIframeWidget/);
+	assert.match(commentCaptchaHostSource, /challenge\?\.mode === "inline_value"/);
+	assert.match(commentCaptchaHostSource, /challenge\?\.mode === "iframe_widget"/);
+	assert.match(commentCaptchaHostSource, /iframeSrc/);
+	assert.match(commentCaptchaInlineValueSource, /imageData/);
+	assert.match(commentCaptchaInlineValueSource, /onRefresh/);
+	assert.match(commentCaptchaInlineValueSource, /onVerify/);
+	assert.match(commentCaptchaInlineValueSource, /commentsCaptchaRefresh/);
+	assert.match(commentCaptchaInlineValueSource, /commentsCaptchaVerify/);
+	assert.match(commentCaptchaIframeWidgetSource, /iframe/);
+	assert.match(commentCaptchaIframeWidgetSource, /onRefresh/);
+	assert.match(commentCaptchaIframeWidgetSource, /onCancel/);
+	assert.match(commentCaptchaIframeWidgetSource, /max-w-xl/);
+	assert.match(commentCaptchaIframeWidgetSource, /h-40/);
+	assert.doesNotMatch(commentCaptchaIframeWidgetSource, /h-84 w-full/);
 	assert.match(commentComposerSource, /authorName|authorEmail|content/);
 	assert.match(commentComposerSource, /EmojiPicker/);
 	assert.match(commentComposerSource, /InlineCommentCaptcha/);
@@ -145,6 +178,7 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentComposerSource, /captchaPrompt/);
 	assert.match(commentComposerSource, /onRefreshCaptcha/);
 	assert.match(commentComposerSource, /onVerifyCaptcha/);
+	assert.match(commentComposerSource, /onPollCaptchaStatus/);
 	assert.match(commentComposerSource, /onDismissCaptcha/);
 	assert.match(commentComposerSource, /comment-emojis/);
 	assert.match(commentComposerSource, /comment-composer-actions/);
@@ -204,6 +238,7 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentListSource, /maxDepth/);
 	assert.match(commentListSource, /export let onReply/);
 	assert.match(commentListSource, /export let activeCaptchaCommentId/);
+	assert.match(commentListSource, /export let onPollCaptchaStatus/);
 	assert.doesNotMatch(commentListSource, /createEventDispatcher/);
 	assert.match(commentItemSource, /onReply|commentsReply|commentsCancelReply/);
 	assert.match(commentItemSource, /InlineCommentCaptcha/);
@@ -215,6 +250,7 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentItemSource, /activeCaptchaCommentId/);
 	assert.match(commentItemSource, /comment\.id === activeCaptchaCommentId/);
 	assert.match(commentItemSource, /onDismissCaptcha/);
+	assert.match(commentItemSource, /onPollCaptchaStatus/);
 	assert.match(commentItemSource, /transition:slide/);
 	assert.match(commentItemSource, /voteUp|voteDown/);
 	assert.match(commentItemSource, /comment-body/);
@@ -227,7 +263,7 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(mainCssSource, /\.comment-action-active\s*\{/);
 	assert.match(postPageSource, /CommentSection[\s\S]*client:only="svelte"/);
 	assert.match(postPageSource, /getPostKeyFromEntry\(entry.id\)/);
-	assert.match(postPageSource, /commentConfig\.enable && commentConfig\.provider/);
+	assert.match(postPageSource, /commentConfig\.enable && commentConfig\.qingyan/);
 	assert.match(
 		postPageSource,
 		/<div class="flex flex-col md:flex-row justify-between[\s\S]*CommentSection/,
@@ -252,6 +288,7 @@ test("comment UI should expose dedicated translation keys", async () => {
 		"commentsCaptcha",
 		"commentsCaptchaRefresh",
 		"commentsCaptchaVerify",
+		"commentsCaptchaCancel",
 		"commentsCaptchaVerified",
 		"commentsCaptchaRequiredTip",
 		"commentsCaptchaUnsupported",
@@ -279,5 +316,5 @@ test("comment UI should expose dedicated translation keys", async () => {
 		assert.match(enSource, new RegExp(`\\[Key\\.${key}\\]`));
 	}
 
-	assert.doesNotMatch(enSource, /Artalk now requires captcha verification/);
+	assert.doesNotMatch(enSource, /now requires captcha verification/);
 });

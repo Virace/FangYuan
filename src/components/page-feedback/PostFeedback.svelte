@@ -2,19 +2,20 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
-import { getPageFeedbackClient } from "@utils/page-feedback/client";
 import type {
 	PageFeedbackCapability,
 	RewardOption,
 } from "@utils/page-feedback/provider";
+import { getQingYanClient } from "@utils/qingyan/client";
 import { onMount } from "svelte";
 import RewardModal from "./RewardModal.svelte";
 
 export let postKey: string;
 export let postTitle = "";
+export let postUrl = "";
 export let rewardOptions: RewardOption[] = [];
 
-const pageFeedbackClient = getPageFeedbackClient();
+const qingyanClient = getQingYanClient();
 
 let capability: PageFeedbackCapability | null = null;
 let likeCount = 0;
@@ -29,20 +30,23 @@ $: showReward = rewardOptions.length > 0;
 $: showCard = showLike || showReward;
 
 onMount(() => {
-	if (!pageFeedbackClient) {
+	if (!qingyanClient) {
 		loading = false;
 		return;
 	}
 
-	void pageFeedbackClient
-		.getCapability({ postKey, postTitle })
-		.then((nextCapability) => {
-			capability = nextCapability;
+	void qingyanClient
+		.fetchPostEngagementBootstrap({
+			pageKey: postKey,
+			pageTitle: postTitle,
+			pageUrl: postUrl,
 		})
-		.then(() => pageFeedbackClient.getState({ postKey, postTitle }))
-		.then((state) => {
-			likeCount = state.likeCount;
-			liked = state.liked;
+		.then((payload) => {
+			capability = {
+				supportsLike: payload.pageFeedback.supportsLike,
+			};
+			likeCount = payload.pageFeedback.likeCount;
+			liked = payload.pageFeedback.liked;
 		})
 		.catch(() => {
 			error = i18n(I18nKey.pageFeedbackLikeFailed);
@@ -53,7 +57,7 @@ onMount(() => {
 });
 
 async function handleLike() {
-	if (!pageFeedbackClient || !showLike || liked || likeBusy) {
+	if (!qingyanClient || !showLike || liked || likeBusy) {
 		return;
 	}
 
@@ -61,9 +65,10 @@ async function handleLike() {
 	error = "";
 
 	try {
-		const nextState = await pageFeedbackClient.likePage({
-			postKey,
-			postTitle,
+		const nextState = await qingyanClient.likePage({
+			pageKey: postKey,
+			pageTitle: postTitle,
+			pageUrl: postUrl,
 		});
 		likeCount = nextState.likeCount;
 		liked = nextState.liked;

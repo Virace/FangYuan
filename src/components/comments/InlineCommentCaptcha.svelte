@@ -7,6 +7,7 @@ import type {
 } from "@utils/comments/provider";
 import { onDestroy } from "svelte";
 import { fade } from "svelte/transition";
+import CommentCaptchaHost from "./CommentCaptchaHost.svelte";
 
 const VERIFIED_MESSAGE_TIMEOUT_MS = 6000;
 
@@ -20,6 +21,7 @@ export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 export let onVerifyCaptcha:
 	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
 	| null = null;
+export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 
 let captchaValue = "";
 let validationError = "";
@@ -65,21 +67,16 @@ async function handleRefreshCaptcha() {
 	await onRefreshCaptcha?.();
 }
 
-async function handleVerifyCaptcha() {
-	if (!captchaChallenge || captchaChallenge.kind !== "image") {
-		await handleRefreshCaptcha();
-		return;
-	}
-
-	if (!captchaValue.trim()) {
+function handleVerifyCaptchaValue(value: string) {
+	if (!value.trim()) {
 		validationError = i18n(I18nKey.commentsValidationCaptchaRequired);
 		return;
 	}
 
 	validationError = "";
-	await onVerifyCaptcha?.({
-		kind: captchaChallenge.kind,
-		value: captchaValue.trim(),
+	void onVerifyCaptcha?.({
+		mode: "inline_value",
+		value: value.trim(),
 	});
 }
 </script>
@@ -104,38 +101,7 @@ async function handleVerifyCaptcha() {
 	</div>
 
 	{#if captchaState && !captchaState.verified}
-		{#if captchaChallenge?.kind === "image" && captchaChallenge.imageData}
-			<div class="mt-2 flex flex-wrap items-center gap-2">
-				<button
-					type="button"
-					class="rounded-md border border-line-divider bg-white/80 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-60"
-					aria-label={i18n(I18nKey.commentsCaptchaRefresh)}
-					disabled={captchaBusy}
-					title={i18n(I18nKey.commentsCaptchaRefresh)}
-					on:click={handleRefreshCaptcha}
-				>
-					<img
-						alt=""
-						class="block h-10 w-auto object-contain"
-						src={captchaChallenge.imageData}
-					/>
-				</button>
-				<input
-					bind:value={captchaValue}
-					class="min-w-24 flex-1 rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-sm text-90 outline-none md:max-w-36"
-					placeholder={i18n(I18nKey.commentsCaptcha)}
-					type="text"
-				/>
-				<button
-					type="button"
-					class="comment-action"
-					disabled={captchaBusy}
-					on:click={handleVerifyCaptcha}
-				>
-					{i18n(I18nKey.commentsCaptchaVerify)}
-				</button>
-			</div>
-		{:else}
+		{#if captchaChallenge?.mode === "token_widget"}
 			<div class="mt-2">
 				<button
 					type="button"
@@ -147,6 +113,16 @@ async function handleVerifyCaptcha() {
 					{i18n(I18nKey.commentsCaptchaRefresh)}
 				</button>
 			</div>
+		{:else}
+			<CommentCaptchaHost
+				bind:captchaValue
+				{captchaState}
+				{captchaBusy}
+				onRefreshCaptcha={handleRefreshCaptcha}
+				onVerifyCaptchaValue={handleVerifyCaptchaValue}
+				onPollCaptchaStatus={onPollCaptchaStatus}
+				onCancelCaptcha={onDismiss}
+			/>
 		{/if}
 
 		{#if validationError}
