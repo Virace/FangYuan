@@ -84,10 +84,10 @@ async function handleLike() {
 	<section class="card-base mb-6 rounded-panel border border-line-divider px-4 py-5 md:px-6">
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
 			<div class="min-w-0 flex-1">
-				<h2 class="text-xl font-bold tracking-tight text-90 md:text-2xl">
+				<p class="text-base font-semibold text-90 md:text-lg">
 					{i18n(I18nKey.pageFeedbackRewardTitle)}
-				</h2>
-				<p class="mt-2 max-w-176 text-sm leading-7 text-50 md:text-base">
+				</p>
+				<p class="mt-1.5 max-w-176 text-xs leading-6 text-50 md:text-sm">
 					{i18n(I18nKey.pageFeedbackRewardDescription)}
 				</p>
 			</div>

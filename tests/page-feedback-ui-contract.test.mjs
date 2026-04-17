@@ -30,6 +30,15 @@ test("page feedback UI should render a one-time like button and a dialog-based r
 	assert.match(postFeedbackSource, /supportsLike/);
 	assert.match(postFeedbackSource, /showReward = rewardOptions.length > 0/);
 	assert.match(postFeedbackSource, /showLike = capability\?\.supportsLike \?\? false/);
+	assert.match(
+		postFeedbackSource,
+		/<p class="text-base font-semibold text-90 md:text-lg">/,
+	);
+	assert.match(
+		postFeedbackSource,
+		/<p class="mt-1\.5 max-w-176 text-xs leading-6 text-50 md:text-sm">/,
+	);
+	assert.doesNotMatch(postFeedbackSource, /<h2/);
 	assert.match(qingyanClientSource, /fetchPostEngagementBootstrap/);
 	assert.match(qingyanClientSource, /likePage/);
 
