@@ -69,6 +69,7 @@
 - `src/plugins/`：Markdown / rehype / remark / expressive-code 插件扩展。
 - `src/content/`：内容集合定义与 Markdown 内容。
 - `src/styles/`：全局样式、变量和 markdown / transition / scrollbar 等专项样式。
+- `site/`：用户侧网站的本地文章与配置存放处，开发和联调时允许直接修改，用来承接真实站点覆盖内容；不要把它当成仓库 demo 基线。
 
 ### 文件命名
 
@@ -111,6 +112,12 @@
 - 需要浏览器态交互的局部功能，优先做成 `Svelte` 组件，并通过 island 方式接入 Astro 页面。
 - 现有项目已经大量通过 `src/config.ts`、`src/utils/` 和 `src/content/config.ts` 集中管理配置、URL 和内容 schema；新增实现优先接入这些中心点，不要在页面里复制规则。
 - 构建站内链接、文章链接、标签链接和分类链接时，优先复用 `src/utils/url-utils.ts` 中的 helper，不要手写基础 URL 拼接。
+
+### 本地站点覆盖与 demo 基线
+
+- `site/` 用于用户真实站点的本地覆盖输入，包括文章、页面与站点配置；本地开发、联调和验收时可以直接改这里。
+- 仓库自带 demo 与默认行为仍以 `src/default-config.ts` 为基线；涉及默认展示、默认配置、demo 行为或可复用 fallback 时，应优先写入 `src/default-config.ts`，而不是只落在 `site/`。
+- 对 `site/` 的修改默认视为用户侧本地数据调整，不自动推断为应入库的演示样例；是否提交 `site/` 相关改动，以用户当轮要求和仓库忽略规则为准。
 
 ### 依赖升级原则
 
