@@ -57,6 +57,7 @@ export const es: Translation = {
 	[Key.commentsFormName]: "Nombre",
 	[Key.commentsFormEmail]: "Correo electrónico",
 	[Key.commentsFormWebsite]: "Sitio web",
+	[Key.commentsFormOptionalSuffix]: " (opcional)",
 	[Key.commentsFormContent]: "Comentario",
 	[Key.commentsPreviewWriteNotice]:
 		"Proveedor de vista previa: los comentarios enviados solo existen en la sesión actual del navegador.",

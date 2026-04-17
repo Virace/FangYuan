@@ -55,6 +55,7 @@ export const vi: Translation = {
 	[Key.commentsFormName]: "Tên",
 	[Key.commentsFormEmail]: "Email",
 	[Key.commentsFormWebsite]: "Trang web",
+	[Key.commentsFormOptionalSuffix]: " (tùy chọn)",
 	[Key.commentsFormContent]: "Bình luận",
 	[Key.commentsPreviewWriteNotice]:
 		"Nhà cung cấp xem trước: bình luận gửi đi chỉ tồn tại trong phiên trình duyệt hiện tại.",

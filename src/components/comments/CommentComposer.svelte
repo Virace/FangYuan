@@ -22,8 +22,8 @@ type CommentComposerSubmitDetail = {
 export let submitting = false;
 export let replyParentId: string | null = null;
 export let showCaptcha = false;
-export let requiredAuthorFields: CommentAuthorField[] = ["name", "email"];
-export let showWebsiteField = true;
+export let allowedFields: CommentAuthorField[] = ["nickname", "email", "website"];
+export let requiredFields: CommentAuthorField[] = ["nickname", "email"];
 export let persistenceMode: CommentPersistenceMode = "persistent";
 export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
@@ -51,13 +51,26 @@ let validationError = "";
 let showEmojiPicker = false;
 let emojiTriggerWrap: HTMLDivElement | null = null;
 
-$: showEmailField = requiredAuthorFields.includes("email");
+$: showNameField = allowedFields.includes("nickname");
+$: showEmailField = allowedFields.includes("email");
+$: showWebsiteField = allowedFields.includes("website");
 $: showPreviewNotice = persistenceMode === "preview_only";
 $: canSubmit =
 	!submitting &&
-	(!requiredAuthorFields.includes("name") || authorName.trim().length > 0) &&
-	(!requiredAuthorFields.includes("email") || authorEmail.trim().length > 0) &&
+	(!requiredFields.includes("nickname") || authorName.trim().length > 0) &&
+	(!requiredFields.includes("email") || authorEmail.trim().length > 0) &&
+	(!requiredFields.includes("website") || authorWebsite.trim().length > 0) &&
 	content.trim().length > 0;
+
+function formatFieldLabel(
+	key: I18nKey,
+	field: CommentAuthorField,
+): string {
+	const label = i18n(key);
+	return requiredFields.includes(field)
+		? `${label}*`
+		: `${label}${i18n(I18nKey.commentsFormOptionalSuffix)}`;
+}
 
 async function handleSubmit() {
 	const validationResult = validateCommentForm(
@@ -68,7 +81,7 @@ async function handleSubmit() {
 			content,
 		},
 		{
-			requiredAuthorFields,
+			requiredFields,
 		},
 	);
 
@@ -158,25 +171,27 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 	{/if}
 
 	<div class="grid gap-3 md:grid-cols-2">
-		<label class="flex flex-col gap-1 text-sm text-50">
-			<span>{i18n(I18nKey.commentsFormName)}</span>
-			<input
-				bind:value={authorName}
-				class="rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
-				maxlength="80"
-				required={requiredAuthorFields.includes("name")}
-				type="text"
-			/>
-		</label>
+		{#if showNameField}
+			<label class="flex flex-col gap-1 text-sm text-50">
+				<span>{formatFieldLabel(I18nKey.commentsFormName, "nickname")}</span>
+				<input
+					bind:value={authorName}
+					class="rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
+					maxlength="80"
+					required={requiredFields.includes("nickname")}
+					type="text"
+				/>
+			</label>
+		{/if}
 
 		{#if showEmailField}
 			<label class="flex flex-col gap-1 text-sm text-50">
-				<span>{i18n(I18nKey.commentsFormEmail)}</span>
+				<span>{formatFieldLabel(I18nKey.commentsFormEmail, "email")}</span>
 				<input
 					bind:value={authorEmail}
 					class="rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
 					maxlength="120"
-					required={requiredAuthorFields.includes("email")}
+					required={requiredFields.includes("email")}
 					type="email"
 				/>
 			</label>
@@ -184,11 +199,12 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 
 		{#if showWebsiteField}
 			<label class="flex flex-col gap-1 text-sm text-50 md:col-span-2">
-				<span>{i18n(I18nKey.commentsFormWebsite)}</span>
+				<span>{formatFieldLabel(I18nKey.commentsFormWebsite, "website")}</span>
 				<input
 					bind:value={authorWebsite}
 					class="rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
 					maxlength="200"
+					required={requiredFields.includes("website")}
 					type="url"
 				/>
 			</label>

@@ -10,6 +10,7 @@ import {
 } from "../../config";
 import {
 	type CommentAuthorField,
+	type CommentForm,
 	CommentCaptchaRequiredError,
 	type CommentCaptchaState,
 	type CommentSortBy,
@@ -59,10 +60,13 @@ type RawQingYanCapability = {
 	supportsReply: boolean;
 	supportsVote: boolean;
 	supportsCaptcha: boolean;
-	requiredAuthorFields: CommentAuthorField[];
-	optionalAuthorFields: CommentAuthorField[];
 	defaultStatus: "pending" | "approved";
 	message?: string | null;
+};
+
+type RawQingYanCommentForm = {
+	allow: CommentAuthorField[];
+	require: CommentAuthorField[];
 };
 
 type RawQingYanCaptchaState = {
@@ -78,6 +82,7 @@ type RawQingYanCaptchaState = {
 
 type RawQingYanBootstrapResponse = {
 	capability: RawQingYanCapability;
+	commentForm: RawQingYanCommentForm;
 	thread: {
 		siteKey: string;
 		pageKey: string;
@@ -212,9 +217,16 @@ function normalizeCapability(
 		supportsCaptcha: capability.supportsCaptcha,
 		persistenceMode: "persistent",
 		identityModel: "page_key",
-		requiredAuthorFields: capability.requiredAuthorFields,
-		optionalAuthorFields: capability.optionalAuthorFields,
 		message: capability.message ?? undefined,
+	};
+}
+
+function normalizeCommentForm(
+	commentForm: RawQingYanCommentForm,
+): CommentForm {
+	return {
+		allow: commentForm.allow,
+		require: commentForm.require,
 	};
 }
 
@@ -272,6 +284,7 @@ function normalizeBootstrap(
 	return {
 		...threadPage,
 		capability: normalizeCapability(response.capability),
+		commentForm: normalizeCommentForm(response.commentForm),
 		pageMetrics: response.pageMetrics,
 		pageFeedback: response.pageFeedback,
 		captcha: normalizeCaptchaState(response.captcha),

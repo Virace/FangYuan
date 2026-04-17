@@ -9,7 +9,7 @@ export type CommentFormInput = {
 };
 
 export type CommentFormValidationRules = {
-	requiredAuthorFields: CommentAuthorField[];
+	requiredFields: CommentAuthorField[];
 };
 
 const suspiciousSqlPattern =
@@ -39,14 +39,11 @@ export function validateCommentForm(
 	const authorWebsite = input.authorWebsite.trim();
 	const content = input.content.trim();
 
-	if (rules.requiredAuthorFields.includes("name") && !authorName) {
+	if (rules.requiredFields.includes("nickname") && !authorName) {
 		return I18nKey.commentsValidationNameRequired;
 	}
 
-	if (
-		rules.requiredAuthorFields.includes("email") &&
-		!emailPattern.test(authorEmail)
-	) {
+	if (rules.requiredFields.includes("email") && !emailPattern.test(authorEmail)) {
 		return I18nKey.commentsValidationEmailInvalid;
 	}
 
@@ -59,6 +56,10 @@ export function validateCommentForm(
 		suspiciousSqlPattern.test(content)
 	) {
 		return I18nKey.commentsValidationContentUnsafe;
+	}
+
+	if (rules.requiredFields.includes("website") && !authorWebsite) {
+		return I18nKey.commentsValidationWebsiteInvalid;
 	}
 
 	if (authorWebsite) {

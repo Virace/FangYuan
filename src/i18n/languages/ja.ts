@@ -56,6 +56,7 @@ export const ja: Translation = {
 	[Key.commentsFormName]: "名前",
 	[Key.commentsFormEmail]: "メールアドレス",
 	[Key.commentsFormWebsite]: "ウェブサイト",
+	[Key.commentsFormOptionalSuffix]: "（任意）",
 	[Key.commentsFormContent]: "コメント",
 	[Key.commentsPreviewWriteNotice]:
 		"プレビュープロバイダー: 送信したコメントは現在のブラウザーセッションでのみ保持されます。",

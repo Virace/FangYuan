@@ -134,6 +134,12 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /supportsVote/);
 	assert.match(commentSectionSource, /supportsCaptcha/);
 	assert.match(commentSectionSource, /persistenceMode/);
+	assert.match(commentSectionSource, /commentForm/);
+	assert.match(commentSectionSource, /allowedFields = commentForm\?\.allow \?\? \["nickname", "email", "website"\]/);
+	assert.match(commentSectionSource, /requiredFields = commentForm\?\.require \?\? \["nickname", "email"\]/);
+	assert.doesNotMatch(commentSectionSource, /requiredAuthorFields = capability\?\.requiredAuthorFields/);
+	assert.doesNotMatch(commentSectionSource, /optionalAuthorFields = capability\?\.optionalAuthorFields/);
+	assert.doesNotMatch(commentSectionSource, /requiredFields = capability\?\.require/);
 	assert.match(commentSectionSource, /CommentList[\s\S]*CommentComposer/);
 	assert.match(commentSectionSource, /submitNotice[\s\S]*CommentComposer/);
 	assert.match(commentSectionSource, /card-base/);
@@ -212,8 +218,18 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.doesNotMatch(commentComposerSource, /createEventDispatcher/);
 	assert.match(commentComposerSource, /validateCommentForm\(/);
 	assert.match(commentComposerSource, /validationError = i18n\(validationResult\)/);
-	assert.match(commentComposerSource, /requiredAuthorFields/);
-	assert.match(commentComposerSource, /showWebsiteField/);
+	assert.match(commentComposerSource, /requiredFields/);
+	assert.match(commentComposerSource, /allowedFields/);
+	assert.match(commentComposerSource, /formatFieldLabel\(/);
+	assert.match(commentComposerSource, /commentsFormOptionalSuffix/);
+	assert.match(commentComposerSource, /showNameField = allowedFields\.includes\("nickname"\)/);
+	assert.match(commentComposerSource, /showEmailField = allowedFields\.includes\("email"\)/);
+	assert.match(commentComposerSource, /showWebsiteField = allowedFields\.includes\("website"\)/);
+	assert.match(commentComposerSource, /requiredFields\.includes\("nickname"\)/);
+	assert.match(commentComposerSource, /requiredFields\.includes\("email"\)/);
+	assert.match(commentComposerSource, /requiredFields\.includes\("website"\)/);
+	assert.match(commentComposerSource, /\{#if showEmailField\}/);
+	assert.match(commentComposerSource, /\{#if showWebsiteField\}/);
 	assert.match(commentComposerSource, /commentsPreviewWriteNotice/);
 	assert.match(commentListSource, /CommentItem/);
 	assert.match(mainCssSource, /\.comment-sort-tab \{/);
@@ -303,6 +319,7 @@ test("comment UI should expose dedicated translation keys", async () => {
 		"commentsFormName",
 		"commentsFormEmail",
 		"commentsFormWebsite",
+		"commentsFormOptionalSuffix",
 		"commentsFormContent",
 		"commentsPreviewWriteNotice",
 		"commentsValidationNameRequired",

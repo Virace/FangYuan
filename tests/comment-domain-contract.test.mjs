@@ -69,10 +69,22 @@ test("comment domain should keep canonical UI types and QingYan-backed config sh
 
 	assert.match(commentsProviderSource, /export type CommentPersistenceMode = "persistent" \| "preview_only";/);
 	assert.match(commentsProviderSource, /export type CommentIdentityModel = "page_key" \| "mirrored_post" \| "preview";/);
+	assert.match(
+		commentsProviderSource,
+		/export type CommentAuthorField = "nickname" \| "email" \| "website";/,
+	);
+	assert.match(commentsProviderSource, /export type CommentForm = \{/);
+	assert.match(commentsProviderSource, /allow:\s*CommentAuthorField\[\];/);
+	assert.match(commentsProviderSource, /require:\s*CommentAuthorField\[\];/);
 	assert.match(commentsProviderSource, /export type CommentCapability = \{/);
 	assert.match(commentsProviderSource, /supportsVote:\s*boolean;/);
 	assert.match(commentsProviderSource, /supportsCaptcha:\s*boolean;/);
-	assert.match(commentsProviderSource, /requiredAuthorFields:\s*CommentAuthorField\[\];/);
+	assert.match(
+		commentsProviderSource,
+		/export type CommentCapability = \{[\s\S]*supportsCaptcha:\s*boolean;[\s\S]*message\?: string;[\s\S]*\};/,
+	);
+	assert.doesNotMatch(commentsProviderSource, /requiredAuthorFields:\s*CommentAuthorField\[\];/);
+	assert.doesNotMatch(commentsProviderSource, /optionalAuthorFields:\s*CommentAuthorField\[\];/);
 	assert.match(commentsProviderSource, /export type CommentCaptchaHostMode =[\s\S]*"inline_value"[\s\S]*"iframe_widget"[\s\S]*"token_widget"/);
 	assert.match(commentsProviderSource, /export type CommentCaptchaVerificationModel =[\s\S]*"backend_session"[\s\S]*"request_token"/);
 	assert.match(commentsProviderSource, /export type CommentCaptchaChallenge =/);

@@ -31,6 +31,7 @@ test("FangYuan should switch runtime discussion data from provider objects to Qi
 	assert.match(postPageSource, /commentConfig\.enable && commentConfig\.qingyan/);
 	assert.match(qingyanClientSource, /fetchPostEngagementBootstrap/);
 	assert.match(qingyanClientSource, /\/comments\/bootstrap/);
+	assert.match(qingyanClientSource, /commentForm/);
 	assert.match(qingyanClientSource, /getQingYanClient/);
 	assert.match(typeConfigSource, /export type QingYanClientConfig = \{/);
 	assert.match(typeConfigSource, /qingyan\?: QingYanClientConfig \| null;/);

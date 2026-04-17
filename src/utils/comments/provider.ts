@@ -1,4 +1,9 @@
-export type CommentAuthorField = "name" | "email" | "website";
+export type CommentAuthorField = "nickname" | "email" | "website";
+
+export type CommentForm = {
+	allow: CommentAuthorField[];
+	require: CommentAuthorField[];
+};
 
 export type CommentPersistenceMode = "persistent" | "preview_only";
 
@@ -12,8 +17,6 @@ export type CommentCapability = {
 	supportsCaptcha: boolean;
 	persistenceMode: CommentPersistenceMode;
 	identityModel: CommentIdentityModel;
-	requiredAuthorFields: CommentAuthorField[];
-	optionalAuthorFields: CommentAuthorField[];
 	message?: string;
 };
 

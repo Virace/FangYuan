@@ -56,6 +56,7 @@ export const tr: Translation = {
 	[Key.commentsFormName]: "Ad",
 	[Key.commentsFormEmail]: "E-posta",
 	[Key.commentsFormWebsite]: "Web sitesi",
+	[Key.commentsFormOptionalSuffix]: " (isteğe bağlı)",
 	[Key.commentsFormContent]: "Yorum",
 	[Key.commentsPreviewWriteNotice]:
 		"Önizleme sağlayıcısı: gönderilen yorumlar yalnızca mevcut tarayıcı oturumunda bulunur.",

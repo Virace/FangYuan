@@ -1,5 +1,6 @@
 import type {
 	CommentCapability,
+	CommentForm,
 	CommentCaptchaState,
 	CommentSortBy,
 } from "@utils/comments/provider";
@@ -53,6 +54,7 @@ export type QingYanThreadPage = {
 
 export type QingYanBootstrapPayload = QingYanThreadPage & {
 	capability: CommentCapability;
+	commentForm: CommentForm;
 	pageMetrics: QingYanPageMetrics;
 	pageFeedback: QingYanPageFeedbackState;
 	captcha: CommentCaptchaState | null;

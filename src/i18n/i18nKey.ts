@@ -45,6 +45,7 @@ enum I18nKey {
 	commentsFormName = "commentsFormName",
 	commentsFormEmail = "commentsFormEmail",
 	commentsFormWebsite = "commentsFormWebsite",
+	commentsFormOptionalSuffix = "commentsFormOptionalSuffix",
 	commentsFormContent = "commentsFormContent",
 	commentsPreviewWriteNotice = "commentsPreviewWriteNotice",
 	commentCountSingular = "commentCountSingular",

@@ -33,13 +33,19 @@ test("comment runtime should use a thin QingYan browser client instead of provid
 
 	assert.doesNotMatch(commentsProviderSource, /export abstract class CommentProvider \{/);
 	assert.doesNotMatch(commentsProviderSource, /getCommentProvider\(/);
+	assert.match(commentsProviderSource, /export type CommentForm = \{/);
+	assert.match(commentsProviderSource, /allow:\s*CommentAuthorField\[\];/);
+	assert.match(commentsProviderSource, /require:\s*CommentAuthorField\[\];/);
 	assert.match(commentsProviderSource, /export type CommentCapability = \{/);
+	assert.doesNotMatch(commentsProviderSource, /requiredAuthorFields:\s*CommentAuthorField\[\];/);
+	assert.doesNotMatch(commentsProviderSource, /optionalAuthorFields:\s*CommentAuthorField\[\];/);
 	assert.match(commentsProviderSource, /export class CommentCaptchaRequiredError extends Error \{/);
 	assert.match(commentsProviderSource, /export type CreateCommentInput = \{/);
 	assert.match(commentsProviderSource, /export type VoteCommentInput = \{/);
 
 	assert.match(qingyanContractsSource, /export type QingYanClientConfig = \{/);
 	assert.match(qingyanContractsSource, /export type QingYanBootstrapPayload =/);
+	assert.match(qingyanContractsSource, /commentForm:\s*CommentForm;/);
 	assert.match(qingyanClientSource, /export function createQingYanClient/);
 	assert.match(qingyanClientSource, /export function getQingYanClient/);
 	assert.match(qingyanClientSource, /fetchPostEngagementBootstrap/);
@@ -49,6 +55,11 @@ test("comment runtime should use a thin QingYan browser client instead of provid
 	assert.match(qingyanClientSource, /likePage/);
 	assert.match(qingyanClientSource, /\/comments\/bootstrap/);
 	assert.match(qingyanClientSource, /\/page-feedback\/like/);
+	assert.match(qingyanClientSource, /type RawQingYanCommentForm = \{/);
+	assert.match(qingyanClientSource, /commentForm:\s*RawQingYanCommentForm;/);
+	assert.match(qingyanClientSource, /function normalizeCommentForm\(/);
+	assert.match(qingyanClientSource, /commentForm:\s*normalizeCommentForm\(response\.commentForm\)/);
+	assert.doesNotMatch(qingyanClientSource, /require:\s*capability\.require/);
 
 	assert.match(configTypeSource, /qingyan\?: QingYanClientConfig \| null;/);
 	assert.doesNotMatch(configTypeSource, /provider\?: CommentProvider \| null;/);

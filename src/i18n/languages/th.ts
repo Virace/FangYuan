@@ -50,6 +50,7 @@ export const th: Translation = {
 	[Key.commentsFormName]: "ชื่อ",
 	[Key.commentsFormEmail]: "อีเมล",
 	[Key.commentsFormWebsite]: "เว็บไซต์",
+	[Key.commentsFormOptionalSuffix]: " (ไม่บังคับ)",
 	[Key.commentsFormContent]: "ความคิดเห็น",
 	[Key.commentsPreviewWriteNotice]:
 		"ผู้ให้บริการโหมดพรีวิว: ความคิดเห็นที่ส่งจะอยู่เฉพาะในเซสชันเบราว์เซอร์ปัจจุบันเท่านั้น",

@@ -7,6 +7,7 @@ import {
 } from "@utils/comments/options";
 import type {
 	CommentCapability,
+	CommentForm,
 	CommentCaptchaState,
 	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
@@ -60,6 +61,7 @@ export let rootLimit = 5;
 export let maxDepth = 3;
 
 let capability: CommentCapability | null = null;
+let commentForm: CommentForm | null = null;
 let comments: CanonicalComment[] = [];
 let loading = true;
 let submitting = false;
@@ -94,9 +96,8 @@ $: pendingVoteChoice = pendingVoteTarget?.choice ?? null;
 $: supportsVote = capability?.supportsVote ?? false;
 $: supportsCaptcha = capability?.supportsCaptcha ?? false;
 $: persistenceMode = capability?.persistenceMode ?? "persistent";
-$: requiredAuthorFields = capability?.requiredAuthorFields ?? ["name", "email"];
-$: optionalAuthorFields = capability?.optionalAuthorFields ?? ["website"];
-$: showWebsiteField = optionalAuthorFields.includes("website");
+$: allowedFields = commentForm?.allow ?? ["nickname", "email", "website"];
+$: requiredFields = commentForm?.require ?? ["nickname", "email"];
 $: showComposerCaptcha =
 	supportsCaptcha &&
 	activeCaptchaTarget?.kind === "composer" &&
@@ -191,6 +192,7 @@ function applyBootstrap(
 	>,
 ) {
 	capability = payload.capability;
+	commentForm = payload.commentForm;
 	comments = applyPersistedViewerVotes(postKey, payload.comments);
 	currentSortBy = payload.pagination.sortBy;
 	currentOffset = payload.pagination.offset;
@@ -235,6 +237,7 @@ async function loadInitialState() {
 	try {
 		if (!qingyanClient) {
 			capability = null;
+			commentForm = null;
 			comments = [];
 			captchaState = null;
 			return;
@@ -272,6 +275,7 @@ async function loadComments(nextOptions?: {
 	try {
 		if (!qingyanClient) {
 			capability = null;
+			commentForm = null;
 			comments = [];
 			captchaState = null;
 			return;
@@ -794,8 +798,8 @@ onDestroy(() => {
 
 		<CommentComposer
 			showCaptcha={showComposerCaptcha}
-			requiredAuthorFields={requiredAuthorFields}
-			showWebsiteField={showWebsiteField}
+			allowedFields={allowedFields}
+			requiredFields={requiredFields}
 			persistenceMode={persistenceMode}
 			captchaState={captchaState}
 			captchaBusy={captchaBusy}
