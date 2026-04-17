@@ -26,7 +26,19 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		"utf8",
 	);
 
-	const result = ensureExternalSiteScaffold(tempRoot);
+	const result = ensureExternalSiteScaffold(tempRoot, {
+		siteTitle: "Virace Notes",
+		siteSubtitle: "QingYan ready",
+		profileName: "Virace",
+		profileBio: "Personal notes",
+		qingyanSiteKey: "virace-notes",
+		qingyanApiBase: "/api",
+		qingyanDevProxyTarget: "http://localhost:4401",
+		enableComments: true,
+		enablePageMetrics: true,
+		enablePageFeedback: true,
+		includeRewardPlaceholders: true,
+	});
 
 	assert.equal(
 		hasPath(path.join(tempRoot, "site", "content", "posts")),
@@ -74,8 +86,8 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 	);
 	assert.match(
 		siteConfigSource,
-		/export const siteConfig = \{[\s\S]*title: "My Site"/,
-		"init-site should scaffold a minimal external site config template",
+		/export const siteConfig = \{[\s\S]*title: "Virace Notes"/,
+		"init-site should scaffold a site config template from explicit init options",
 	);
 	assert.match(
 		siteConfigSource,
@@ -87,6 +99,26 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		/export const profileConfig = \{/,
 		"init-site should scaffold the profileConfig section",
 	);
+	assert.match(
+		siteConfigSource,
+		/bio: "Personal notes"/,
+		"init-site should scaffold the profile bio from explicit init options",
+	);
+	assert.match(
+		siteConfigSource,
+		/export const qingyanDevProxyTarget = "http:\/\/localhost:4401";/,
+		"init-site should scaffold a literal QingYan dev proxy target when configured",
+	);
+	assert.match(
+		siteConfigSource,
+		/enable: true,\s+qingyan:/,
+		"init-site should scaffold enabled QingYan-backed feature blocks",
+	);
+	assert.match(
+		siteConfigSource,
+		/rewardOptions:/,
+		"init-site should scaffold reward options when placeholders are enabled",
+	);
 
 	const demoPostSource = await readFile(
 		path.join(tempRoot, "site", "content", "posts", "welcome.md"),
@@ -94,8 +126,8 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 	);
 	assert.match(
 		demoPostSource,
-		/^---[\s\S]*title: Welcome to FangYuan/m,
-		"init-site should scaffold a minimum demo post that keeps the site buildable",
+		/^---[\s\S]*title: Welcome to Virace Notes/m,
+		"init-site should scaffold a welcome post from explicit init options",
 	);
 
 	assert.equal(
@@ -198,5 +230,82 @@ test("ensureExternalSiteScaffold is idempotent and preserves existing user files
 		hasPath(path.join(tempRoot, "site", "content", "posts", "welcome.md")),
 		false,
 		"init-site should not inject demo posts into an existing non-empty site",
+	);
+});
+
+test("ensureExternalSiteScaffold dry-run reports planned actions without writing files", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-site-"));
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await mkdir(path.join(tempRoot, "src", "content", "spec"), {
+		recursive: true,
+	});
+	await writeFile(
+		path.join(tempRoot, "src", "content", "spec", "about.md"),
+		"# About\n",
+		"utf8",
+	);
+
+	const result = ensureExternalSiteScaffold(
+		tempRoot,
+		{
+			siteTitle: "Dry Run Site",
+			siteSubtitle: "Preview",
+			profileName: "Previewer",
+			profileBio: "No writes",
+			qingyanSiteKey: "dry-run-site",
+			qingyanApiBase: "/api",
+			qingyanDevProxyTarget: "http://localhost:4401",
+			enableComments: true,
+			enablePageMetrics: true,
+			enablePageFeedback: false,
+			includeRewardPlaceholders: false,
+		},
+		{ dryRun: true },
+	);
+
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", "content", "posts")),
+		false,
+		"dry-run should not create site/content/posts",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", "config.ts")),
+		false,
+		"dry-run should not create site/config.ts",
+	);
+	assert.equal(
+		result.createdDirectories.length,
+		0,
+		"dry-run should not report created directories",
+	);
+	assert.equal(
+		result.createdFiles.length,
+		0,
+		"dry-run should not report created files",
+	);
+	assert.equal(result.dryRun, true, "dry-run result should expose dryRun mode");
+	assert.equal(
+		result.operations.some(
+			(operation) =>
+				operation.kind === "directory" &&
+				operation.status === "planned" &&
+				operation.path === path.join(tempRoot, "site", "content", "posts"),
+		),
+		true,
+		"dry-run should report planned directory creation",
+	);
+	assert.equal(
+		result.operations.some(
+			(operation) =>
+				operation.kind === "file" &&
+				operation.status === "planned" &&
+				operation.mode === "write" &&
+				operation.path === path.join(tempRoot, "site", "config.ts"),
+		),
+		true,
+		"dry-run should report planned site/config.ts creation",
 	);
 });
