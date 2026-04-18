@@ -84,6 +84,8 @@ export const es: Translation = {
 	[Key.postsCount]: "publicaciones",
 
 	[Key.themeColor]: "Color del tema",
+	[Key.themeRadius]: "Radio",
+	[Key.themeRadiusLevel]: "Nivel de radio",
 
 	[Key.lightMode]: "Claro",
 	[Key.darkMode]: "Oscuro",

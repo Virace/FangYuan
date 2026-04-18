@@ -55,38 +55,38 @@ const getPageUrl = (p: number) => {
     <div class="w-11 h-11">
         {page.url.prev
             ? <a href={page.url.prev} aria-label="Previous Page"
-                class="btn-card overflow-hidden rounded-lg text-primary w-11 h-11"
+                class="btn-card overflow-hidden rounded-control text-primary w-11 h-11"
             >
                 <Icon name="material-symbols:chevron-left-rounded" class="icon-28"></Icon>
             </a>
-            : <div class="btn-card disabled overflow-hidden rounded-lg text-primary w-11 h-11">
+            : <div class="btn-card disabled overflow-hidden rounded-control text-primary w-11 h-11">
                 <Icon name="material-symbols:chevron-left-rounded" class="icon-28"></Icon>
             </div>
         }
     </div>
-    <div class="bg-card-bg flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
+    <div class="bg-card-bg flex flex-row rounded-control items-center text-neutral-700 dark:text-neutral-300 font-bold">
         {pages.map((p) => {
             if (p == HIDDEN)
                 return <Icon name="material-symbols:more-horiz" class="mx-1"/>;
             if (p == page.currentPage)
-                return <div class="h-11 w-11 rounded-lg bg-primary flex items-center justify-center
+                return <div class="h-11 w-11 rounded-control bg-primary flex items-center justify-center
                     font-bold text-pagination-current-content"
                 >
                     {p}
                 </div>
             return <a href={url(getPageUrl(p))} aria-label={`Page ${p}`}
-                class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.85]"
+                class="btn-card w-11 h-11 rounded-control overflow-hidden active:scale-[0.85]"
             >{p}</a>
         })}
     </div>
     <div class="w-11 h-11">
         {page.url.next
             ? <a href={page.url.next} aria-label="Next Page"
-                class="btn-card overflow-hidden rounded-lg text-primary w-11 h-11"
+                class="btn-card overflow-hidden rounded-control text-primary w-11 h-11"
             >
                 <Icon name="material-symbols:chevron-right-rounded" class="icon-28"></Icon>
             </a>
-            : <div class="btn-card disabled overflow-hidden rounded-lg text-primary w-11 h-11">
+            : <div class="btn-card disabled overflow-hidden rounded-control text-primary w-11 h-11">
                 <Icon name="material-symbols:chevron-right-rounded" class="icon-28"></Icon>
             </div>
         }

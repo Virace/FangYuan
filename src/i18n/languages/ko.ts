@@ -81,6 +81,8 @@ export const ko: Translation = {
 	[Key.postsCount]: "게시물",
 
 	[Key.themeColor]: "테마 색상",
+	[Key.themeRadius]: "모서리 둥글기",
+	[Key.themeRadiusLevel]: "둥글기 단계",
 
 	[Key.lightMode]: "밝은 모드",
 	[Key.darkMode]: "어두운 모드",

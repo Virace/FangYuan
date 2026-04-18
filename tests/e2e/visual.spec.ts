@@ -5,6 +5,7 @@ import {
 	openMobileNavMenu,
 	openMobileSearchPanel,
 	prepareStablePage,
+	prepareStablePageWithRadius,
 	waitForPagefind,
 } from "./support/site-fixtures";
 
@@ -69,5 +70,38 @@ test("article toc desktop visual baseline", async ({ page }) => {
 		animations: "disabled",
 		caret: "hide",
 		fullPage: false,
+	});
+});
+
+test("homepage desktop visual baseline at radius level 0", async ({ page }) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await prepareStablePageWithRadius(page, SITE_ROUTES.home, 0);
+
+	await expect(page).toHaveScreenshot("home-desktop-radius-0.png", {
+		animations: "disabled",
+		caret: "hide",
+		fullPage: true,
+	});
+});
+
+test("homepage desktop visual baseline at radius level 6", async ({ page }) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await prepareStablePageWithRadius(page, SITE_ROUTES.home, 6);
+
+	await expect(page).toHaveScreenshot("home-desktop-radius-6.png", {
+		animations: "disabled",
+		caret: "hide",
+		fullPage: true,
+	});
+});
+
+test("article mobile visual baseline at radius level 6", async ({ page }) => {
+	await page.setViewportSize(VIEWPORTS.mobile);
+	await prepareStablePageWithRadius(page, "/posts/welcome/", 6);
+
+	await expect(page).toHaveScreenshot("article-mobile-radius-6.png", {
+		animations: "disabled",
+		caret: "hide",
+		fullPage: true,
 	});
 });

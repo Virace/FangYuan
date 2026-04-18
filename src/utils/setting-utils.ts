@@ -4,6 +4,11 @@ import {
 	DEFAULT_THEME,
 	LIGHT_MODE,
 } from "@constants/constants.ts";
+import {
+	clampRadiusLevel,
+	DEFAULT_RADIUS_LEVEL,
+	getRadiusScale,
+} from "@constants/theme-radius";
 import { expressiveCodeConfig } from "@/config";
 import type { LIGHT_DARK_MODE } from "@/types/config";
 
@@ -25,6 +30,42 @@ export function setHue(hue: number): void {
 		return;
 	}
 	r.style.setProperty("--hue", String(hue));
+}
+
+export function getDefaultRadiusLevel(): number {
+	const fallback = String(DEFAULT_RADIUS_LEVEL);
+	const configCarrier = document.getElementById("config-carrier");
+	return clampRadiusLevel(configCarrier?.dataset.radiusLevel || fallback);
+}
+
+export function getRadiusLevel(): number {
+	return clampRadiusLevel(
+		localStorage.getItem("radiusLevel"),
+		getDefaultRadiusLevel(),
+	);
+}
+
+export function applyRadiusLevel(level: number): void {
+	const resolvedLevel = clampRadiusLevel(level, getDefaultRadiusLevel());
+	document.documentElement.style.setProperty(
+		"--radius-level",
+		String(resolvedLevel),
+	);
+	document.documentElement.style.setProperty(
+		"--radius-scale",
+		String(getRadiusScale(resolvedLevel)),
+	);
+}
+
+export function setRadiusLevel(level: number): void {
+	const resolvedLevel = clampRadiusLevel(level, getDefaultRadiusLevel());
+	localStorage.setItem("radiusLevel", String(resolvedLevel));
+	applyRadiusLevel(resolvedLevel);
+}
+
+export function clearRadiusLevel(): void {
+	localStorage.removeItem("radiusLevel");
+	applyRadiusLevel(getDefaultRadiusLevel());
 }
 
 export function applyThemeToDocument(theme: LIGHT_DARK_MODE): void {

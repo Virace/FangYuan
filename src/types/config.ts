@@ -23,6 +23,7 @@ export type SiteConfig = {
 		hue: number;
 		fixed: boolean;
 	};
+	themeRadius: ThemeRadiusConfig;
 	banner: {
 		enable: boolean;
 		src: string;
@@ -39,6 +40,11 @@ export type SiteConfig = {
 	};
 
 	favicon: Favicon[];
+};
+
+export type ThemeRadiusConfig = {
+	level: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+	fixed: boolean;
 };
 
 export type Favicon = {

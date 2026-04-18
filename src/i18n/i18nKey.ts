@@ -68,6 +68,8 @@ enum I18nKey {
 	postsCount = "postsCount",
 
 	themeColor = "themeColor",
+	themeRadius = "themeRadius",
+	themeRadiusLevel = "themeRadiusLevel",
 
 	lightMode = "lightMode",
 	darkMode = "darkMode",

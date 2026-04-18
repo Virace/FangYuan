@@ -46,7 +46,7 @@ const resolvedCoverImage = await resolveContentImage(
 	entry.filePath?.replace(/\\/g, "/"),
 );
 ---
-<div class:list={["card-base flex flex-col-reverse md:flex-col w-full rounded-panel overflow-hidden relative", className]} style={style}>
+<div class:list={["card-base flex flex-col-reverse md:flex-col w-full rounded-surface overflow-hidden relative", className]} style={style}>
     <div class:list={["pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full post-card-body-no-cover": !hasCover, "w-full post-card-body-with-cover": hasCover}]}>
         <a href={url}
            class="transition group w-full block font-bold mb-3 text-3xl text-90
@@ -84,7 +84,7 @@ const resolvedCoverImage = await resolveContentImage(
     {hasCover && <a href={url} aria-label={title}
                     class:list={["group",
                         "max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0",
-                        "post-card-cover-frame relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
+                        "post-card-cover-frame relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-surface-prominent overflow-hidden active:scale-95"
                     ]} >
         <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
         <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
@@ -99,7 +99,7 @@ const resolvedCoverImage = await resolveContentImage(
 
     {!hasCover &&
         <a href={url} aria-label={title} class="hidden! md:flex! btn-regular w-13
-         absolute right-3 top-3 bottom-3 rounded-xl bg-enter-btn-bg
+         absolute right-3 top-3 bottom-3 rounded-surface-prominent bg-enter-btn-bg
          hover:bg-enter-btn-bg-hover active:bg-enter-btn-bg-active active:scale-95
         ">
             <Icon name="material-symbols:chevron-right-rounded"

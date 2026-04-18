@@ -139,7 +139,7 @@ $: if (initialized && keywordMobile) {
 </script>
 
 <!-- search bar for desktop view -->
-<div id="search-bar" class="search-field-shell hidden lg:flex items-center h-11 mr-2 rounded-lg">
+<div id="search-bar" class="search-field-shell hidden lg:flex items-center h-11 mr-2 rounded-field-compact">
     <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
     <input
            aria-label={i18n(I18nKey.search)}
@@ -153,15 +153,15 @@ $: if (initialized && keywordMobile) {
 
 <!-- toggle btn for phone/tablet view -->
 <button on:click={togglePanel} aria-label="Search Panel" id="search-switch"
-        class="btn-plain scale-animation lg:hidden! rounded-lg w-11 h-11 active:scale-90">
+        class="btn-plain scale-animation lg:hidden! rounded-control w-11 h-11 active:scale-90">
     <Icon icon="material-symbols:search" class="text-xl"></Icon>
 </button>
 
 <!-- search panel -->
-<div id="search-panel" class="search-panel-shell float-panel float-panel-closed absolute shadow-2xl rounded-2xl p-2">
+<div id="search-panel" class="search-panel-shell float-panel float-panel-closed absolute shadow-2xl rounded-surface-prominent p-2">
 
     <!-- search bar inside panel for phone/tablet -->
-    <div id="search-bar-inside" class="search-field-shell flex relative lg:hidden items-center h-11 rounded-xl">
+    <div id="search-bar-inside" class="search-field-shell flex relative lg:hidden items-center h-11 rounded-field">
         <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
         <input
                aria-label={i18n(I18nKey.search)}
@@ -176,7 +176,7 @@ $: if (initialized && keywordMobile) {
     {#each result as item}
         <a href={item.url}
            class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
-       rounded-xl text-lg px-3 py-2 hover:bg-btn-plain-bg-hover active:bg-btn-plain-bg-active">
+       rounded-control-prominent text-lg px-3 py-2 hover:bg-btn-plain-bg-hover active:bg-btn-plain-bg-active">
             <div class="transition text-90 inline-flex font-bold group-hover:text-primary">
                 {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-xs translate-x-1 my-auto text-primary"></Icon>
             </div>

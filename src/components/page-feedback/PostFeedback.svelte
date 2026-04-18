@@ -272,7 +272,7 @@ onDestroy(() => {
 </script>
 
 {#if showCard}
-	<section class="card-base mb-6 rounded-panel border border-line-divider px-4 py-4 md:px-6">
+	<section class="card-base mb-6 rounded-surface border border-line-divider px-4 py-4 md:px-6">
 		<div class="flex flex-col">
 			<div class="flex flex-row items-center justify-between gap-3 sm:gap-4 md:gap-5">
 				<div class="min-w-0 flex-1">

@@ -8,7 +8,7 @@ export const SITE_ROUTES = {
 	home: "/",
 	about: "/about/",
 	archive: "/archive/",
-	postBasic: "/posts/markdown/",
+	postBasic: "/posts/welcome/",
 	postComplex: "/posts/markdown-extended/",
 	postWithCover: "/posts/guide/",
 } as const;
@@ -116,6 +116,21 @@ export async function prepareStablePage(page: Page, path: string): Promise<void>
 		localStorage.setItem("theme", "light");
 		localStorage.setItem("hue", "250");
 	});
+
+	await gotoAndWaitForApp(page, path);
+	await disableMotion(page);
+}
+
+export async function prepareStablePageWithRadius(
+	page: Page,
+	path: string,
+	radiusLevel: number,
+): Promise<void> {
+	await page.addInitScript((level) => {
+		localStorage.setItem("theme", "light");
+		localStorage.setItem("hue", "250");
+		localStorage.setItem("radiusLevel", String(level));
+	}, radiusLevel);
 
 	await gotoAndWaitForApp(page, path);
 	await disableMotion(page);

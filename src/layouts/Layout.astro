@@ -4,6 +4,10 @@ import "overlayscrollbars/overlayscrollbars.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import GlobalStyles from "@components/GlobalStyles.astro";
+import {
+	DEFAULT_RADIUS_LEVEL,
+	RADIUS_LEVEL_SCALE_MAP,
+} from "@constants/theme-radius";
 import type { ImageMetadata } from "astro";
 import photoSwipeStylesUrl from "photoswipe/style.css?url";
 import { profileConfig, siteConfig } from "@/config";
@@ -48,6 +52,7 @@ const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 // defines global css variables
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
+const configRadiusLevel = siteConfig.themeRadius.level;
 if (!banner || typeof banner !== "string" || banner.trim() === "") {
 	banner = siteConfig.banner.src;
 }
@@ -123,7 +128,21 @@ const bannerOffset =
 		<Font cssVariable="--font-jetbrains-mono" />
 
 		<!-- Set the theme before the page is rendered to avoid a flash -->
-		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
+		<script
+			is:inline
+			define:vars={{
+				DEFAULT_THEME,
+				LIGHT_MODE,
+				DARK_MODE,
+				AUTO_MODE,
+				BANNER_HEIGHT_EXTEND,
+				PAGE_WIDTH,
+				configHue,
+				configRadiusLevel,
+				DEFAULT_RADIUS_LEVEL,
+				RADIUS_LEVEL_SCALE_MAP,
+			}}
+		>
 			// Load the theme from local storage
 			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
 			switch (theme) {
@@ -144,6 +163,15 @@ const bannerOffset =
 			// Load the hue from local storage
 			const hue = localStorage.getItem('hue') || configHue;
 			document.documentElement.style.setProperty('--hue', hue);
+
+			const rawRadiusLevel = localStorage.getItem('radiusLevel') || configRadiusLevel;
+			const parsedRadiusLevel = Number.parseInt(String(rawRadiusLevel), 10);
+			const radiusLevel = Number.isNaN(parsedRadiusLevel)
+				? DEFAULT_RADIUS_LEVEL
+				: Math.max(0, Math.min(6, parsedRadiusLevel));
+			const radiusScale = RADIUS_LEVEL_SCALE_MAP[radiusLevel] ?? RADIUS_LEVEL_SCALE_MAP[DEFAULT_RADIUS_LEVEL];
+			document.documentElement.style.setProperty('--radius-level', String(radiusLevel));
+			document.documentElement.style.setProperty('--radius-scale', String(radiusScale));
 
 			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
 			let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
@@ -225,7 +253,14 @@ import {
 	// ClickScrollPlugin
 } from 'overlayscrollbars';
 import { resolveSwupAnnouncementText } from "../utils/swup-a11y";
-import {getHue, getStoredTheme, setHue, setTheme} from "../utils/setting-utils";
+import {
+	getHue,
+	getRadiusLevel,
+	getStoredTheme,
+	setHue,
+	setRadiusLevel,
+	setTheme,
+} from "../utils/setting-utils";
 import {pathsEqual, url} from "../utils/url-utils";
 import {
 	BANNER_HEIGHT,
@@ -309,6 +344,10 @@ function loadHue() {
 	setHue(getHue())
 }
 
+function loadRadius() {
+	setRadiusLevel(getRadiusLevel())
+}
+
 function initCustomScrollbar() {
 	const bodyElement = document.querySelector('body');
 	if (!bodyElement) return;
@@ -390,6 +429,7 @@ function init() {
 	// disableAnimation()()		// TODO
 	loadTheme();
 	loadHue();
+	loadRadius();
 	initCustomScrollbar();
 	showBanner();
 }

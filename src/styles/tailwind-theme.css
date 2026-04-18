@@ -27,7 +27,14 @@
 	--color-display-slider-bg: var(--display-slider-bg);
 	--color-footer-divider: var(--footer-divider);
 	--color-banner-credit-accent: var(--banner-credit-accent);
-	--radius-panel: var(--radius-large);
+	--radius-panel: var(--radius-surface);
+	--radius-surface: var(--radius-surface);
+	--radius-surface-prominent: var(--radius-surface-prominent);
+	--radius-control: var(--radius-control);
+	--radius-control-prominent: var(--radius-control-prominent);
+	--radius-field: var(--radius-field);
+	--radius-field-compact: var(--radius-field-compact);
+	--radius-micro: var(--radius-micro);
 }
 
 @utility text-90 {
@@ -255,4 +262,32 @@
 		left: auto;
 		width: calc(var(--spacing) * 120);
 	}
+}
+
+@utility rounded-surface {
+	border-radius: var(--radius-surface);
+}
+
+@utility rounded-surface-prominent {
+	border-radius: var(--radius-surface-prominent);
+}
+
+@utility rounded-control {
+	border-radius: var(--radius-control);
+}
+
+@utility rounded-control-prominent {
+	border-radius: var(--radius-control-prominent);
+}
+
+@utility rounded-field {
+	border-radius: var(--radius-field);
+}
+
+@utility rounded-field-compact {
+	border-radius: var(--radius-field-compact);
+}
+
+@utility rounded-micro {
+	border-radius: var(--radius-micro);
 }

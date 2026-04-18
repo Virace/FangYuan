@@ -73,6 +73,8 @@ export const th: Translation = {
 	[Key.postsCount]: "โพสต์",
 
 	[Key.themeColor]: "สีของธีม",
+	[Key.themeRadius]: "ความโค้งมุม",
+	[Key.themeRadiusLevel]: "ระดับความโค้งมุม",
 
 	[Key.lightMode]: "สว่าง",
 	[Key.darkMode]: "มืด",

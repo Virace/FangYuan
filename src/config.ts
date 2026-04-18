@@ -24,9 +24,10 @@ import { normalizeCommentConfig } from "./utils/comments/options";
 
 type ExternalSiteConfig = Omit<
 	Partial<SiteConfig>,
-	"themeColor" | "banner" | "toc"
+	"themeColor" | "themeRadius" | "banner" | "toc"
 > & {
 	themeColor?: Partial<SiteConfig["themeColor"]>;
+	themeRadius?: Partial<SiteConfig["themeRadius"]>;
 	banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
 		credit?: Partial<SiteConfig["banner"]["credit"]>;
 	};
@@ -77,6 +78,10 @@ function mergeSiteConfig(
 		themeColor: {
 			...defaultConfig.themeColor,
 			...override.themeColor,
+		},
+		themeRadius: {
+			...defaultConfig.themeRadius,
+			...override.themeRadius,
 		},
 		banner: {
 			...defaultConfig.banner,

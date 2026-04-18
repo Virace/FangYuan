@@ -80,6 +80,8 @@ export const en: Translation = {
 	[Key.postsCount]: "posts",
 
 	[Key.themeColor]: "Theme Color",
+	[Key.themeRadius]: "Radius",
+	[Key.themeRadiusLevel]: "Radius Level",
 
 	[Key.lightMode]: "Light",
 	[Key.darkMode]: "Dark",

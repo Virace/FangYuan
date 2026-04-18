@@ -80,6 +80,8 @@ export const vi: Translation = {
 	[Key.postsCount]: "bài viết",
 
 	[Key.themeColor]: "Màu giao diện",
+	[Key.themeRadius]: "Bo góc",
+	[Key.themeRadiusLevel]: "Mức bo góc",
 
 	[Key.lightMode]: "Sáng",
 	[Key.darkMode]: "Tối",

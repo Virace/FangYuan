@@ -190,9 +190,9 @@ onDestroy(() => {
 					{/each}
 				</div>
 
-				<div class="rounded-[1.75rem] border border-line-divider bg-soft-contrast p-4">
+				<div class="rounded-surface-prominent border border-line-divider bg-soft-contrast p-4">
 					<div
-						class="relative flex min-h-80 items-center justify-center rounded-[1.25rem] bg-card-bg p-4"
+						class="relative flex min-h-80 items-center justify-center rounded-surface bg-card-bg p-4"
 					>
 						{#if displayedImage}
 							<img

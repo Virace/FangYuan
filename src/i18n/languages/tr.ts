@@ -82,6 +82,8 @@ export const tr: Translation = {
 	[Key.postsCount]: "gönderiler",
 
 	[Key.themeColor]: "Tema Rengi",
+	[Key.themeRadius]: "Köşe Yuvarlaklığı",
+	[Key.themeRadiusLevel]: "Yuvarlaklık Seviyesi",
 
 	[Key.lightMode]: "Aydınlık",
 	[Key.darkMode]: "Koyu",

@@ -79,6 +79,8 @@ export const id: Translation = {
 	[Key.postsCount]: "postingan",
 
 	[Key.themeColor]: "Warna Tema",
+	[Key.themeRadius]: "Radius",
+	[Key.themeRadiusLevel]: "Tingkat Radius",
 
 	[Key.lightMode]: "Terang",
 	[Key.darkMode]: "Gelap",

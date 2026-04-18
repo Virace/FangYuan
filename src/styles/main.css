@@ -4,7 +4,7 @@
 
 .card-base {
     overflow: hidden;
-    border-radius: var(--radius-large);
+    border-radius: var(--radius-surface);
     background-color: var(--card-bg);
     transition:
         color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
@@ -18,7 +18,7 @@
 .comment-root {
     padding: 1rem;
     border: 1px solid var(--line-divider);
-    border-radius: var(--radius-large);
+    border-radius: var(--radius-surface);
     background-color: var(--card-bg);
 }
 
@@ -138,7 +138,7 @@
     overflow: visible;
     padding: 0.875rem;
     border: 1px solid color-mix(in srgb, var(--line-divider) 88%, transparent);
-    border-radius: 1rem;
+    border-radius: var(--radius-surface);
     background-color: var(--float-panel-bg);
     box-shadow:
         0 20px 25px -5px rgb(15 23 42 / 0.12),
@@ -339,7 +339,7 @@
 .comment-thread-skeleton {
     position: relative;
     min-height: 7.5rem;
-    border-radius: 1.5rem;
+    border-radius: var(--radius-surface-prominent);
     background:
         linear-gradient(
             90deg,
@@ -365,7 +365,7 @@
     content: "";
     position: absolute;
     inset: 1.15rem 1rem 1rem 4.75rem;
-    border-radius: 1rem;
+    border-radius: var(--radius-surface);
     background:
         linear-gradient(
             to bottom,
@@ -404,7 +404,7 @@
 
 .comment-form-input {
     border: 1px solid var(--line-divider);
-    border-radius: 0.75rem;
+    border-radius: var(--radius-field);
     background-color: var(--card-bg);
     padding: 0.5rem 0.75rem;
     outline: none;
@@ -578,7 +578,7 @@
     width: 2rem;
     height: 2rem;
     margin-right: 0.5rem;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-micro);
     background-color: var(--btn-regular-bg);
     color: var(--btn-content);
     transition:
@@ -661,7 +661,7 @@
 .link {
     margin: -0.25rem;
     padding: 0.25rem;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-micro);
     transition:
         color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
         background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
@@ -674,7 +674,7 @@
 .link-lg {
     margin: -0.375rem;
     padding: 0.375rem;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-micro);
     transition:
         color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
         background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
@@ -687,7 +687,7 @@
 .float-panel {
     top: 5.25rem;
     overflow: hidden;
-    border-radius: var(--radius-large);
+    border-radius: var(--radius-surface);
     background-color: var(--float-panel-bg);
     box-shadow:
         0 20px 25px -5px rgb(0 0 0 / 0.1),

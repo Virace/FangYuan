@@ -184,7 +184,7 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 
 <svelte:window on:keydown={handleEmojiKeydown} />
 
-<form class="card-base rounded-panel p-5" novalidate on:submit|preventDefault={handleSubmit}>
+<form class="card-base rounded-surface p-5" novalidate on:submit|preventDefault={handleSubmit}>
 	<InlineFeedbackNotice
 		message={noticeMessage}
 		tone={noticeTone}
@@ -296,7 +296,7 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 			<div class="flex items-center justify-end">
 				<div class="comment-captcha-popover-anchor">
 					<button
-						class="btn-regular rounded-xl px-4 h-10 text-sm font-medium w-full md:w-auto md:shrink-0"
+						class="btn-regular rounded-control-prominent px-4 h-10 text-sm font-medium w-full md:w-auto md:shrink-0"
 						disabled={submitting}
 						type="submit"
 					>
