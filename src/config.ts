@@ -215,7 +215,10 @@ export const pageFeedbackConfig: PageFeedbackConfig = mergePageFeedbackConfig(
 	externalSiteConfig?.pageFeedbackConfig,
 );
 
-export const configImageBaseRoots = {
+export const configImageBaseRoots: Readonly<{
+	banner: "site" | "src";
+	avatar: "site" | "src";
+}> = {
 	banner: externalSiteConfig?.siteConfig?.banner?.src ? "site" : "src",
 	avatar: externalSiteConfig?.profileConfig?.avatar ? "site" : "src",
-} as const;
+};

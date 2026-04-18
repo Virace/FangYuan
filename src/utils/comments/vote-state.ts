@@ -70,7 +70,7 @@ export function persistViewerVote(
 	postKey: string,
 	commentId: string,
 	choice: CommentVoteChoice,
-) {
+): void {
 	const voteStore = readPersistedVoteStore();
 	voteStore[buildPersistedVoteKey(postKey, commentId)] = choice;
 	writePersistedVoteStore(voteStore);

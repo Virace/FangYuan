@@ -51,7 +51,7 @@ const localAliasImageSchema = z
 			"Non-relative local cover images are treated as root aliases under src/ or site/.",
 	});
 
-const postsCollection = defineCollection({
+const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 	loader: glob({
 		base: `${contentRoot}/posts`,
 		pattern: "**/*.md",
@@ -88,7 +88,7 @@ const postsCollection = defineCollection({
 		}),
 });
 
-const specCollection = defineCollection({
+const specCollection: ReturnType<typeof defineCollection> = defineCollection({
 	loader: glob({
 		base: `${contentRoot}/spec`,
 		pattern: "**/*.md",
@@ -97,7 +97,10 @@ const specCollection = defineCollection({
 	schema: z.object({}),
 });
 
-export const collections = {
+export const collections: {
+	posts: typeof postsCollection;
+	spec: typeof specCollection;
+} = {
 	posts: postsCollection,
 	spec: specCollection,
 };

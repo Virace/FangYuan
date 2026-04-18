@@ -6,7 +6,7 @@ export const DEFAULT_COMMENT_ROOT_LIMIT = 5;
 export const DEFAULT_COMMENT_MAX_DEPTH = 3;
 export const MIN_COMMENT_ROOT_LIMIT = 1;
 export const MIN_COMMENT_MAX_DEPTH = 1;
-export const DEFAULT_COMMENT_SORT_BY = "date_desc" satisfies CommentSortBy;
+export const DEFAULT_COMMENT_SORT_BY: CommentSortBy = "date_desc";
 
 function clampCommentNumber(
 	value: number | undefined,

@@ -170,6 +170,41 @@ type InlineCaptchaPayload = {
 	value: string;
 };
 
+export type QingYanClient = {
+	fetchPostEngagementBootstrap(
+		input: QingYanBootstrapInput,
+	): Promise<QingYanBootstrapPayload>;
+	fetchCommentThread(input: QingYanThreadInput): Promise<QingYanThreadPage>;
+	getCaptchaState(input: {
+		pageKey: string;
+		pageTitle?: string;
+		pageUrl?: string;
+	}): Promise<CommentCaptchaState | null>;
+	refreshCaptcha(input: {
+		pageKey: string;
+		pageTitle?: string;
+		pageUrl?: string;
+	}): Promise<CommentCaptchaState | null>;
+	createComment(
+		input: CreateCommentInput & { pageUrl?: string },
+	): Promise<QingYanCreateCommentResult & { createdComment: CanonicalComment }>;
+	voteComment(input: {
+		pageKey: string;
+		commentId: string;
+		choice: CommentVoteChoice;
+		pageTitle?: string;
+		pageUrl?: string;
+		captcha?: InlineCaptchaPayload | null;
+	}): Promise<QingYanVoteResult>;
+	likePage(input: {
+		pageKey: string;
+		pageTitle?: string;
+		pageUrl?: string;
+		captcha?: InlineCaptchaPayload | null;
+	}): Promise<QingYanPageFeedbackState>;
+	invalidateBootstrap(pageKey: string): void;
+};
+
 function toBackendSortBy(sortBy: CommentSortBy | undefined): BackendSortBy {
 	return sortBy === "date_asc" ? "oldest" : "newest";
 }
@@ -405,9 +440,9 @@ function resolveQingYanConfig(): QingYanClientConfig | null {
 	);
 }
 
-export type QingYanClient = ReturnType<typeof createQingYanClient>;
-
-export function createQingYanClient(config: QingYanClientConfig) {
+export function createQingYanClient(
+	config: QingYanClientConfig,
+): QingYanClient {
 	const resolvedConfig = {
 		apiBase: config.apiBase ?? "/api",
 		siteKey: config.siteKey,
@@ -433,7 +468,7 @@ export function createQingYanClient(config: QingYanClientConfig) {
 		return parseResponse<T>(response);
 	}
 
-	function invalidateBootstrap(pageKey: string) {
+	function invalidateBootstrap(pageKey: string): void {
 		for (const key of [...bootstrapCache.keys()]) {
 			if (key.includes(`|${pageKey}|`)) {
 				bootstrapCache.delete(key);
@@ -555,7 +590,7 @@ export function createQingYanClient(config: QingYanClientConfig) {
 			pageKey: string;
 			pageTitle?: string;
 			pageUrl?: string;
-		}) {
+		}): Promise<CommentCaptchaState | null> {
 			const response = await fetchJson<RawQingYanCaptchaState>(
 				"/comments/captcha/refresh/",
 				{
