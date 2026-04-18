@@ -353,6 +353,13 @@ async function loadInitialState() {
 			pageUrl: postUrl,
 		});
 		applyBootstrap(bootstrap);
+		if (bootstrap.captcha?.required && !bootstrap.captcha?.verified) {
+			activeCaptchaTarget = { kind: "composer" };
+			setCaptchaPrompt(i18n(I18nKey.commentsCaptchaRequiredTip));
+		} else {
+			activeCaptchaTarget = null;
+			clearCaptchaFeedback();
+		}
 		if (!bootstrap.capability.enabled) {
 			comments = [];
 			totalRootCount = 0;

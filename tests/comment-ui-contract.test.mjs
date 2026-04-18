@@ -62,6 +62,10 @@ test("comment UI should render through focused Svelte components and mount on po
 	assert.match(commentSectionSource, /CommentList/);
 	assert.match(commentSectionSource, /countCommentsInTree\(/);
 	assert.match(commentSectionSource, /fetchPostEngagementBootstrap\(/);
+	assert.match(
+		commentSectionSource,
+		/loadInitialState[\s\S]*bootstrap\.captcha\?\.required[\s\S]*activeCaptchaTarget = \{ kind: "composer" \}/,
+	);
 	assert.match(commentSectionSource, /qingyanClient\.fetchCommentThread\(\{/);
 	assert.match(commentSectionSource, /function applyBootstrap\(/);
 	assert.match(commentSectionSource, /sortBy:/);
