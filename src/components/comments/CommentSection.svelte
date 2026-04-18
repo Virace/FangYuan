@@ -30,7 +30,6 @@ import { getQingYanClient, QingYanApiError } from "@utils/qingyan/client";
 import { onDestroy, onMount, tick } from "svelte";
 import { fade, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
-import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
 import CommentComposer from "./CommentComposer.svelte";
 import CommentHeader from "./CommentHeader.svelte";
 import CommentList from "./CommentList.svelte";
@@ -95,7 +94,6 @@ let comments: CanonicalComment[] = [];
 let loading = true;
 let submitting = false;
 let captchaBusy = false;
-let loadError = "";
 let captchaError = "";
 let captchaPrompt = "";
 let activeReplyParentId: string | null = null;
@@ -154,6 +152,7 @@ $: showComposerCaptcha =
 $: showCommentLoadingOverlay = loading && comments.length > 0;
 $: showCommentInitialSkeleton = loading && comments.length === 0 && !capability;
 $: showCommentEmptyState = comments.length === 0 && capability?.enabled;
+$: showCommentSection = loading || capability?.enabled === true;
 $: submitBlockedByCaptcha =
 	pendingAction?.kind === "comment_submit" && showComposerCaptcha;
 
@@ -377,7 +376,6 @@ function applyBootstrap(
 	currentOffset = payload.pagination.offset;
 	totalRootCount = payload.pagination.rootCount;
 	captchaState = payload.captcha;
-	loadError = "";
 }
 
 async function promptForCaptcha(
@@ -414,7 +412,6 @@ async function promptForCaptcha(
 
 async function loadInitialState() {
 	loading = true;
-	loadError = "";
 
 	try {
 		if (!qingyanClient) {
@@ -442,7 +439,6 @@ async function loadInitialState() {
 		}
 	} catch (error) {
 		logCommentError("load comments failed", error);
-		loadError = toCommentErrorMessage(error, I18nKey.commentsLoadFailed);
 	} finally {
 		loading = false;
 	}
@@ -453,7 +449,6 @@ async function loadComments(nextOptions?: {
 	offset?: number;
 }) {
 	loading = true;
-	loadError = "";
 
 	try {
 		if (!qingyanClient) {
@@ -483,7 +478,6 @@ async function loadComments(nextOptions?: {
 		comments = applyPersistedViewerVotes(postKey, threadPage.comments);
 	} catch (error) {
 		logCommentError("load comments failed", error);
-		loadError = toCommentErrorMessage(error, I18nKey.commentsLoadFailed);
 	} finally {
 		loading = false;
 	}
@@ -774,160 +768,149 @@ onDestroy(() => {
 });
 </script>
 
-<section
-	class="card-base mt-4 px-6 md:px-9 pt-6 pb-6 relative w-full"
-	data-post-title={postTitle}
->
-	<CommentHeader count={countCommentsInTree(comments)} loading={loading} />
+{#if showCommentSection}
+	<section
+		class="card-base mt-4 px-6 md:px-9 pt-6 pb-6 relative w-full"
+		data-post-title={postTitle}
+	>
+		<CommentHeader count={countCommentsInTree(comments)} loading={loading} />
 
-	{#if capability && !capability.enabled}
-		<p class="mb-4 text-sm text-50">
-			{capability.message || i18n(I18nKey.commentsDisabled)}
-		</p>
-	{/if}
-
-	<InlineFeedbackNotice
-		message={loadError || ""}
-		tone="error"
-		duration={contentTransitionDuration}
-		className="mb-4"
-	/>
-
-	{#if capability?.enabled}
-		<div class="mb-5 flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
-			<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-				<button
-					type="button"
-					class="comment-sort-tab"
-					class:link-underline={currentSortBy !== "date_desc"}
-					class:comment-sort-tab-active={currentSortBy === "date_desc"}
-					class:comment-sort-tab-idle={currentSortBy !== "date_desc"}
-					disabled={currentSortBy === "date_desc"}
-					aria-pressed={currentSortBy === "date_desc"}
-					on:click={() => void handleSortChange("date_desc")}
-				>
-					{i18n(I18nKey.commentsSortNewest)}
-				</button>
-				<button
-					type="button"
-					class="comment-sort-tab"
-					class:link-underline={currentSortBy !== "date_asc"}
-					class:comment-sort-tab-active={currentSortBy === "date_asc"}
-					class:comment-sort-tab-idle={currentSortBy !== "date_asc"}
-					disabled={currentSortBy === "date_asc"}
-					aria-pressed={currentSortBy === "date_asc"}
-					on:click={() => void handleSortChange("date_asc")}
-				>
-					{i18n(I18nKey.commentsSortOldest)}
-				</button>
-			</div>
-
-			{#if totalRootCount > pageSize}
-				<div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-50">
+		{#if capability?.enabled}
+			<div class="mb-5 flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
+				<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
 					<button
 						type="button"
-						class="link-underline disabled:pointer-events-none disabled:opacity-40"
-						disabled={!hasPreviousPage}
-						on:click={() => void handlePageChange(currentOffset - pageSize)}
+						class="comment-sort-tab"
+						class:link-underline={currentSortBy !== "date_desc"}
+						class:comment-sort-tab-active={currentSortBy === "date_desc"}
+						class:comment-sort-tab-idle={currentSortBy !== "date_desc"}
+						disabled={currentSortBy === "date_desc"}
+						aria-pressed={currentSortBy === "date_desc"}
+						on:click={() => void handleSortChange("date_desc")}
 					>
-						{i18n(I18nKey.commentsPaginationPrevious)}
+						{i18n(I18nKey.commentsSortNewest)}
 					</button>
-					<span>
-						{i18n(I18nKey.commentsPaginationStatus)} {currentPage} / {totalPages}
-					</span>
 					<button
 						type="button"
-						class="link-underline disabled:pointer-events-none disabled:opacity-40"
-						disabled={!hasNextPage}
-						on:click={() => void handlePageChange(currentOffset + pageSize)}
+						class="comment-sort-tab"
+						class:link-underline={currentSortBy !== "date_asc"}
+						class:comment-sort-tab-active={currentSortBy === "date_asc"}
+						class:comment-sort-tab-idle={currentSortBy !== "date_asc"}
+						disabled={currentSortBy === "date_asc"}
+						aria-pressed={currentSortBy === "date_asc"}
+						on:click={() => void handleSortChange("date_asc")}
 					>
-						{i18n(I18nKey.commentsPaginationNext)}
+						{i18n(I18nKey.commentsSortOldest)}
 					</button>
 				</div>
-			{/if}
-		</div>
-	{/if}
 
-	<div
-		class="comments-content-shell mt-5"
-		aria-busy={loading}
-	>
-		{#if showCommentInitialSkeleton}
-			<div
-				class="comment-thread-skeleton"
-				in:fade={{ duration: contentTransitionDuration }}
-				out:fade={{ duration: contentTransitionDuration }}
-			></div>
-		{:else if comments.length > 0}
-			<div
-				class="comments-content-stack"
-				in:fade={{ duration: contentTransitionDuration }}
-				out:fade={{ duration: contentTransitionDuration }}
-			>
-				<CommentList
-					comments={comments}
-					activeReplyParentId={activeReplyParentId}
-					activeCaptchaCommentId={activeCaptchaCommentId}
-					activeCaptchaVoteChoice={activeCaptchaVoteChoice}
-					activeVoteConfirmCommentId={activeVoteConfirmCommentId}
-					activeCommentNoticeId={activeCommentNoticeId}
-					maxDepth={maxDepth}
-					supportsVote={supportsVote}
-					voteBusy={Boolean(voteBusyCommentId)}
-					pendingVoteChoice={pendingVoteChoice}
-					captchaState={captchaState}
-					captchaBusy={captchaBusy}
-					bind:captchaValue
-					captchaError={captchaError}
-					captchaPrompt={captchaPrompt}
-					commentNoticeMessage={commentNoticeMessage}
-					commentNoticeTone={commentNoticeTone}
-					onVote={handleVote}
-					onConfirmVote={handleConfirmVote}
-					onCancelVoteConfirm={handleCancelVoteConfirm}
-					onReply={handleReply}
-					onRefreshCaptcha={handleRefreshCaptcha}
-					onSubmitCaptcha={handleSubmitCaptchaAction}
-				/>
-
-				{#if showCommentLoadingOverlay}
-					<div
-						class="comment-loading-overlay"
-						in:fade={{ duration: contentTransitionDuration }}
-						out:fade={{ duration: contentTransitionDuration }}
-					>
-						<div class="comment-thread-skeleton"></div>
+				{#if totalRootCount > pageSize}
+					<div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-50">
+						<button
+							type="button"
+							class="link-underline disabled:pointer-events-none disabled:opacity-40"
+							disabled={!hasPreviousPage}
+							on:click={() => void handlePageChange(currentOffset - pageSize)}
+						>
+							{i18n(I18nKey.commentsPaginationPrevious)}
+						</button>
+						<span>
+							{i18n(I18nKey.commentsPaginationStatus)} {currentPage} / {totalPages}
+						</span>
+						<button
+							type="button"
+							class="link-underline disabled:pointer-events-none disabled:opacity-40"
+							disabled={!hasNextPage}
+							on:click={() => void handlePageChange(currentOffset + pageSize)}
+						>
+							{i18n(I18nKey.commentsPaginationNext)}
+						</button>
 					</div>
 				{/if}
 			</div>
-		{:else if showCommentEmptyState}
-			<div
-				class="comment-empty-state"
-				in:fade={{ duration: contentTransitionDuration }}
-				out:fade={{ duration: contentTransitionDuration }}
-			>
-				<p class="text-sm text-50">{i18n(I18nKey.commentsEmpty)}</p>
-			</div>
 		{/if}
-	</div>
 
-	<div class="mt-6">
-		<CommentComposer
-			showCaptcha={showComposerCaptcha}
-			allowedFields={allowedFields}
-			requiredFields={requiredFields}
-			captchaState={captchaState}
-			captchaBusy={captchaBusy}
-			bind:captchaValue
-			captchaError={captchaError}
-			captchaPrompt={captchaPrompt}
-			noticeMessage={composerNoticeMessage}
-			noticeTone={composerNoticeTone}
-			replyParentId={activeReplyParentId}
-			submitting={submitting}
-			onSubmit={handleSubmit}
-			onCancelReply={handleCancelReply}
-			onRefreshCaptcha={handleRefreshCaptcha}
-		/>
-	</div>
-</section>
+		<div
+			class="comments-content-shell mt-5"
+			aria-busy={loading}
+		>
+			{#if showCommentInitialSkeleton}
+				<div
+					class="comment-thread-skeleton"
+					in:fade={{ duration: contentTransitionDuration }}
+					out:fade={{ duration: contentTransitionDuration }}
+				></div>
+			{:else if comments.length > 0}
+				<div
+					class="comments-content-stack"
+					in:fade={{ duration: contentTransitionDuration }}
+					out:fade={{ duration: contentTransitionDuration }}
+				>
+					<CommentList
+						comments={comments}
+						activeReplyParentId={activeReplyParentId}
+						activeCaptchaCommentId={activeCaptchaCommentId}
+						activeCaptchaVoteChoice={activeCaptchaVoteChoice}
+						activeVoteConfirmCommentId={activeVoteConfirmCommentId}
+						activeCommentNoticeId={activeCommentNoticeId}
+						maxDepth={maxDepth}
+						supportsVote={supportsVote}
+						voteBusy={Boolean(voteBusyCommentId)}
+						pendingVoteChoice={pendingVoteChoice}
+						captchaState={captchaState}
+						captchaBusy={captchaBusy}
+						bind:captchaValue
+						captchaError={captchaError}
+						captchaPrompt={captchaPrompt}
+						commentNoticeMessage={commentNoticeMessage}
+						commentNoticeTone={commentNoticeTone}
+						onVote={handleVote}
+						onConfirmVote={handleConfirmVote}
+						onCancelVoteConfirm={handleCancelVoteConfirm}
+						onReply={handleReply}
+						onRefreshCaptcha={handleRefreshCaptcha}
+						onSubmitCaptcha={handleSubmitCaptchaAction}
+					/>
+
+					{#if showCommentLoadingOverlay}
+						<div
+							class="comment-loading-overlay"
+							in:fade={{ duration: contentTransitionDuration }}
+							out:fade={{ duration: contentTransitionDuration }}
+						>
+							<div class="comment-thread-skeleton"></div>
+						</div>
+					{/if}
+				</div>
+			{:else if showCommentEmptyState}
+				<div
+					class="comment-empty-state"
+					in:fade={{ duration: contentTransitionDuration }}
+					out:fade={{ duration: contentTransitionDuration }}
+				>
+					<p class="text-sm text-50">{i18n(I18nKey.commentsEmpty)}</p>
+				</div>
+			{/if}
+		</div>
+
+		<div class="mt-6">
+			<CommentComposer
+				showCaptcha={showComposerCaptcha}
+				allowedFields={allowedFields}
+				requiredFields={requiredFields}
+				captchaState={captchaState}
+				captchaBusy={captchaBusy}
+				bind:captchaValue
+				captchaError={captchaError}
+				captchaPrompt={captchaPrompt}
+				noticeMessage={composerNoticeMessage}
+				noticeTone={composerNoticeTone}
+				replyParentId={activeReplyParentId}
+				submitting={submitting}
+				onSubmit={handleSubmit}
+				onCancelReply={handleCancelReply}
+				onRefreshCaptcha={handleRefreshCaptcha}
+			/>
+		</div>
+	</section>
+{/if}

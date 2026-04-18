@@ -52,6 +52,20 @@ function buildEmptyCommentsBootstrapResponse() {
 	};
 }
 
+function buildDisabledCommentsBootstrapResponse() {
+	return {
+		...buildEmptyCommentsBootstrapResponse(),
+		capability: {
+			enabled: false,
+			supportsReply: true,
+			supportsVote: false,
+			supportsCaptcha: false,
+			defaultStatus: "approved",
+			message: "当前暂未开放评论。",
+		},
+	};
+}
+
 function buildEmptyCommentsThreadResponse(sortBy: "newest" | "oldest") {
 	return {
 		thread: {
@@ -68,6 +82,20 @@ function buildEmptyCommentsThreadResponse(sortBy: "newest" | "oldest") {
 		},
 		comments: [],
 	};
+}
+
+async function installCommentsBootstrapStub(
+	page: Page,
+	body: unknown,
+	status = 200,
+) {
+	await page.route("**/api/comments/bootstrap/**", async (route) => {
+		await route.fulfill({
+			status,
+			contentType: "application/json",
+			body: JSON.stringify(body),
+		});
+	});
 }
 
 async function installEmptyCommentsApiStub(page: Page) {
@@ -115,6 +143,16 @@ async function readDocumentTop(locator: Locator) {
 		const rect = node.getBoundingClientRect();
 		return rect.top + window.scrollY;
 	});
+}
+
+function captureConsoleErrors(page: Page) {
+	const messages: string[] = [];
+	page.on("console", (message) => {
+		if (message.type() === "error") {
+			messages.push(message.text());
+		}
+	});
+	return messages;
 }
 
 test("mobile search panel opens and shows search results", async ({ page }) => {
@@ -251,6 +289,53 @@ test("empty comment sort switch keeps composer position stable", async ({
 	await expect(submitButton).toBeVisible();
 	const afterTop = await readDocumentTop(submitButton);
 	expect(Math.abs(afterTop - beforeTop)).toBeLessThanOrEqual(1);
+});
+
+test("disabled comments bootstrap hides the entire comment section", async ({
+	page,
+}) => {
+	const commentTestRoute = "/posts/welcome/";
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await installCommentsBootstrapStub(page, buildDisabledCommentsBootstrapResponse());
+	await prepareStablePage(page, commentTestRoute);
+
+	const commentSection = page.locator('section[data-post-title]');
+	await expect(commentSection).toHaveCount(0);
+	await expect(page.getByText("当前暂未开放评论。")).toHaveCount(0);
+	await expect(page.getByRole("button", { name: "发表评论" })).toHaveCount(0);
+});
+
+test("comments bootstrap failure hides the comment section and logs to console only", async ({
+	page,
+}) => {
+	const commentTestRoute = "/posts/welcome/";
+	const consoleErrors = captureConsoleErrors(page);
+
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await page.route("**/api/comments/bootstrap/**", async (route) => {
+		await route.fulfill({
+			status: 503,
+			contentType: "application/json",
+			body: JSON.stringify({
+				error: {
+					code: "COMMENTS_BOOTSTRAP_UNAVAILABLE",
+					message: "Comments bootstrap unavailable.",
+				},
+			}),
+		});
+	});
+	await prepareStablePage(page, commentTestRoute);
+
+	const commentSection = page.locator('section[data-post-title]');
+	await expect(commentSection).toHaveCount(0);
+	await expect(page.getByText("评论加载失败。")).toHaveCount(0);
+	await expect
+		.poll(() =>
+			consoleErrors.some((message) =>
+				message.includes("[comments] load comments failed"),
+			),
+		)
+		.toBe(true);
 });
 
 test("empty comment submit highlights required fields and focuses the first invalid input", async ({
