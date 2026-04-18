@@ -1,21 +1,31 @@
-import type {
-	ExpressiveCodeConfig,
-	FooterConfig,
-	LicenseConfig,
-	NavBarConfig,
-	ProfileConfig,
-	SiteConfig,
-} from "./types/config";
 import {
+	defaultCommentConfig,
 	defaultExpressiveCodeConfig,
 	defaultFooterConfig,
 	defaultLicenseConfig,
 	defaultNavBarConfig,
+	defaultPageFeedbackConfig,
+	defaultPageMetricsConfig,
 	defaultProfileConfig,
 	defaultSiteConfig,
 } from "./default-config";
+import type {
+	CommentConfig,
+	ExpressiveCodeConfig,
+	FooterConfig,
+	LicenseConfig,
+	NavBarConfig,
+	PageFeedbackConfig,
+	PageMetricsConfig,
+	ProfileConfig,
+	SiteConfig,
+} from "./types/config";
+import { normalizeCommentConfig } from "./utils/comments/options";
 
-type ExternalSiteConfig = Omit<Partial<SiteConfig>, "themeColor" | "banner" | "toc"> & {
+type ExternalSiteConfig = Omit<
+	Partial<SiteConfig>,
+	"themeColor" | "banner" | "toc"
+> & {
 	themeColor?: Partial<SiteConfig["themeColor"]>;
 	banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
 		credit?: Partial<SiteConfig["banner"]["credit"]>;
@@ -38,6 +48,9 @@ type ExternalSiteConfigModule = {
 	footerConfig?: Partial<FooterConfig>;
 	licenseConfig?: Partial<LicenseConfig>;
 	expressiveCodeConfig?: Partial<ExpressiveCodeConfig>;
+	commentConfig?: CommentConfig;
+	pageMetricsConfig?: PageMetricsConfig;
+	pageFeedbackConfig?: PageFeedbackConfig;
 };
 
 const externalSiteConfigModules = import.meta.glob<ExternalSiteConfigModule>(
@@ -46,8 +59,9 @@ const externalSiteConfigModules = import.meta.glob<ExternalSiteConfigModule>(
 );
 
 const externalSiteConfig =
-	(Object.values(externalSiteConfigModules)[0] as ExternalSiteConfigModule | undefined) ??
-	null;
+	(Object.values(externalSiteConfigModules)[0] as
+		| ExternalSiteConfigModule
+		| undefined) ?? null;
 
 function mergeSiteConfig(
 	defaultConfig: SiteConfig,
@@ -110,6 +124,52 @@ function mergeProfileConfig(
 	};
 }
 
+function mergeCommentConfig(
+	defaultConfig: CommentConfig,
+	override?: CommentConfig,
+): CommentConfig {
+	if (!override) {
+		return normalizeCommentConfig(defaultConfig);
+	}
+
+	return normalizeCommentConfig({
+		...defaultConfig,
+		...override,
+		qingyan: override.qingyan ?? defaultConfig.qingyan,
+	});
+}
+
+function mergePageMetricsConfig(
+	defaultConfig: PageMetricsConfig,
+	override?: PageMetricsConfig,
+): PageMetricsConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		qingyan: override.qingyan ?? defaultConfig.qingyan,
+	};
+}
+
+function mergePageFeedbackConfig(
+	defaultConfig: PageFeedbackConfig,
+	override?: PageFeedbackConfig,
+): PageFeedbackConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		qingyan: override.qingyan ?? defaultConfig.qingyan,
+		rewardOptions: override.rewardOptions ?? defaultConfig.rewardOptions,
+	};
+}
+
 export const siteConfig: SiteConfig = mergeSiteConfig(
 	defaultSiteConfig,
 	externalSiteConfig?.siteConfig,
@@ -140,7 +200,25 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	...externalSiteConfig?.expressiveCodeConfig,
 };
 
-export const configImageBaseRoots = {
+export const commentConfig: CommentConfig = mergeCommentConfig(
+	defaultCommentConfig,
+	externalSiteConfig?.commentConfig,
+);
+
+export const pageMetricsConfig: PageMetricsConfig = mergePageMetricsConfig(
+	defaultPageMetricsConfig,
+	externalSiteConfig?.pageMetricsConfig,
+);
+
+export const pageFeedbackConfig: PageFeedbackConfig = mergePageFeedbackConfig(
+	defaultPageFeedbackConfig,
+	externalSiteConfig?.pageFeedbackConfig,
+);
+
+export const configImageBaseRoots: Readonly<{
+	banner: "site" | "src";
+	avatar: "site" | "src";
+}> = {
 	banner: externalSiteConfig?.siteConfig?.banner?.src ? "site" : "src",
 	avatar: externalSiteConfig?.profileConfig?.avatar ? "site" : "src",
-} as const;
+};

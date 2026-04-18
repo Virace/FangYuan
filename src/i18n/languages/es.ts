@@ -12,6 +12,65 @@ export const es: Translation = {
 	[Key.recentPosts]: "Publicaciones recientes",
 
 	[Key.comments]: "Comentarios",
+	[Key.commentsLoading]: "Cargando comentarios...",
+	[Key.commentsEmpty]: "Aún no hay comentarios. Sé el primero en participar.",
+	[Key.commentsDisabled]:
+		"Los comentarios no están disponibles en este momento.",
+	[Key.commentsLoadFailed]: "No se pudieron cargar los comentarios.",
+	[Key.commentsSubmit]: "Publicar comentario",
+	[Key.commentsSubmitting]: "Publicando...",
+	[Key.commentsSubmitFailed]:
+		"No se pudo enviar el comentario. Inténtalo de nuevo más tarde.",
+	[Key.commentsSubmitSuccess]: "Comentario enviado correctamente.",
+	[Key.commentsReply]: "Responder",
+	[Key.commentsReplying]: "Respondiendo a este comentario.",
+	[Key.commentsCancelReply]: "Cancelar respuesta",
+	[Key.commentsEmoji]: "Emoji",
+	[Key.commentsCaptcha]: "Captcha",
+	[Key.commentsCaptchaRefresh]: "Actualizar captcha",
+	[Key.commentsCaptchaVerify]: "Verificar captcha",
+	[Key.commentsCaptchaCancel]: "Cancelar verificación",
+	[Key.commentsCaptchaVerified]:
+		"Captcha verificado. Ya puedes comentar o votar.",
+	[Key.commentsCaptchaRequiredTip]:
+		"Completa aquí la verificación requerida antes de continuar.",
+	[Key.commentsCaptchaUnsupported]:
+		"Este frontend todavía no admite el tipo de captcha actual.",
+	[Key.commentsCaptchaVerifyFailed]:
+		"La verificación del captcha falló. Inténtalo de nuevo.",
+	[Key.commentsVoteUp]: "Voto positivo",
+	[Key.commentsVoteDown]: "Voto negativo",
+	[Key.commentsVoteFailed]:
+		"No se pudo enviar el voto. Inténtalo de nuevo más tarde.",
+	[Key.commentsVoteConfirmTipUp]:
+		"Confirm this upvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Confirm this downvote? You will not be able to change it later.",
+	[Key.commentsVoteConfirmProceed]: "Confirm",
+	[Key.commentsVoteConfirmCancel]: "Cancel",
+	[Key.commentsSortNewest]: "Más recientes primero",
+	[Key.commentsSortOldest]: "Más antiguos primero",
+	[Key.commentsPaginationPrevious]: "Anterior",
+	[Key.commentsPaginationNext]: "Siguiente",
+	[Key.commentsPaginationStatus]: "Página",
+	[Key.commentsModerationNotice]: "Pendiente de moderación",
+	[Key.commentsFormName]: "Nombre",
+	[Key.commentsFormEmail]: "Correo electrónico",
+	[Key.commentsFormWebsite]: "Sitio web",
+	[Key.commentsFormOptionalSuffix]: " (opcional)",
+	[Key.commentsFormContent]: "Comentario",
+	[Key.commentCountSingular]: "comentario",
+	[Key.commentCountPlural]: "comentarios",
+	[Key.commentsValidationNameRequired]: "Introduce un nombre.",
+	[Key.commentsValidationEmailInvalid]:
+		"Introduce una dirección de correo válida.",
+	[Key.commentsValidationContentRequired]:
+		"El contenido del comentario no puede estar vacío.",
+	[Key.commentsValidationCaptchaRequired]: "Introduce el código del captcha.",
+	[Key.commentsValidationContentUnsafe]:
+		"El comentario contiene contenido sospechoso. Revísalo antes de enviarlo.",
+	[Key.commentsValidationWebsiteInvalid]:
+		"Introduce una URL de sitio web válida.",
 
 	[Key.untitled]: "Sin título",
 	[Key.uncategorized]: "Sin categoría",
@@ -34,5 +93,15 @@ export const es: Translation = {
 
 	[Key.author]: "Autor",
 	[Key.publishedAt]: "Publicado el",
+	[Key.pageViews]: "Vistas",
+	[Key.pageFeedbackLike]: "Like",
+	[Key.pageFeedbackLiked]: "Liked",
+	[Key.pageFeedbackLikeFailed]:
+		"Failed to submit the like. Please try again later.",
+	[Key.pageFeedbackReward]: "Buy the author a coffee",
+	[Key.pageFeedbackRewardTitle]: "Support this post",
+	[Key.pageFeedbackRewardDescription]:
+		"If this post helped you, you can support the author through the channels below.",
+	[Key.pageFeedbackClose]: "Close",
 	[Key.license]: "Licencia",
 };

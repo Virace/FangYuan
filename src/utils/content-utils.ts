@@ -1,8 +1,8 @@
-import type { ImageMetadata } from "astro";
 import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getCategoryUrl } from "@utils/url-utils.ts";
+import type { ImageMetadata } from "astro";
 
 export type PostData = {
 	title: string;
@@ -26,10 +26,13 @@ export type PostEntry = Omit<CollectionEntry<"posts">, "data"> & {
 
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts(): Promise<PostEntry[]> {
-	const allBlogPosts = (await getCollection("posts", ({ data }) => {
-		const postData = data as Partial<PostData>;
-		return import.meta.env.PROD ? postData.draft !== true : true;
-	})) as PostEntry[];
+	const allBlogPosts = (await getCollection(
+		"posts",
+		(entry: CollectionEntry<"posts">) => {
+			const postData = entry.data as Partial<PostData>;
+			return import.meta.env.PROD ? postData.draft !== true : true;
+		},
+	)) as PostEntry[];
 
 	const sorted = allBlogPosts.sort((a, b) => {
 		const dateA = new Date(a.data.published);
@@ -74,10 +77,13 @@ export type Tag = {
 };
 
 export async function getTagList(): Promise<Tag[]> {
-	const allBlogPosts = (await getCollection("posts", ({ data }) => {
-		const postData = data as Partial<PostData>;
-		return import.meta.env.PROD ? postData.draft !== true : true;
-	})) as PostEntry[];
+	const allBlogPosts = (await getCollection(
+		"posts",
+		(entry: CollectionEntry<"posts">) => {
+			const postData = entry.data as Partial<PostData>;
+			return import.meta.env.PROD ? postData.draft !== true : true;
+		},
+	)) as PostEntry[];
 
 	const countMap: { [key: string]: number } = {};
 	allBlogPosts.forEach((post) => {
@@ -102,10 +108,13 @@ export type Category = {
 };
 
 export async function getCategoryList(): Promise<Category[]> {
-	const allBlogPosts = (await getCollection("posts", ({ data }) => {
-		const postData = data as Partial<PostData>;
-		return import.meta.env.PROD ? postData.draft !== true : true;
-	})) as PostEntry[];
+	const allBlogPosts = (await getCollection(
+		"posts",
+		(entry: CollectionEntry<"posts">) => {
+			const postData = entry.data as Partial<PostData>;
+			return import.meta.env.PROD ? postData.draft !== true : true;
+		},
+	)) as PostEntry[];
 	const count: { [key: string]: number } = {};
 	allBlogPosts.forEach((post) => {
 		if (!post.data.category) {

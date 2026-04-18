@@ -1,20 +1,30 @@
 ---
 import { render } from "astro:content";
-import type { ImageMetadata } from "astro";
+import CommentSection from "@components/comments/CommentSection.svelte";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
+import PostFeedback from "@components/page-feedback/PostFeedback.svelte";
+import PageViewCounter from "@components/page-metrics/PageViewCounter.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getPostKeyFromEntry } from "@utils/comments/post-key";
 import { getSortedPosts } from "@utils/content-utils";
 import { resolveContentImage } from "@utils/image-source";
 import { shouldEnablePhotoSwipe } from "@utils/photoswipe-utils";
 import { getPostUrlBySlug } from "@utils/url-utils";
+import type { ImageMetadata, MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
-import { licenseConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
-import { profileConfig, siteConfig } from "../../config";
+import {
+	commentConfig,
+	licenseConfig,
+	pageFeedbackConfig,
+	pageMetricsConfig,
+	profileConfig,
+	siteConfig,
+} from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 
 export async function getStaticPaths() {
@@ -27,12 +37,16 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
-const hasPrimaryHeading = headings.some((heading) => heading.depth === 1);
+const hasPrimaryHeading = headings.some(
+	(heading: MarkdownHeading) => heading.depth === 1,
+);
 const enablePhotoSwipe = shouldEnablePhotoSwipe(entry.body, entry.data.image);
 const resolvedCoverImage = await resolveContentImage(
 	entry.data.image as string | ImageMetadata | undefined,
 	entry.filePath?.replace(/\\/g, "/"),
 );
+const postKey = getPostKeyFromEntry(entry.id);
+const postUrl = Astro.url.toString();
 
 const jsonLd = {
 	"@context": "https://schema.org",
@@ -101,6 +115,11 @@ const jsonLd = {
                         tags={entry.data.tags}
                         category={entry.data.category}
                 ></PostMetadata>
+                {pageMetricsConfig.enable && pageMetricsConfig.qingyan && (
+                    <div class="mb-5">
+                        <PageViewCounter client:only="svelte" postKey={postKey} postTitle={entry.data.title} postUrl={postUrl} />
+                    </div>
+                )}
                 {!entry.data.image && <div class="border-line-divider border-dashed border-b mb-5"></div>}
             </div>
 
@@ -114,6 +133,16 @@ const jsonLd = {
             <Markdown class="mb-6 markdown-content onload-animation">
                 <Content />
             </Markdown>
+
+            {pageFeedbackConfig.enable && pageFeedbackConfig.qingyan && (
+                <PostFeedback
+                    client:only="svelte"
+                    postKey={postKey}
+                    postTitle={entry.data.title}
+                    postUrl={postUrl}
+                    rewardOptions={pageFeedbackConfig.rewardOptions ?? []}
+                />
+            )}
 
             {licenseConfig.enable && <License title={entry.data.title} slug={entry.id} pubDate={entry.data.published} class="mb-6 rounded-xl license-container onload-animation"></License>}
 
@@ -143,5 +172,16 @@ const jsonLd = {
             </a>}
         </div>
     </div>
+
+    {commentConfig.enable && commentConfig.qingyan && (
+        <CommentSection
+            client:only="svelte"
+            postKey={postKey}
+            postTitle={entry.data.title}
+            postUrl={postUrl}
+            rootLimit={commentConfig.rootLimit}
+            maxDepth={commentConfig.maxDepth}
+        />
+    )}
 
 </MainGridLayout>

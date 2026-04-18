@@ -1,22 +1,6 @@
 import fs from "node:fs"
 import path from "node:path"
 
-const rawCount = process.argv[2] ?? "30"
-const count = Number.parseInt(rawCount, 10)
-
-if (!Number.isInteger(count) || count <= 0) {
-  console.error("Usage: node scripts/generate-pagination-test-posts.js [count]")
-  process.exit(1)
-}
-
-const targetDir = path.join(
-  process.cwd(),
-  "src",
-  "content",
-  "posts",
-  "test-pagination"
-)
-
 const titleAdjectives = [
   "Quiet",
   "Golden",
@@ -143,22 +127,46 @@ ${pick(detailParts)} ${pick(closingParts)}
 `
 }
 
-fs.mkdirSync(targetDir, { recursive: true })
+function resolveTargetDir(rootDir, target) {
+  return path.join(
+    rootDir,
+    target,
+    "content",
+    "posts",
+    "test-pagination"
+  )
+}
 
-const createdFiles = []
+export function generatePaginationTestPosts({
+  rootDir = process.cwd(),
+  count = 30,
+  target = "src",
+} = {}) {
+  if (!Number.isInteger(count) || count <= 0) {
+    throw new Error("count must be a positive integer")
+  }
 
-for (let index = 1; index <= count; index += 1) {
-  const title = makeTitle(index)
-  const description = makeDescription(index)
-  const published = new Date()
-  published.setDate(published.getDate() - (index - 1))
+  if (!["src", "site"].includes(target)) {
+    throw new Error('target must be either "src" or "site"')
+  }
 
-  const tags = sampleTags()
-  const category = pick(categories)
-  const fileName = `pagination-test-${String(index).padStart(2, "0")}.md`
-  const fullPath = path.join(targetDir, fileName)
+  const targetDir = resolveTargetDir(rootDir, target)
+  fs.mkdirSync(targetDir, { recursive: true })
 
-  const content = `---
+  const createdFiles = []
+
+  for (let index = 1; index <= count; index += 1) {
+    const title = makeTitle(index)
+    const description = makeDescription(index)
+    const published = new Date()
+    published.setDate(published.getDate() - (index - 1))
+
+    const tags = sampleTags()
+    const category = pick(categories)
+    const fileName = `pagination-test-${String(index).padStart(2, "0")}.md`
+    const fullPath = path.join(targetDir, fileName)
+
+    const content = `---
 title: ${title}
 published: ${formatDate(published)}
 description: ${description}
@@ -171,8 +179,45 @@ lang: ""
 
 ${makeBody(title, index, tags, category)}`
 
-  fs.writeFileSync(fullPath, content)
-  createdFiles.push(path.relative(process.cwd(), fullPath))
+    fs.writeFileSync(fullPath, content)
+    createdFiles.push(path.relative(rootDir, fullPath))
+  }
+
+  return {
+    createdFiles,
+    targetDir,
+  }
 }
 
-console.log(`Generated ${createdFiles.length} test posts in ${path.relative(process.cwd(), targetDir)}`)
+function parseCliArgs(args) {
+  const rawCount = args.find((arg) => !arg.startsWith("--")) ?? "30"
+  const count = Number.parseInt(rawCount, 10)
+  const targetArg = args.find((arg) => arg.startsWith("--target="))
+  const target = targetArg ? targetArg.slice("--target=".length) : "src"
+
+  return {
+    count,
+    target,
+  }
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
+  const { count, target } = parseCliArgs(process.argv.slice(2))
+
+  if (!Number.isInteger(count) || count <= 0) {
+    console.error("Usage: node scripts/generate-pagination-test-posts.js [count] [--target=src|site]")
+    process.exit(1)
+  }
+
+  if (!["src", "site"].includes(target)) {
+    console.error('Usage: --target must be either "src" or "site"')
+    process.exit(1)
+  }
+
+  const result = generatePaginationTestPosts({
+    count,
+    target,
+  })
+
+  console.log(`Generated ${result.createdFiles.length} test posts in ${path.relative(process.cwd(), result.targetDir)}`)
+}

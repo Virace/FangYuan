@@ -4,17 +4,24 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "dev:mock": "node scripts/dev-with-qingyan-mock.mjs",
+    "dev:full": "node scripts/dev-with-qingyan.mjs",
+    "qingyan:scenario": "node scripts/qingyan-dev-control.mjs scenario",
+    "qingyan:reset": "node scripts/qingyan-dev-control.mjs reset",
+    "qingyan:state": "node scripts/qingyan-dev-control.mjs state",
     "start": "astro dev",
     "check": "astro check",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
+    "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
     "test:e2e": "pnpm build && playwright test tests/e2e/smoke.spec.ts tests/e2e/navigation.spec.ts tests/e2e/interaction.spec.ts tests/e2e/a11y.spec.ts tests/e2e/aria.spec.ts tests/e2e/upgrade-regression.spec.ts",
     "test:e2e:headed": "pnpm build && playwright test --headed tests/e2e/smoke.spec.ts tests/e2e/navigation.spec.ts tests/e2e/interaction.spec.ts tests/e2e/a11y.spec.ts tests/e2e/aria.spec.ts tests/e2e/upgrade-regression.spec.ts",
     "test:e2e:visual": "pnpm build && playwright test tests/e2e/visual.spec.ts",
     "test:e2e:update": "pnpm build && playwright test tests/e2e/visual.spec.ts --update-snapshots",
     "type-check": "tsc --noEmit --isolatedDeclarations",
     "new-post": "node scripts/new-post.js",
+    "generate-pagination-test-posts": "node scripts/generate-pagination-test-posts.js",
     "format": "biome check --write ./src",
     "lint": "biome check ./src",
     "preinstall": "npx only-allow pnpm"
@@ -73,7 +80,8 @@
     "@types/hast": "^3.0.4",
     "@types/markdown-it": "^14.1.2",
     "@types/mdast": "^4.0.4",
-    "@types/sanitize-html": "^2.16.1"
+    "@types/sanitize-html": "^2.16.1",
+    "svelte-check": "^4.4.6"
   },
   "packageManager": "pnpm@9.14.4"
 }

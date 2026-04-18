@@ -1,4 +1,8 @@
-import { defineCollection } from "astro:content";
+import {
+	defineCollection,
+	type ImageFunction,
+	type SchemaContext,
+} from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { resolveContentRoot } from "./utils/site-source";
@@ -35,26 +39,25 @@ const dataImageSchema = z.string().regex(/^data:.+/, {
 	message: "Data image URLs must start with data:.",
 });
 
-const relativeCoverImageSchema = (image: any) =>
-	z.string().regex(/^(?:\.\.?\/).+/, {
-		message: "Relative cover images must start with ./ or ../.",
-	}).pipe(image());
+function relativeCoverImageSchema(image: ImageFunction) {
+	// Astro's official image() helper already models relative content images.
+	return image();
+}
 
-const localAliasImageSchema = z.string().regex(
-	/^(?!\.{1,2}\/)(?!\/)(?!public\/)(?!https?:\/\/)(?!data:).+/,
-	{
+const localAliasImageSchema = z
+	.string()
+	.regex(/^(?!\.{1,2}\/)(?!\/)(?!public\/)(?!https?:\/\/)(?!data:).+/, {
 		message:
 			"Non-relative local cover images are treated as root aliases under src/ or site/.",
-	},
-);
+	});
 
-const postsCollection = defineCollection({
+const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 	loader: glob({
 		base: `${contentRoot}/posts`,
 		pattern: "**/*.md",
 		generateId: ({ entry }) => generateMarkdownId(entry),
 	}),
-	schema: ({ image }) =>
+	schema: ({ image }: SchemaContext) =>
 		z.object({
 			title: z.string(),
 			published: z.date(),
@@ -85,7 +88,7 @@ const postsCollection = defineCollection({
 		}),
 });
 
-const specCollection = defineCollection({
+const specCollection: ReturnType<typeof defineCollection> = defineCollection({
 	loader: glob({
 		base: `${contentRoot}/spec`,
 		pattern: "**/*.md",
@@ -94,7 +97,10 @@ const specCollection = defineCollection({
 	schema: z.object({}),
 });
 
-export const collections = {
+export const collections: {
+	posts: typeof postsCollection;
+	spec: typeof specCollection;
+} = {
 	posts: postsCollection,
 	spec: specCollection,
 };

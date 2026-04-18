@@ -46,6 +46,7 @@ $: if (hue || hue === 0) {
 
 <style>
 #display-setting input[type="range"] {
+	appearance: none;
 	-webkit-appearance: none;
 	height: 1.5rem;
 	background-image: var(--color-selection-bar);
@@ -70,6 +71,7 @@ $: if (hue || hue === 0) {
 }
 
 #display-setting input[type="range"]::-moz-range-thumb {
+	appearance: none;
 	-webkit-appearance: none;
 	height: 1rem;
 	width: 0.5rem;
@@ -88,6 +90,7 @@ $: if (hue || hue === 0) {
 }
 
 #display-setting input[type="range"]::-ms-thumb {
+	appearance: none;
 	-webkit-appearance: none;
 	height: 1rem;
 	width: 0.5rem;

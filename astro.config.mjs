@@ -23,12 +23,26 @@ import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
-import { loadExternalExpressiveCodeConfig } from "./src/utils/site-source.ts";
+import {
+	normalizeQingYanDevProxyPath,
+	normalizeQingYanDevProxyRequestPath,
+} from "./src/utils/qingyan/dev-proxy.mjs";
+import {
+	createQingYanMockPlugin,
+	isQingYanMockTarget,
+} from "./src/utils/qingyan/mock-api.mjs";
+import {
+	loadExternalQingYanDevProxyTarget,
+	loadExternalExpressiveCodeConfig,
+} from "./src/utils/site-source.ts";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
+const qingyanDevProxyTarget =
+	process.env.QINGYAN_DEV_PROXY_TARGET ?? loadExternalQingYanDevProxyTarget();
+const useQingYanMock = isQingYanMockTarget(qingyanDevProxyTarget);
 const enableGlobalImageCodecDefaults = false;
 const globalImageServiceConfig = {
 	jpeg: { mozjpeg: true },
@@ -36,6 +50,49 @@ const globalImageServiceConfig = {
 	avif: { effort: 4, chromaSubsampling: "4:2:0" },
 	png: { compressionLevel: 9 },
 };
+const qingyanDevProxy = qingyanDevProxyTarget && !useQingYanMock
+	? {
+			"/api": {
+				target: qingyanDevProxyTarget,
+				changeOrigin: true,
+				rewrite: normalizeQingYanDevProxyPath,
+			},
+		}
+	: undefined;
+const qingyanDevProxyMiddlewarePlugin = qingyanDevProxyTarget && !useQingYanMock
+	? {
+			name: "fangyuan-qingyan-dev-proxy-normalizer",
+			configureServer(server) {
+				const normalizeMiddleware = (req, _res, next) => {
+					if (req.url) {
+						req.url = normalizeQingYanDevProxyRequestPath(req.url);
+					}
+					next();
+				};
+
+				server.middlewares.stack.unshift({
+					route: "",
+					handle: normalizeMiddleware,
+				});
+			},
+			configurePreviewServer(server) {
+				return () => {
+					const normalizeMiddleware = (req, _res, next) => {
+						if (req.url) {
+							req.url = normalizeQingYanDevProxyRequestPath(req.url);
+						}
+						next();
+					};
+
+					server.middlewares.stack.unshift({
+						route: "",
+						handle: normalizeMiddleware,
+					});
+				};
+			},
+		}
+	: null;
+const qingyanMockPlugin = useQingYanMock ? createQingYanMockPlugin() : null;
 
 // https://astro.build/config
 export default defineConfig({
@@ -192,7 +249,21 @@ export default defineConfig({
 		],
 	},
 	vite: {
-		plugins: [tailwindcss()],
+		plugins: [
+			tailwindcss(),
+			...(qingyanDevProxyMiddlewarePlugin ? [qingyanDevProxyMiddlewarePlugin] : []),
+			...(qingyanMockPlugin ? [qingyanMockPlugin] : []),
+		],
+		...(qingyanDevProxy
+			? {
+					server: {
+						proxy: qingyanDevProxy,
+					},
+					preview: {
+						proxy: qingyanDevProxy,
+					},
+				}
+			: {}),
 		build: {
 			rollupOptions: {
 				onwarn(warning, warn) {

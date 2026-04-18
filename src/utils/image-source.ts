@@ -9,7 +9,10 @@ const repoRoot = process.cwd();
 const publicRoot = path.join(repoRoot, "public");
 
 const localImageModules = import.meta.glob<ImageMetadata>(
-	["/src/**/*.{avif,gif,jpeg,jpg,png,svg,webp}", "/site/**/*.{avif,gif,jpeg,jpg,png,svg,webp}"],
+	[
+		"/src/**/*.{avif,gif,jpeg,jpg,png,svg,webp}",
+		"/site/**/*.{avif,gif,jpeg,jpg,png,svg,webp}",
+	],
 	{ import: "default" },
 );
 
@@ -60,7 +63,9 @@ function toPublicUrl(value: string): string {
 function assertPublicFileExists(value: string): string {
 	const targetPath = toPublicFilePath(value);
 	if (!existsSync(targetPath)) {
-		throw new Error(`[image-source] Public image file not found: ${targetPath}`);
+		throw new Error(
+			`[image-source] Public image file not found: ${targetPath}`,
+		);
 	}
 	return toPublicUrl(value);
 }
@@ -78,7 +83,9 @@ function assertAllowedRoot(rootRelativePath: string): string {
 	return rootRelativePath;
 }
 
-async function resolveLocalModule(rootRelativePath: string): Promise<ImageMetadata> {
+async function resolveLocalModule(
+	rootRelativePath: string,
+): Promise<ImageMetadata> {
 	const importer = localImageModules[rootRelativePath];
 	if (!importer) {
 		throw new Error(
@@ -146,7 +153,9 @@ export async function resolveContentImage(
 		}
 
 		const entryDirectory = path.posix.dirname(
-			normalizeRootRelativePath(`/${normalizeSlashes(entryFilePath).replace(/^\/+/, "")}`),
+			normalizeRootRelativePath(
+				`/${normalizeSlashes(entryFilePath).replace(/^\/+/, "")}`,
+			),
 		);
 		const candidate = assertAllowedRoot(
 			normalizeRootRelativePath(path.posix.join(entryDirectory, value)),
