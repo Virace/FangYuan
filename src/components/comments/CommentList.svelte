@@ -1,8 +1,5 @@
 <script lang="ts">
-import type {
-	CommentCaptchaState,
-	VerifyCommentCaptchaInput,
-} from "@utils/comments/provider";
+import type { CommentCaptchaState } from "@utils/comments/provider";
 import type { AutoDismissTone } from "@utils/notice";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
 import CommentItem from "./CommentItem.svelte";
@@ -18,6 +15,7 @@ export let voteBusy = false;
 export let pendingVoteChoice: CommentVoteChoice | null = null;
 export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
+export let captchaValue = "";
 export let captchaError = "";
 export let captchaPrompt = "";
 export let commentNoticeMessage = "";
@@ -31,10 +29,6 @@ export let onCancelVoteConfirm: (() => void) | null = null;
 export let onReply: ((commentId: string) => void) | null = null;
 export let onDismissCaptcha: (() => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
-export let onVerifyCaptcha:
-	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
-	| null = null;
-export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 </script>
 
 <div class="space-y-3">
@@ -52,6 +46,7 @@ export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 			pendingVoteChoice={pendingVoteChoice}
 			captchaState={captchaState}
 			captchaBusy={captchaBusy}
+			bind:captchaValue
 			captchaError={captchaError}
 			captchaPrompt={captchaPrompt}
 			commentNoticeMessage={commentNoticeMessage}
@@ -62,8 +57,6 @@ export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 			onReply={onReply}
 			onDismissCaptcha={onDismissCaptcha}
 			onRefreshCaptcha={onRefreshCaptcha}
-			onPollCaptchaStatus={onPollCaptchaStatus}
-			onVerifyCaptcha={onVerifyCaptcha}
 		/>
 	{/each}
 </div>

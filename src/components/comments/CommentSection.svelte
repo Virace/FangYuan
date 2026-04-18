@@ -8,8 +8,8 @@ import {
 import type {
 	CommentCapability,
 	CommentCaptchaState,
+	CommentCaptchaWriteInput,
 	CommentForm,
-	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
 import {
 	CommentCaptchaRequiredError,
@@ -53,6 +53,18 @@ type VoteConfirmTarget = {
 	choice: CommentVoteChoice;
 } | null;
 
+type PendingCommentAction = {
+	kind: "comment_submit";
+};
+
+type PendingVoteAction = {
+	kind: "comment_vote";
+	commentId: string;
+	choice: CommentVoteChoice;
+};
+
+type PendingAction = PendingCommentAction | PendingVoteAction | null;
+
 type ComposerNotice = {
 	message: string;
 	tone: AutoDismissTone;
@@ -94,6 +106,8 @@ let commentNoticeTimer: ReturnType<typeof setTimeout> | null = null;
 let captchaFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 let voteBusyCommentId: string | null = null;
 let pendingVoteTarget: VoteConfirmTarget = null;
+let pendingAction: PendingAction = null;
+let captchaValue = "";
 
 $: pageSize = Math.max(1, rootLimit);
 $: currentPage =
@@ -123,6 +137,8 @@ $: showComposerCaptcha =
 $: showCommentLoadingOverlay = loading && comments.length > 0;
 $: showCommentInitialSkeleton = loading && comments.length === 0 && !capability;
 $: showCommentEmptyState = comments.length === 0 && capability?.enabled;
+$: submitBlockedByCaptcha =
+	pendingAction?.kind === "comment_submit" && showComposerCaptcha;
 
 function logCommentError(context: string, error: unknown) {
 	console.error(`[comments] ${context}`, error);
@@ -229,9 +245,34 @@ function clearVoteTransientState() {
 	clearActionNotices();
 }
 
-function handleDismissCaptcha() {
+function resetCaptchaFlow() {
+	pendingAction = null;
 	activeCaptchaTarget = null;
+	captchaState = null;
+	captchaValue = "";
 	clearCaptchaFeedback();
+}
+
+function buildCaptchaWriteInput(): CommentCaptchaWriteInput | null {
+	if (captchaState?.challenge?.mode !== "inline_value") {
+		return null;
+	}
+
+	const challengeId = captchaState.challenge.metadata?.challengeId;
+	const value = captchaValue.trim();
+	if (!challengeId || !value) {
+		return null;
+	}
+
+	return {
+		challengeId,
+		mode: "inline_value",
+		value,
+	};
+}
+
+function handleDismissCaptcha() {
+	resetCaptchaFlow();
 }
 
 function handleCancelVoteConfirm() {
@@ -312,6 +353,7 @@ async function promptForCaptcha(
 
 	try {
 		activeCaptchaTarget = target;
+		captchaValue = "";
 		captchaState =
 			nextState ??
 			(qingyanClient
@@ -322,7 +364,6 @@ async function promptForCaptcha(
 					})
 				: null);
 		setCaptchaPrompt(i18n(I18nKey.commentsCaptchaRequiredTip));
-		clearVoteTransientState();
 		await revealCaptchaTarget(target);
 	} catch (error) {
 		logCommentError("prepare captcha prompt failed", error);
@@ -353,13 +394,8 @@ async function loadInitialState() {
 			pageUrl: postUrl,
 		});
 		applyBootstrap(bootstrap);
-		if (bootstrap.captcha?.required && !bootstrap.captcha?.verified) {
-			activeCaptchaTarget = { kind: "composer" };
-			setCaptchaPrompt(i18n(I18nKey.commentsCaptchaRequiredTip));
-		} else {
-			activeCaptchaTarget = null;
-			clearCaptchaFeedback();
-		}
+		activeCaptchaTarget = null;
+		clearCaptchaFeedback();
 		if (!bootstrap.capability.enabled) {
 			comments = [];
 			totalRootCount = 0;
@@ -440,79 +476,12 @@ async function handleRefreshCaptcha() {
 			pageTitle: postTitle,
 			pageUrl: postUrl,
 		});
+		captchaValue = "";
 	} catch (error) {
 		logCommentError("refresh captcha failed", error);
 		setCaptchaError(toCommentErrorMessage(error, I18nKey.commentsLoadFailed));
 	} finally {
 		captchaBusy = false;
-	}
-}
-
-async function handleVerifyCaptcha(input: VerifyCommentCaptchaInput) {
-	captchaBusy = true;
-	captchaError = "";
-
-	try {
-		if (!qingyanClient || !supportsCaptcha) {
-			return;
-		}
-
-		captchaState = await qingyanClient.verifyCaptcha({
-			pageKey: postKey,
-			pageTitle: postTitle,
-			pageUrl: postUrl,
-			captchaState,
-			verification: input,
-		});
-		if (!captchaState?.verified) {
-			setCaptchaError(i18n(I18nKey.commentsCaptchaVerifyFailed));
-		} else {
-			captchaPrompt = "";
-			clearCaptchaFeedbackTimer();
-		}
-	} catch (error) {
-		logCommentError("verify captcha failed", error);
-		setCaptchaError(
-			toCommentErrorMessage(error, I18nKey.commentsCaptchaVerifyFailed),
-		);
-	} finally {
-		captchaBusy = false;
-	}
-}
-
-async function handlePollCaptchaStatus() {
-	if (!qingyanClient || !supportsCaptcha || !activeCaptchaTarget) {
-		return;
-	}
-
-	try {
-		const nextStatus = await qingyanClient.getCaptchaStatus({
-			pageKey: postKey,
-			pageTitle: postTitle,
-			pageUrl: postUrl,
-		});
-		if (!nextStatus?.verified) {
-			return;
-		}
-
-		captchaState = captchaState
-			? {
-					...captchaState,
-					required: true,
-					verified: true,
-				}
-			: {
-					...nextStatus,
-					required: true,
-				};
-		captchaPrompt = "";
-		clearCaptchaFeedbackTimer();
-		captchaError = "";
-	} catch (error) {
-		logCommentError("poll captcha status failed", error);
-		setCaptchaError(
-			toCommentErrorMessage(error, I18nKey.commentsCaptchaVerifyFailed),
-		);
 	}
 }
 
@@ -522,7 +491,7 @@ async function handleSortChange(sortBy: CommentSortBy) {
 	}
 
 	activeReplyParentId = null;
-	activeCaptchaTarget = null;
+	resetCaptchaFlow();
 	clearVoteTransientState();
 	await loadComments({
 		sortBy,
@@ -537,7 +506,7 @@ async function handlePageChange(offset: number) {
 	}
 
 	activeReplyParentId = null;
-	activeCaptchaTarget = null;
+	resetCaptchaFlow();
 	clearVoteTransientState();
 	await loadComments({ offset: nextOffset });
 }
@@ -560,18 +529,6 @@ function getCommentById(
 	return null;
 }
 
-function buildOptimisticVoteComment(
-	comment: CanonicalComment,
-	choice: CommentVoteChoice,
-): CanonicalComment {
-	return {
-		...comment,
-		voteUp: comment.voteUp + (choice === "up" ? 1 : 0),
-		voteDown: comment.voteDown + (choice === "down" ? 1 : 0),
-		viewerVote: choice,
-	};
-}
-
 function requestVoteConfirm(commentId: string, choice: CommentVoteChoice) {
 	activeCaptchaTarget = null;
 	clearCaptchaFeedback();
@@ -590,6 +547,12 @@ async function handleSubmit(
 			return false;
 		}
 
+		if (submitBlockedByCaptcha && !buildCaptchaWriteInput()) {
+			setCaptchaError(i18n(I18nKey.commentsValidationCaptchaRequired));
+			await revealCaptchaTarget({ kind: "composer" });
+			return false;
+		}
+
 		const result = await qingyanClient.createComment({
 			postKey,
 			postTitle,
@@ -601,28 +564,14 @@ async function handleSubmit(
 				website: detail.authorWebsite || null,
 			},
 			content: detail.content,
-			captcha: null,
+			captcha: submitBlockedByCaptcha ? buildCaptchaWriteInput() : null,
 		});
 
 		comments = insertPendingComment(comments, result.createdComment);
 		totalRootCount = result.thread.rootCommentCount;
 		activeReplyParentId = null;
-		activeCaptchaTarget = null;
-		clearCaptchaFeedback();
 		qingyanClient.invalidateBootstrap(postKey);
-		if (supportsCaptcha) {
-			try {
-				captchaState = await qingyanClient.getCaptchaState({
-					pageKey: postKey,
-					pageTitle: postTitle,
-					pageUrl: postUrl,
-				});
-			} catch (error) {
-				logCommentError("refresh captcha state after submit failed", error);
-			}
-		} else {
-			captchaState = null;
-		}
+		resetCaptchaFlow();
 		setComposerNotice(
 			result.comment.status === "approved"
 				? i18n(I18nKey.commentsSubmitSuccess)
@@ -632,25 +581,20 @@ async function handleSubmit(
 		return true;
 	} catch (error) {
 		if (error instanceof CommentCaptchaRequiredError) {
+			pendingAction = { kind: "comment_submit" };
 			await promptForCaptcha(error.state, { kind: "composer" });
 		} else {
-			logCommentError("submit comment failed", error);
-			setComposerNotice(
-				toCommentErrorMessage(error, I18nKey.commentsSubmitFailed),
-				"error",
+			const message = toCommentErrorMessage(
+				error,
+				I18nKey.commentsSubmitFailed,
 			);
-		}
-
-		try {
-			if (qingyanClient && supportsCaptcha && !captchaState?.required) {
-				captchaState = await qingyanClient.getCaptchaState({
-					pageKey: postKey,
-					pageTitle: postTitle,
-					pageUrl: postUrl,
-				});
+			if (submitBlockedByCaptcha) {
+				setCaptchaError(message);
+				await revealCaptchaTarget({ kind: "composer" });
+			} else {
+				logCommentError("submit comment failed", error);
+				setComposerNotice(message, "error");
 			}
-		} catch {
-			// ignore captcha refresh failures after submit errors
 		}
 		return false;
 	} finally {
@@ -668,12 +612,18 @@ async function submitVote(commentId: string, choice: CommentVoteChoice) {
 		return;
 	}
 
+	const isRetryingCaptchaVote =
+		pendingAction?.kind === "comment_vote" &&
+		pendingAction.commentId === commentId &&
+		pendingAction.choice === choice;
+	if (isRetryingCaptchaVote && !buildCaptchaWriteInput()) {
+		setCaptchaError(i18n(I18nKey.commentsValidationCaptchaRequired));
+		await revealCaptchaTarget({ kind: "comment", commentId });
+		return;
+	}
+
 	voteBusyCommentId = commentId;
-	clearVoteTransientState();
-	comments = replaceCommentInTree(
-		comments,
-		buildOptimisticVoteComment(previousComment, choice),
-	);
+	pendingVoteTarget = null;
 
 	try {
 		const updatedVote = await qingyanClient.voteComment({
@@ -682,6 +632,7 @@ async function submitVote(commentId: string, choice: CommentVoteChoice) {
 			pageUrl: postUrl,
 			commentId,
 			choice,
+			captcha: isRetryingCaptchaVote ? buildCaptchaWriteInput() : null,
 		});
 		comments = replaceCommentInTree(comments, {
 			...previousComment,
@@ -691,33 +642,27 @@ async function submitVote(commentId: string, choice: CommentVoteChoice) {
 		});
 		persistViewerVote(postKey, commentId, updatedVote.viewerVote ?? choice);
 		qingyanClient.invalidateBootstrap(postKey);
-		activeCaptchaTarget = null;
-		if (supportsCaptcha && captchaState?.required) {
-			try {
-				captchaState = await qingyanClient.getCaptchaState({
-					pageKey: postKey,
-					pageTitle: postTitle,
-					pageUrl: postUrl,
-				});
-			} catch (error) {
-				logCommentError("refresh captcha state after vote failed", error);
-			}
-			clearCaptchaFeedback();
-		}
+		resetCaptchaFlow();
 	} catch (error) {
-		comments = replaceCommentInTree(comments, previousComment);
 		if (error instanceof CommentCaptchaRequiredError) {
+			pendingAction = {
+				kind: "comment_vote",
+				commentId,
+				choice,
+			};
 			await promptForCaptcha(error.state, {
 				kind: "comment",
 				commentId,
 			});
 		} else {
-			logCommentError("vote comment failed", error);
-			setCommentNotice(
-				commentId,
-				toCommentErrorMessage(error, I18nKey.commentsVoteFailed),
-				"error",
-			);
+			const message = toCommentErrorMessage(error, I18nKey.commentsVoteFailed);
+			if (isRetryingCaptchaVote) {
+				setCaptchaError(message);
+				await revealCaptchaTarget({ kind: "comment", commentId });
+			} else {
+				logCommentError("vote comment failed", error);
+				setCommentNotice(commentId, message, "error");
+			}
 		}
 	} finally {
 		voteBusyCommentId = null;
@@ -731,6 +676,20 @@ async function handleVote(commentId: string, choice: CommentVoteChoice) {
 
 	const previousComment = getCommentById(comments, commentId);
 	if (!previousComment || previousComment.viewerVote) {
+		return;
+	}
+
+	if (
+		pendingAction?.kind === "comment_vote" &&
+		pendingAction.commentId === commentId &&
+		pendingAction.choice === choice
+	) {
+		await submitVote(commentId, choice);
+		return;
+	}
+
+	if (pendingAction) {
+		await revealCaptchaTarget(activeCaptchaTarget);
 		return;
 	}
 
@@ -772,13 +731,12 @@ onDestroy(() => {
 	{/if}
 
 	{#if loadError}
-		<div class="mb-4">
-			<InlineFeedbackNotice
-				message={loadError || i18n(I18nKey.commentsLoadFailed)}
-				tone="error"
-				duration={contentTransitionDuration}
-			/>
-		</div>
+		<InlineFeedbackNotice
+			message={loadError || i18n(I18nKey.commentsLoadFailed)}
+			tone="error"
+			duration={contentTransitionDuration}
+			className="mb-4"
+		/>
 	{/if}
 
 	{#if capability?.enabled}
@@ -864,6 +822,7 @@ onDestroy(() => {
 					pendingVoteChoice={pendingVoteChoice}
 					captchaState={captchaState}
 					captchaBusy={captchaBusy}
+					bind:captchaValue
 					captchaError={captchaError}
 					captchaPrompt={captchaPrompt}
 					commentNoticeMessage={commentNoticeMessage}
@@ -874,8 +833,6 @@ onDestroy(() => {
 					onReply={handleReply}
 					onDismissCaptcha={handleDismissCaptcha}
 					onRefreshCaptcha={handleRefreshCaptcha}
-					onPollCaptchaStatus={handlePollCaptchaStatus}
-					onVerifyCaptcha={handleVerifyCaptcha}
 				/>
 
 				{#if showCommentLoadingOverlay}
@@ -906,6 +863,7 @@ onDestroy(() => {
 			requiredFields={requiredFields}
 			captchaState={captchaState}
 			captchaBusy={captchaBusy}
+			bind:captchaValue
 			captchaError={captchaError}
 			captchaPrompt={captchaPrompt}
 			noticeMessage={composerNoticeMessage}
@@ -916,8 +874,6 @@ onDestroy(() => {
 			onDismissCaptcha={handleDismissCaptcha}
 			onCancelReply={handleCancelReply}
 			onRefreshCaptcha={handleRefreshCaptcha}
-			onPollCaptchaStatus={handlePollCaptchaStatus}
-			onVerifyCaptcha={handleVerifyCaptcha}
 		/>
 	</div>
 </section>

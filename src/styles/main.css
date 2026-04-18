@@ -598,6 +598,63 @@
     box-shadow: none;
 }
 
+.comment-captcha-popover-anchor {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.comment-captcha-popover-wrap {
+    position: absolute;
+    bottom: calc(100% + 0.75rem);
+    z-index: 10;
+    width: min(24rem, calc(100vw - 3rem));
+}
+
+.comment-captcha-popover-wrap-start {
+    left: 0;
+}
+
+.comment-captcha-popover-wrap-end {
+    right: 0;
+}
+
+.comment-captcha-popover {
+    position: relative;
+    overflow: visible;
+    padding: 0.875rem;
+    border: 1px solid color-mix(in srgb, var(--line-divider) 88%, transparent);
+    border-radius: 1rem;
+    background-color: var(--float-panel-bg);
+    box-shadow:
+        0 20px 25px -5px rgb(15 23 42 / 0.12),
+        0 8px 10px -6px rgb(15 23 42 / 0.08);
+    backdrop-filter: blur(12px);
+    transform-origin: bottom left;
+}
+
+.comment-captcha-popover::after {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    bottom: -0.45rem;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-right: 1px solid color-mix(in srgb, var(--line-divider) 88%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--line-divider) 88%, transparent);
+    background-color: var(--float-panel-bg);
+    transform: rotate(45deg);
+}
+
+.comment-captcha-popover-wrap-end .comment-captcha-popover::after {
+    left: auto;
+    right: 1rem;
+}
+
+.dark .comment-captcha-popover {
+    box-shadow: none;
+}
+
 @keyframes comment-skeleton-pulse {
     0% {
         background-position: 100% 0;

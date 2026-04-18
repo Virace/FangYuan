@@ -5,7 +5,7 @@ import Icon from "@iconify/svelte";
 import {
 	CommentCaptchaRequiredError,
 	type CommentCaptchaState,
-	type VerifyCommentCaptchaInput,
+	type CommentCaptchaWriteInput,
 } from "@utils/comments/provider";
 import { type AutoDismissTone, getAutoDismissMs } from "@utils/notice";
 import type {
@@ -36,9 +36,11 @@ let noticeMessage = "";
 let noticeTone: AutoDismissTone = "info";
 let captchaError = "";
 let captchaPrompt = "";
+let captchaValue = "";
 let rewardOpen = false;
 let captchaState = null as CommentCaptchaState | null;
 let showCaptcha = false;
+let pendingLikeAction = false;
 let noticeTimer: ReturnType<typeof setTimeout> | null = null;
 let captchaFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -101,6 +103,24 @@ function setCaptchaError(message: string) {
 	);
 }
 
+function buildLikeCaptchaPayload(): CommentCaptchaWriteInput | null {
+	if (captchaState?.challenge?.mode !== "inline_value") {
+		return null;
+	}
+
+	const challengeId = captchaState.challenge.metadata?.challengeId;
+	const value = captchaValue.trim();
+	if (!challengeId || !value) {
+		return null;
+	}
+
+	return {
+		challengeId,
+		mode: "inline_value",
+		value,
+	};
+}
+
 onMount(() => {
 	if (!qingyanClient) {
 		loading = false;
@@ -119,7 +139,6 @@ onMount(() => {
 			};
 			likeCount = payload.pageFeedback.likeCount;
 			liked = payload.pageFeedback.liked;
-			captchaState = payload.captcha;
 		})
 		.catch(() => {
 			setNotice(i18n(I18nKey.pageFeedbackLikeFailed), "error");
@@ -134,11 +153,17 @@ async function handleLike() {
 		return;
 	}
 
-	if (captchaState?.required && !captchaState.verified) {
+	if (pendingLikeAction && showCaptcha) {
+		if (!buildLikeCaptchaPayload()) {
+			setCaptchaError(i18n(I18nKey.commentsValidationCaptchaRequired));
+			return;
+		}
+	} else if (captchaState?.required && !captchaState.verified) {
 		showCaptcha = true;
 		noticeMessage = "";
 		clearNoticeTimer();
 		setCaptchaPrompt(i18n(I18nKey.commentsCaptchaRequiredTip));
+		pendingLikeAction = true;
 		return;
 	}
 
@@ -151,20 +176,29 @@ async function handleLike() {
 			pageKey: postKey,
 			pageTitle: postTitle,
 			pageUrl: postUrl,
+			captcha: pendingLikeAction ? buildLikeCaptchaPayload() : null,
 		});
 		likeCount = nextState.likeCount;
 		liked = nextState.liked;
 		showCaptcha = false;
+		pendingLikeAction = false;
+		captchaValue = "";
 		clearCaptchaFeedback();
 		captchaState = null;
 	} catch (caughtError) {
 		if (caughtError instanceof CommentCaptchaRequiredError) {
 			captchaState = caughtError.state;
 			showCaptcha = true;
+			pendingLikeAction = true;
+			captchaValue = "";
 			setCaptchaPrompt(i18n(I18nKey.commentsCaptchaRequiredTip));
 			return;
 		}
-		setNotice(i18n(I18nKey.pageFeedbackLikeFailed), "error");
+		if (pendingLikeAction) {
+			setCaptchaError(i18n(I18nKey.commentsCaptchaVerifyFailed));
+		} else {
+			setNotice(i18n(I18nKey.pageFeedbackLikeFailed), "error");
+		}
 	} finally {
 		likeBusy = false;
 	}
@@ -172,6 +206,8 @@ async function handleLike() {
 
 function handleDismissCaptcha() {
 	showCaptcha = false;
+	pendingLikeAction = false;
+	captchaValue = "";
 	clearCaptchaFeedback();
 }
 
@@ -189,34 +225,9 @@ async function handleRefreshCaptcha() {
 			pageTitle: postTitle,
 			pageUrl: postUrl,
 		});
+		captchaValue = "";
 	} catch {
 		setCaptchaError(i18n(I18nKey.commentsLoadFailed));
-	} finally {
-		captchaBusy = false;
-	}
-}
-
-async function handleVerifyCaptcha(input: VerifyCommentCaptchaInput) {
-	if (!qingyanClient) {
-		return;
-	}
-
-	captchaBusy = true;
-	captchaError = "";
-
-	try {
-		captchaState = await qingyanClient.verifyCaptcha({
-			pageKey: postKey,
-			pageTitle: postTitle,
-			pageUrl: postUrl,
-			captchaState,
-			verification: input,
-		});
-		if (!captchaState?.verified) {
-			setCaptchaError(i18n(I18nKey.commentsCaptchaVerifyFailed));
-		}
-	} catch {
-		setCaptchaError(i18n(I18nKey.commentsCaptchaVerifyFailed));
 	} finally {
 		captchaBusy = false;
 	}
@@ -243,26 +254,55 @@ onDestroy(() => {
 			<div class="flex w-full flex-col gap-3 lg:w-auto lg:min-w-96 lg:items-end">
 				<div class="flex flex-wrap items-center gap-3 lg:justify-end">
 					{#if showLike}
-						<button
-							type="button"
-							class="btn-card inline-flex h-11 items-center gap-2 rounded-full border border-line-divider px-4 text-sm font-semibold text-75 shadow-sm"
-							class:border-primary={liked}
-							class:text-primary={liked}
-							class:bg-btn-plain-bg-hover={liked}
-							disabled={loading || likeBusy || liked}
-							aria-pressed={liked}
-							on:click={handleLike}
-						>
-							<Icon
-								icon={liked ? "material-symbols:thumb-up-rounded" : "material-symbols:thumb-up-outline-rounded"}
-								class="text-lg"
-							/>
-							<span class="whitespace-nowrap">
-								{liked ? i18n(I18nKey.pageFeedbackLiked) : i18n(I18nKey.pageFeedbackLike)}
-								{" "}
-								{likeCount}
-							</span>
-						</button>
+						<div class="comment-captcha-popover-anchor">
+							<button
+								type="button"
+								class="btn-card inline-flex h-11 items-center gap-2 rounded-full border border-line-divider px-4 text-sm font-semibold text-75 shadow-sm"
+								class:border-primary={liked}
+								class:text-primary={liked}
+								class:bg-btn-plain-bg-hover={liked}
+								disabled={loading || likeBusy || liked}
+								aria-pressed={liked}
+								on:click={handleLike}
+							>
+								<Icon
+									icon={liked ? "material-symbols:thumb-up-rounded" : "material-symbols:thumb-up-outline-rounded"}
+									class="text-lg"
+								/>
+								<span class="whitespace-nowrap">
+									{liked ? i18n(I18nKey.pageFeedbackLiked) : i18n(I18nKey.pageFeedbackLike)}
+									{" "}
+									{likeCount}
+								</span>
+							</button>
+
+							{#if showCaptcha && captchaState}
+								<div
+									class="comment-captcha-popover-wrap comment-captcha-popover-wrap-end"
+									data-page-feedback-captcha-target="like"
+								>
+									<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
+										<div
+											class="comment-captcha-popover"
+											in:scale={{ duration: 180, start: 0.92, opacity: 0.5 }}
+											out:scale={{ duration: 150, start: 1, opacity: 0.4 }}
+										>
+											<InlineCommentCaptcha
+												compact={true}
+												variant="popover"
+												bind:captchaValue
+												captchaState={captchaState}
+												captchaBusy={captchaBusy}
+												captchaError={captchaError}
+												captchaPrompt={captchaPrompt}
+												onDismiss={handleDismissCaptcha}
+												onRefreshCaptcha={handleRefreshCaptcha}
+											/>
+										</div>
+									</div>
+								</div>
+							{/if}
+						</div>
 					{/if}
 
 					{#if showReward}
@@ -287,25 +327,6 @@ onDestroy(() => {
 					</div>
 				{/if}
 
-				{#if showCaptcha && captchaState}
-					<div
-						class="w-full overflow-hidden lg:max-w-96"
-						transition:slide={{ duration: 180 }}
-					>
-						<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
-							<InlineCommentCaptcha
-								compact={true}
-								captchaState={captchaState}
-								captchaBusy={captchaBusy}
-								captchaError={captchaError}
-								captchaPrompt={captchaPrompt}
-								onDismiss={handleDismissCaptcha}
-								onRefreshCaptcha={handleRefreshCaptcha}
-								onVerifyCaptcha={handleVerifyCaptcha}
-							/>
-						</div>
-					</div>
-				{/if}
 			</div>
 		</div>
 	</section>

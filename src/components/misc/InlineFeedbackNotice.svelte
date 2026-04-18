@@ -6,6 +6,7 @@ export let message = "";
 export let tone: AutoDismissTone = "info";
 export let compact = false;
 export let duration = 180;
+export let className = "";
 
 $: toneClass =
 	tone === "success"
@@ -18,13 +19,15 @@ $: paddingClass = compact ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm";
 </script>
 
 {#if message}
-	<div class="overflow-hidden" transition:slide={{ duration }}>
-		<p
-			class={`rounded-xl leading-6 ${toneClass} ${paddingClass}`}
-			in:fade={{ duration }}
-			out:fade={{ duration }}
-		>
-			{message}
-		</p>
+	<div class={`overflow-hidden ${className}`.trim()} transition:slide={{ duration }}>
+		{#key `${tone}:${message}`}
+			<p
+				class={`rounded-xl leading-6 ${toneClass} ${paddingClass}`}
+				in:fade={{ duration }}
+				out:fade={{ duration }}
+			>
+				{message}
+			</p>
+		{/key}
 	</div>
 {/if}

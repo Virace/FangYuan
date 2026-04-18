@@ -8,11 +8,6 @@ export let value = "";
 export let placeholder = "";
 export let inline = false;
 export let onRefresh: (() => void | Promise<void>) | null = null;
-export let onVerify: ((value: string) => void | Promise<void>) | null = null;
-
-function handleVerify() {
-	void onVerify?.(value.trim());
-}
 </script>
 
 <div class="flex flex-wrap items-center gap-2" class:mt-2={!inline}>
@@ -35,13 +30,6 @@ function handleVerify() {
 		class="min-w-24 flex-1 rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-sm text-90 outline-none md:max-w-36"
 		placeholder={placeholder || i18n(I18nKey.commentsCaptcha)}
 		type="text"
+		inputmode="numeric"
 	/>
-	<button
-		type="button"
-		class="comment-action"
-		disabled={captchaBusy}
-		on:click={handleVerify}
-	>
-		{i18n(I18nKey.commentsCaptchaVerify)}
-	</button>
 </div>

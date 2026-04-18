@@ -64,6 +64,10 @@ export type VerifyCommentCaptchaInput = {
 	value: string;
 };
 
+export type CommentCaptchaWriteInput = VerifyCommentCaptchaInput & {
+	challengeId: string;
+};
+
 export type CommentSortBy = "date_desc" | "date_asc";
 
 export class CommentCaptchaRequiredError extends Error {
@@ -86,7 +90,7 @@ export type CreateCommentInput = {
 		website?: string | null;
 	};
 	content: string;
-	captcha?: VerifyCommentCaptchaInput | null;
+	captcha?: CommentCaptchaWriteInput | null;
 };
 
 export type VoteCommentInput = {

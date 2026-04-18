@@ -1,10 +1,7 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import type {
-	CommentCaptchaState,
-	VerifyCommentCaptchaInput,
-} from "@utils/comments/provider";
+import type { CommentCaptchaState } from "@utils/comments/provider";
 import type { AutoDismissTone } from "@utils/notice";
 import { fade, scale, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
@@ -23,6 +20,7 @@ export let voteBusy = false;
 export let pendingVoteChoice: CommentVoteChoice | null = null;
 export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
+export let captchaValue = "";
 export let captchaError = "";
 export let captchaPrompt = "";
 export let commentNoticeMessage = "";
@@ -36,10 +34,6 @@ export let onCancelVoteConfirm: (() => void) | null = null;
 export let onReply: ((commentId: string) => void) | null = null;
 export let onDismissCaptcha: (() => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
-export let onVerifyCaptcha:
-	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
-	| null = null;
-export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 
 function formatCommentDate(value: string): string {
 	const date = new Date(value);
@@ -217,35 +211,39 @@ $: showCommentNotice =
 
 			{#if comment.id === activeCaptchaCommentId && captchaState?.required}
 				<div
-					class="mt-3 overflow-hidden"
+					class="comment-captcha-popover-wrap comment-captcha-popover-wrap-start"
 					data-comment-captcha-target={comment.id}
-					transition:slide={{ duration: 180 }}
 				>
 					<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
-						<InlineCommentCaptcha
-							compact={true}
-							captchaBusy={captchaBusy}
-							captchaError={captchaError}
-							captchaPrompt={captchaPrompt}
-							captchaState={captchaState}
-							onDismiss={onDismissCaptcha}
-							onRefreshCaptcha={onRefreshCaptcha}
-							onPollCaptchaStatus={onPollCaptchaStatus}
-							onVerifyCaptcha={onVerifyCaptcha}
-						/>
+						<div
+							class="comment-captcha-popover"
+							in:scale={{ duration: 180, start: 0.96 }}
+							out:scale={{ duration: 180, start: 0.96 }}
+						>
+							<InlineCommentCaptcha
+								compact={true}
+								variant="popover"
+								bind:captchaValue
+								captchaBusy={captchaBusy}
+								captchaError={captchaError}
+								captchaPrompt={captchaPrompt}
+								captchaState={captchaState}
+								onDismiss={onDismissCaptcha}
+								onRefreshCaptcha={onRefreshCaptcha}
+							/>
+						</div>
 					</div>
 				</div>
 			{/if}
 
 			{#if showCommentNotice}
-				<div class="mt-3">
-					<InlineFeedbackNotice
-						message={commentNoticeMessage}
-						tone={commentNoticeTone}
-						compact={true}
-						duration={180}
-					/>
-				</div>
+				<InlineFeedbackNotice
+					message={commentNoticeMessage}
+					tone={commentNoticeTone}
+					compact={true}
+					duration={180}
+					className="mt-3"
+				/>
 			{/if}
 
 			{#if depth < maxDepth && comment.children.length > 0}
@@ -264,6 +262,7 @@ $: showCommentNotice =
 							pendingVoteChoice={pendingVoteChoice}
 							captchaState={captchaState}
 							captchaBusy={captchaBusy}
+							bind:captchaValue
 							captchaError={captchaError}
 							captchaPrompt={captchaPrompt}
 							commentNoticeMessage={commentNoticeMessage}
@@ -274,8 +273,6 @@ $: showCommentNotice =
 							onReply={onReply}
 							onDismissCaptcha={onDismissCaptcha}
 							onRefreshCaptcha={onRefreshCaptcha}
-							onPollCaptchaStatus={onPollCaptchaStatus}
-							onVerifyCaptcha={onVerifyCaptcha}
 						/>
 					{/each}
 				</div>

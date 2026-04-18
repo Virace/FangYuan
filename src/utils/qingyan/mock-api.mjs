@@ -84,8 +84,77 @@ function buildCommentHtml(raw) {
 	return `<p>${escapeHtml(raw).replaceAll("\n", "<br>")}</p>`;
 }
 
-function buildCaptchaImageData(answer) {
-	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="60" viewBox="0 0 160 60" role="img" aria-label="captcha"><rect width="160" height="60" rx="10" fill="#f4f7fb"/><text x="80" y="38" text-anchor="middle" font-family="monospace" font-size="28" fill="#111827" letter-spacing="6">${escapeHtml(answer)}</text></svg>`;
+const CAPTCHA_SEGMENT_MAP = {
+	0: ["a", "b", "c", "d", "e", "f"],
+	1: ["b", "c"],
+	2: ["a", "b", "d", "e", "g"],
+	3: ["a", "b", "c", "d", "g"],
+	4: ["b", "c", "f", "g"],
+	5: ["a", "c", "d", "f", "g"],
+	6: ["a", "c", "d", "e", "f", "g"],
+	7: ["a", "b", "c"],
+	8: ["a", "b", "c", "d", "e", "f", "g"],
+	9: ["a", "b", "c", "d", "f", "g"],
+};
+
+const CAPTCHA_SEGMENT_RECTS = {
+	a: { x: 0, y: 0, width: 18, height: 4 },
+	b: { x: 18, y: 4, width: 4, height: 12 },
+	c: { x: 18, y: 20, width: 4, height: 12 },
+	d: { x: 0, y: 32, width: 18, height: 4 },
+	e: { x: 0, y: 20, width: 4, height: 12 },
+	f: { x: 0, y: 4, width: 4, height: 12 },
+	g: { x: 0, y: 16, width: 18, height: 4 },
+};
+
+function hashSeed(seed) {
+	let hash = 2166136261;
+	for (const char of String(seed)) {
+		hash ^= char.charCodeAt(0);
+		hash = Math.imul(hash, 16777619);
+	}
+	return hash >>> 0;
+}
+
+function buildCaptchaNoise(seed) {
+	const lines = [];
+	let hash = hashSeed(seed);
+	for (let index = 0; index < 6; index += 1) {
+		hash = Math.imul(hash ^ (index + 11), 2246822519) >>> 0;
+		const x1 = 8 + (hash % 144);
+		const y1 = 10 + ((hash >>> 6) % 40);
+		const x2 = 8 + ((hash >>> 12) % 144);
+		const y2 = 10 + ((hash >>> 18) % 40);
+		const hue = 210 + (hash % 25);
+		lines.push(
+			`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="hsla(${hue}, 45%, 72%, 0.42)" stroke-width="1.4" stroke-linecap="round"/>`,
+		);
+	}
+	return lines.join("");
+}
+
+function buildCaptchaDigit(answerDigit, index, seed) {
+	const segments =
+		CAPTCHA_SEGMENT_MAP[Number.parseInt(String(answerDigit ?? ""), 10)] ??
+		CAPTCHA_SEGMENT_MAP[8];
+	const hash = hashSeed(`${seed}:${index}`);
+	const translateX = 18 + index * 30;
+	const translateY = 10 + ((hash >>> 4) % 5) - 2;
+	const skewX = ((hash % 7) - 3) * 0.8;
+	const fill = index % 2 === 0 ? "#111827" : "#1f2937";
+	return `<g transform="translate(${translateX} ${translateY}) skewX(${skewX})">${segments
+		.map((segmentKey) => {
+			const rect = CAPTCHA_SEGMENT_RECTS[segmentKey];
+			return `<rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" rx="1.6" fill="${fill}"/>`;
+		})
+		.join("")}</g>`;
+}
+
+function buildCaptchaImageData(answer, seed = answer) {
+	const digits = String(answer).slice(0, 4).split("");
+	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="60" viewBox="0 0 160 60" role="img" aria-label="captcha"><rect width="160" height="60" rx="10" fill="#f4f7fb"/><rect x="6" y="6" width="148" height="48" rx="8" fill="rgba(255,255,255,0.55)"/>${buildCaptchaNoise(seed)}${digits
+		.map((digit, index) => buildCaptchaDigit(digit, index, seed))
+		.join("")}</svg>`;
 	return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
@@ -393,7 +462,12 @@ export function createQingYanMockBackend(input = {}) {
 		return visitorState.pages.get(pageKey);
 	}
 
-	function buildCaptchaState(visitorPageState, options, forceChallenge) {
+	function buildCaptchaState(
+		visitorPageState,
+		options,
+		forceChallenge,
+		refresh = false,
+	) {
 		const shouldRequire =
 			options.captchaMode === "always" ||
 			(forceChallenge && options.captchaMode !== "never") ||
@@ -408,6 +482,11 @@ export function createQingYanMockBackend(input = {}) {
 			};
 		}
 
+		if (refresh) {
+			visitorPageState.challengeId = null;
+			visitorPageState.verified = false;
+		}
+
 		if (!visitorPageState.challengeId) {
 			visitorPageState.challengeId = `cap_${randomUUID()}`;
 			visitorPageState.challengeAnswer = options.answer;
@@ -420,7 +499,10 @@ export function createQingYanMockBackend(input = {}) {
 			challenge: {
 				challengeId: visitorPageState.challengeId,
 				mode: "inline_value",
-				imageData: buildCaptchaImageData(visitorPageState.challengeAnswer),
+				imageData: buildCaptchaImageData(
+					visitorPageState.challengeAnswer,
+					visitorPageState.challengeId,
+				),
 			},
 		};
 	}
@@ -440,6 +522,63 @@ export function createQingYanMockBackend(input = {}) {
 			visitorPageState.captchaFailures = 0;
 		}
 
+		return null;
+	}
+
+	function consumeInlineCaptcha({
+		visitorPageState,
+		options,
+		requestBody,
+		requiredCode,
+		headers,
+	}) {
+		const captcha = requestBody?.captcha;
+		if (!captcha) {
+			return null;
+		}
+
+		const blacklist = assertNotBlacklisted(visitorPageState, options, headers);
+		if (blacklist) {
+			return blacklist;
+		}
+
+		if (
+			!visitorPageState.challengeId ||
+			String(captcha.challengeId ?? "") !== visitorPageState.challengeId
+		) {
+			return createErrorResponse(
+				400,
+				requiredCode,
+				"请重新获取验证码。",
+				headers,
+			);
+		}
+
+		if (
+			String(captcha.value ?? "").trim() !== visitorPageState.challengeAnswer
+		) {
+			visitorPageState.captchaFailures += 1;
+			if (visitorPageState.captchaFailures >= options.banAfterCaptchaFailures) {
+				visitorPageState.blacklistedUntil =
+					Date.now() + options.blacklistTtlSec * 1000;
+				return createErrorResponse(
+					403,
+					"COMMENT_BLACKLISTED",
+					"当前请求已被拒绝。",
+					headers,
+				);
+			}
+
+			return createErrorResponse(
+				400,
+				"COMMENT_CAPTCHA_INVALID",
+				"验证码错误，请重试。",
+				headers,
+			);
+		}
+
+		visitorPageState.verified = true;
+		visitorPageState.captchaFailures = 0;
 		return null;
 	}
 
@@ -646,6 +785,32 @@ export function createQingYanMockBackend(input = {}) {
 		}
 
 		if (
+			url.pathname === "/api/comments/captcha/refresh/" &&
+			input.method === "POST"
+		) {
+			const blacklist = assertNotBlacklisted(
+				visitorPageState,
+				options,
+				responseHeaders,
+			);
+			if (blacklist) {
+				return blacklist;
+			}
+
+			return createJsonResponse(
+				200,
+				buildCaptchaState(
+					visitorPageState,
+					options,
+					options.captchaMode === "always" ||
+						visitorPageState.challengeId !== null,
+					true,
+				),
+				responseHeaders,
+			);
+		}
+
+		if (
 			url.pathname === "/api/comments/captcha/verify/" &&
 			input.method === "POST"
 		) {
@@ -706,6 +871,17 @@ export function createQingYanMockBackend(input = {}) {
 		}
 
 		if (url.pathname === "/api/comments/" && input.method === "POST") {
+			const captchaError = consumeInlineCaptcha({
+				visitorPageState,
+				options,
+				requestBody,
+				requiredCode: "COMMENT_CAPTCHA_REQUIRED",
+				headers: responseHeaders,
+			});
+			if (captchaError) {
+				return captchaError;
+			}
+
 			const blocked = ensureWriteAllowed({
 				visitorPageState,
 				options,
@@ -791,6 +967,17 @@ export function createQingYanMockBackend(input = {}) {
 				return blacklist;
 			}
 
+			const captchaError = consumeInlineCaptcha({
+				visitorPageState,
+				options,
+				requestBody,
+				requiredCode: "VOTE_CAPTCHA_REQUIRED",
+				headers: responseHeaders,
+			});
+			if (captchaError) {
+				return captchaError;
+			}
+
 			if (comment.mockVoteMode === "blacklist") {
 				return createErrorResponse(
 					403,
@@ -856,10 +1043,21 @@ export function createQingYanMockBackend(input = {}) {
 			url.pathname === "/api/page-feedback/like/" &&
 			input.method === "POST"
 		) {
+			const captchaError = consumeInlineCaptcha({
+				visitorPageState,
+				options,
+				requestBody,
+				requiredCode: "PAGE_FEEDBACK_CAPTCHA_REQUIRED",
+				headers: responseHeaders,
+			});
+			if (captchaError) {
+				return captchaError;
+			}
+
 			const blocked = ensureWriteAllowed({
 				visitorPageState,
 				options,
-				errorCode: "COMMENT_CAPTCHA_REQUIRED",
+				errorCode: "PAGE_FEEDBACK_CAPTCHA_REQUIRED",
 				headers: responseHeaders,
 			});
 			if (blocked) {

@@ -4,7 +4,6 @@ import { i18n } from "@i18n/translation";
 import type {
 	CommentAuthorField,
 	CommentCaptchaState,
-	VerifyCommentCaptchaInput,
 } from "@utils/comments/provider";
 import { validateCommentForm } from "@utils/comments/validation";
 import { type AutoDismissTone, getAutoDismissMs } from "@utils/notice";
@@ -32,6 +31,7 @@ export let allowedFields: CommentAuthorField[] = [
 export let requiredFields: CommentAuthorField[] = ["nickname", "email"];
 export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
+export let captchaValue = "";
 export let captchaError = "";
 export let captchaPrompt = "";
 export let noticeMessage = "";
@@ -42,10 +42,6 @@ export let onSubmit:
 export let onDismissCaptcha: (() => void) | null = null;
 export let onCancelReply: (() => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
-export let onVerifyCaptcha:
-	| ((input: VerifyCommentCaptchaInput) => void | Promise<void>)
-	| null = null;
-export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 
 const emojiPopoverDuration = 180;
 const emojiTriggerIcon = "\u{1F642}";
@@ -169,23 +165,21 @@ onDestroy(() => {
 
 <form class="card-base rounded-panel p-5" on:submit|preventDefault={handleSubmit}>
 	{#if noticeMessage}
-		<div class="mb-4">
-			<InlineFeedbackNotice
-				message={noticeMessage}
-				tone={noticeTone}
-				duration={180}
-			/>
-		</div>
+		<InlineFeedbackNotice
+			message={noticeMessage}
+			tone={noticeTone}
+			duration={180}
+			className="mb-4"
+		/>
 	{/if}
 
 	{#if validationError}
-		<div class="mb-4">
-			<InlineFeedbackNotice
-				message={validationError}
-				tone="error"
-				duration={180}
-			/>
-		</div>
+		<InlineFeedbackNotice
+			message={validationError}
+			tone="error"
+			duration={180}
+			className="mb-4"
+		/>
 	{/if}
 
 	<div class="flex items-start justify-between gap-3 mb-4">
@@ -259,41 +253,47 @@ onDestroy(() => {
 
 	<div class="comment-composer-actions mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 		<div class="w-full md:order-2 md:flex-1 md:min-w-0">
-			<div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
-				{#if showCaptcha}
-					<div
-						class="w-full overflow-hidden md:flex-1 md:min-w-0"
-						data-comment-captcha-target="composer"
-						transition:slide={{ duration: 180 }}
+			<div class="flex items-center justify-end">
+				<div class="comment-captcha-popover-anchor">
+					<button
+						class="btn-regular rounded-xl px-4 h-10 text-sm font-medium w-full md:w-auto md:shrink-0"
+						disabled={!canSubmit}
+						type="submit"
 					>
-						<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
-							<InlineCommentCaptcha
-								compact={true}
-								variant="inline"
-								captchaBusy={captchaBusy}
-								captchaError={captchaError}
-								captchaPrompt={captchaPrompt}
-								captchaState={captchaState}
-								onDismiss={onDismissCaptcha}
-								onRefreshCaptcha={onRefreshCaptcha}
-								onPollCaptchaStatus={onPollCaptchaStatus}
-								onVerifyCaptcha={onVerifyCaptcha}
-							/>
-						</div>
-					</div>
-				{/if}
+						{#if submitting}
+							{i18n(I18nKey.commentsSubmitting)}
+						{:else}
+							{i18n(I18nKey.commentsSubmit)}
+						{/if}
+					</button>
 
-				<button
-					class="btn-regular rounded-xl px-4 h-10 text-sm font-medium w-full md:w-auto md:shrink-0"
-					disabled={!canSubmit}
-					type="submit"
-				>
-					{#if submitting}
-						{i18n(I18nKey.commentsSubmitting)}
-					{:else}
-						{i18n(I18nKey.commentsSubmit)}
+					{#if showCaptcha}
+						<div
+							class="comment-captcha-popover-wrap comment-captcha-popover-wrap-end"
+							data-comment-captcha-target="composer"
+						>
+							<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
+								<div
+									class="comment-captcha-popover"
+									in:scale={{ duration: 180, start: 0.92, opacity: 0.5 }}
+									out:scale={{ duration: 150, start: 1, opacity: 0.4 }}
+								>
+									<InlineCommentCaptcha
+										compact={true}
+										variant="popover"
+										bind:captchaValue
+										captchaBusy={captchaBusy}
+										captchaError={captchaError}
+										captchaPrompt={captchaPrompt}
+										captchaState={captchaState}
+										onDismiss={onDismissCaptcha}
+										onRefreshCaptcha={onRefreshCaptcha}
+									/>
+								</div>
+							</div>
+						</div>
 					{/if}
-				</button>
+				</div>
 			</div>
 		</div>
 

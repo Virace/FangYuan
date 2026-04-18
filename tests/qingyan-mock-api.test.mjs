@@ -79,21 +79,27 @@ test("qingyan mock backend should simulate threshold captcha flow for comment cr
 	assert.equal(captchaState.json.required, true);
 	assert.equal(captchaState.json.verified, false);
 	assert.match(captchaState.json.challenge.imageData, /^data:image\/svg\+xml/);
+	assert.doesNotMatch(captchaState.json.challenge.imageData, /2468/);
 
-	const verified = await client.request({
+	const refreshedCaptchaState = await client.request({
 		method: "POST",
-		url: "/api/comments/captcha/verify/",
+		url: "/api/comments/captcha/refresh/",
 		body: {
 			siteKey: "fangyuan",
 			pageKey: "post:mock-comment",
-			challengeId: captchaState.json.challenge.challengeId,
-			mode: "inline_value",
-			value: "2468",
 		},
 	});
-	assert.equal(verified.status, 200);
-	assert.equal(verified.json.required, true);
-	assert.equal(verified.json.verified, true);
+	assert.equal(refreshedCaptchaState.status, 200);
+	assert.equal(refreshedCaptchaState.json.required, true);
+	assert.notEqual(
+		refreshedCaptchaState.json.challenge.challengeId,
+		captchaState.json.challenge.challengeId,
+	);
+	assert.notEqual(
+		refreshedCaptchaState.json.challenge.imageData,
+		captchaState.json.challenge.imageData,
+	);
+	assert.doesNotMatch(refreshedCaptchaState.json.challenge.imageData, /2468/);
 
 	const created = await client.request({
 		method: "POST",
@@ -109,6 +115,10 @@ test("qingyan mock backend should simulate threshold captcha flow for comment cr
 			},
 			content: {
 				raw: "验证码通过后这条评论应该成功。",
+			},
+			captcha: {
+				challengeId: refreshedCaptchaState.json.challenge.challengeId,
+				value: "2468",
 			},
 		},
 	});
@@ -143,7 +153,7 @@ test("qingyan mock backend should share captcha state with like flow and blackli
 		},
 	});
 	assert.equal(blockedLike.status, 400);
-	assert.equal(blockedLike.json.error.code, "COMMENT_CAPTCHA_REQUIRED");
+	assert.equal(blockedLike.json.error.code, "PAGE_FEEDBACK_CAPTCHA_REQUIRED");
 
 	const captchaState = await client.request({
 		url: `/api/comments/captcha/state/?siteKey=fangyuan&pageKey=post:mock-like&pageUrl=${encodeURIComponent(pageUrl)}`,
@@ -153,13 +163,16 @@ test("qingyan mock backend should share captcha state with like flow and blackli
 
 	const invalidOnce = await client.request({
 		method: "POST",
-		url: "/api/comments/captcha/verify/",
+		url: "/api/page-feedback/like/",
 		body: {
 			siteKey: "fangyuan",
 			pageKey: "post:mock-like",
-			challengeId: captchaState.json.challenge.challengeId,
-			mode: "inline_value",
-			value: "0000",
+			pageTitle: "Mock Like",
+			pageUrl,
+			captcha: {
+				challengeId: captchaState.json.challenge.challengeId,
+				value: "0000",
+			},
 		},
 	});
 	assert.equal(invalidOnce.status, 400);
@@ -167,13 +180,16 @@ test("qingyan mock backend should share captcha state with like flow and blackli
 
 	const blacklisted = await client.request({
 		method: "POST",
-		url: "/api/comments/captcha/verify/",
+		url: "/api/page-feedback/like/",
 		body: {
 			siteKey: "fangyuan",
 			pageKey: "post:mock-like",
-			challengeId: captchaState.json.challenge.challengeId,
-			mode: "inline_value",
-			value: "1111",
+			pageTitle: "Mock Like",
+			pageUrl,
+			captcha: {
+				challengeId: captchaState.json.challenge.challengeId,
+				value: "1111",
+			},
 		},
 	});
 	assert.equal(blacklisted.status, 403);
@@ -226,20 +242,6 @@ test("qingyan mock backend should expose fixed seeded comments for captcha and f
 	assert.equal(captchaState.status, 200);
 	assert.equal(captchaState.json.required, true);
 
-	const verified = await client.request({
-		method: "POST",
-		url: "/api/comments/captcha/verify/",
-		body: {
-			siteKey: "fangyuan",
-			pageKey,
-			challengeId: captchaState.json.challenge.challengeId,
-			mode: "inline_value",
-			value: "2468",
-		},
-	});
-	assert.equal(verified.status, 200);
-	assert.equal(verified.json.verified, true);
-
 	const votedAfterVerify = await client.request({
 		method: "POST",
 		url: `/api/comments/${captchaCommentId}/vote/`,
@@ -247,6 +249,10 @@ test("qingyan mock backend should expose fixed seeded comments for captcha and f
 			siteKey: "fangyuan",
 			pageKey,
 			choice: "up",
+			captcha: {
+				challengeId: captchaState.json.challenge.challengeId,
+				value: "2468",
+			},
 		},
 	});
 	assert.equal(votedAfterVerify.status, 200);

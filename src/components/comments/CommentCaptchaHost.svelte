@@ -8,9 +8,6 @@ export let captchaBusy = false;
 export let captchaValue = "";
 export let inline = false;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
-export let onVerifyCaptchaValue:
-	| ((value: string) => void | Promise<void>)
-	| null = null;
 export let onPollCaptchaStatus: (() => void | Promise<void>) | null = null;
 export let onCancelCaptcha: (() => void) | null = null;
 
@@ -25,7 +22,6 @@ $: challenge = captchaState?.challenge ?? null;
 		captchaBusy={captchaBusy}
 		placeholder={challenge.placeholder ?? ""}
 		onRefresh={onRefreshCaptcha}
-		onVerify={onVerifyCaptchaValue}
 	/>
 {:else if challenge?.mode === "iframe_widget"}
 	{#key challenge.refreshToken ?? challenge.iframeSrc}

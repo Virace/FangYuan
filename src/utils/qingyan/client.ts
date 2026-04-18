@@ -15,7 +15,6 @@ import {
 	type CommentForm,
 	type CommentSortBy,
 	type CreateCommentInput,
-	type VerifyCommentCaptchaInput,
 } from "../comments/provider";
 import { renderPlainCommentHtml } from "../comments/validation";
 import type {
@@ -160,9 +159,16 @@ export class QingYanApiError extends Error {
 
 function isCaptchaRequiredCode(code: string | null): boolean {
 	return (
-		code === "COMMENT_CAPTCHA_REQUIRED" || code === "VOTE_CAPTCHA_REQUIRED"
+		code === "COMMENT_CAPTCHA_REQUIRED" ||
+		code === "VOTE_CAPTCHA_REQUIRED" ||
+		code === "PAGE_FEEDBACK_CAPTCHA_REQUIRED"
 	);
 }
+
+type InlineCaptchaPayload = {
+	challengeId: string;
+	value: string;
+};
 
 function toBackendSortBy(sortBy: CommentSortBy | undefined): BackendSortBy {
 	return sortBy === "date_asc" ? "oldest" : "newest";
@@ -545,67 +551,32 @@ export function createQingYanClient(config: QingYanClientConfig) {
 			return normalizeCaptchaState(response);
 		},
 
-		async getCaptchaStatus(input: {
-			pageKey: string;
-			pageTitle?: string;
-			pageUrl?: string;
-		}) {
-			return this.getCaptchaState(input);
-		},
-
 		async refreshCaptcha(input: {
 			pageKey: string;
 			pageTitle?: string;
 			pageUrl?: string;
 		}) {
-			return this.getCaptchaState(input);
-		},
-
-		async verifyCaptcha(input: {
-			pageKey: string;
-			pageTitle?: string;
-			pageUrl?: string;
-			captchaState: CommentCaptchaState | null;
-			verification: VerifyCommentCaptchaInput;
-		}) {
-			const challengeId =
-				input.captchaState?.challenge?.mode === "inline_value"
-					? input.captchaState.challenge.metadata?.challengeId
-					: undefined;
-			if (!challengeId) {
-				throw new QingYanApiError({
-					message: "验证码挑战不存在。",
-					code: "COMMENT_CAPTCHA_REQUIRED",
-					status: 400,
-				});
-			}
-
 			const response = await fetchJson<RawQingYanCaptchaState>(
-				"/comments/captcha/verify/",
+				"/comments/captcha/refresh/",
 				{
 					method: "POST",
 					body: JSON.stringify({
 						siteKey: resolvedConfig.siteKey,
 						pageKey: input.pageKey,
-						challengeId,
-						mode: input.verification.mode,
-						value: input.verification.value,
+						...(input.pageTitle
+							? {
+									pageTitle: input.pageTitle,
+								}
+							: {}),
+						...(resolvePageUrl(input.pageUrl)
+							? {
+									pageUrl: resolvePageUrl(input.pageUrl),
+								}
+							: {}),
 					}),
 				},
 			);
-
-			return normalizeCaptchaState({
-				...response,
-				mode: "inline_value",
-				challenge:
-					input.captchaState?.challenge?.mode === "inline_value"
-						? {
-								challengeId,
-								mode: "inline_value",
-								imageData: input.captchaState.challenge.imageData ?? null,
-							}
-						: response.challenge,
-			});
+			return normalizeCaptchaState(response);
 		},
 
 		async createComment(
@@ -642,6 +613,14 @@ export function createQingYanClient(config: QingYanClientConfig) {
 							content: {
 								raw: input.content,
 							},
+							...(input.captcha
+								? {
+										captcha: {
+											challengeId: input.captcha.challengeId,
+											value: input.captcha.value,
+										},
+									}
+								: {}),
 							options: {
 								notifyOnReply: false,
 							},
@@ -679,6 +658,7 @@ export function createQingYanClient(config: QingYanClientConfig) {
 			choice: CommentVoteChoice;
 			pageTitle?: string;
 			pageUrl?: string;
+			captcha?: InlineCaptchaPayload | null;
 		}): Promise<QingYanVoteResult> {
 			try {
 				const response = await fetchJson<RawQingYanVoteResponse>(
@@ -689,6 +669,11 @@ export function createQingYanClient(config: QingYanClientConfig) {
 							siteKey: resolvedConfig.siteKey,
 							pageKey: input.pageKey,
 							choice: input.choice,
+							...(input.captcha
+								? {
+										captcha: input.captcha,
+									}
+								: {}),
 						}),
 					},
 				);
@@ -713,6 +698,7 @@ export function createQingYanClient(config: QingYanClientConfig) {
 			pageKey: string;
 			pageTitle?: string;
 			pageUrl?: string;
+			captcha?: InlineCaptchaPayload | null;
 		}): Promise<QingYanPageFeedbackState> {
 			try {
 				const response = await fetchJson<RawQingYanLikeResponse>(
@@ -726,6 +712,11 @@ export function createQingYanClient(config: QingYanClientConfig) {
 							pageUrl:
 								resolvePageUrl(input.pageUrl) ??
 								`https://example.invalid/posts/${input.pageKey}/`,
+							...(input.captcha
+								? {
+										captcha: input.captcha,
+									}
+								: {}),
 						}),
 					},
 				);
