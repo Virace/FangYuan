@@ -272,24 +272,21 @@ onDestroy(() => {
 </script>
 
 {#if showCard}
-	<section class="card-base mb-6 rounded-panel border border-line-divider px-4 py-5 md:px-6">
-		<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-			<div class="min-w-0 flex-1">
-				<p class="text-base font-semibold text-90 md:text-lg">
-					{i18n(I18nKey.pageFeedbackRewardTitle)}
-				</p>
-				<p class="mt-1.5 max-w-176 text-xs leading-6 text-50 md:text-sm">
-					{i18n(I18nKey.pageFeedbackRewardDescription)}
-				</p>
-			</div>
+	<section class="card-base mb-6 rounded-panel border border-line-divider px-4 py-4 md:px-6">
+		<div class="flex flex-col">
+			<div class="flex flex-row items-center justify-between gap-3 sm:gap-4 md:gap-5">
+				<div class="min-w-0 flex-1">
+					<p class="text-base font-semibold text-90 md:text-lg">
+						{i18n(I18nKey.pageFeedbackRewardTitle)}
+					</p>
+				</div>
 
-			<div class="flex w-full flex-col gap-3 lg:w-auto lg:min-w-96 lg:items-end">
-				<div class="flex flex-wrap items-center gap-3 lg:justify-end">
+				<div class="ml-3 flex max-w-[72%] shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
 					{#if showLike}
 						<div class="comment-captcha-popover-anchor">
 							<button
 								type="button"
-								class="btn-card inline-flex h-11 items-center gap-2 rounded-full border border-line-divider px-4 text-sm font-semibold text-75 shadow-sm"
+								class="btn-card inline-flex h-10 items-center gap-1.5 rounded-full border border-line-divider px-3 text-xs font-semibold text-75 shadow-sm sm:h-11 sm:gap-2 sm:px-4 sm:text-sm"
 								class:border-primary={liked}
 								class:text-primary={liked}
 								class:bg-btn-plain-bg-hover={liked}
@@ -299,7 +296,7 @@ onDestroy(() => {
 							>
 								<Icon
 									icon={liked ? "material-symbols:thumb-up-rounded" : "material-symbols:thumb-up-outline-rounded"}
-									class="text-lg"
+									class="text-base sm:text-lg"
 								/>
 								<span class="whitespace-nowrap">
 									{liked ? i18n(I18nKey.pageFeedbackLiked) : i18n(I18nKey.pageFeedbackLike)}
@@ -342,23 +339,22 @@ onDestroy(() => {
 					{#if showReward}
 						<button
 							type="button"
-							class="btn-card inline-flex h-11 items-center gap-2 rounded-full border border-line-divider px-4 text-sm font-semibold text-75 shadow-sm"
+							class="btn-card inline-flex h-10 items-center gap-1.5 rounded-full border border-line-divider px-3 text-xs font-semibold text-75 shadow-sm sm:h-11 sm:gap-2 sm:px-4 sm:text-sm"
 							on:click={() => (rewardOpen = true)}
 						>
-							<span aria-hidden="true" class="text-base leading-none">☕</span>
+							<span aria-hidden="true" class="text-sm leading-none sm:text-base">☕</span>
 							<span class="whitespace-nowrap">{i18n(I18nKey.pageFeedbackReward)}</span>
 						</button>
 					{/if}
 				</div>
+			</div>
 
-				<div class="w-full">
-					<InlineFeedbackNotice
-						message={noticeMessage}
-						tone={noticeTone}
-						duration={180}
-					/>
-				</div>
-
+			<div class="flex w-full justify-end">
+				<InlineFeedbackNotice
+					message={noticeMessage}
+					tone={noticeTone}
+					duration={180}
+				/>
 			</div>
 		</div>
 	</section>
