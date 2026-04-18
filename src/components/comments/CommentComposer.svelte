@@ -224,7 +224,7 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 					bind:this={authorNameInput}
 					bind:value={authorName}
 					aria-invalid={invalidFieldState.nickname}
-					class="comment-form-input rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
+					class="comment-form-input text-90"
 					maxlength="80"
 					required={requiredFields.includes("nickname")}
 					type="text"
@@ -245,7 +245,7 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 					bind:this={authorEmailInput}
 					bind:value={authorEmail}
 					aria-invalid={invalidFieldState.email}
-					class="comment-form-input rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
+					class="comment-form-input text-90"
 					maxlength="120"
 					required={requiredFields.includes("email")}
 					type="email"
@@ -266,7 +266,7 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 					bind:this={authorWebsiteInput}
 					bind:value={authorWebsite}
 					aria-invalid={invalidFieldState.website}
-					class="comment-form-input rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
+					class="comment-form-input text-90"
 					maxlength="200"
 					required={requiredFields.includes("website")}
 					type="url"
@@ -284,7 +284,7 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 				bind:this={contentInput}
 				bind:value={content}
 				aria-invalid={invalidFieldState.content}
-				class="comment-form-input min-h-32 rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
+				class="comment-form-input min-h-32 text-90"
 				maxlength="5000"
 				required
 			></textarea>

@@ -73,7 +73,7 @@ $: {
 	<input
 		bind:this={inputEl}
 		bind:value
-		class="rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-sm text-90 outline-none"
+		class="comment-form-input text-sm text-90"
 		class:min-w-24={!inline}
 		class:flex-1={!inline}
 		class:min-w-32={inline}

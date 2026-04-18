@@ -145,6 +145,14 @@ async function readDocumentTop(locator: Locator) {
 	});
 }
 
+async function readComputedStyleValue(locator: Locator, property: string) {
+	return locator.evaluate(
+		(node, styleProperty) =>
+			getComputedStyle(node as HTMLElement).getPropertyValue(styleProperty),
+		property,
+	);
+}
+
 function captureConsoleErrors(page: Page) {
 	const messages: string[] = [];
 	page.on("console", (message) => {
@@ -201,6 +209,53 @@ test("desktop display settings updates stored hue", async ({ page }) => {
 			),
 		)
 		.toBe("180");
+});
+
+test("desktop search field shows a visible focus treatment without transition-all", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await prepareStablePage(page, SITE_ROUTES.home);
+
+	const searchShell = page.locator("#search-bar");
+	const searchInput = searchShell.locator("input");
+	await searchInput.focus();
+
+	await expect
+		.poll(async () => {
+			const boxShadow = await readComputedStyleValue(searchShell, "box-shadow");
+			return boxShadow.trim();
+		})
+		.not.toBe("none");
+	await expect
+		.poll(async () => {
+			const transitionProperty = await readComputedStyleValue(
+				searchShell,
+				"transition-property",
+			);
+			return transitionProperty.trim();
+		})
+		.not.toBe("all");
+});
+
+test("swup container transition avoids transition-all", async ({ page }) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await prepareStablePage(page, "/posts/welcome/");
+
+	await page.evaluate(() => {
+		document.documentElement.classList.add("is-changing");
+	});
+
+	const swupContainer = page.locator("#swup-container");
+	await expect
+		.poll(async () => {
+			const transitionProperty = await readComputedStyleValue(
+				swupContainer,
+				"transition-property",
+			);
+			return transitionProperty.trim();
+		})
+		.not.toBe("all");
 });
 
 test("desktop toc updates hash when first heading is clicked", async ({ page }) => {
@@ -289,6 +344,27 @@ test("empty comment sort switch keeps composer position stable", async ({
 	await expect(submitButton).toBeVisible();
 	const afterTop = await readDocumentTop(submitButton);
 	expect(Math.abs(afterTop - beforeTop)).toBeLessThanOrEqual(1);
+});
+
+test("comment composer input shows a visible focus treatment", async ({
+	page,
+}) => {
+	const commentTestRoute = "/posts/welcome/";
+
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await installEmptyCommentsApiStub(page);
+	await prepareStablePage(page, commentTestRoute);
+
+	const composer = page.locator('section[data-post-title] form');
+	const nameInput = composer.locator('input[type="text"]').first();
+	await nameInput.focus();
+
+	await expect
+		.poll(async () => {
+			const boxShadow = await readComputedStyleValue(nameInput, "box-shadow");
+			return boxShadow.trim();
+		})
+		.not.toBe("none");
 });
 
 test("disabled comments bootstrap hides the entire comment section", async ({

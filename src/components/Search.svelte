@@ -139,12 +139,16 @@ $: if (initialized && keywordMobile) {
 </script>
 
 <!-- search bar for desktop view -->
-<div id="search-bar" class="search-field-shell hidden lg:flex transition-all items-center h-11 mr-2 rounded-lg">
+<div id="search-bar" class="search-field-shell hidden lg:flex items-center h-11 mr-2 rounded-lg">
     <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
-    <input placeholder="{i18n(I18nKey.search)}" bind:value={keywordDesktop} on:focus={() => search(keywordDesktop, true)}
-           class="transition-all pl-10 text-sm bg-transparent outline-0
-         h-full w-40 active:w-60 focus:w-60 text-50 placeholder:text-black/25 dark:placeholder:text-white/25"
-    >
+    <input
+           aria-label={i18n(I18nKey.search)}
+           placeholder="{i18n(I18nKey.search)}"
+           bind:value={keywordDesktop}
+           on:focus={() => search(keywordDesktop, true)}
+           class="search-field-input pl-10 text-sm
+          h-full w-40 active:w-60 focus:w-60 text-50 placeholder:text-black/25 dark:placeholder:text-white/25"
+    />
 </div>
 
 <!-- toggle btn for phone/tablet view -->
@@ -157,12 +161,15 @@ $: if (initialized && keywordMobile) {
 <div id="search-panel" class="search-panel-shell float-panel float-panel-closed absolute shadow-2xl rounded-2xl p-2">
 
     <!-- search bar inside panel for phone/tablet -->
-    <div id="search-bar-inside" class="search-field-shell flex relative lg:hidden transition-all items-center h-11 rounded-xl">
+    <div id="search-bar-inside" class="search-field-shell flex relative lg:hidden items-center h-11 rounded-xl">
         <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
-        <input placeholder="Search" bind:value={keywordMobile}
-               class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
-               focus:w-60 text-50 placeholder:text-black/25 dark:placeholder:text-white/25"
-        >
+        <input
+               aria-label={i18n(I18nKey.search)}
+               placeholder="Search"
+               bind:value={keywordMobile}
+               class="search-field-input pl-10 absolute inset-0 text-sm
+                focus:w-60 text-50 placeholder:text-black/25 dark:placeholder:text-white/25"
+        />
     </div>
 
     <!-- search results -->

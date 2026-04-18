@@ -44,6 +44,7 @@
 	--codeblock-selection: oklch(0.40 0.08 var(--hue));
 	--codeblock-bg: oklch(0.17 0.015 var(--hue));
 	--codeblock-topbar-bg: oklch(0.3 0.02 var(--hue));
+	--focus-ring-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
 
 	--license-block-bg: rgba(0, 0, 0, 0.03);
 
@@ -132,6 +133,7 @@
 	--selection-bg: oklch(0.40 0.08 var(--hue));
 	--codeblock-bg: oklch(0.17 0.015 var(--hue));
 	--codeblock-topbar-bg: oklch(0.12 0.015 var(--hue));
+	--focus-ring-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent);
 
 	--license-block-bg: var(--codeblock-bg);
 
