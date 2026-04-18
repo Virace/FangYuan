@@ -14,7 +14,7 @@ import type {
 } from "@utils/page-feedback/provider";
 import { getQingYanClient } from "@utils/qingyan/client";
 import { onDestroy, onMount } from "svelte";
-import { fade, slide } from "svelte/transition";
+import { fade, scale } from "svelte/transition";
 import InlineCommentCaptcha from "../comments/InlineCommentCaptcha.svelte";
 import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
 import RewardModal from "./RewardModal.svelte";
@@ -204,13 +204,6 @@ async function handleLike() {
 	}
 }
 
-function handleDismissCaptcha() {
-	showCaptcha = false;
-	pendingLikeAction = false;
-	captchaValue = "";
-	clearCaptchaFeedback();
-}
-
 async function handleRefreshCaptcha() {
 	if (!qingyanClient) {
 		return;
@@ -295,7 +288,6 @@ onDestroy(() => {
 												captchaBusy={captchaBusy}
 												captchaError={captchaError}
 												captchaPrompt={captchaPrompt}
-												onDismiss={handleDismissCaptcha}
 												onRefreshCaptcha={handleRefreshCaptcha}
 											/>
 										</div>

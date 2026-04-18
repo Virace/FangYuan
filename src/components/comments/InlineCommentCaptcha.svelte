@@ -12,7 +12,6 @@ export let captchaPrompt = "";
 export let compact = false;
 export let variant: "card" | "popover" = "card";
 export let captchaValue = "";
-export let onDismiss: (() => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 
 $: captchaChallenge = captchaState?.challenge ?? null;

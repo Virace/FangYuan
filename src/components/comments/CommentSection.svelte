@@ -6,6 +6,7 @@ import {
 	normalizeCommentOffset,
 } from "@utils/comments/options";
 import type {
+	CommentAuthorField,
 	CommentCapability,
 	CommentCaptchaState,
 	CommentCaptchaWriteInput,
@@ -108,6 +109,12 @@ let voteBusyCommentId: string | null = null;
 let pendingVoteTarget: VoteConfirmTarget = null;
 let pendingAction: PendingAction = null;
 let captchaValue = "";
+const defaultAllowedFields: CommentAuthorField[] = [
+	"nickname",
+	"email",
+	"website",
+];
+const defaultRequiredFields: CommentAuthorField[] = ["nickname", "email"];
 
 $: pageSize = Math.max(1, rootLimit);
 $: currentPage =
@@ -128,8 +135,8 @@ $: commentNoticeTone = commentNotice?.tone ?? "info";
 $: pendingVoteChoice = pendingVoteTarget?.choice ?? null;
 $: supportsVote = capability?.supportsVote ?? false;
 $: supportsCaptcha = capability?.supportsCaptcha ?? false;
-$: allowedFields = commentForm?.allow ?? ["nickname", "email", "website"];
-$: requiredFields = commentForm?.require ?? ["nickname", "email"];
+$: allowedFields = commentForm?.allow ?? defaultAllowedFields;
+$: requiredFields = commentForm?.require ?? defaultRequiredFields;
 $: showComposerCaptcha =
 	supportsCaptcha &&
 	activeCaptchaTarget?.kind === "composer" &&
@@ -269,10 +276,6 @@ function buildCaptchaWriteInput(): CommentCaptchaWriteInput | null {
 		mode: "inline_value",
 		value,
 	};
-}
-
-function handleDismissCaptcha() {
-	resetCaptchaFlow();
 }
 
 function handleCancelVoteConfirm() {
@@ -831,7 +834,6 @@ onDestroy(() => {
 					onConfirmVote={handleConfirmVote}
 					onCancelVoteConfirm={handleCancelVoteConfirm}
 					onReply={handleReply}
-					onDismissCaptcha={handleDismissCaptcha}
 					onRefreshCaptcha={handleRefreshCaptcha}
 				/>
 
@@ -871,7 +873,6 @@ onDestroy(() => {
 			replyParentId={activeReplyParentId}
 			submitting={submitting}
 			onSubmit={handleSubmit}
-			onDismissCaptcha={handleDismissCaptcha}
 			onCancelReply={handleCancelReply}
 			onRefreshCaptcha={handleRefreshCaptcha}
 		/>

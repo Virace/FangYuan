@@ -39,7 +39,6 @@ export let noticeTone: AutoDismissTone = "info";
 export let onSubmit:
 	| ((detail: CommentComposerSubmitDetail) => boolean | Promise<boolean>)
 	| null = null;
-export let onDismissCaptcha: (() => void) | null = null;
 export let onCancelReply: (() => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 
@@ -286,7 +285,6 @@ onDestroy(() => {
 										captchaError={captchaError}
 										captchaPrompt={captchaPrompt}
 										captchaState={captchaState}
-										onDismiss={onDismissCaptcha}
 										onRefreshCaptcha={onRefreshCaptcha}
 									/>
 								</div>

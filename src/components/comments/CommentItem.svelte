@@ -32,7 +32,6 @@ export let onConfirmVote:
 	| null = null;
 export let onCancelVoteConfirm: (() => void) | null = null;
 export let onReply: ((commentId: string) => void) | null = null;
-export let onDismissCaptcha: (() => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 
 function formatCommentDate(value: string): string {
@@ -228,7 +227,6 @@ $: showCommentNotice =
 								captchaError={captchaError}
 								captchaPrompt={captchaPrompt}
 								captchaState={captchaState}
-								onDismiss={onDismissCaptcha}
 								onRefreshCaptcha={onRefreshCaptcha}
 							/>
 						</div>
@@ -271,7 +269,6 @@ $: showCommentNotice =
 							onConfirmVote={onConfirmVote}
 							onCancelVoteConfirm={onCancelVoteConfirm}
 							onReply={onReply}
-							onDismissCaptcha={onDismissCaptcha}
 							onRefreshCaptcha={onRefreshCaptcha}
 						/>
 					{/each}

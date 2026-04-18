@@ -27,7 +27,6 @@ export let onConfirmVote:
 	| null = null;
 export let onCancelVoteConfirm: (() => void) | null = null;
 export let onReply: ((commentId: string) => void) | null = null;
-export let onDismissCaptcha: (() => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 </script>
 
@@ -55,7 +54,6 @@ export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 			onConfirmVote={onConfirmVote}
 			onCancelVoteConfirm={onCancelVoteConfirm}
 			onReply={onReply}
-			onDismissCaptcha={onDismissCaptcha}
 			onRefreshCaptcha={onRefreshCaptcha}
 		/>
 	{/each}
