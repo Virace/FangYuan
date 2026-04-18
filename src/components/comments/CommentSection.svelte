@@ -77,6 +77,10 @@ type CommentNotice = {
 	tone: AutoDismissTone;
 } | null;
 
+type FangYuanDebugWindow = Window & {
+	__FANGYUAN_QINGYAN_DEBUG__?: Record<string, unknown>;
+};
+
 const qingyanClient = getQingYanClient();
 
 export let postKey: string;
@@ -125,6 +129,12 @@ $: hasNextPage = currentOffset + pageSize < totalRootCount;
 $: activeCaptchaCommentId =
 	activeCaptchaTarget?.kind === "comment"
 		? activeCaptchaTarget.commentId
+		: null;
+$: activeCaptchaVoteChoice =
+	activeCaptchaTarget?.kind === "comment" &&
+	pendingAction?.kind === "comment_vote" &&
+	pendingAction.commentId === activeCaptchaTarget.commentId
+		? pendingAction.choice
 		: null;
 $: activeCommentNoticeId = commentNotice?.commentId ?? null;
 $: activeVoteConfirmCommentId = pendingVoteTarget?.commentId ?? null;
@@ -258,6 +268,30 @@ function resetCaptchaFlow() {
 	captchaState = null;
 	captchaValue = "";
 	clearCaptchaFeedback();
+}
+
+function updateCommentDebugHook() {
+	if (!import.meta.env.DEV || typeof window === "undefined") {
+		return;
+	}
+
+	const nextDebug = {
+		...((window as FangYuanDebugWindow).__FANGYUAN_QINGYAN_DEBUG__ ?? {}),
+		comments: {
+			postKey,
+			activeCaptchaTarget,
+			activeCaptchaVoteChoice,
+			pendingAction,
+			captchaState,
+			captchaPrompt,
+			captchaError,
+			composerNotice,
+			commentNotice,
+			retryPendingAction: () => void handleSubmitCaptchaAction(),
+			refreshCaptcha: () => void handleRefreshCaptcha(),
+		},
+	};
+	(window as FangYuanDebugWindow).__FANGYUAN_QINGYAN_DEBUG__ = nextDebug;
 }
 
 function buildCaptchaWriteInput(): CommentCaptchaWriteInput | null {
@@ -487,6 +521,18 @@ async function handleRefreshCaptcha() {
 		captchaBusy = false;
 	}
 }
+
+async function handleSubmitCaptchaAction() {
+	if (
+		pendingAction?.kind === "comment_vote" &&
+		pendingAction.commentId &&
+		pendingAction.choice
+	) {
+		await submitVote(pendingAction.commentId, pendingAction.choice);
+	}
+}
+
+$: updateCommentDebugHook();
 
 async function handleSortChange(sortBy: CommentSortBy) {
 	if (sortBy === currentSortBy) {
@@ -718,6 +764,13 @@ onDestroy(() => {
 	clearComposerNoticeTimer();
 	clearCommentNoticeTimer();
 	clearCaptchaFeedbackTimer();
+	if (import.meta.env.DEV && typeof window !== "undefined") {
+		const nextDebug = {
+			...((window as FangYuanDebugWindow).__FANGYUAN_QINGYAN_DEBUG__ ?? {}),
+		};
+		delete nextDebug.comments;
+		(window as FangYuanDebugWindow).__FANGYUAN_QINGYAN_DEBUG__ = nextDebug;
+	}
 });
 </script>
 
@@ -733,14 +786,12 @@ onDestroy(() => {
 		</p>
 	{/if}
 
-	{#if loadError}
-		<InlineFeedbackNotice
-			message={loadError || i18n(I18nKey.commentsLoadFailed)}
-			tone="error"
-			duration={contentTransitionDuration}
-			className="mb-4"
-		/>
-	{/if}
+	<InlineFeedbackNotice
+		message={loadError || ""}
+		tone="error"
+		duration={contentTransitionDuration}
+		className="mb-4"
+	/>
 
 	{#if capability?.enabled}
 		<div class="mb-5 flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
@@ -817,6 +868,7 @@ onDestroy(() => {
 					comments={comments}
 					activeReplyParentId={activeReplyParentId}
 					activeCaptchaCommentId={activeCaptchaCommentId}
+					activeCaptchaVoteChoice={activeCaptchaVoteChoice}
 					activeVoteConfirmCommentId={activeVoteConfirmCommentId}
 					activeCommentNoticeId={activeCommentNoticeId}
 					maxDepth={maxDepth}
@@ -835,6 +887,7 @@ onDestroy(() => {
 					onCancelVoteConfirm={handleCancelVoteConfirm}
 					onReply={handleReply}
 					onRefreshCaptcha={handleRefreshCaptcha}
+					onSubmitCaptcha={handleSubmitCaptchaAction}
 				/>
 
 				{#if showCommentLoadingOverlay}

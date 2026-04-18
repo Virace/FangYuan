@@ -252,3 +252,62 @@ test("empty comment sort switch keeps composer position stable", async ({
 	const afterTop = await readDocumentTop(submitButton);
 	expect(Math.abs(afterTop - beforeTop)).toBeLessThanOrEqual(1);
 });
+
+test("empty comment submit highlights required fields and focuses the first invalid input", async ({
+	page,
+}) => {
+	const commentTestRoute = "/posts/welcome/";
+
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await installEmptyCommentsApiStub(page);
+	await prepareStablePage(page, commentTestRoute);
+
+	const composer = page.locator('section[data-post-title] form');
+	const submitButton = composer.getByRole("button", { name: "发表评论" });
+	const nameInput = composer.locator('input[type="text"]').first();
+	const emailInput = composer.locator('input[type="email"]');
+	const contentInput = composer.locator("textarea");
+
+	await expect(submitButton).toBeEnabled();
+	await submitButton.click();
+
+	await expect(nameInput).toBeFocused();
+	await expect(nameInput).toHaveAttribute("aria-invalid", "true");
+	await expect(emailInput).toHaveAttribute("aria-invalid", "true");
+	await expect(contentInput).toHaveAttribute("aria-invalid", "true");
+
+	await page.waitForTimeout(900);
+	await expect(nameInput).toHaveAttribute("aria-invalid", "true");
+	await expect(emailInput).toHaveAttribute("aria-invalid", "true");
+	await expect(contentInput).toHaveAttribute("aria-invalid", "true");
+
+	await nameInput.fill("Smoke Tester");
+	await expect(nameInput).toHaveAttribute("aria-invalid", "false");
+	await expect(emailInput).toHaveAttribute("aria-invalid", "true");
+	await expect(contentInput).toHaveAttribute("aria-invalid", "true");
+});
+
+test("comment emoji trigger keeps the emoji visually centered", async ({ page }) => {
+	const commentTestRoute = "/posts/welcome/";
+
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await installEmptyCommentsApiStub(page);
+	await prepareStablePage(page, commentTestRoute);
+
+	const triggerButton = page.locator(".comment-emoji-trigger").first();
+	const triggerIcon = page.locator(".comment-emoji-trigger-icon").first();
+
+	const buttonBox = await triggerButton.boundingBox();
+	const iconBox = await triggerIcon.boundingBox();
+	expect(buttonBox).not.toBeNull();
+	expect(iconBox).not.toBeNull();
+
+	const buttonCenterX = (buttonBox?.x ?? 0) + (buttonBox?.width ?? 0) / 2;
+	const buttonCenterY = (buttonBox?.y ?? 0) + (buttonBox?.height ?? 0) / 2;
+	const iconCenterX = (iconBox?.x ?? 0) + (iconBox?.width ?? 0) / 2;
+	const iconCenterY = (iconBox?.y ?? 0) + (iconBox?.height ?? 0) / 2;
+
+	expect(Math.abs(iconCenterX - buttonCenterX)).toBeLessThanOrEqual(3);
+	expect(Math.abs(iconCenterY - buttonCenterY)).toBeLessThanOrEqual(3);
+	await expect(triggerIcon).toHaveCSS("transform", "none");
+});

@@ -366,11 +366,16 @@ test("comment submit should keep captcha attached to the original action", async
 		'[data-comment-captcha-target="composer"] .comment-captcha-popover',
 	);
 	await expect(composerCaptcha).toBeVisible();
+	await expect(composer.getByRole("button", { name: "确认" })).toBeVisible();
 	await expect(
 		composer.getByRole("button", { name: "验证验证码" }),
 	).toHaveCount(0);
+	await expect(async () => {
+		const box = await composerCaptcha.boundingBox();
+		expect(box?.width ?? 0).toBeLessThan(340);
+	}).toPass();
 
-	await composer.getByRole("button", { name: "发表评论" }).click();
+	await composer.getByRole("button", { name: "确认" }).click();
 	await expect
 		.poll(async () => Number((await readTestState(page)).commentSubmitCount))
 		.toBe(1);
@@ -389,7 +394,7 @@ test("comment submit should keep captcha attached to the original action", async
 	);
 
 	await composerCaptcha.locator('input[inputmode="numeric"]').fill("1357");
-	await composer.getByRole("button", { name: "发表评论" }).click();
+	await composer.getByRole("button", { name: "确认" }).click();
 
 	await expect
 		.poll(async () => Number((await readTestState(page)).commentSubmitCount))
@@ -447,6 +452,26 @@ test("page like should retry with captcha on the same button", async ({ page }) 
 		'[data-page-feedback-captcha-target="like"] .comment-captcha-popover',
 	);
 	await expect(likeCaptchaPopover).toBeVisible();
+	await expect(async () => {
+		const box = await likeCaptchaPopover.boundingBox();
+		expect(box?.width ?? 0).toBeLessThan(340);
+	}).toPass();
+	const likeCaptchaImage = likeCaptchaPopover.locator("img");
+	const likeCaptchaInput = likeCaptchaPopover.locator('input[inputmode="numeric"]');
+	await expect(likeCaptchaInput).toBeFocused();
+	await expect(async () => {
+		const imageBox = await likeCaptchaImage.boundingBox();
+		const inputBox = await likeCaptchaInput.boundingBox();
+		const promptBox = await page
+			.locator(
+				'[data-page-feedback-captcha-target="like"] [data-inline-feedback-notice]',
+			)
+			.first()
+			.boundingBox();
+		expect((inputBox?.y ?? 0) - (imageBox?.y ?? 0)).toBeGreaterThan(30);
+		expect((inputBox?.x ?? 0) - (imageBox?.x ?? 0)).toBeLessThan(8);
+		expect((imageBox?.y ?? 0) - ((promptBox?.y ?? 0) + (promptBox?.height ?? 0))).toBeGreaterThan(8);
+	}).toPass();
 	await expect(
 		likeCaptchaPopover.getByRole("button", { name: "验证验证码" }),
 	).toHaveCount(0);
@@ -457,8 +482,8 @@ test("page like should retry with captcha on the same button", async ({ page }) 
 		.toBe(1);
 	await expect(page.getByText("请输入验证码。")).toBeVisible();
 
-	await likeCaptchaPopover.locator('input[inputmode="numeric"]').fill("2468");
-	await likeButton.click();
+	await likeCaptchaInput.fill("2468");
+	await likeCaptchaInput.press("Enter");
 
 	await expect
 		.poll(async () => Number((await readTestState(page)).likeCount))
@@ -511,6 +536,18 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 		'[data-comment-vote-confirm-target="comment-1"] .comment-vote-popover',
 	);
 	await expect(confirmPopover).toBeVisible();
+	await expect(async () => {
+		const box = await confirmPopover.boundingBox();
+		const buttons = confirmPopover.locator("button");
+		const primaryBox = await buttons.nth(0).boundingBox();
+		const secondaryBox = await buttons.nth(1).boundingBox();
+		expect(box?.width ?? 0).toBeLessThan(300);
+		expect(Math.abs((primaryBox?.width ?? 0) - (secondaryBox?.width ?? 0))).toBeLessThan(3);
+		expect((secondaryBox?.x ?? 0) - (primaryBox?.x ?? 0)).toBeGreaterThan(
+			(primaryBox?.width ?? 0) - 4,
+		);
+		expect(((secondaryBox?.x ?? 0) + (secondaryBox?.width ?? 0)) - ((box?.x ?? 0) + (box?.width ?? 0))).toBeGreaterThan(-24);
+	}).toPass();
 
 	await confirmPopover.locator("button").first().click();
 	await expect
@@ -521,6 +558,10 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 		'[data-comment-captcha-target="comment-1"] .comment-captcha-popover',
 	);
 	await expect(voteCaptchaPopover).toBeVisible();
+	await expect(async () => {
+		const box = await voteCaptchaPopover.boundingBox();
+		expect(box?.width ?? 0).toBeLessThan(340);
+	}).toPass();
 
 	await voteButton.click();
 	await expect
@@ -528,8 +569,9 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 		.toBe(1);
 	await expect(page.getByText("请输入验证码。")).toBeVisible();
 
-	await voteCaptchaPopover.locator('input[inputmode="numeric"]').fill("2468");
-	await voteButton.click();
+	const voteCaptchaInput = voteCaptchaPopover.locator('input[inputmode="numeric"]');
+	await voteCaptchaInput.fill("2468");
+	await voteCaptchaInput.press("Enter");
 
 	await expect
 		.poll(async () => Number((await readTestState(page)).voteCount))

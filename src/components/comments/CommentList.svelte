@@ -7,6 +7,7 @@ import CommentItem from "./CommentItem.svelte";
 export let comments: CanonicalComment[] = [];
 export let activeReplyParentId: string | null = null;
 export let activeCaptchaCommentId: string | null = null;
+export let activeCaptchaVoteChoice: CommentVoteChoice | null = null;
 export let activeVoteConfirmCommentId: string | null = null;
 export let activeCommentNoticeId: string | null = null;
 export let maxDepth = 3;
@@ -28,6 +29,7 @@ export let onConfirmVote:
 export let onCancelVoteConfirm: (() => void) | null = null;
 export let onReply: ((commentId: string) => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
+export let onSubmitCaptcha: (() => void | Promise<void>) | null = null;
 </script>
 
 <div class="space-y-3">
@@ -36,6 +38,7 @@ export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 			comment={comment}
 			activeReplyParentId={activeReplyParentId}
 			activeCaptchaCommentId={activeCaptchaCommentId}
+			activeCaptchaVoteChoice={activeCaptchaVoteChoice}
 			activeVoteConfirmCommentId={activeVoteConfirmCommentId}
 			activeCommentNoticeId={activeCommentNoticeId}
 			depth={1}
@@ -55,6 +58,7 @@ export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 			onCancelVoteConfirm={onCancelVoteConfirm}
 			onReply={onReply}
 			onRefreshCaptcha={onRefreshCaptcha}
+			onSubmitCaptcha={onSubmitCaptcha}
 		/>
 	{/each}
 </div>

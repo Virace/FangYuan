@@ -5,9 +5,12 @@ import type {
 	CommentAuthorField,
 	CommentCaptchaState,
 } from "@utils/comments/provider";
-import { validateCommentForm } from "@utils/comments/validation";
-import { type AutoDismissTone, getAutoDismissMs } from "@utils/notice";
-import { onDestroy } from "svelte";
+import {
+	type CommentFormValidationField,
+	collectCommentFormInvalidFields,
+} from "@utils/comments/validation";
+import type { AutoDismissTone } from "@utils/notice";
+import { tick } from "svelte";
 import { fade, scale, slide } from "svelte/transition";
 import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
 import EmojiPicker from "./EmojiPicker.svelte";
@@ -49,20 +52,48 @@ let authorName = "";
 let authorEmail = "";
 let authorWebsite = "";
 let content = "";
-let validationError = "";
 let showEmojiPicker = false;
 let emojiTriggerWrap: HTMLDivElement | null = null;
-let validationErrorTimer: ReturnType<typeof setTimeout> | null = null;
+let authorNameInput: HTMLInputElement | null = null;
+let authorEmailInput: HTMLInputElement | null = null;
+let authorWebsiteInput: HTMLInputElement | null = null;
+let contentInput: HTMLTextAreaElement | null = null;
+let hasTriedSubmit = false;
+let currentInvalidFields: CommentFormValidationField[] = [];
+let invalidFieldState: Record<CommentFormValidationField, boolean> = {
+	nickname: false,
+	email: false,
+	website: false,
+	content: false,
+};
 
 $: showNameField = allowedFields.includes("nickname");
 $: showEmailField = allowedFields.includes("email");
 $: showWebsiteField = allowedFields.includes("website");
-$: canSubmit =
-	!submitting &&
-	(!requiredFields.includes("nickname") || authorName.trim().length > 0) &&
-	(!requiredFields.includes("email") || authorEmail.trim().length > 0) &&
-	(!requiredFields.includes("website") || authorWebsite.trim().length > 0) &&
-	content.trim().length > 0;
+$: submitButtonLabel = submitting
+	? i18n(I18nKey.commentsSubmitting)
+	: showCaptcha
+		? i18n(I18nKey.commentsVoteConfirmProceed)
+		: i18n(I18nKey.commentsSubmit);
+$: currentInvalidFields = hasTriedSubmit
+	? collectCommentFormInvalidFields(
+			{
+				authorName,
+				authorEmail,
+				authorWebsite,
+				content,
+			},
+			{
+				requiredFields,
+			},
+		)
+	: [];
+$: invalidFieldState = {
+	nickname: currentInvalidFields.includes("nickname"),
+	email: currentInvalidFields.includes("email"),
+	website: currentInvalidFields.includes("website"),
+	content: currentInvalidFields.includes("content"),
+};
 
 function formatFieldLabel(key: I18nKey, field: CommentAuthorField): string {
 	const label = i18n(key);
@@ -71,26 +102,25 @@ function formatFieldLabel(key: I18nKey, field: CommentAuthorField): string {
 		: `${label}${i18n(I18nKey.commentsFormOptionalSuffix)}`;
 }
 
-function clearValidationErrorTimer() {
-	if (validationErrorTimer) {
-		clearTimeout(validationErrorTimer);
-		validationErrorTimer = null;
-	}
-}
+function focusInvalidField(field: CommentFormValidationField) {
+	const target =
+		field === "nickname"
+			? authorNameInput
+			: field === "email"
+				? authorEmailInput
+				: field === "website"
+					? authorWebsiteInput
+					: contentInput;
 
-function setValidationErrorNotice(message: string) {
-	validationError = message;
-	clearValidationErrorTimer();
-	validationErrorTimer = setTimeout(
-		() => {
-			validationError = "";
-		},
-		getAutoDismissMs(message, "error"),
-	);
+	target?.focus();
 }
 
 async function handleSubmit() {
-	const validationResult = validateCommentForm(
+	if (submitting) {
+		return;
+	}
+
+	const invalidFields = collectCommentFormInvalidFields(
 		{
 			authorName,
 			authorEmail,
@@ -102,17 +132,13 @@ async function handleSubmit() {
 		},
 	);
 
-	if (validationResult) {
-		setValidationErrorNotice(i18n(validationResult));
+	if (invalidFields.length > 0) {
+		hasTriedSubmit = true;
+		await tick();
+		focusInvalidField(invalidFields[0]);
 		return;
 	}
-
-	if (!canSubmit) {
-		return;
-	}
-
-	validationError = "";
-	clearValidationErrorTimer();
+	hasTriedSubmit = false;
 	const submitSucceeded = await onSubmit?.({
 		authorName: authorName.trim(),
 		authorEmail: authorEmail.trim(),
@@ -121,13 +147,13 @@ async function handleSubmit() {
 	});
 	if (submitSucceeded) {
 		content = "";
+		hasTriedSubmit = false;
 		showEmojiPicker = false;
 	}
 }
 
 function handleCancelReply() {
-	validationError = "";
-	clearValidationErrorTimer();
+	hasTriedSubmit = false;
 	showEmojiPicker = false;
 	onCancelReply?.();
 }
@@ -154,32 +180,17 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 
 	showEmojiPicker = false;
 }
-
-onDestroy(() => {
-	clearValidationErrorTimer();
-});
 </script>
 
 <svelte:window on:keydown={handleEmojiKeydown} />
 
-<form class="card-base rounded-panel p-5" on:submit|preventDefault={handleSubmit}>
-	{#if noticeMessage}
-		<InlineFeedbackNotice
-			message={noticeMessage}
-			tone={noticeTone}
-			duration={180}
-			className="mb-4"
-		/>
-	{/if}
-
-	{#if validationError}
-		<InlineFeedbackNotice
-			message={validationError}
-			tone="error"
-			duration={180}
-			className="mb-4"
-		/>
-	{/if}
+<form class="card-base rounded-panel p-5" novalidate on:submit|preventDefault={handleSubmit}>
+	<InlineFeedbackNotice
+		message={noticeMessage}
+		tone={noticeTone}
+		duration={180}
+		className="mb-4"
+	/>
 
 	<div class="flex items-start justify-between gap-3 mb-4">
 		<div>
@@ -201,11 +212,19 @@ onDestroy(() => {
 
 	<div class="grid gap-3 md:grid-cols-2">
 		{#if showNameField}
-			<label class="flex flex-col gap-1 text-sm text-50">
-				<span>{formatFieldLabel(I18nKey.commentsFormName, "nickname")}</span>
+			<label
+				class="comment-form-field flex flex-col gap-1 text-sm text-50"
+				class:comment-form-field-invalid={invalidFieldState.nickname}
+				data-validation-state={invalidFieldState.nickname ? "invalid" : "idle"}
+			>
+				<span class="comment-form-field-label">
+					{formatFieldLabel(I18nKey.commentsFormName, "nickname")}
+				</span>
 				<input
+					bind:this={authorNameInput}
 					bind:value={authorName}
-					class="rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
+					aria-invalid={invalidFieldState.nickname}
+					class="comment-form-input rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
 					maxlength="80"
 					required={requiredFields.includes("nickname")}
 					type="text"
@@ -214,11 +233,19 @@ onDestroy(() => {
 		{/if}
 
 		{#if showEmailField}
-			<label class="flex flex-col gap-1 text-sm text-50">
-				<span>{formatFieldLabel(I18nKey.commentsFormEmail, "email")}</span>
+			<label
+				class="comment-form-field flex flex-col gap-1 text-sm text-50"
+				class:comment-form-field-invalid={invalidFieldState.email}
+				data-validation-state={invalidFieldState.email ? "invalid" : "idle"}
+			>
+				<span class="comment-form-field-label">
+					{formatFieldLabel(I18nKey.commentsFormEmail, "email")}
+				</span>
 				<input
+					bind:this={authorEmailInput}
 					bind:value={authorEmail}
-					class="rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
+					aria-invalid={invalidFieldState.email}
+					class="comment-form-input rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
 					maxlength="120"
 					required={requiredFields.includes("email")}
 					type="email"
@@ -227,11 +254,19 @@ onDestroy(() => {
 		{/if}
 
 		{#if showWebsiteField}
-			<label class="flex flex-col gap-1 text-sm text-50 md:col-span-2">
-				<span>{formatFieldLabel(I18nKey.commentsFormWebsite, "website")}</span>
+			<label
+				class="comment-form-field flex flex-col gap-1 text-sm text-50 md:col-span-2"
+				class:comment-form-field-invalid={invalidFieldState.website}
+				data-validation-state={invalidFieldState.website ? "invalid" : "idle"}
+			>
+				<span class="comment-form-field-label">
+					{formatFieldLabel(I18nKey.commentsFormWebsite, "website")}
+				</span>
 				<input
+					bind:this={authorWebsiteInput}
 					bind:value={authorWebsite}
-					class="rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
+					aria-invalid={invalidFieldState.website}
+					class="comment-form-input rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
 					maxlength="200"
 					required={requiredFields.includes("website")}
 					type="url"
@@ -239,11 +274,17 @@ onDestroy(() => {
 			</label>
 		{/if}
 
-		<label class="flex flex-col gap-1 text-sm text-50 md:col-span-2">
-			<span>{i18n(I18nKey.commentsFormContent)}</span>
+		<label
+			class="comment-form-field flex flex-col gap-1 text-sm text-50 md:col-span-2"
+			class:comment-form-field-invalid={invalidFieldState.content}
+			data-validation-state={invalidFieldState.content ? "invalid" : "idle"}
+		>
+			<span class="comment-form-field-label">{i18n(I18nKey.commentsFormContent)}</span>
 			<textarea
+				bind:this={contentInput}
 				bind:value={content}
-				class="min-h-32 rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
+				aria-invalid={invalidFieldState.content}
+				class="comment-form-input min-h-32 rounded-xl border border-line-divider bg-card-bg px-3 py-2 text-90 outline-none"
 				maxlength="5000"
 				required
 			></textarea>
@@ -256,14 +297,10 @@ onDestroy(() => {
 				<div class="comment-captcha-popover-anchor">
 					<button
 						class="btn-regular rounded-xl px-4 h-10 text-sm font-medium w-full md:w-auto md:shrink-0"
-						disabled={!canSubmit}
+						disabled={submitting}
 						type="submit"
 					>
-						{#if submitting}
-							{i18n(I18nKey.commentsSubmitting)}
-						{:else}
-							{i18n(I18nKey.commentsSubmit)}
-						{/if}
+						{submitButtonLabel}
 					</button>
 
 					{#if showCaptcha}

@@ -11,6 +11,7 @@ import InlineCommentCaptcha from "./InlineCommentCaptcha.svelte";
 export let comment: CanonicalComment;
 export let activeReplyParentId: string | null = null;
 export let activeCaptchaCommentId: string | null = null;
+export let activeCaptchaVoteChoice: CommentVoteChoice | null = null;
 export let activeVoteConfirmCommentId: string | null = null;
 export let activeCommentNoticeId: string | null = null;
 export let depth = 1;
@@ -33,6 +34,7 @@ export let onConfirmVote:
 export let onCancelVoteConfirm: (() => void) | null = null;
 export let onReply: ((commentId: string) => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
+export let onSubmitCaptcha: (() => void | Promise<void>) | null = null;
 
 function formatCommentDate(value: string): string {
 	const date = new Date(value);
@@ -52,6 +54,14 @@ $: showVoteConfirm =
 $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
 $: showCommentNotice =
 	comment.id === activeCommentNoticeId && commentNoticeMessage.length > 0;
+$: showCommentCaptchaUp =
+	comment.id === activeCaptchaCommentId &&
+	activeCaptchaVoteChoice === "up" &&
+	Boolean(captchaState?.required);
+$: showCommentCaptchaDown =
+	comment.id === activeCaptchaCommentId &&
+	activeCaptchaVoteChoice === "down" &&
+	Boolean(captchaState?.required);
 </script>
 
 <article
@@ -117,6 +127,33 @@ $: showCommentNotice =
 								<span class="comment-action-count">{comment.voteUp}</span>
 							</button>
 
+							{#if showCommentCaptchaUp}
+								<div
+									class="comment-captcha-popover-wrap comment-captcha-popover-wrap-start"
+									data-comment-captcha-target={comment.id}
+								>
+									<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
+										<div
+											class="comment-captcha-popover"
+											in:scale={{ duration: 180, start: 0.96 }}
+											out:scale={{ duration: 180, start: 0.96 }}
+										>
+											<InlineCommentCaptcha
+												compact={true}
+												variant="popover"
+												bind:captchaValue
+												captchaBusy={captchaBusy}
+												captchaError={captchaError}
+												captchaPrompt={captchaPrompt}
+												captchaState={captchaState}
+												onRefreshCaptcha={onRefreshCaptcha}
+												onSubmitCaptcha={onSubmitCaptcha}
+											/>
+										</div>
+									</div>
+								</div>
+							{/if}
+
 							{#if showVoteConfirm && pendingVoteChoice === "up"}
 								<div
 									class="comment-vote-popover-wrap comment-vote-popover-wrap-start"
@@ -131,10 +168,10 @@ $: showCommentNotice =
 											<p class="text-xs leading-6 text-60">
 												{i18n(I18nKey.commentsVoteConfirmTipUp)}
 											</p>
-											<div class="mt-3 flex flex-wrap gap-2">
+											<div class="comment-vote-actions">
 												<button
 													type="button"
-													class="comment-action"
+													class="comment-action comment-vote-confirm-btn comment-vote-confirm-btn-primary"
 													on:click={() =>
 														onConfirmVote?.(comment.id, pendingVoteChoice)}
 												>
@@ -142,7 +179,7 @@ $: showCommentNotice =
 												</button>
 												<button
 													type="button"
-													class="comment-action"
+													class="comment-action comment-vote-confirm-btn comment-vote-confirm-btn-secondary"
 													on:click={() => onCancelVoteConfirm?.()}
 												>
 													{i18n(I18nKey.commentsVoteConfirmCancel)}
@@ -167,6 +204,33 @@ $: showCommentNotice =
 								<span class="comment-action-count">{comment.voteDown}</span>
 							</button>
 
+							{#if showCommentCaptchaDown}
+								<div
+									class="comment-captcha-popover-wrap comment-captcha-popover-wrap-end"
+									data-comment-captcha-target={comment.id}
+								>
+									<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
+										<div
+											class="comment-captcha-popover"
+											in:scale={{ duration: 180, start: 0.96 }}
+											out:scale={{ duration: 180, start: 0.96 }}
+										>
+											<InlineCommentCaptcha
+												compact={true}
+												variant="popover"
+												bind:captchaValue
+												captchaBusy={captchaBusy}
+												captchaError={captchaError}
+												captchaPrompt={captchaPrompt}
+												captchaState={captchaState}
+												onRefreshCaptcha={onRefreshCaptcha}
+												onSubmitCaptcha={onSubmitCaptcha}
+											/>
+										</div>
+									</div>
+								</div>
+							{/if}
+
 							{#if showVoteConfirm && pendingVoteChoice === "down"}
 								<div
 									class="comment-vote-popover-wrap comment-vote-popover-wrap-end"
@@ -181,10 +245,10 @@ $: showCommentNotice =
 											<p class="text-xs leading-6 text-60">
 												{i18n(I18nKey.commentsVoteConfirmTipDown)}
 											</p>
-											<div class="mt-3 flex flex-wrap gap-2">
+											<div class="comment-vote-actions">
 												<button
 													type="button"
-													class="comment-action"
+													class="comment-action comment-vote-confirm-btn comment-vote-confirm-btn-primary"
 													on:click={() =>
 														onConfirmVote?.(comment.id, pendingVoteChoice)}
 												>
@@ -192,7 +256,7 @@ $: showCommentNotice =
 												</button>
 												<button
 													type="button"
-													class="comment-action"
+													class="comment-action comment-vote-confirm-btn comment-vote-confirm-btn-secondary"
 													on:click={() => onCancelVoteConfirm?.()}
 												>
 													{i18n(I18nKey.commentsVoteConfirmCancel)}
@@ -208,41 +272,13 @@ $: showCommentNotice =
 				</div>
 			{/if}
 
-			{#if comment.id === activeCaptchaCommentId && captchaState?.required}
-				<div
-					class="comment-captcha-popover-wrap comment-captcha-popover-wrap-start"
-					data-comment-captcha-target={comment.id}
-				>
-					<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
-						<div
-							class="comment-captcha-popover"
-							in:scale={{ duration: 180, start: 0.96 }}
-							out:scale={{ duration: 180, start: 0.96 }}
-						>
-							<InlineCommentCaptcha
-								compact={true}
-								variant="popover"
-								bind:captchaValue
-								captchaBusy={captchaBusy}
-								captchaError={captchaError}
-								captchaPrompt={captchaPrompt}
-								captchaState={captchaState}
-								onRefreshCaptcha={onRefreshCaptcha}
-							/>
-						</div>
-					</div>
-				</div>
-			{/if}
-
-			{#if showCommentNotice}
-				<InlineFeedbackNotice
-					message={commentNoticeMessage}
-					tone={commentNoticeTone}
-					compact={true}
-					duration={180}
-					className="mt-3"
-				/>
-			{/if}
+			<InlineFeedbackNotice
+				message={showCommentNotice ? commentNoticeMessage : ""}
+				tone={commentNoticeTone}
+				compact={true}
+				duration={180}
+				className="mt-3"
+			/>
 
 			{#if depth < maxDepth && comment.children.length > 0}
 				<div class="comment-children mt-4 space-y-3">
@@ -251,6 +287,7 @@ $: showCommentNotice =
 							comment={child}
 							activeReplyParentId={activeReplyParentId}
 							activeCaptchaCommentId={activeCaptchaCommentId}
+							activeCaptchaVoteChoice={activeCaptchaVoteChoice}
 							activeVoteConfirmCommentId={activeVoteConfirmCommentId}
 							activeCommentNoticeId={activeCommentNoticeId}
 							depth={depth + 1}
@@ -270,6 +307,7 @@ $: showCommentNotice =
 							onCancelVoteConfirm={onCancelVoteConfirm}
 							onReply={onReply}
 							onRefreshCaptcha={onRefreshCaptcha}
+							onSubmitCaptcha={onSubmitCaptcha}
 						/>
 					{/each}
 				</div>

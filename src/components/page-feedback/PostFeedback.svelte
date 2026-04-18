@@ -26,6 +26,10 @@ export let rewardOptions: RewardOption[] = [];
 
 const qingyanClient = getQingYanClient();
 
+type FangYuanDebugWindow = Window & {
+	__FANGYUAN_QINGYAN_DEBUG__?: Record<string, unknown>;
+};
+
 let capability: PageFeedbackCapability | null = null;
 let likeCount = 0;
 let liked = false;
@@ -101,6 +105,32 @@ function setCaptchaError(message: string) {
 		},
 		getAutoDismissMs(message, "error"),
 	);
+}
+
+function updatePageFeedbackDebugHook() {
+	if (!import.meta.env.DEV || typeof window === "undefined") {
+		return;
+	}
+
+	const nextDebug = {
+		...((window as FangYuanDebugWindow).__FANGYUAN_QINGYAN_DEBUG__ ?? {}),
+		pageFeedback: {
+			postKey,
+			likeBusy,
+			liked,
+			likeCount,
+			showCaptcha,
+			pendingLikeAction,
+			captchaState,
+			captchaPrompt,
+			captchaError,
+			noticeMessage,
+			noticeTone,
+			retryPendingAction: () => void handleLike(),
+			refreshCaptcha: () => void handleRefreshCaptcha(),
+		},
+	};
+	(window as FangYuanDebugWindow).__FANGYUAN_QINGYAN_DEBUG__ = nextDebug;
 }
 
 function buildLikeCaptchaPayload(): CommentCaptchaWriteInput | null {
@@ -226,9 +256,18 @@ async function handleRefreshCaptcha() {
 	}
 }
 
+$: updatePageFeedbackDebugHook();
+
 onDestroy(() => {
 	clearNoticeTimer();
 	clearCaptchaFeedbackTimer();
+	if (import.meta.env.DEV && typeof window !== "undefined") {
+		const nextDebug = {
+			...((window as FangYuanDebugWindow).__FANGYUAN_QINGYAN_DEBUG__ ?? {}),
+		};
+		delete nextDebug.pageFeedback;
+		(window as FangYuanDebugWindow).__FANGYUAN_QINGYAN_DEBUG__ = nextDebug;
+	}
 });
 </script>
 
@@ -284,11 +323,14 @@ onDestroy(() => {
 												compact={true}
 												variant="popover"
 												bind:captchaValue
+												stacked={true}
+												autoFocusCaptchaInput={true}
 												captchaState={captchaState}
 												captchaBusy={captchaBusy}
 												captchaError={captchaError}
 												captchaPrompt={captchaPrompt}
 												onRefreshCaptcha={handleRefreshCaptcha}
+												onSubmitCaptcha={handleLike}
 											/>
 										</div>
 									</div>
@@ -309,15 +351,13 @@ onDestroy(() => {
 					{/if}
 				</div>
 
-				{#if noticeMessage}
-					<div class="w-full">
-						<InlineFeedbackNotice
-							message={noticeMessage}
-							tone={noticeTone}
-							duration={180}
-						/>
-					</div>
-				{/if}
+				<div class="w-full">
+					<InlineFeedbackNotice
+						message={noticeMessage}
+						tone={noticeTone}
+						duration={180}
+					/>
+				</div>
 
 			</div>
 		</div>

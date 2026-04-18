@@ -12,7 +12,10 @@ export let captchaPrompt = "";
 export let compact = false;
 export let variant: "card" | "popover" = "card";
 export let captchaValue = "";
+export let stacked = false;
+export let autoFocusCaptchaInput = false;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
+export let onSubmitCaptcha: (() => void | Promise<void>) | null = null;
 
 $: captchaChallenge = captchaState?.challenge ?? null;
 $: isPopoverLayout = variant === "popover";
@@ -31,15 +34,13 @@ $: isPopoverLayout = variant === "popover";
 		<p class="text-xs font-medium text-90">{i18n(I18nKey.commentsCaptcha)}</p>
 	{/if}
 
-	{#if captchaPrompt}
-		<InlineFeedbackNotice
-			message={captchaPrompt}
-			tone="info"
-			compact={true}
-			duration={180}
-			className={isPopoverLayout ? "" : "mt-2"}
-		/>
-	{/if}
+	<InlineFeedbackNotice
+		message={captchaPrompt}
+		tone="info"
+		compact={true}
+		duration={180}
+		className={isPopoverLayout ? "mb-3" : "mt-2"}
+	/>
 
 	{#if captchaState && !captchaState.verified}
 		<div class:mt-2={!isPopoverLayout}>
@@ -57,21 +58,22 @@ $: isPopoverLayout = variant === "popover";
 				<CommentCaptchaHost
 					bind:captchaValue
 					inline={true}
+					{stacked}
+					{autoFocusCaptchaInput}
 					{captchaState}
 					{captchaBusy}
 					onRefreshCaptcha={onRefreshCaptcha}
+					onSubmitCaptcha={onSubmitCaptcha}
 				/>
 			{/if}
 		</div>
 	{/if}
 
-	{#if captchaError}
-		<InlineFeedbackNotice
-			message={captchaError}
-			tone="error"
-			compact={true}
-			duration={180}
-			className="mt-2"
-		/>
-	{/if}
+	<InlineFeedbackNotice
+		message={captchaError}
+		tone="error"
+		compact={true}
+		duration={180}
+		className="mt-2"
+	/>
 </section>
