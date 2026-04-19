@@ -19,6 +19,7 @@
     "test:e2e:headed": "pnpm build && playwright test --headed tests/e2e/smoke.spec.ts tests/e2e/navigation.spec.ts tests/e2e/interaction.spec.ts tests/e2e/a11y.spec.ts tests/e2e/aria.spec.ts tests/e2e/upgrade-regression.spec.ts",
     "test:e2e:visual": "pnpm build && playwright test tests/e2e/visual.spec.ts",
     "test:e2e:update": "pnpm build && playwright test tests/e2e/visual.spec.ts --update-snapshots",
+    "test:e2e:radius:refresh-reference": "playwright test -c playwright.radius-reference.config.ts",
     "type-check": "tsc --noEmit --isolatedDeclarations",
     "new-post": "node scripts/new-post.js",
     "generate-pagination-test-posts": "node scripts/generate-pagination-test-posts.js",

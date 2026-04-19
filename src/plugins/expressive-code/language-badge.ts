@@ -20,7 +20,7 @@ export function pluginLanguageBadge(): ReturnType<typeof definePlugin> {
         text-transform: uppercase;
         color: oklch(0.75 0.1 var(--hue));
         background: oklch(0.33 0.035 var(--hue));
-        border-radius: 0.5rem;
+        border-radius: var(--radius-lg);
         pointer-events: none;
         transition: opacity 0.3s;
         opacity: 0;

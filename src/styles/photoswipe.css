@@ -22,7 +22,7 @@
 .pswp__button--zoom,
 .pswp__button--close {
     margin-top: 1rem !important;
-    border-radius: 0.75rem !important;
+    border-radius: var(--radius-xl) !important;
 }
 
 .pswp__button--zoom:active,

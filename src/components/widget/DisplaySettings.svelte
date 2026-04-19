@@ -158,7 +158,7 @@ $: if (radiusLevel || radiusLevel === 0) {
 	-webkit-appearance: none;
 	height: 1rem;
 	width: 0.5rem;
-	border-radius: 0.125rem;
+	border-radius: var(--radius-xs);
 	background: rgb(255 255 255 / 0.7);
 	box-shadow: none;
 }
@@ -176,7 +176,7 @@ $: if (radiusLevel || radiusLevel === 0) {
 	-webkit-appearance: none;
 	height: 1rem;
 	width: 0.5rem;
-	border-radius: 0.125rem;
+	border-radius: var(--radius-xs);
 	border-width: 0;
 	background: rgb(255 255 255 / 0.7);
 	box-shadow: none;
@@ -195,7 +195,7 @@ $: if (radiusLevel || radiusLevel === 0) {
 	-webkit-appearance: none;
 	height: 1rem;
 	width: 0.5rem;
-	border-radius: 0.125rem;
+	border-radius: var(--radius-xs);
 	background: rgb(255 255 255 / 0.7);
 	box-shadow: none;
 }

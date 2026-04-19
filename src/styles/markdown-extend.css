@@ -86,7 +86,7 @@
 }
 
 .custom-md img {
-	border-radius: 0.75rem;
+	border-radius: var(--radius-xl);
 }
 
 .custom-md hr {
@@ -95,7 +95,7 @@
 }
 
 .custom-md iframe {
-	border-radius: 0.75rem;
+	border-radius: var(--radius-xl);
 	margin-left: auto;
 	margin-right: auto;
 	max-width: 100%;
@@ -281,7 +281,7 @@ a.card-github.fetch-waiting .gc-repo {
 
 a.card-github.fetch-waiting .gc-description,
 a.card-github.fetch-waiting .gc-infobar {
-	border-radius: 0.5rem;
+	border-radius: var(--radius-lg);
 }
 
 a.card-github.fetch-error {

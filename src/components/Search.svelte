@@ -158,7 +158,7 @@ $: if (initialized && keywordMobile) {
 </button>
 
 <!-- search panel -->
-<div id="search-panel" class="search-panel-shell float-panel float-panel-closed absolute shadow-2xl rounded-surface-prominent p-2">
+<div id="search-panel" class="search-panel-shell float-panel float-panel-closed absolute shadow-2xl rounded-surface p-2">
 
     <!-- search bar inside panel for phone/tablet -->
     <div id="search-bar-inside" class="search-field-shell flex relative lg:hidden items-center h-11 rounded-field">

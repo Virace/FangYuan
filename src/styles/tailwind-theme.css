@@ -35,6 +35,9 @@
 	--radius-field: var(--radius-field);
 	--radius-field-compact: var(--radius-field-compact);
 	--radius-micro: var(--radius-micro);
+	--radius-micro-compact: var(--radius-micro-compact);
+	--radius-dialog-panel: var(--radius-dialog-panel);
+	--radius-dialog-shell: var(--radius-dialog-shell);
 }
 
 @utility text-90 {
@@ -290,4 +293,16 @@
 
 @utility rounded-micro {
 	border-radius: var(--radius-micro);
+}
+
+@utility rounded-micro-compact {
+	border-radius: var(--radius-micro-compact);
+}
+
+@utility rounded-dialog-panel {
+	border-radius: var(--radius-dialog-panel);
+}
+
+@utility rounded-dialog-shell {
+	border-radius: var(--radius-dialog-shell);
 }
