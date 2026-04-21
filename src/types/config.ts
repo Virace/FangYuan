@@ -68,28 +68,23 @@ export type Favicon = {
 	sizes?: string;
 };
 
-export const LinkPreset = {
-	Home: 0,
-	Archive: 1,
-	About: 2,
-} as const;
-
-export type LinkPreset = (typeof LinkPreset)[keyof typeof LinkPreset];
-
 export type NavBarContentRef = {
 	collection: "spec" | "posts";
 	id: string;
 };
 
-export type NavBarUrlLink = {
+export type NavBarLinkBase = {
+	id?: string;
 	name: string;
+};
+
+export type NavBarUrlLink = NavBarLinkBase & {
 	url: string;
 	external?: boolean;
 	ref?: never;
 };
 
-export type NavBarRefLink = {
-	name: string;
+export type NavBarRefLink = NavBarLinkBase & {
 	ref: NavBarContentRef;
 	url?: never;
 	external?: never;
@@ -97,14 +92,17 @@ export type NavBarRefLink = {
 
 export type NavBarLink = NavBarUrlLink | NavBarRefLink;
 
+export type NavBarI18nConfig = Record<string, string>;
+
 export type ResolvedNavBarLink = {
+	id: string;
 	name: string;
 	url: string;
 	external: boolean;
 };
 
 export type NavBarConfig = {
-	links: (NavBarLink | LinkPreset)[];
+	links: NavBarLink[];
 };
 
 export type FooterConfig = {

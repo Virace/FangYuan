@@ -46,3 +46,16 @@ export function i18n(key: I18nKey): string {
 	const lang = siteConfig.lang || "en";
 	return getTranslation(lang)[key];
 }
+
+export function resolveI18nKey(
+	key: string,
+	overrides: Record<string, string> = {},
+): string {
+	if (Object.hasOwn(overrides, key)) {
+		return overrides[key];
+	}
+
+	const lang = siteConfig.lang || "en";
+	const translation = getTranslation(lang) as Record<string, string>;
+	return translation[key] ?? key;
+}

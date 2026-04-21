@@ -40,17 +40,27 @@ export function buildSiteConfigTemplate(options) {
 	PageFeedbackConfig,
 	PageMetricsConfig,
 } from "../src/types/config";
+import { LinkPresets } from "../src/constants/link-presets";
 
 export const siteConfig = {
 	title: ${JSON.stringify(options.siteTitle)},
 	subtitle: ${JSON.stringify(options.siteSubtitle)},
 };
 
+export const navBarI18n = {
+	"nav.github": "GitHub",
+};
+
 export const navBarConfig = {
 	links: [
-		{ name: "Home", url: "/" },
-		{ name: "Archive", url: "/archive/" },
-		{ name: "About", url: "/about/" },
+		LinkPresets.Archive,
+		LinkPresets.About,
+		{
+			id: "nav.github",
+			name: "nav.github",
+			url: "https://github.com/yourname/yourrepo",
+			external: true,
+		},
 	],
 };
 

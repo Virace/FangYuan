@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { LinkPreset } from "../src/types/config.ts";
+import I18nKey from "../src/i18n/i18nKey.ts";
+import { LinkPresets } from "../src/constants/link-presets.ts";
 import { buildContentRouteManifest } from "../src/utils/content-routes.ts";
-import { resolveNavbarLinks } from "../src/utils/navbar-links.ts";
+import {
+	getNavBarLinkId,
+	mergeNavBarLinks,
+	resolveNavbarLinks,
+} from "../src/utils/navbar-links.ts";
 
 function createManifest() {
 	return buildContentRouteManifest({
@@ -42,54 +47,84 @@ function createManifest() {
 	});
 }
 
-test("resolveNavbarLinks resolves About preset and custom spec refs against current public paths", () => {
+function translateLabel(key) {
+	return (
+		{
+			[I18nKey.archive]: "归档",
+			[I18nKey.about]: "关于",
+			"nav.repo": "代码仓库",
+			"nav.spec.aaa": "AAA",
+		}[key] ?? key
+	);
+}
+
+test("mergeNavBarLinks injects reserved About when override omits it", () => {
+	const mergedLinks = mergeNavBarLinks(
+		[
+			LinkPresets.Archive,
+			LinkPresets.About,
+		],
+		[LinkPresets.Archive],
+		[LinkPresets.About],
+	);
+
+	assert.deepEqual(mergedLinks.map((link) => getNavBarLinkId(link)), [
+		"archive",
+		"about",
+	]);
+});
+
+test("resolveNavbarLinks supports same-name override, id override, and custom nav i18n", () => {
 	const manifest = createManifest();
-	const presetMap = {
-		[LinkPreset.Home]: {
-			name: "主页",
-			url: "/",
-		},
-		[LinkPreset.Archive]: {
-			name: "归档",
-			url: "/archive/",
-		},
-		[LinkPreset.About]: {
-			name: "关于",
-			ref: {
-				collection: "spec",
-				id: "about",
+	const mergedLinks = mergeNavBarLinks(
+		[
+			LinkPresets.Archive,
+			LinkPresets.About,
+			{
+				id: "nav.github",
+				name: "nav.github",
+				url: "https://github.com/Virace/FangYuan",
+				external: true,
 			},
-		},
-	};
+		],
+		[
+			LinkPresets.Archive,
+			{
+				name: I18nKey.about,
+				ref: {
+					collection: "spec",
+					id: "aaa",
+				},
+			},
+			{
+				name: "nav.spec.aaa",
+				ref: {
+					collection: "spec",
+					id: "aaa",
+				},
+			},
+			{
+				id: "nav.github",
+				name: "nav.repo",
+				url: "https://example.com/repo",
+				external: true,
+			},
+		],
+		[LinkPresets.About],
+	);
 
 	assert.deepEqual(
-		resolveNavbarLinks(
-			[
-				LinkPreset.Home,
-				LinkPreset.About,
-				{
-					name: "AAA",
-					ref: {
-						collection: "spec",
-						id: "aaa",
-					},
-				},
-				{
-					name: "GitHub",
-					url: "https://github.com/Virace/FangYuan",
-					external: true,
-				},
-			],
-			manifest,
-			presetMap,
-		),
+		resolveNavbarLinks(mergedLinks, manifest, {
+			translateLabel,
+		}),
 		[
-			{ name: "主页", url: "/", external: false },
-			{ name: "关于", url: "/about.html", external: false },
-			{ name: "AAA", url: "/bbb.html", external: false },
+			{ id: "archive", name: "归档", url: "/archive/", external: false },
+			{ id: "about", name: "关于", url: "/bbb.html", external: false },
+			{ id: "nav.spec.aaa", name: "AAA", url: "/bbb.html", external: false },
 			{
-				name: "GitHub",
-				url: "https://github.com/Virace/FangYuan",
+				id: "nav.github",
+				name: "代码仓库",
+				url: "https://example.com/repo",
 				external: true,
 			},
 		],
@@ -98,30 +133,13 @@ test("resolveNavbarLinks resolves About preset and custom spec refs against curr
 
 test("resolveNavbarLinks rejects links that define both url and ref", () => {
 	const manifest = createManifest();
-	const presetMap = {
-		[LinkPreset.Home]: {
-			name: "主页",
-			url: "/",
-		},
-		[LinkPreset.Archive]: {
-			name: "归档",
-			url: "/archive/",
-		},
-		[LinkPreset.About]: {
-			name: "关于",
-			ref: {
-				collection: "spec",
-				id: "about",
-			},
-		},
-	};
 
 	assert.throws(
 		() =>
 			resolveNavbarLinks(
 				[
 					{
-						name: "Broken",
+						name: "nav.broken",
 						url: "/broken",
 						ref: {
 							collection: "spec",
@@ -130,7 +148,6 @@ test("resolveNavbarLinks rejects links that define both url and ref", () => {
 					},
 				],
 				manifest,
-				presetMap,
 			),
 		/exactly one of url or ref/i,
 	);

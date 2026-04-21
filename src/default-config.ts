@@ -1,15 +1,16 @@
+import { LinkPresets } from "./constants/link-presets";
 import type {
 	CommentConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
 	LicenseConfig,
 	NavBarConfig,
+	NavBarI18nConfig,
 	PageFeedbackConfig,
 	PageMetricsConfig,
 	ProfileConfig,
 	SiteConfig,
 } from "./types/config";
-import { LinkPreset } from "./types/config";
 import {
 	DEFAULT_COMMENT_MAX_DEPTH,
 	DEFAULT_COMMENT_ROOT_LIMIT,
@@ -94,15 +95,28 @@ export const defaultSiteConfig: SiteConfig = {
 	},
 };
 
+export const defaultNavBarI18n: NavBarI18nConfig = {
+	"nav.github": "GitHub",
+};
+
 export const defaultNavBarConfig: NavBarConfig = {
-	// About preset 不再写死 /about/。
+	// 当前内置可选链接全部来自 LinkPresets：
+	// - LinkPresets.Home
+	// - LinkPresets.Archive
+	// - LinkPresets.About
+	//
+	// 默认只选当前主题认可的默认项：
+	// - LinkPresets.Archive
+	// - LinkPresets.About
+	//
+	// About 属于保留语义入口。
 	// 它会跟随 spec/about 当前解析出来的公开路径，例如 /about/ 或 /about.html。
 	links: [
-		LinkPreset.Home,
-		LinkPreset.Archive,
-		LinkPreset.About,
+		LinkPresets.Archive,
+		LinkPresets.About,
 		{
-			name: "GitHub",
+			id: "nav.github",
+			name: "nav.github",
 			url: "https://github.com/Virace/FangYuan", // 站内链接不要手动带 base path；外链可直接写完整 URL
 			external: true, // true 时显示外链图标，并在新标签页打开
 		},

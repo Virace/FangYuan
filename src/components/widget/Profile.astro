@@ -1,11 +1,16 @@
 ---
 import { Icon } from "astro-icon/components";
-import { configImageBaseRoots, profileConfig } from "../../config";
+import {
+	configImageBaseRoots,
+	navBarConfig,
+	navBarI18n,
+	profileConfig,
+} from "../../config";
 import { LinkPresets } from "../../constants/link-presets";
-import { LinkPreset } from "../../types/config";
+import { resolveI18nKey } from "../../i18n/translation";
 import { getContentRouteManifest } from "../../utils/content-routes";
 import { resolveConfigImage } from "../../utils/image-source";
-import { resolveNavbarLinks } from "../../utils/navbar-links";
+import { getNavBarLinkId, resolveNavbarLinks } from "../../utils/navbar-links";
 import { url } from "../../utils/url-utils";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 
@@ -15,11 +20,14 @@ const avatarSource = await resolveConfigImage(
 	configImageBaseRoots.avatar,
 );
 const manifest = await getContentRouteManifest();
-const [aboutLink] = resolveNavbarLinks(
-	[LinkPreset.About],
-	manifest,
-	LinkPresets,
-);
+const aboutLinkId = getNavBarLinkId(LinkPresets.About);
+const aboutLink = resolveNavbarLinks(navBarConfig.links, manifest, {
+	translateLabel: (key) => resolveI18nKey(key, navBarI18n),
+}).find((link) => link.id === aboutLinkId);
+
+if (!aboutLink) {
+	throw new Error("About page content not found");
+}
 ---
 <div class="card-base p-3">
     <a aria-label="Go to About Page" href={url(aboutLink.url)}

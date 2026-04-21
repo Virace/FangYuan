@@ -1,9 +1,11 @@
+import { LinkPresets } from "./constants/link-presets";
 import {
 	defaultCommentConfig,
 	defaultExpressiveCodeConfig,
 	defaultFooterConfig,
 	defaultLicenseConfig,
 	defaultNavBarConfig,
+	defaultNavBarI18n,
 	defaultPageFeedbackConfig,
 	defaultPageMetricsConfig,
 	defaultProfileConfig,
@@ -15,12 +17,14 @@ import type {
 	FooterConfig,
 	LicenseConfig,
 	NavBarConfig,
+	NavBarI18nConfig,
 	PageFeedbackConfig,
 	PageMetricsConfig,
 	ProfileConfig,
 	SiteConfig,
 } from "./types/config";
 import { normalizeCommentConfig } from "./utils/comments/options";
+import { mergeNavBarLinks } from "./utils/navbar-links";
 
 type ExternalSiteConfig = Omit<
 	Partial<SiteConfig>,
@@ -40,6 +44,8 @@ type ExternalNavBarConfig = {
 	links?: NavBarConfig["links"];
 };
 
+type ExternalNavBarI18n = NavBarI18nConfig;
+
 type ExternalProfileConfig = Omit<Partial<ProfileConfig>, "links"> & {
 	links?: ProfileConfig["links"];
 };
@@ -47,6 +53,7 @@ type ExternalProfileConfig = Omit<Partial<ProfileConfig>, "links"> & {
 type ExternalSiteConfigModule = {
 	siteConfig?: ExternalSiteConfig;
 	navBarConfig?: ExternalNavBarConfig;
+	navBarI18n?: ExternalNavBarI18n;
 	profileConfig?: ExternalProfileConfig;
 	footerConfig?: Partial<FooterConfig>;
 	licenseConfig?: Partial<LicenseConfig>;
@@ -115,7 +122,9 @@ function mergeNavBarConfig(
 	return {
 		...defaultConfig,
 		...override,
-		links: override.links ?? defaultConfig.links,
+		links: mergeNavBarLinks(defaultConfig.links, override.links, [
+			LinkPresets.About,
+		]),
 	};
 }
 
@@ -189,6 +198,11 @@ export const navBarConfig: NavBarConfig = mergeNavBarConfig(
 	defaultNavBarConfig,
 	externalSiteConfig?.navBarConfig,
 );
+
+export const navBarI18n: NavBarI18nConfig = {
+	...defaultNavBarI18n,
+	...externalSiteConfig?.navBarI18n,
+};
 
 export const profileConfig: ProfileConfig = mergeProfileConfig(
 	defaultProfileConfig,
