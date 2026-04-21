@@ -65,3 +65,100 @@ test("findContentRouteBySegments resolves a post route without changing the inte
 
 	assert.equal(route?.entryId, "x/y/z");
 });
+
+test("buildContentRouteManifest rejects spec pages that occupy the built-in archive path", () => {
+	assert.throws(
+		() =>
+			buildContentRouteManifest({
+				posts: [],
+				specPages: [
+					{
+						id: "archive",
+						data: {
+							alias: "",
+							permalink: "",
+							published: new Date("2026-04-21"),
+						},
+					},
+				],
+				permalinkConfig: {
+					postsPattern: "/%slug%.html",
+					pagesPattern: "/%slug%",
+					trailingSlash: "auto",
+					postPatternRules: [],
+					aliasValidation: "error",
+					updatedDateMode: "manual",
+					updatedDateFallback: "none",
+				},
+			}),
+		/reserved public path "\/archive\/"/i,
+	);
+});
+
+test("buildContentRouteManifest rejects directory content routes that occupy root pagination paths", () => {
+	assert.throws(
+		() =>
+			buildContentRouteManifest({
+				posts: [
+					{
+						id: "notes/two",
+						data: {
+							title: "Two",
+							published: new Date("2026-04-21"),
+							updated: undefined,
+							alias: "2",
+							permalink: "",
+							draft: false,
+							description: "",
+							image: "",
+							tags: [],
+							category: "",
+							lang: "",
+							prevTitle: "",
+							prevSlug: "",
+							nextTitle: "",
+							nextSlug: "",
+						},
+					},
+				],
+				specPages: [],
+				permalinkConfig: {
+					postsPattern: "/%slug%",
+					pagesPattern: "/%slug%",
+					trailingSlash: "auto",
+					postPatternRules: [],
+					aliasValidation: "error",
+					updatedDateMode: "manual",
+					updatedDateFallback: "none",
+				},
+			}),
+		/reserved public path "\/2\/"/i,
+	);
+});
+
+test("buildContentRouteManifest allows explicit content routes under archive/page when archive pagination is disabled", () => {
+	const manifest = buildContentRouteManifest({
+		posts: [],
+		specPages: [
+			{
+				id: "notes/archive-page",
+				data: {
+					alias: "",
+					permalink: "/archive/page/demo/",
+					published: new Date("2026-04-21"),
+				},
+			},
+		],
+		permalinkConfig: {
+			postsPattern: "/%slug%.html",
+			pagesPattern: "/%slug%",
+			trailingSlash: "auto",
+			postPatternRules: [],
+			aliasValidation: "error",
+			updatedDateMode: "manual",
+			updatedDateFallback: "none",
+		},
+	});
+
+	assert.equal(manifest.specPages[0].publicPath, "/archive/page/demo/");
+});

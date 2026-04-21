@@ -1,0 +1,29 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import type { GetStaticPaths, Page } from "astro";
+import Pagination from "../../components/control/Pagination.astro";
+import PostPage from "../../components/PostPage.astro";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import { buildHomePaginationStaticPaths } from "../../utils/content-routes";
+import type { PostEntry } from "../../utils/content-utils";
+
+export const getStaticPaths = (async ({ paginate }) => {
+	return buildHomePaginationStaticPaths({ paginate });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props as {
+	page: Page<PostEntry>;
+};
+const len = page.data.length;
+---
+
+<MainGridLayout>
+	<h1 class="sr-only">{i18n(I18nKey.home)}</h1>
+	<PostPage page={page}></PostPage>
+	<Pagination
+		class="mx-auto onload-animation"
+		page={page}
+		style={`animation-delay: calc(var(--content-delay) + ${len * 50}ms)`}
+	></Pagination>
+</MainGridLayout>

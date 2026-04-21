@@ -132,8 +132,8 @@ export function getStandaloneRoutePublicPath(
 export function resolveAstroBuildConfig(
 	config?: BuildFacingPermalinkConfig | null,
 ): {
-	buildFormat: "directory" | "file";
-	trailingSlash: "always" | "never";
+	buildFormat: "directory" | "file" | "preserve";
+	trailingSlash: "always" | "never" | "ignore";
 } {
 	const patterns = [
 		config?.postsPattern,
@@ -160,7 +160,10 @@ export function resolveAstroBuildConfig(
 	);
 
 	if (materializationFamilies.size > 1) {
-		throw new Error("Incompatible permalink materialization families.");
+		return {
+			buildFormat: "preserve",
+			trailingSlash: "ignore",
+		};
 	}
 
 	const [buildFamily = "directory"] = materializationFamilies;
