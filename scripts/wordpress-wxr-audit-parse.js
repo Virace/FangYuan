@@ -31,15 +31,18 @@ function extractCategoryValues(itemSource) {
 	let match;
 	while ((match = matcher.exec(itemSource)) !== null) {
 		const attributes = parseAttributeString(match[1] ?? "");
+		const domain = (attributes.domain ?? "").toLowerCase();
 		const value = decodeXmlEntities(match[2]);
 		if (!value) {
 			continue;
 		}
-		if ((attributes.domain ?? "").toLowerCase() === "post_tag") {
+		if (domain === "post_tag") {
 			tags.push(value);
 			continue;
 		}
-		categories.push(value);
+		if (domain === "category") {
+			categories.push(value);
+		}
 	}
 	return { categories, tags };
 }

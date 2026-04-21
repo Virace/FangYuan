@@ -26,6 +26,25 @@ test("extractWxrEntries keeps post metadata and content payloads", () => {
 	assert.equal(entries[0].postPassword, "");
 });
 
+test('extractWxrEntries only uses domain="category" values as categories', () => {
+	const source = buildSampleWxr({
+		category: "闲聊扯皮",
+		tag: "npm",
+	}).replace(
+		'<category domain="post_tag" nicename="audit"><![CDATA[npm]]></category>',
+		[
+			'<category domain="post_tag" nicename="npm"><![CDATA[npm]]></category>',
+			'<category domain="post_tag" nicename="yarn"><![CDATA[yarn]]></category>',
+			'<category domain="post_format" nicename="post-format-image"><![CDATA[图片]]></category>',
+		].join("\n\t\t\t"),
+	);
+
+	const entries = extractWxrEntries(source, new Set(["post"]));
+
+	assert.deepEqual(entries[0].categories, ["闲聊扯皮"]);
+	assert.deepEqual(entries[0].tags, ["npm", "yarn"]);
+});
+
 test("extractWxrEntries prefers non-gmt wordpress timestamps by default", () => {
 	const entries = extractWxrEntries(
 		buildSampleWxr({

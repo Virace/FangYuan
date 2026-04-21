@@ -174,6 +174,36 @@ test("transformWxrToPreview applies extracted user block rules", () => {
 	assert.doesNotMatch(entry.markdown, /github-cards\/latest\/widget\.js/);
 });
 
+test('transformWxrToPreview keeps post_format out of category frontmatter', () => {
+	const source = buildSampleWxr({
+		title: "Electron-Vue，踩坑之版本升级",
+		postName: "electron-upgrade",
+		category: "闲聊扯皮",
+		tag: "npm",
+	}).replace(
+		[
+			'<category domain="category" nicename="notes"><![CDATA[闲聊扯皮]]></category>',
+			'<category domain="post_tag" nicename="audit"><![CDATA[npm]]></category>',
+		].join("\n\t\t\t"),
+		[
+			'<category domain="post_tag" nicename="npm"><![CDATA[npm]]></category>',
+			'<category domain="post_tag" nicename="yarn"><![CDATA[yarn]]></category>',
+			'<category domain="post_format" nicename="post-format-image"><![CDATA[图片]]></category>',
+			'<category domain="category" nicename="default"><![CDATA[闲聊扯皮]]></category>',
+		].join("\n\t\t\t"),
+	);
+
+	const result = transformWxrToPreview(source, {
+		contentTypes: ["post"],
+		pathMode: "flat",
+	});
+	const entry = result.entries[0];
+
+	assert.match(entry.markdown, /category: "闲聊扯皮"/);
+	assert.doesNotMatch(entry.markdown, /category: "图片"/);
+	assert.match(entry.markdown, /tags:\n  - "npm"\n  - "yarn"/);
+});
+
 test("transformEntryToPreview decodes percent-encoded alias and file name", () => {
 	const entry = transformEntryToPreview(
 		{
