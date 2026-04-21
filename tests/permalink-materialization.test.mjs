@@ -50,14 +50,16 @@ test("getStandaloneRoutePublicPath returns file route paths", () => {
 });
 
 test("resolveAstroBuildConfig rejects incompatible global materialization families", () => {
-	assert.throws(
-		() =>
-			resolveAstroBuildConfig({
-				postsPattern: "/%slug%.html",
-				pagesPattern: "/%slug%",
-				trailingSlash: "auto",
-				postPatternRulePatterns: [],
-			}),
-		/incompatible.*materialization/i,
+	assert.deepEqual(
+		resolveAstroBuildConfig({
+			postsPattern: "/%slug%.html",
+			pagesPattern: "/%slug%",
+			trailingSlash: "auto",
+			postPatternRulePatterns: [],
+		}),
+		{
+			buildFormat: "preserve",
+			trailingSlash: "ignore",
+		},
 	);
 });

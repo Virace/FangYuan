@@ -1,22 +1,12 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { siteConfig } from "../config";
-import {
-	getStandaloneRoutePublicPath,
-	resolveAstroBuildConfig,
-} from "./permalink-materialization";
-
-const routeBuildConfig = resolveAstroBuildConfig({
-	postsPattern: siteConfig.permalink.postsPattern,
-	pagesPattern: siteConfig.permalink.pagesPattern,
-	trailingSlash: siteConfig.permalink.trailingSlash,
-	postPatternRulePatterns: siteConfig.permalink.postPatternRules.map(
-		(rule) => rule.pattern,
-	),
-});
 
 export function getArchivePath(): string {
-	return getStandaloneRoutePublicPath("archive", routeBuildConfig.buildFormat);
+	return "/archive/";
+}
+
+export function getHomePaginationPath(pageNumber: number): string {
+	return pageNumber <= 1 ? "/" : `/${pageNumber}/`;
 }
 
 export function pathsEqual(path1: string, path2: string): boolean {

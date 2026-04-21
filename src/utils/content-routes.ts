@@ -56,11 +56,19 @@ export type RoutedSpecEntry = MaterializedRoute & {
 };
 
 export type RoutedContentEntry = RoutedPostEntry | RoutedSpecEntry;
+export type DirectoryRoutedContentEntry = RoutedContentEntry & {
+	buildFamily: "directory";
+};
+export type FileRoutedContentEntry = RoutedContentEntry & {
+	buildFamily: "file";
+};
 
 export type ContentRouteManifest = {
 	posts: RoutedPostEntry[];
 	specPages: RoutedSpecEntry[];
 	routes: RoutedContentEntry[];
+	directoryRoutes: DirectoryRoutedContentEntry[];
+	fileRoutes: FileRoutedContentEntry[];
 	postByEntryId: Map<string, RoutedPostEntry>;
 	specByEntryId: Map<string, RoutedSpecEntry>;
 	byPublicPath: Map<string, RoutedContentEntry>;
@@ -76,6 +84,10 @@ export type RootPageRoute =
 type UpdatedDateProviders = {
 	gitProvider?: (filePath?: string) => Promise<Date | null>;
 	filesystemProvider?: (filePath?: string) => Promise<Date | null>;
+};
+
+type AstroPaginatedPage = {
+	currentPage: number;
 };
 
 function getFileStem(entryId: string): string {
@@ -100,6 +112,47 @@ function ensureUniquePublicPath(
 	}
 
 	byPublicPath.set(route.publicPath, route);
+}
+
+function isDirectoryContentRoute(
+	route: RoutedContentEntry,
+): route is DirectoryRoutedContentEntry {
+	return route.buildFamily === "directory";
+}
+
+function isFileContentRoute(
+	route: RoutedContentEntry,
+): route is FileRoutedContentEntry {
+	return route.buildFamily === "file";
+}
+
+function normalizeComparablePublicPath(publicPath: string): string {
+	if (publicPath === "/") {
+		return "/";
+	}
+
+	return publicPath.replace(/\/+$/, "");
+}
+
+function assertRouteDoesNotOccupyReservedDirectoryPath(
+	route: RoutedContentEntry,
+): void {
+	if (route.buildFamily !== "directory") {
+		return;
+	}
+
+	const normalizedPublicPath = normalizeComparablePublicPath(route.publicPath);
+	const occupiesHomeRoute = normalizedPublicPath === "/";
+	const occupiesRootPagination = /^\/\d+$/.test(normalizedPublicPath);
+	const occupiesArchiveRoot = normalizedPublicPath === "/archive";
+
+	if (!occupiesHomeRoute && !occupiesRootPagination && !occupiesArchiveRoot) {
+		return;
+	}
+
+	throw new Error(
+		`Reserved public path "${route.publicPath}" for ${route.kind}:${route.entryId}`,
+	);
 }
 
 function buildPostRoute(
@@ -177,20 +230,30 @@ export function buildContentRouteManifest({
 	const byPublicPath = new Map<string, RoutedContentEntry>();
 	const postRoutes = posts.map((entry) => {
 		const route = buildPostRoute(entry, permalinkConfig);
+		assertRouteDoesNotOccupyReservedDirectoryPath(route);
 		ensureUniquePublicPath(byPublicPath, route);
 		return route;
 	});
 	const specRoutes = specPages.map((entry) => {
 		const route = buildSpecRoute(entry, permalinkConfig);
+		assertRouteDoesNotOccupyReservedDirectoryPath(route);
 		ensureUniquePublicPath(byPublicPath, route);
 		return route;
 	});
 	const routes = [...postRoutes, ...specRoutes];
+	const directoryRoutes = routes.filter(
+		isDirectoryContentRoute,
+	) as DirectoryRoutedContentEntry[];
+	const fileRoutes = routes.filter(
+		isFileContentRoute,
+	) as FileRoutedContentEntry[];
 
 	return {
 		posts: postRoutes,
 		specPages: specRoutes,
 		routes,
+		directoryRoutes,
+		fileRoutes,
 		postByEntryId: new Map(postRoutes.map((route) => [route.entryId, route])),
 		specByEntryId: new Map(specRoutes.map((route) => [route.entryId, route])),
 		byPublicPath,
@@ -278,11 +341,19 @@ export async function applyEffectiveUpdatedDates(
 		}),
 	);
 	const routes = [...nextPosts, ...nextSpecPages];
+	const directoryRoutes = routes.filter(
+		isDirectoryContentRoute,
+	) as DirectoryRoutedContentEntry[];
+	const fileRoutes = routes.filter(
+		isFileContentRoute,
+	) as FileRoutedContentEntry[];
 
 	return {
 		posts: nextPosts,
 		specPages: nextSpecPages,
 		routes,
+		directoryRoutes,
+		fileRoutes,
 		postByEntryId: new Map(nextPosts.map((route) => [route.entryId, route])),
 		specByEntryId: new Map(
 			nextSpecPages.map((route) => [route.entryId, route]),
@@ -332,6 +403,15 @@ export async function getPostRouteManifest(): Promise<{
 	};
 }
 
+export async function getFileContentRouteManifest(): Promise<{
+	entries: FileRoutedContentEntry[];
+}> {
+	const manifest = await getContentRouteManifest();
+	return {
+		entries: manifest.fileRoutes,
+	};
+}
+
 export async function buildRootPageStaticPaths({
 	paginate,
 }: {
@@ -365,16 +445,22 @@ export async function buildRootPageStaticPaths({
 		{
 			pageSize: getPostsPerPage(),
 		},
-	).map((pathItem) => ({
-		...pathItem,
-		props: {
-			route: {
-				kind: "pagination" as const,
-				page: pathItem.props.page,
+	);
+	const rootPaginationPath = paginationPaths
+		.map((pathItem) => ({
+			...pathItem,
+			props: {
+				route: {
+					kind: "pagination" as const,
+					page: pathItem.props.page,
+				},
 			},
-		},
-	}));
-	const contentPaths = manifest.routes.map((route) => ({
+		}))
+		.find(
+			(pathItem) =>
+				(pathItem.props.route.page as AstroPaginatedPage).currentPage === 1,
+		);
+	const contentPaths = manifest.directoryRoutes.map((route) => ({
 		params: {
 			page: route.routeParam,
 		},
@@ -383,7 +469,68 @@ export async function buildRootPageStaticPaths({
 		},
 	}));
 
-	return [...paginationPaths, ...contentPaths];
+	return rootPaginationPath
+		? [rootPaginationPath, ...contentPaths]
+		: contentPaths;
+}
+
+export async function buildHomePaginationStaticPaths({
+	paginate,
+}: {
+	paginate: (
+		data: unknown[],
+		options?: {
+			pageSize?: number;
+			params?: Record<string, string | undefined>;
+			props?: Record<string, unknown>;
+		},
+	) => Array<{
+		params: Record<string, string | undefined>;
+		props: {
+			page: unknown;
+		};
+	}>;
+}): Promise<
+	Array<{
+		params: Record<string, string | undefined>;
+		props: {
+			page: unknown;
+		};
+	}>
+> {
+	const [manifest, { getPostsPerPage }] = await Promise.all([
+		getContentRouteManifest(),
+		import("./pagination-utils"),
+	]);
+
+	return paginate(
+		manifest.posts.map((route) => route.entry),
+		{
+			pageSize: getPostsPerPage(),
+		},
+	).filter(
+		(pathItem) => (pathItem.props.page as AstroPaginatedPage).currentPage > 1,
+	);
+}
+
+export async function buildFileContentStaticPaths(): Promise<
+	Array<{
+		params: Record<string, string | undefined>;
+		props: {
+			route: FileRoutedContentEntry;
+		};
+	}>
+> {
+	const manifest = await getContentRouteManifest();
+
+	return manifest.fileRoutes.map((route) => ({
+		params: {
+			page: route.routeParam,
+		},
+		props: {
+			route,
+		},
+	}));
 }
 
 export function getRouteSegmentsForEntry(

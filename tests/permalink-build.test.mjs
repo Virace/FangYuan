@@ -14,7 +14,13 @@ test(
 	async (t) => {
 		await withMutableSiteFixture(
 			t,
-			async ({ siteConfigPath, postDir, siteAboutPath, distRoot }) => {
+			async ({
+				siteConfigPath,
+				postDir,
+				siteAboutPath,
+				distRoot,
+				markCreated,
+			}) => {
 				await writeFile(
 					siteConfigPath,
 					`export const siteConfig = {
@@ -33,12 +39,13 @@ test(
 					"utf8",
 				);
 
+				const postPath = markCreated(path.join(postDir, "index.md"));
 				await writeFile(
-					path.join(postDir, "index.md"),
+					postPath,
 					`---
 title: Hello
 published: 2026-04-21
-alias: hello-world
+alias: html-slash-demo
 description: demo
 tags: [Demo]
 category: Demo
@@ -54,12 +61,82 @@ Hello world
 
 				const homeHtml = await readFile(path.join(distRoot, "index.html"), "utf8");
 				const articleHtml = await readFile(
-					path.join(distRoot, "articles", "hello-world.html", "index.html"),
+					path.join(distRoot, "articles", "html-slash-demo.html", "index.html"),
 					"utf8",
 				);
 
-				assert.match(homeHtml, /href="\/articles\/hello-world\.html\/"/);
+				assert.match(homeHtml, /href="\/articles\/html-slash-demo\.html\/"/);
 				assert.match(articleHtml, /Hello world/);
+			},
+		);
+	},
+);
+
+test(
+	"mixed permalink families build posts as html files and pages as directory routes",
+	{ concurrency: false },
+	async (t) => {
+		await withMutableSiteFixture(
+			t,
+			async ({
+				siteConfigPath,
+				postDir,
+				siteAboutPath,
+				distRoot,
+				markCreated,
+			}) => {
+				await writeFile(
+					siteConfigPath,
+					`export const siteConfig = {
+  title: "Mixed Family Demo",
+  subtitle: "demo",
+  permalink: {
+    postsPattern: "/%slug%.html",
+    pagesPattern: "/%slug%",
+    trailingSlash: "auto",
+    postPatternRules: [],
+    aliasValidation: "error",
+    updatedDateMode: "manual",
+    updatedDateFallback: "none",
+  },
+};`,
+					"utf8",
+				);
+
+				const postPath = markCreated(path.join(postDir, "mixed-family-demo.md"));
+				await writeFile(
+					postPath,
+					`---
+title: Hello World
+published: 2026-04-21
+alias: mixed-family-demo
+description: demo
+tags: [Demo]
+category: Demo
+draft: false
+---
+Hello world
+`,
+					"utf8",
+				);
+				await writeFile(siteAboutPath, "# About\n", "utf8");
+
+				runBuild();
+
+				const homeHtml = await readFile(path.join(distRoot, "index.html"), "utf8");
+				const articleHtml = await readFile(
+					path.join(distRoot, "mixed-family-demo.html"),
+					"utf8",
+				);
+				const aboutHtml = await readFile(
+					path.join(distRoot, "about", "index.html"),
+					"utf8",
+				);
+
+				assert.match(homeHtml, /href="\/mixed-family-demo\.html"/);
+				assert.match(homeHtml, /href="\/about\/"/);
+				assert.match(articleHtml, /Hello world/);
+				assert.match(aboutHtml, /About/);
 			},
 		);
 	},
@@ -71,7 +148,13 @@ test(
 	async (t) => {
 		await withMutableSiteFixture(
 			t,
-			async ({ siteConfigPath, postDir, siteAboutPath, distRoot }) => {
+			async ({
+				siteConfigPath,
+				postDir,
+				siteAboutPath,
+				distRoot,
+				markCreated,
+			}) => {
 				await writeFile(
 					siteConfigPath,
 					`export const siteConfig = {
@@ -92,7 +175,7 @@ test(
 					"utf8",
 				);
 
-				const nestedDir = path.join(postDir, "wp", "foo");
+				const nestedDir = markCreated(path.join(postDir, "wp", "fixture-rule-demo"));
 				await mkdir(nestedDir, { recursive: true });
 				await writeFile(
 					path.join(nestedDir, "index.md"),
@@ -113,7 +196,14 @@ Rule demo
 				runBuild();
 
 				const articleHtml = await readFile(
-					path.join(distRoot, "2026", "04", "21", "foo", "index.html"),
+					path.join(
+						distRoot,
+						"2026",
+						"04",
+						"21",
+						"fixture-rule-demo",
+						"index.html",
+					),
 					"utf8",
 				);
 				assert.match(articleHtml, /Rule demo/);
@@ -128,9 +218,15 @@ test(
 	async (t) => {
 		await withMutableSiteFixture(
 			t,
-			async ({ siteConfigPath, postDir, siteAboutPath, distRoot }) => {
+			async ({
+				siteConfigPath,
+				postDir,
+				siteAboutPath,
+				distRoot,
+				markCreated,
+			}) => {
 				const fixedUpdatedDate = new Date("2025-01-05T00:00:00.000Z");
-				const postPath = path.join(postDir, "updated-probe.md");
+				const postPath = markCreated(path.join(postDir, "updated-probe.md"));
 
 				await writeFile(
 					siteConfigPath,
