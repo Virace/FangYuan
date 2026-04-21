@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { I18nKey as I18nKeyType } from "@i18n/i18nKey";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import type {
@@ -95,7 +96,7 @@ $: invalidFieldState = {
 	content: currentInvalidFields.includes("content"),
 };
 
-function formatFieldLabel(key: I18nKey, field: CommentAuthorField): string {
+function formatFieldLabel(key: I18nKeyType, field: CommentAuthorField): string {
 	const label = i18n(key);
 	return requiredFields.includes(field)
 		? `${label}*`

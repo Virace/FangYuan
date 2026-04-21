@@ -12,6 +12,7 @@ const distRoot = path.join(repoRoot, "dist");
 const siteConfigPath = path.join(siteRoot, "config.ts");
 const siteAboutPath = path.join(siteRoot, "content", "spec", "about.md");
 const postDir = path.join(siteRoot, "content", "posts");
+const specDir = path.join(siteRoot, "content", "spec");
 
 function run(command, args, expectedStatus = 0) {
 	const result =
@@ -67,10 +68,12 @@ export async function withMutableSiteFixture(t, callback) {
 	await mkdir(path.dirname(siteConfigPath), { recursive: true });
 	await mkdir(path.dirname(siteAboutPath), { recursive: true });
 	await mkdir(postDir, { recursive: true });
+	await mkdir(specDir, { recursive: true });
 
 	await callback({
 		distRoot,
 		postDir,
+		specDir,
 		siteAboutPath,
 		siteConfigPath,
 		markCreated(targetPath) {

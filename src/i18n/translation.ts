@@ -1,5 +1,5 @@
 import { siteConfig } from "../config";
-import type I18nKey from "./i18nKey";
+import type { I18nKey } from "./i18nKey";
 import { en } from "./languages/en";
 import { es } from "./languages/es";
 import { id } from "./languages/id";

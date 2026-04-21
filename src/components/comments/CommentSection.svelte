@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { I18nKey as I18nKeyType } from "@i18n/i18nKey";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import {
@@ -315,7 +316,10 @@ function handleCancelVoteConfirm() {
 	pendingVoteTarget = null;
 }
 
-function toCommentErrorMessage(error: unknown, fallbackKey: I18nKey): string {
+function toCommentErrorMessage(
+	error: unknown,
+	fallbackKey: I18nKeyType,
+): string {
 	if (!(error instanceof Error)) {
 		return i18n(fallbackKey);
 	}

@@ -1,3 +1,4 @@
+import type { I18nKey as I18nKeyType } from "../../i18n/i18nKey";
 import I18nKey from "../../i18n/i18nKey";
 import type { CommentAuthorField } from "./provider";
 
@@ -35,7 +36,7 @@ export function renderPlainCommentHtml(value: string): string {
 export function validateCommentForm(
 	input: CommentFormInput,
 	rules: CommentFormValidationRules,
-): I18nKey | null {
+): I18nKeyType | null {
 	const invalidFields = collectCommentFormInvalidFields(input, rules);
 
 	if (invalidFields.includes("nickname")) {

@@ -95,6 +95,8 @@ export const defaultSiteConfig: SiteConfig = {
 };
 
 export const defaultNavBarConfig: NavBarConfig = {
+	// About preset 不再写死 /about/。
+	// 它会跟随 spec/about 当前解析出来的公开路径，例如 /about/ 或 /about.html。
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,

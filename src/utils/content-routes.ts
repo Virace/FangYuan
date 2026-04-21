@@ -197,6 +197,19 @@ export function buildContentRouteManifest({
 	};
 }
 
+export function requireSpecRoute(
+	manifest: Pick<ContentRouteManifest, "specByEntryId">,
+	entryId: string,
+	errorMessage: string,
+): RoutedSpecEntry {
+	const route = manifest.specByEntryId.get(entryId);
+	if (!route) {
+		throw new Error(errorMessage);
+	}
+
+	return route;
+}
+
 export function findContentRouteBySegments(
 	routes: Pick<RoutedContentEntry, "routeParam">[],
 	segments: string[],
@@ -300,6 +313,7 @@ export async function getContentRouteManifest(): Promise<ContentRouteManifest> {
 				permalinkConfig: siteConfig.permalink,
 			});
 
+			requireSpecRoute(manifest, "about", "About page content not found");
 			return applyEffectiveUpdatedDates(manifest, siteConfig.permalink);
 		})();
 	}
