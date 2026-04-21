@@ -15,7 +15,10 @@ import remarkDirective from "remark-directive"; /* Handle directives */
 import remarkGithubAdmonitionsToDirectives from "remark-github-admonitions-to-directives";
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
-import { defaultExpressiveCodeConfig } from "./src/default-config.ts";
+import {
+	defaultExpressiveCodeConfig,
+	defaultSiteConfig,
+} from "./src/default-config.ts";
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
@@ -33,13 +36,30 @@ import {
 } from "./src/utils/qingyan/mock-api.mjs";
 import {
 	loadExternalQingYanDevProxyTarget,
+	loadExternalPermalinkConfig,
 	loadExternalExpressiveCodeConfig,
 } from "./src/utils/site-source.ts";
+import { resolveAstroBuildConfig } from "./src/utils/permalink-materialization.ts";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
+const externalPermalinkConfig = loadExternalPermalinkConfig();
+const permalinkBuildMode = resolveAstroBuildConfig({
+	postsPattern:
+		externalPermalinkConfig?.postsPattern ??
+		defaultSiteConfig.permalink.postsPattern,
+	pagesPattern:
+		externalPermalinkConfig?.pagesPattern ??
+		defaultSiteConfig.permalink.pagesPattern,
+	trailingSlash:
+		externalPermalinkConfig?.trailingSlash ??
+		defaultSiteConfig.permalink.trailingSlash,
+	postPatternRulePatterns:
+		externalPermalinkConfig?.postPatternRulePatterns ??
+		defaultSiteConfig.permalink.postPatternRules.map((rule) => rule.pattern),
+});
 const qingyanDevProxyTarget =
 	process.env.QINGYAN_DEV_PROXY_TARGET ?? loadExternalQingYanDevProxyTarget();
 const useQingYanMock = isQingYanMockTarget(qingyanDevProxyTarget);
@@ -98,7 +118,10 @@ const qingyanMockPlugin = useQingYanMock ? createQingYanMockPlugin() : null;
 export default defineConfig({
 	site: "https://github.com/Virace/FangYuan",
 	base: "/",
-	trailingSlash: "always",
+	trailingSlash: permalinkBuildMode.trailingSlash,
+	build: {
+		format: permalinkBuildMode.buildFormat,
+	},
 	fonts: [
 		{
 			name: "Roboto",

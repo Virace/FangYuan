@@ -24,13 +24,16 @@ import { normalizeCommentConfig } from "./utils/comments/options";
 
 type ExternalSiteConfig = Omit<
 	Partial<SiteConfig>,
-	"themeColor" | "banner" | "toc"
+	"themeColor" | "banner" | "toc" | "permalink"
 > & {
 	themeColor?: Partial<SiteConfig["themeColor"]>;
 	banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
 		credit?: Partial<SiteConfig["banner"]["credit"]>;
 	};
 	toc?: Partial<SiteConfig["toc"]>;
+	permalink?: Partial<SiteConfig["permalink"]> & {
+		postPatternRules?: SiteConfig["permalink"]["postPatternRules"];
+	};
 };
 
 type ExternalNavBarConfig = {
@@ -91,6 +94,13 @@ function mergeSiteConfig(
 			...override.toc,
 		},
 		favicon: override.favicon ?? defaultConfig.favicon,
+		permalink: {
+			...defaultConfig.permalink,
+			...override.permalink,
+			postPatternRules:
+				override.permalink?.postPatternRules ??
+				defaultConfig.permalink.postPatternRules,
+		},
 	};
 }
 

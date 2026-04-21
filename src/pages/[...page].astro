@@ -1,28 +1,36 @@
 ---
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import type { GetStaticPaths } from "astro";
+import type { GetStaticPaths, Page } from "astro";
 import Pagination from "../components/control/Pagination.astro";
 import PostPage from "../components/PostPage.astro";
+import PostArticlePage from "../components/page/PostArticlePage.astro";
+import SpecContentPage from "../components/page/SpecContentPage.astro";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import { getSortedPosts } from "../utils/content-utils";
-import { getPostsPerPage } from "../utils/pagination-utils";
+import {
+	buildRootPageStaticPaths,
+	type RootPageRoute,
+} from "../utils/content-routes";
+import type { PostEntry } from "../utils/content-utils";
 
 export const getStaticPaths = (async ({ paginate }) => {
-	const allBlogPosts = await getSortedPosts();
-	const pageSize = getPostsPerPage();
-
-	return paginate(allBlogPosts, { pageSize });
+	return buildRootPageStaticPaths({ paginate });
 }) satisfies GetStaticPaths;
-// https://github.com/withastro/astro/issues/6507#issuecomment-1489916992
 
-const { page } = Astro.props;
-
-const len = page.data.length;
+const { route } = Astro.props as {
+	route: RootPageRoute;
+};
+const page =
+	route.kind === "pagination" ? (route.page as Page<PostEntry>) : null;
+const len = page?.data.length ?? 0;
 ---
 
-<MainGridLayout>
-    <h1 class="sr-only">{i18n(I18nKey.home)}</h1>
-    <PostPage page={page}></PostPage>
-    <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
-</MainGridLayout>
+{route.kind === "pagination" && page && (
+    <MainGridLayout>
+        <h1 class="sr-only">{i18n(I18nKey.home)}</h1>
+        <PostPage page={page}></PostPage>
+        <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
+    </MainGridLayout>
+)}
+{route.kind === "post" && <PostArticlePage entry={route.entry} />}
+{route.kind === "spec" && <SpecContentPage entry={route.entry} />}

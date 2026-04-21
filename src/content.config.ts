@@ -62,6 +62,8 @@ const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 			title: z.string(),
 			published: z.date(),
 			updated: z.date().optional(),
+			alias: z.string().optional().default(""),
+			permalink: z.string().optional().default(""),
 			draft: z.boolean().optional().default(false),
 			description: z.string().optional().default(""),
 			image: z
@@ -94,7 +96,12 @@ const specCollection: ReturnType<typeof defineCollection> = defineCollection({
 		pattern: "**/*.md",
 		generateId: ({ entry }) => generateMarkdownId(entry),
 	}),
-	schema: z.object({}),
+	schema: z.object({
+		alias: z.string().optional().default(""),
+		permalink: z.string().optional().default(""),
+		published: z.date().optional(),
+		updated: z.date().optional(),
+	}),
 });
 
 export const collections: {

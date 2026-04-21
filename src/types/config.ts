@@ -2,6 +2,26 @@ import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
 import type { RewardOption } from "@utils/page-feedback/provider";
 import type { ImageMetadata } from "astro";
 
+export type TrailingSlashStrategy = "auto" | "always" | "never";
+export type AliasValidationMode = "error" | "normalize";
+export type UpdatedDateMode = "manual" | "git" | "filesystem" | "none";
+export type UpdatedDateFallback = "none" | "filesystem";
+
+export type PostPatternRule = {
+	match: string;
+	pattern: string;
+};
+
+export type PermalinkConfig = {
+	postsPattern: string;
+	pagesPattern: string;
+	trailingSlash: TrailingSlashStrategy;
+	postPatternRules: PostPatternRule[];
+	aliasValidation: AliasValidationMode;
+	updatedDateMode: UpdatedDateMode;
+	updatedDateFallback: UpdatedDateFallback;
+};
+
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
@@ -39,6 +59,7 @@ export type SiteConfig = {
 	};
 
 	favicon: Favicon[];
+	permalink: PermalinkConfig;
 };
 
 export type Favicon = {

@@ -9,14 +9,12 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getPostKeyFromEntry } from "@utils/comments/post-key";
-import { getSortedPosts } from "@utils/content-utils";
+import type { PostEntry } from "@utils/content-utils";
 import { resolveContentImage } from "@utils/image-source";
 import { shouldEnablePhotoSwipe } from "@utils/photoswipe-utils";
-import { getPostUrlBySlug } from "@utils/url-utils";
+import { url } from "@utils/url-utils";
 import type { ImageMetadata, MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
-import ImageWrapper from "../../components/misc/ImageWrapper.astro";
-import PostMetadata from "../../components/PostMeta.astro";
 import {
 	commentConfig,
 	licenseConfig,
@@ -26,16 +24,12 @@ import {
 	siteConfig,
 } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
+import ImageWrapper from "../misc/ImageWrapper.astro";
+import PostMetadata from "../PostMeta.astro";
 
-export async function getStaticPaths() {
-	const blogEntries = await getSortedPosts();
-	return blogEntries.map((entry) => ({
-		params: { slug: entry.id },
-		props: { entry },
-	}));
-}
-
-const { entry } = Astro.props;
+const { entry } = Astro.props as {
+	entry: PostEntry;
+};
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
 const hasPrimaryHeading = headings.some(
 	(heading: MarkdownHeading) => heading.depth === 1,
@@ -63,18 +57,14 @@ const jsonLd = {
 	inLanguage: entry.data.lang
 		? entry.data.lang.replace("_", "-")
 		: siteConfig.lang.replace("_", "-"),
-	// TODO include cover image here
 };
 ---
 <MainGridLayout banner={entry.data.image} title={entry.data.title} description={entry.data.description} lang={entry.data.lang} setOGTypeArticle={true} headings={headings} enablePhotoSwipe={enablePhotoSwipe}>
     <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
     <div class="flex w-full rounded-panel overflow-hidden relative mb-4">
-        <div id="post-container" class:list={["card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full ",
-            {}
-        ]}>
+        <div id="post-container" class:list={["card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full ", {}]}>
             {!hasPrimaryHeading && <h1 class="sr-only">{entry.data.title}</h1>}
 
-            <!-- word count and reading time -->
             <div class="flex flex-row text-30 gap-5 mb-3 transition onload-animation">
                 <div class="flex flex-row items-center">
                     <div class="transition h-6 w-6 rounded-md bg-soft-contrast text-50 flex items-center justify-center mr-2">
@@ -92,7 +82,6 @@ const jsonLd = {
                 </div>
             </div>
 
-            <!-- title -->
             <div class="relative onload-animation">
                 <div
                     data-pagefind-body data-pagefind-weight="10" data-pagefind-meta="title"
@@ -106,7 +95,6 @@ const jsonLd = {
                 </div>
             </div>
 
-            <!-- metadata -->
             <div class="onload-animation">
                 <PostMetadata
                         class="mb-5"
@@ -123,12 +111,9 @@ const jsonLd = {
                 {!entry.data.image && <div class="border-line-divider border-dashed border-b mb-5"></div>}
             </div>
 
-            <!-- always show cover as long as it has one -->
-
             {entry.data.image &&
                 <ImageWrapper id="post-cover" src={resolvedCoverImage} class="mb-8 rounded-xl banner-container onload-animation"/>
             }
-
 
             <Markdown class="mb-6 markdown-content onload-animation">
                 <Content />
@@ -151,7 +136,7 @@ const jsonLd = {
 
     <div class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full">
         <div class="w-full font-bold overflow-hidden">
-            {entry.data.nextSlug && <a href={getPostUrlBySlug(entry.data.nextSlug)} class="block active:scale-95">
+            {entry.data.nextSlug && entry.data.nextPermalink && <a href={url(entry.data.nextPermalink)} class="block active:scale-95">
                 <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-start! gap-4" >
                     <Icon name="material-symbols:chevron-left-rounded" class="icon-32 text-primary" />
                     <div class="post-nav-title transition text-75 text-left">
@@ -162,7 +147,7 @@ const jsonLd = {
         </div>
 
         <div class="w-full font-bold overflow-hidden">
-            {entry.data.prevSlug && <a href={getPostUrlBySlug(entry.data.prevSlug)} class="block active:scale-95">
+            {entry.data.prevSlug && entry.data.prevPermalink && <a href={url(entry.data.prevPermalink)} class="block active:scale-95">
                 <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-end! gap-4">
                     <div class="post-nav-title transition text-75 text-right">
                         {entry.data.prevTitle}

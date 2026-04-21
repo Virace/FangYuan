@@ -16,6 +16,19 @@ function stripInvalidXmlChars(str: string): string {
 	);
 }
 
+function getRequiredPublicPath(post: {
+	id: string;
+	data: {
+		publicPath?: string;
+	};
+}): string {
+	if (!post.data.publicPath) {
+		throw new Error(`Post "${post.id}" is missing resolved publicPath.`);
+	}
+
+	return post.data.publicPath;
+}
+
 export async function GET(context: APIContext): Promise<Response> {
 	const blog = await getSortedPosts();
 
@@ -31,7 +44,7 @@ export async function GET(context: APIContext): Promise<Response> {
 				title: post.data.title,
 				pubDate: post.data.published,
 				description: post.data.description || "",
-				link: url(`/posts/${post.id}/`),
+				link: url(getRequiredPublicPath(post)),
 				content: sanitizeHtml(parser.render(cleanedContent), {
 					allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
 				}),

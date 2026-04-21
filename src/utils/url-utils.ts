@@ -13,7 +13,22 @@ function joinUrl(...parts: string[]): string {
 }
 
 export function getPostUrlBySlug(slug: string): string {
-	return url(`/posts/${slug}/`);
+	throw new Error(
+		`Use getPostUrlByEntry() or resolved publicPath instead of raw entry id "${slug}".`,
+	);
+}
+
+export function getPostUrlByEntry(entry: {
+	id: string;
+	data?: {
+		publicPath?: string;
+	};
+}): string {
+	if (!entry.data?.publicPath) {
+		throw new Error(`Post entry "${entry.id}" is missing resolved publicPath.`);
+	}
+
+	return url(entry.data.publicPath);
 }
 
 export function getTagUrl(tag: string): string {

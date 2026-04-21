@@ -1,6 +1,7 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
+import { getPostRouteManifest } from "@utils/content-routes";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 import type { ImageMetadata } from "astro";
 
@@ -8,6 +9,8 @@ export type PostData = {
 	title: string;
 	published: Date;
 	updated?: Date;
+	alias: string;
+	permalink: string;
 	draft: boolean;
 	description: string;
 	image: string | ImageMetadata;
@@ -18,6 +21,9 @@ export type PostData = {
 	prevSlug: string;
 	nextTitle: string;
 	nextSlug: string;
+	publicPath?: string;
+	prevPermalink?: string;
+	nextPermalink?: string;
 };
 
 export type PostEntry = Omit<CollectionEntry<"posts">, "data"> & {
@@ -44,14 +50,27 @@ async function getRawSortedPosts(): Promise<PostEntry[]> {
 
 export async function getSortedPosts(): Promise<PostEntry[]> {
 	const sorted = await getRawSortedPosts();
+	const postRoutes = await getPostRouteManifest();
+
+	for (const entry of sorted) {
+		const routedPost = postRoutes.byEntryId.get(entry.id);
+		if (!routedPost) {
+			throw new Error(`Missing routed post metadata for entry "${entry.id}".`);
+		}
+
+		entry.data.publicPath = routedPost.publicPath;
+		entry.data.updated = routedPost.entry.data.updated ?? entry.data.updated;
+	}
 
 	for (let i = 1; i < sorted.length; i++) {
 		sorted[i].data.nextSlug = sorted[i - 1].id;
 		sorted[i].data.nextTitle = sorted[i - 1].data.title;
+		sorted[i].data.nextPermalink = sorted[i - 1].data.publicPath;
 	}
 	for (let i = 0; i < sorted.length - 1; i++) {
 		sorted[i].data.prevSlug = sorted[i + 1].id;
 		sorted[i].data.prevTitle = sorted[i + 1].data.title;
+		sorted[i].data.prevPermalink = sorted[i + 1].data.publicPath;
 	}
 
 	return sorted;
@@ -61,9 +80,7 @@ export type PostForList = {
 	data: PostData;
 };
 export async function getSortedPostsList(): Promise<PostForList[]> {
-	const sortedFullPosts = await getRawSortedPosts();
-
-	// delete post.body
+	const sortedFullPosts = await getSortedPosts();
 	const sortedPostsList = sortedFullPosts.map((post) => ({
 		slug: post.id,
 		data: post.data,
