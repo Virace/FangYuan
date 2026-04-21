@@ -1,5 +1,23 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
+import { siteConfig } from "../config";
+import {
+	getStandaloneRoutePublicPath,
+	resolveAstroBuildConfig,
+} from "./permalink-materialization";
+
+const routeBuildConfig = resolveAstroBuildConfig({
+	postsPattern: siteConfig.permalink.postsPattern,
+	pagesPattern: siteConfig.permalink.pagesPattern,
+	trailingSlash: siteConfig.permalink.trailingSlash,
+	postPatternRulePatterns: siteConfig.permalink.postPatternRules.map(
+		(rule) => rule.pattern,
+	),
+});
+
+export function getArchivePath(): string {
+	return getStandaloneRoutePublicPath("archive", routeBuildConfig.buildFormat);
+}
 
 export function pathsEqual(path1: string, path2: string): boolean {
 	const normalizedPath1 = path1.replace(/^\/|\/$/g, "").toLowerCase();
@@ -32,8 +50,8 @@ export function getPostUrlByEntry(entry: {
 }
 
 export function getTagUrl(tag: string): string {
-	if (!tag) return url("/archive/");
-	return url(`/archive/?tag=${encodeURIComponent(tag.trim())}`);
+	if (!tag) return url(getArchivePath());
+	return url(`${getArchivePath()}?tag=${encodeURIComponent(tag.trim())}`);
 }
 
 export function getCategoryUrl(category: string | null): string {
@@ -42,8 +60,10 @@ export function getCategoryUrl(category: string | null): string {
 		category.trim() === "" ||
 		category.trim().toLowerCase() === i18n(I18nKey.uncategorized).toLowerCase()
 	)
-		return url("/archive/?uncategorized=true");
-	return url(`/archive/?category=${encodeURIComponent(category.trim())}`);
+		return url(`${getArchivePath()}?uncategorized=true`);
+	return url(
+		`${getArchivePath()}?category=${encodeURIComponent(category.trim())}`,
+	);
 }
 
 export function getDir(path: string): string {

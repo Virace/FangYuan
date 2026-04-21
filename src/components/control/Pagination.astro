@@ -1,6 +1,11 @@
 ---
 import type { Page } from "astro";
 import { Icon } from "astro-icon/components";
+import { siteConfig } from "../../config";
+import {
+	getPaginationPublicPath,
+	resolveAstroBuildConfig,
+} from "../../utils/permalink-materialization";
 import { url } from "../../utils/url-utils";
 
 interface Props {
@@ -14,6 +19,14 @@ const { page, style } = Astro.props;
 const HIDDEN = -1;
 
 const className = Astro.props.class;
+const paginationBuildConfig = resolveAstroBuildConfig({
+	postsPattern: siteConfig.permalink.postsPattern,
+	pagesPattern: siteConfig.permalink.pagesPattern,
+	trailingSlash: siteConfig.permalink.trailingSlash,
+	postPatternRulePatterns: siteConfig.permalink.postPatternRules.map(
+		(rule) => rule.pattern,
+	),
+});
 
 const ADJ_DIST = 2;
 const VISIBLE = ADJ_DIST * 2 + 1;
@@ -46,15 +59,20 @@ if (r === page.lastPage - 2) pages.push(page.lastPage - 1);
 if (r < page.lastPage) pages.push(page.lastPage);
 
 const getPageUrl = (p: number) => {
-	if (p === 1) return "/";
-	return `/${p}/`;
+	return getPaginationPublicPath(p, paginationBuildConfig.buildFormat);
 };
+const prevPageUrl =
+	page.currentPage > 1 ? url(getPageUrl(page.currentPage - 1)) : null;
+const nextPageUrl =
+	page.currentPage < page.lastPage
+		? url(getPageUrl(page.currentPage + 1))
+		: null;
 ---
 
 <div class:list={[className, "flex flex-row gap-3 justify-center"]} style={style}>
     <div class="w-11 h-11">
-        {page.url.prev
-            ? <a href={page.url.prev} aria-label="Previous Page"
+        {prevPageUrl
+            ? <a href={prevPageUrl} aria-label="Previous Page"
                 class="btn-card overflow-hidden rounded-lg text-primary w-11 h-11"
             >
                 <Icon name="material-symbols:chevron-left-rounded" class="icon-28"></Icon>
@@ -80,8 +98,8 @@ const getPageUrl = (p: number) => {
         })}
     </div>
     <div class="w-11 h-11">
-        {page.url.next
-            ? <a href={page.url.next} aria-label="Next Page"
+        {nextPageUrl
+            ? <a href={nextPageUrl} aria-label="Next Page"
                 class="btn-card overflow-hidden rounded-lg text-primary w-11 h-11"
             >
                 <Icon name="material-symbols:chevron-right-rounded" class="icon-28"></Icon>

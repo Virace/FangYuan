@@ -3,6 +3,8 @@ import test from "node:test";
 
 import {
 	applyTrailingSlash,
+	getPaginationPublicPath,
+	getStandaloneRoutePublicPath,
 	materializePublicPath,
 	resolveAstroBuildConfig,
 } from "../src/utils/permalink-materialization.ts";
@@ -27,6 +29,24 @@ test("materializePublicPath maps slashless public paths to file output", () => {
 		buildFamily: "file",
 		outputPath: "hello.html",
 	});
+});
+
+test("getPaginationPublicPath returns directory pagination paths", () => {
+	assert.equal(getPaginationPublicPath(1, "directory"), "/");
+	assert.equal(getPaginationPublicPath(2, "directory"), "/2/");
+});
+
+test("getPaginationPublicPath returns file pagination paths", () => {
+	assert.equal(getPaginationPublicPath(1, "file"), "/");
+	assert.equal(getPaginationPublicPath(2, "file"), "/2.html");
+});
+
+test("getStandaloneRoutePublicPath returns directory route paths", () => {
+	assert.equal(getStandaloneRoutePublicPath("archive", "directory"), "/archive/");
+});
+
+test("getStandaloneRoutePublicPath returns file route paths", () => {
+	assert.equal(getStandaloneRoutePublicPath("archive", "file"), "/archive.html");
 });
 
 test("resolveAstroBuildConfig rejects incompatible global materialization families", () => {

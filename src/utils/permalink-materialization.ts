@@ -104,6 +104,31 @@ export function materializePublicPath(publicPath: string): {
 	};
 }
 
+export function getPaginationPublicPath(
+	pageNumber: number,
+	buildFormat: "directory" | "file",
+): string {
+	if (pageNumber <= 1) {
+		return "/";
+	}
+
+	return buildFormat === "file" ? `/${pageNumber}.html` : `/${pageNumber}/`;
+}
+
+export function getStandaloneRoutePublicPath(
+	routeStem: string,
+	buildFormat: "directory" | "file",
+): string {
+	const normalizedStem = routeStem.trim().replace(/^\/+|\/+$/g, "");
+	if (!normalizedStem) {
+		return "/";
+	}
+
+	return buildFormat === "file"
+		? `/${normalizedStem}.html`
+		: `/${normalizedStem}/`;
+}
+
 export function resolveAstroBuildConfig(
 	config?: BuildFacingPermalinkConfig | null,
 ): {
