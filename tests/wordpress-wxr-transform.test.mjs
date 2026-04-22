@@ -7,11 +7,11 @@ import test from "node:test";
 import {
 	transformEntryToPreview,
 	transformWxrToPreview,
-} from "../scripts/wordpress-wxr-transform-core.js";
+} from "../scripts/wp-migration/wordpress-wxr-transform-core.js";
 import {
 	parseTransformCliArgs,
 	runWordpressTransformCli,
-} from "../scripts/wordpress-wxr-transform.js";
+} from "../scripts/wp-migration/wordpress-wxr-transform.js";
 import { buildSampleWxr, SAMPLE_WXR } from "./test-helpers/wordpress-wxr-fixture.mjs";
 
 test("transformEntryToPreview keeps draft id fallback and title suffix", () => {

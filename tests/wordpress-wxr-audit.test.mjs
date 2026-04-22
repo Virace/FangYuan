@@ -5,7 +5,7 @@ import {
 	buildAuditReport,
 	extractWxrEntries,
 	resolvePermalinkAudit,
-} from "../scripts/wordpress-wxr-audit-core.js";
+} from "../scripts/wp-migration/wordpress-wxr-audit-core.js";
 import {
 	SAMPLE_WXR,
 	buildSampleWxr,

@@ -32,6 +32,7 @@ yarn.lock
 
 # local agent artifacts
 .serena/
+.temp/
 site/
 
 # Playwright artifacts

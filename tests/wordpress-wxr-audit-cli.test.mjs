@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { parseCliArgs, runWordpressAuditCli } from "../scripts/wordpress-wxr-audit.js";
+import { parseCliArgs, runWordpressAuditCli } from "../scripts/wp-migration/wordpress-wxr-audit.js";
 import { SAMPLE_WXR } from "./test-helpers/wordpress-wxr-fixture.mjs";
 
 test("parseCliArgs keeps report formats and default frontmatter fields", () => {
