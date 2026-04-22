@@ -28,7 +28,7 @@ import { mergeNavBarLinks } from "./utils/navbar-links";
 
 type ExternalSiteConfig = Omit<
 	Partial<SiteConfig>,
-	"themeColor" | "banner" | "toc" | "permalink"
+	"themeColor" | "banner" | "toc" | "permalink" | "postSort"
 > & {
 	themeColor?: Partial<SiteConfig["themeColor"]>;
 	banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
@@ -38,6 +38,7 @@ type ExternalSiteConfig = Omit<
 	permalink?: Partial<SiteConfig["permalink"]> & {
 		postPatternRules?: SiteConfig["permalink"]["postPatternRules"];
 	};
+	postSort?: Partial<SiteConfig["postSort"]>;
 };
 
 type ExternalNavBarConfig = {
@@ -99,6 +100,10 @@ function mergeSiteConfig(
 		toc: {
 			...defaultConfig.toc,
 			...override.toc,
+		},
+		postSort: {
+			...defaultConfig.postSort,
+			...override.postSort,
 		},
 		favicon: override.favicon ?? defaultConfig.favicon,
 		permalink: {

@@ -1,4 +1,4 @@
-import { LinkPresets } from "./constants/link-presets";
+import { LinkPresets } from "./constants/link-presets.ts";
 import type {
 	CommentConfig,
 	ExpressiveCodeConfig,
@@ -14,12 +14,16 @@ import type {
 import {
 	DEFAULT_COMMENT_MAX_DEPTH,
 	DEFAULT_COMMENT_ROOT_LIMIT,
-} from "./utils/comments/options";
+} from "./utils/comments/options.ts";
 
 export const defaultSiteConfig: SiteConfig = {
 	title: "FangYuan",
 	subtitle: "方圆",
 	postsPerPage: null, // null / 0 表示使用内置默认分页大小；填数字则会应用你指定的每页文章数
+	postSort: {
+		key: "published", // 文章默认排序字段；支持 title / published / updated / alias / filename
+		order: "desc", // 同一 sticky 层内的排序方向；sticky=0 表示未置顶，非零数值越大越靠前
+	},
 	lang: "zh_CN", // 站点语言代码，例如 "en"、"zh_CN"、"zh_TW"、"ja"
 	themeColor: {
 		hue: 250, // 默认主题色 Hue，范围 0-360；例如 red=0、teal=200、cyan=250、pink=345

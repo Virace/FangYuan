@@ -1,6 +1,7 @@
-import type { PermalinkConfig } from "../types/config";
+import type { PermalinkConfig, PostSortConfig } from "../types/config";
 import { resolvePermalinkForEntry } from "./permalink.ts";
 import { materializePublicPath } from "./permalink-materialization.ts";
+import { attachAdjacentPostLinks, sortPostRoutes } from "./post-ordering.ts";
 
 type BaseContentEntry<TData extends Record<string, unknown>> = {
 	id: string;
@@ -21,6 +22,7 @@ type PostRouteData = {
 	tags?: string[];
 	category?: string | null;
 	lang?: string;
+	sticky?: number;
 	prevTitle?: string;
 	prevSlug?: string;
 	nextTitle?: string;
@@ -287,18 +289,17 @@ export function findContentRouteBySegments(
 
 export async function applyEffectiveUpdatedDates(
 	manifest: ContentRouteManifest,
-	permalinkConfig: Pick<
-		PermalinkConfig,
-		"updatedDateMode" | "updatedDateFallback"
-	>,
+	settings: Pick<PermalinkConfig, "updatedDateMode" | "updatedDateFallback"> & {
+		postSort: PostSortConfig;
+	},
 	providers: UpdatedDateProviders = {},
 ): Promise<ContentRouteManifest> {
 	const { resolveUpdatedDate } = await import("./updated-date.ts");
 	const nextPosts = await Promise.all(
 		manifest.posts.map(async (route) => {
 			const effectiveUpdated = await resolveUpdatedDate({
-				mode: permalinkConfig.updatedDateMode,
-				fallback: permalinkConfig.updatedDateFallback,
+				mode: settings.updatedDateMode,
+				fallback: settings.updatedDateFallback,
 				frontmatterUpdated: route.entry.data.updated,
 				filePath: route.entry.filePath,
 				gitProvider: providers.gitProvider,
@@ -320,8 +321,8 @@ export async function applyEffectiveUpdatedDates(
 	const nextSpecPages = await Promise.all(
 		manifest.specPages.map(async (route) => {
 			const effectiveUpdated = await resolveUpdatedDate({
-				mode: permalinkConfig.updatedDateMode,
-				fallback: permalinkConfig.updatedDateFallback,
+				mode: settings.updatedDateMode,
+				fallback: settings.updatedDateFallback,
 				frontmatterUpdated: route.entry.data.updated,
 				filePath: route.entry.filePath,
 				gitProvider: providers.gitProvider,
@@ -340,7 +341,10 @@ export async function applyEffectiveUpdatedDates(
 			};
 		}),
 	);
-	const routes = [...nextPosts, ...nextSpecPages];
+	const orderedPosts = attachAdjacentPostLinks(
+		sortPostRoutes(nextPosts, settings.postSort),
+	);
+	const routes = [...orderedPosts, ...nextSpecPages];
 	const directoryRoutes = routes.filter(
 		isDirectoryContentRoute,
 	) as DirectoryRoutedContentEntry[];
@@ -349,12 +353,12 @@ export async function applyEffectiveUpdatedDates(
 	) as FileRoutedContentEntry[];
 
 	return {
-		posts: nextPosts,
+		posts: orderedPosts,
 		specPages: nextSpecPages,
 		routes,
 		directoryRoutes,
 		fileRoutes,
-		postByEntryId: new Map(nextPosts.map((route) => [route.entryId, route])),
+		postByEntryId: new Map(orderedPosts.map((route) => [route.entryId, route])),
 		specByEntryId: new Map(
 			nextSpecPages.map((route) => [route.entryId, route]),
 		),
@@ -385,7 +389,10 @@ export async function getContentRouteManifest(): Promise<ContentRouteManifest> {
 			});
 
 			requireSpecRoute(manifest, "about", "About page content not found");
-			return applyEffectiveUpdatedDates(manifest, siteConfig.permalink);
+			return applyEffectiveUpdatedDates(manifest, {
+				...siteConfig.permalink,
+				postSort: siteConfig.postSort,
+			});
 		})();
 	}
 

@@ -12,6 +12,20 @@ export type PostPatternRule = {
 	pattern: string;
 };
 
+export type PostSortKey =
+	| "title"
+	| "published"
+	| "updated"
+	| "alias"
+	| "filename";
+
+export type SortOrder = "asc" | "desc";
+
+export type PostSortConfig = {
+	key: PostSortKey;
+	order: SortOrder;
+};
+
 export type PermalinkConfig = {
 	postsPattern: string;
 	pagesPattern: string;
@@ -26,6 +40,7 @@ export type SiteConfig = {
 	title: string;
 	subtitle: string;
 	postsPerPage?: number | null;
+	postSort: PostSortConfig;
 
 	lang:
 		| "en"
@@ -142,10 +157,13 @@ export type BlogPostData = {
 	draft?: boolean;
 	image?: string | ImageMetadata;
 	category?: string;
+	sticky?: number;
 	prevTitle?: string;
 	prevSlug?: string;
 	nextTitle?: string;
 	nextSlug?: string;
+	prevPermalink?: string;
+	nextPermalink?: string;
 };
 
 export type ExpressiveCodeConfig = {

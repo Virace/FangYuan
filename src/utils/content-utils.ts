@@ -17,6 +17,7 @@ export type PostData = {
 	tags: string[];
 	category: string | null;
 	lang: string;
+	sticky: number;
 	prevTitle: string;
 	prevSlug: string;
 	nextTitle: string;
@@ -30,63 +31,28 @@ export type PostEntry = Omit<CollectionEntry<"posts">, "data"> & {
 	data: PostData;
 };
 
-// // Retrieve posts and sort them by publication date
-async function getRawSortedPosts(): Promise<PostEntry[]> {
-	const allBlogPosts = (await getCollection(
-		"posts",
-		(entry: CollectionEntry<"posts">) => {
-			const postData = entry.data as Partial<PostData>;
-			return import.meta.env.PROD ? postData.draft !== true : true;
-		},
-	)) as PostEntry[];
-
-	const sorted = allBlogPosts.sort((a, b) => {
-		const dateA = new Date(a.data.published);
-		const dateB = new Date(b.data.published);
-		return dateA > dateB ? -1 : 1;
-	});
-	return sorted;
-}
-
 export async function getSortedPosts(): Promise<PostEntry[]> {
-	const sorted = await getRawSortedPosts();
 	const postRoutes = await getPostRouteManifest();
 
-	for (const entry of sorted) {
-		const routedPost = postRoutes.byEntryId.get(entry.id);
-		if (!routedPost) {
-			throw new Error(`Missing routed post metadata for entry "${entry.id}".`);
-		}
-
-		entry.data.publicPath = routedPost.publicPath;
-		entry.data.updated = routedPost.entry.data.updated ?? entry.data.updated;
-	}
-
-	for (let i = 1; i < sorted.length; i++) {
-		sorted[i].data.nextSlug = sorted[i - 1].id;
-		sorted[i].data.nextTitle = sorted[i - 1].data.title;
-		sorted[i].data.nextPermalink = sorted[i - 1].data.publicPath;
-	}
-	for (let i = 0; i < sorted.length - 1; i++) {
-		sorted[i].data.prevSlug = sorted[i + 1].id;
-		sorted[i].data.prevTitle = sorted[i + 1].data.title;
-		sorted[i].data.prevPermalink = sorted[i + 1].data.publicPath;
-	}
-
-	return sorted;
+	return postRoutes.entries.map((route) => ({
+		...route.entry,
+		collection: "posts" as const,
+		id: route.entryId,
+		data: route.entry.data as PostData,
+	}));
 }
+
 export type PostForList = {
 	slug: string;
 	data: PostData;
 };
+
 export async function getSortedPostsList(): Promise<PostForList[]> {
 	const sortedFullPosts = await getSortedPosts();
-	const sortedPostsList = sortedFullPosts.map((post) => ({
+	return sortedFullPosts.map((post) => ({
 		slug: post.id,
 		data: post.data,
 	}));
-
-	return sortedPostsList;
 }
 export type Tag = {
 	name: string;

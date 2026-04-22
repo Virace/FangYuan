@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+	applyEffectiveUpdatedDates,
 	buildContentRouteManifest,
 	findContentRouteBySegments,
 } from "../src/utils/content-routes.ts";
@@ -161,4 +162,82 @@ test("buildContentRouteManifest allows explicit content routes under archive/pag
 	});
 
 	assert.equal(manifest.specPages[0].publicPath, "/archive/page/demo/");
+});
+
+test("applyEffectiveUpdatedDates sorts posts by sticky and writes adjacent links", async () => {
+	const manifest = buildContentRouteManifest({
+		posts: [
+			{
+				id: "regular",
+				data: {
+					title: "Regular",
+					published: new Date("2024-01-01T00:00:00.000Z"),
+					updated: undefined,
+					alias: "",
+					permalink: "",
+					draft: false,
+					description: "",
+					image: "",
+					tags: [],
+					category: "",
+					lang: "",
+					sticky: 0,
+					prevTitle: "",
+					prevSlug: "",
+					nextTitle: "",
+					nextSlug: "",
+				},
+				filePath: "site/content/posts/regular.md",
+			},
+			{
+				id: "pinned",
+				data: {
+					title: "Pinned",
+					published: new Date("2024-01-01T00:00:00.000Z"),
+					updated: new Date("2024-02-01T00:00:00.000Z"),
+					alias: "",
+					permalink: "",
+					draft: false,
+					description: "",
+					image: "",
+					tags: [],
+					category: "",
+					lang: "",
+					sticky: 1,
+					prevTitle: "",
+					prevSlug: "",
+					nextTitle: "",
+					nextSlug: "",
+				},
+				filePath: "site/content/posts/pinned.md",
+			},
+		],
+		specPages: [],
+		permalinkConfig: {
+			postsPattern: "/%slug%",
+			pagesPattern: "/%slug%",
+			trailingSlash: "auto",
+			postPatternRules: [],
+			aliasValidation: "error",
+			updatedDateMode: "manual",
+			updatedDateFallback: "none",
+		},
+	});
+
+	const finalManifest = await applyEffectiveUpdatedDates(
+		manifest,
+		{
+			updatedDateMode: "manual",
+			updatedDateFallback: "none",
+			postSort: { key: "updated", order: "desc" },
+		},
+		{},
+	);
+
+	assert.deepEqual(finalManifest.posts.map((route) => route.entryId), [
+		"pinned",
+		"regular",
+	]);
+	assert.equal(finalManifest.posts[0].entry.data.prevSlug, "regular");
+	assert.equal(finalManifest.posts[1].entry.data.nextSlug, "pinned");
 });
