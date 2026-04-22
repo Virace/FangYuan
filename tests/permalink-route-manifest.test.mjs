@@ -5,6 +5,7 @@ import {
 	applyEffectiveUpdatedDates,
 	buildContentRouteManifest,
 	findContentRouteBySegments,
+	shouldExposePostEntry,
 } from "../src/utils/content-routes.ts";
 
 test("buildContentRouteManifest keeps entry.id as postKey source while exposing public path and build materialization", () => {
@@ -162,6 +163,26 @@ test("buildContentRouteManifest allows explicit content routes under archive/pag
 	});
 
 	assert.equal(manifest.specPages[0].publicPath, "/archive/page/demo/");
+});
+
+test("shouldExposePostEntry hides drafts from live route exposure", () => {
+	assert.equal(
+		shouldExposePostEntry({
+			data: {
+				draft: true,
+			},
+		}),
+		false,
+	);
+	assert.equal(
+		shouldExposePostEntry({
+			data: {
+				draft: false,
+			},
+		}),
+		true,
+	);
+	assert.equal(shouldExposePostEntry({ data: {} }), true);
 });
 
 test("applyEffectiveUpdatedDates sorts posts by sticky and writes adjacent links", async () => {

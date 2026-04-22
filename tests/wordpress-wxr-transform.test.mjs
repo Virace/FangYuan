@@ -245,6 +245,40 @@ test("transformWxrToPreview applies extracted user block rules", () => {
 	assert.doesNotMatch(entry.markdown, /github-cards\/latest\/widget\.js/);
 });
 
+test("transformWxrToPreview removes wordpress block wrappers while preserving media and content", () => {
+	const source = buildSampleWxr({
+		content: [
+			'<!-- wp:group --><div class="wp-block-group"><p>Group lead</p><div class="wp-block-group"><p>Nested detail</p></div></div><!-- /wp:group -->',
+			'<div class="wp-block-image is-style-default"><img src="https://example.com/photo.png" alt="Photo" /><figcaption class="wp-element-caption">Photo caption</figcaption></div>',
+			'<ul class="blocks-gallery-grid"><li class="blocks-gallery-item"><img src="https://example.com/gallery-1.png" alt="Gallery One" /></li><li class="blocks-gallery-item"><img src="https://example.com/gallery-2.png" alt="Gallery Two" /></li></ul>',
+			'<!-- wp:columns --><div class="wp-block-columns"><div class="wp-block-column"><p>Column A</p></div><div class="wp-block-column"><p>Column B</p></div></div><!-- /wp:columns -->',
+			'<div style="height:100px" aria-hidden="true" class="wp-block-spacer"></div>',
+			'<hr class="wp-block-separator has-text-color has-background has-cyan-bluish-gray-background-color has-cyan-bluish-gray-color"/>',
+		].join(""),
+	});
+
+	const result = transformWxrToPreview(source, {
+		contentTypes: ["post"],
+	});
+	const entry = result.entries[0];
+
+	assert.match(entry.markdown, /Group lead/);
+	assert.match(entry.markdown, /Nested detail/);
+	assert.match(
+		entry.markdown,
+		/!\[Photo\]\(https:\/\/example\.com\/photo\.png\)[\s\S]*\*Photo caption\*/,
+	);
+	assert.match(entry.markdown, /!\[Gallery One\]\(https:\/\/example\.com\/gallery-1\.png\)/);
+	assert.match(entry.markdown, /!\[Gallery Two\]\(https:\/\/example\.com\/gallery-2\.png\)/);
+	assert.match(entry.markdown, /^- Column A$/m);
+	assert.match(entry.markdown, /^- Column B$/m);
+	assert.match(entry.markdown, /^---$/m);
+	assert.doesNotMatch(entry.markdown, /wp-block-/);
+	assert.doesNotMatch(entry.markdown, /blocks-gallery-grid/);
+	assert.doesNotMatch(entry.markdown, /wp-element-caption/);
+	assert.doesNotMatch(entry.markdown, /wp-block-spacer/);
+});
+
 test('transformWxrToPreview keeps post_format out of category frontmatter', () => {
 	const source = buildSampleWxr({
 		title: "Electron-Vue，踩坑之版本升级",

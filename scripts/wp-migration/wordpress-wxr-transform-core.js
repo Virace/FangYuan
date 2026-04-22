@@ -67,6 +67,10 @@ function extractAttr(source, attributeName) {
 	return trimString(match?.[1] ?? "");
 }
 
+function getClassName(source) {
+	return extractAttr(source, "class");
+}
+
 function decodeInlineHtml(source) {
 	return source
 		.replaceAll("&nbsp;", " ")
@@ -229,6 +233,104 @@ function renderInlineFormatting(source) {
 		);
 }
 
+function applyReplacements(source, replacements) {
+	return replacements
+		.sort((left, right) => right.start - left.start)
+		.reduce(
+			(current, replacement) =>
+				`${current.slice(0, replacement.start)}${replacement.value}${current.slice(replacement.end)}`,
+			source,
+		);
+}
+
+function replaceMatchingDivBlocks(source, predicate, renderBlock) {
+	let current = source;
+	let changed = true;
+	while (changed) {
+		const tokenPattern = /<\/?div\b[^>]*>/gi;
+		const stack = [];
+		const replacements = [];
+		let match = tokenPattern.exec(current);
+		while (match) {
+			const token = match[0];
+			if (/^<div\b/i.test(token)) {
+				stack.push({
+					token,
+					start: match.index,
+					end: match.index + token.length,
+				});
+			} else {
+				const opening = stack.pop();
+				if (opening && predicate(opening.token)) {
+					replacements.push({
+						start: opening.start,
+						end: match.index + token.length,
+						value: renderBlock(current.slice(opening.end, match.index), opening.token),
+					});
+				}
+			}
+			match = tokenPattern.exec(current);
+		}
+		const innermostReplacements = replacements.filter(
+			(candidate) =>
+				!replacements.some(
+					(other) =>
+						other.start > candidate.start &&
+						other.end < candidate.end,
+				),
+		);
+		changed = innermostReplacements.length > 0;
+		if (changed) {
+			current = applyReplacements(current, innermostReplacements);
+		}
+	}
+	return current;
+}
+
+function extractMatchingDivContents(source, predicate) {
+	const tokenPattern = /<\/?div\b[^>]*>/gi;
+	const stack = [];
+	const contents = [];
+	let match = tokenPattern.exec(source);
+	while (match) {
+		const token = match[0];
+		if (/^<div\b/i.test(token)) {
+			stack.push({
+				token,
+				start: match.index,
+				end: match.index + token.length,
+			});
+		} else {
+			const opening = stack.pop();
+			if (opening && predicate(opening.token)) {
+				contents.push(source.slice(opening.end, match.index));
+			}
+		}
+		match = tokenPattern.exec(source);
+	}
+	return contents;
+}
+
+function normalizeMarkdownBlock(source) {
+	return collapseWhitespace(
+		renderInlineFormatting(renderInlineHighlights(source))
+			.replace(/<!--[\s\S]*?-->/g, "")
+			.replace(/<\/?div[^>]*>/gi, "\n")
+			.replace(/<\/?figure[^>]*>/gi, "\n")
+			.replace(/<p[^>]*>/gi, "\n\n")
+			.replace(/<\/p>/gi, "\n\n")
+			.replace(/<br\s*\/?>/gi, "\n")
+			.replace(/<hr\b[^>]*\/?>/gi, "\n\n---\n\n"),
+	);
+}
+
+function normalizeListItemContent(source) {
+	return normalizeMarkdownBlock(source)
+		.replace(/\n+/g, " ")
+		.replace(/\s{2,}/g, " ")
+		.trim();
+}
+
 function renderImages(source, notes) {
 	return source.replace(/<img([^>]*)\/?>/gi, (match, attrs) => {
 		const src = extractAttr(attrs, "src");
@@ -243,6 +345,83 @@ function renderImages(source, notes) {
 		}
 		return src ? `![${alt}](${src})` : match;
 	});
+}
+
+function renderFigureCaptions(source) {
+	return source.replace(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/gi, (_match, content) => {
+		const caption = stripHtmlTags(
+			renderInlineFormatting(renderInlineHighlights(content)),
+		);
+		return caption ? `\n\n*${caption}*\n\n` : "";
+	});
+}
+
+function renderWordpressSeparators(source) {
+	return source.replace(/<hr\b[^>]*\/?>/gi, "\n\n---\n\n");
+}
+
+function removeWordpressSpacerBlocks(source) {
+	return replaceMatchingDivBlocks(
+		source,
+		(tag) => /\bwp-block-spacer\b/i.test(getClassName(tag)),
+		() => "",
+	);
+}
+
+function unwrapWordpressImageBlocks(source) {
+	return replaceMatchingDivBlocks(
+		source,
+		(tag) => /\bwp-block-image\b/i.test(getClassName(tag)),
+		(inner) => `\n\n${normalizeMarkdownBlock(inner)}\n\n`,
+	);
+}
+
+function renderGalleryBlocks(source) {
+	return source.replace(
+		/<ul[^>]*class="[^"]*blocks-gallery-grid[^"]*"[^>]*>([\s\S]*?)<\/ul>/gi,
+		(_match, inner) => {
+			const items = [...inner.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+				.map((itemMatch) => normalizeMarkdownBlock(itemMatch[1]))
+				.filter(Boolean);
+			return items.length > 0 ? `\n\n${items.join("\n\n")}\n\n` : "";
+		},
+	);
+}
+
+function renderColumnsBlockContent(source) {
+	const columns = extractMatchingDivContents(
+		source,
+		(tag) => /\bwp-block-column\b/i.test(getClassName(tag)),
+	);
+	const items = columns
+		.map((column) => normalizeListItemContent(column))
+		.filter(Boolean);
+	return items.length > 0 ? `\n\n${items.map((item) => `- ${item}`).join("\n")}\n\n` : "";
+}
+
+function renderWordpressColumns(source) {
+	const fromCommentBlocks = source.replace(
+		/<!--\s*wp:columns(?:\s+({[\s\S]*?}))?\s*-->([\s\S]*?)<!--\s*\/wp:columns\s*-->/gi,
+		(_match, _jsonBlob, inner) => renderColumnsBlockContent(inner),
+	);
+	const fromDivBlocks = replaceMatchingDivBlocks(
+		fromCommentBlocks,
+		(tag) => /\bwp-block-columns\b/i.test(getClassName(tag)),
+		(inner) => renderColumnsBlockContent(inner),
+	);
+	return replaceMatchingDivBlocks(
+		fromDivBlocks,
+		(tag) => /\bwp-block-column\b/i.test(getClassName(tag)),
+		(inner) => `\n\n${normalizeMarkdownBlock(inner)}\n\n`,
+	);
+}
+
+function unwrapWordpressGroups(source) {
+	return replaceMatchingDivBlocks(
+		source,
+		(tag) => /\bwp-block-group\b/i.test(getClassName(tag)),
+		(inner) => `\n\n${normalizeMarkdownBlock(inner)}\n\n`,
+	);
 }
 
 function renderVideoBlocks(source) {
@@ -294,6 +473,8 @@ function removeEditorNoise(source) {
 	return source
 		.replace(/<figure[^>]*>/gi, "")
 		.replace(/<\/figure>/gi, "")
+		.replace(/<div[^>]*>/gi, "")
+		.replace(/<\/div>/gi, "")
 		.replace(/<font[^>]*>([\s\S]*?)<\/font>/gi, (_m, c) => stripHtmlTags(c))
 		.replace(/<(?:stdin|module|sup|u|i)[^>]*>([\s\S]*?)<\/(?:stdin|module|sup|u|i)>/gi, (_m, c) =>
 			stripHtmlTags(c),
@@ -329,13 +510,13 @@ function renderSimpleParagraphs(source) {
 		.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (_m, c) =>
 			renderBlockquote(renderInlineFormatting(renderInlineHighlights(c))),
 		)
-		.replace(/<ul>([\s\S]*?)<\/ul>/gi, (_m, inner) =>
-			[...inner.matchAll(/<li>([\s\S]*?)<\/li>/gi)]
+		.replace(/<ul\b[^>]*>([\s\S]*?)<\/ul>/gi, (_m, inner) =>
+			[...inner.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)]
 				.map((match) => `- ${stripHtmlTags(renderInlineFormatting(renderInlineHighlights(match[1])))}`)
 				.join("\n"),
 		)
-		.replace(/<ol>([\s\S]*?)<\/ol>/gi, (_m, inner) =>
-			[...inner.matchAll(/<li>([\s\S]*?)<\/li>/gi)]
+		.replace(/<ol\b[^>]*>([\s\S]*?)<\/ol>/gi, (_m, inner) =>
+			[...inner.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)]
 				.map(
 					(match, index) =>
 						`${index + 1}. ${stripHtmlTags(renderInlineFormatting(renderInlineHighlights(match[1])))}`,
@@ -464,10 +645,18 @@ export function transformEntryToPreview(entry, options = {}) {
 	body = renderCodeBlocks(body);
 	body = renderVideoBlocks(body);
 	body = renderButtonsBlock(body);
-	body = removeEditorNoise(body);
 	body = renderBackgroundParagraphs(body);
 	body = renderImages(body, notes);
+	body = renderFigureCaptions(body);
+	body = renderWordpressSeparators(body);
+	body = body.replace(/<!--\s*wp:spacer(?:\s+{[\s\S]*?})?\s*\/-->/gi, "");
+	body = removeWordpressSpacerBlocks(body);
+	body = unwrapWordpressImageBlocks(body);
+	body = renderGalleryBlocks(body);
+	body = renderWordpressColumns(body);
+	body = unwrapWordpressGroups(body);
 	body = renderTables(body, notes);
+	body = removeEditorNoise(body);
 	body = renderSimpleParagraphs(body);
 	body = finalizePreviewMarkdown(body);
 	body = collapseWhitespace(body);

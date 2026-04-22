@@ -1,7 +1,10 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { getPostRouteManifest } from "@utils/content-routes";
+import {
+	getPostRouteManifest,
+	shouldExposePostEntry,
+} from "@utils/content-routes";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 import type { ImageMetadata } from "astro";
 
@@ -62,10 +65,7 @@ export type Tag = {
 export async function getTagList(): Promise<Tag[]> {
 	const allBlogPosts = (await getCollection(
 		"posts",
-		(entry: CollectionEntry<"posts">) => {
-			const postData = entry.data as Partial<PostData>;
-			return import.meta.env.PROD ? postData.draft !== true : true;
-		},
+		(entry: CollectionEntry<"posts">) => shouldExposePostEntry(entry),
 	)) as PostEntry[];
 
 	const countMap: { [key: string]: number } = {};
@@ -93,10 +93,7 @@ export type Category = {
 export async function getCategoryList(): Promise<Category[]> {
 	const allBlogPosts = (await getCollection(
 		"posts",
-		(entry: CollectionEntry<"posts">) => {
-			const postData = entry.data as Partial<PostData>;
-			return import.meta.env.PROD ? postData.draft !== true : true;
-		},
+		(entry: CollectionEntry<"posts">) => shouldExposePostEntry(entry),
 	)) as PostEntry[];
 	const count: { [key: string]: number } = {};
 	allBlogPosts.forEach((post) => {

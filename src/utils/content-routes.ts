@@ -83,6 +83,14 @@ export type RootPageRoute =
 			page: unknown;
 	  };
 
+export function shouldExposePostEntry(entry: {
+	data?: {
+		draft?: boolean;
+	};
+}): boolean {
+	return entry.data?.draft !== true;
+}
+
 type UpdatedDateProviders = {
 	gitProvider?: (filePath?: string) => Promise<Date | null>;
 	filesystemProvider?: (filePath?: string) => Promise<Date | null>;
@@ -376,10 +384,7 @@ export async function getContentRouteManifest(): Promise<ContentRouteManifest> {
 				import("../config"),
 			]);
 			const posts = (await getCollection("posts", (entry) => {
-				const postData = entry.data as {
-					draft?: boolean;
-				};
-				return import.meta.env.PROD ? postData.draft !== true : true;
+				return shouldExposePostEntry(entry);
 			})) as PostContentEntry[];
 			const specPages = (await getCollection("spec")) as SpecContentEntry[];
 			const manifest = buildContentRouteManifest({

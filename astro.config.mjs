@@ -12,6 +12,7 @@ import rehypeComponents from "rehype-components"; /* Render the custom directive
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
 import remarkDirective from "remark-directive"; /* Handle directives */
+import remarkDirectiveRehype from "remark-directive-rehype";
 import remarkGithubAdmonitionsToDirectives from "remark-github-admonitions-to-directives";
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
@@ -23,7 +24,7 @@ import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-cop
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
 import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
-import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
+import { remarkExpressiveMarkdown } from "./src/plugins/remark-expressive-markdown.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 import {
@@ -227,8 +228,9 @@ export default defineConfig({
 			remarkExcerpt,
 			remarkGithubAdmonitionsToDirectives,
 			remarkDirective,
+			remarkExpressiveMarkdown,
+			remarkDirectiveRehype,
 			remarkSectionize,
-			parseDirectiveNode,
 		],
 		rehypePlugins: [
 			rehypeKatex,

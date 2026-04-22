@@ -94,3 +94,95 @@ The content :spoiler[is hidden **ayyy**]!
 The content :spoiler[is hidden **ayyy**]!
 
 ```
+
+## Inline Highlight
+
+Use inline highlight when a sentence needs emphasis but a full block would be too heavy.
+
+普通强调：:hl[重点信息]{tone="note"}
+
+建议提示：:hl[推荐做法]{tone="tip"}
+
+强提醒：:hl[需要特别注意]{tone="warning"}
+
+```markdown
+:hl[重点信息]{tone="note"}
+
+:hl[推荐做法]{tone="tip"}
+
+:hl[需要特别注意]{tone="warning"}
+```
+
+## Fold
+
+Use fold blocks for optional details, update logs, or longer examples.
+
+:::fold{title="展开示例"}
+这里是默认折叠的内容。
+:::
+
+```markdown
+:::fold{title="展开示例"}
+这里是默认折叠的内容。
+:::
+```
+
+### Fold Options
+
+You can control the default open state and the title icon directly in the directive.
+
+默认关闭，不写 `open`：
+
+:::fold{title="默认关闭示例"}
+这里默认保持折叠。
+:::
+
+默认展开，显式写 `open="true"`：
+
+:::fold{title="默认展开示例" open="true"}
+这里会在页面加载时直接展开。
+:::
+
+隐藏左侧图标：
+
+:::fold{title="无图标示例" icon="none"}
+这里保留标题和箭头，但不显示左侧图标。
+:::
+
+替换图标：
+
+:::fold{title="书签图标示例" icon="bookmark"}
+可选图标包括 `file` `note` `tip` `warning` `question` `bookmark` `sparkles` `none`
+:::
+
+```markdown
+:::fold{title="默认关闭示例"}
+这里默认保持折叠。
+:::
+
+:::fold{title="默认展开示例" open="true"}
+这里会在页面加载时直接展开。
+:::
+
+:::fold{title="无图标示例" icon="none"}
+这里保留标题和箭头，但不显示左侧图标。
+:::
+
+:::fold{title="书签图标示例" icon="bookmark"}
+可选图标包括 `file` `note` `tip` `warning` `question` `bookmark` `sparkles` `none`
+:::
+```
+
+## Aside
+
+Use aside blocks for side notes that should not interrupt the main narrative.
+
+:::aside
+这是一段补充说明，适合放背景、PS、或轻量提醒。
+:::
+
+```markdown
+:::aside
+这是一段补充说明，适合放背景、PS、或轻量提醒。
+:::
+```
