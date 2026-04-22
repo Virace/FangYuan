@@ -28,6 +28,8 @@ export function parseTransformCliArgs(argv) {
 		useGmtDates: false,
 		wpPermalinkTemplate: "",
 		detectLinkPattern: true,
+		includeEmptyValues: false,
+		defaultCategory: "未分类",
 	};
 
 	for (let index = 0; index < argv.length; index += 2) {
@@ -58,6 +60,12 @@ export function parseTransformCliArgs(argv) {
 				break;
 			case "--detect-link-pattern":
 				options.detectLinkPattern = parseBooleanFlag(value);
+				break;
+			case "--include-empty-values":
+				options.includeEmptyValues = parseBooleanFlag(value);
+				break;
+			case "--default-category":
+				options.defaultCategory = trimString(value);
 				break;
 			default:
 				throw new Error(`Unknown flag: ${flag}`);

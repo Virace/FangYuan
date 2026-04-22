@@ -91,7 +91,8 @@ node scripts/wp-migration/wordpress-wxr-transform.js `
   --content-types "post,page" `
   --path-mode "flat" `
   --wp-permalink-template "/%year%/%monthnum%/%day%/%postname%/" `
-  --detect-link-pattern "true"
+  --detect-link-pattern "true" `
+  --default-category "未分类"
 ```
 
 运行完成后，默认会输出：
@@ -177,12 +178,19 @@ node scripts/wp-migration/wordpress-wxr-transform.js `
   - 原站 permalink 模板
 - `--detect-link-pattern`
   - 是否允许从原始 `link` 自动推断 pattern
+- `--include-empty-values`
+  - 默认 `false`
+  - `false` 时跳过空字符串、空数组这类空 frontmatter 值
+  - `true` 时保留空值，例如 `password: ""`、`tags: []`
+- `--default-category`
+  - 默认 `未分类`
+  - 当文章未识别到原始分类时，使用这个值填入 `category`
 
 ### 输出语义
 
 - 文章会写到 `posts/`
 - 页面会写到 `spec/`
-- 每篇内容都会保留 frontmatter
+- 每篇内容都会保留必需 frontmatter；空值默认不写，除非显式打开 `--include-empty-values`
 - `transform-summary.json` 用于快速回看总条数和 note 数量
 
 ## 自定义规则怎么加

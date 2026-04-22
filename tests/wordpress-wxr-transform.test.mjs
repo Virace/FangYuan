@@ -117,6 +117,10 @@ test("parseTransformCliArgs reads transform-preview arguments", () => {
 		"true",
 		"--detect-link-pattern",
 		"false",
+		"--include-empty-values",
+		"true",
+		"--default-category",
+		"默认分类",
 	]);
 
 	assert.equal(parsed.inputPath, "sample.xml");
@@ -125,6 +129,73 @@ test("parseTransformCliArgs reads transform-preview arguments", () => {
 	assert.equal(parsed.pathMode, "date-tree");
 	assert.equal(parsed.useGmtDates, true);
 	assert.equal(parsed.detectLinkPattern, false);
+	assert.equal(parsed.includeEmptyValues, true);
+	assert.equal(parsed.defaultCategory, "默认分类");
+});
+
+test("transformEntryToPreview omits empty frontmatter values by default and uses default category", () => {
+	const result = transformEntryToPreview(
+		{
+			legacyId: "200",
+			legacyType: "post",
+			title: "No Extra Meta",
+			link: "https://example.com/no-extra-meta/",
+			postName: "no-extra-meta",
+			author: "Virace",
+			sourceStatus: "publish",
+			excerpt: "",
+			contentHtml: "<p>Hello</p>",
+			published: new Date("2024-04-21T12:00:00.000Z"),
+			updated: new Date("2024-04-21T12:00:00.000Z"),
+			categories: [],
+			tags: [],
+			commentStatus: "",
+			postPassword: "",
+		},
+		{
+			pathMode: "flat",
+			defaultCategory: "默认分类",
+		},
+	);
+
+	assert.doesNotMatch(result.markdown, /^commentStatus:/m);
+	assert.doesNotMatch(result.markdown, /^password:/m);
+	assert.doesNotMatch(result.markdown, /^description:/m);
+	assert.doesNotMatch(result.markdown, /^tags:/m);
+	assert.match(result.markdown, /^category: "默认分类"$/m);
+});
+
+test("transformEntryToPreview can keep empty frontmatter values when requested", () => {
+	const result = transformEntryToPreview(
+		{
+			legacyId: "201",
+			legacyType: "post",
+			title: "Keep Empty Meta",
+			link: "https://example.com/keep-empty-meta/",
+			postName: "keep-empty-meta",
+			author: "Virace",
+			sourceStatus: "publish",
+			excerpt: "",
+			contentHtml: "<p>Hello</p>",
+			published: new Date("2024-04-21T12:00:00.000Z"),
+			updated: new Date("2024-04-21T12:00:00.000Z"),
+			categories: [],
+			tags: [],
+			commentStatus: "",
+			postPassword: "",
+		},
+		{
+			pathMode: "flat",
+			includeEmptyValues: true,
+			defaultCategory: "默认分类",
+		},
+	);
+
+	assert.match(result.markdown, /^commentStatus: ""$/m);
+	assert.match(result.markdown, /^password: ""$/m);
+	assert.match(result.markdown, /^description: ""$/m);
+	assert.match(result.markdown, /^tags: \[\]$/m);
+	assert.match(result.markdown, /^category: "默认分类"$/m);
 });
 
 test("transformWxrToPreview can switch published timestamps to gmt fields", () => {

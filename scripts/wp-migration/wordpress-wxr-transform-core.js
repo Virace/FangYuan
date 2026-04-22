@@ -6,6 +6,26 @@ function yamlString(value) {
 	return JSON.stringify(String(value ?? ""));
 }
 
+function pushOptionalScalarFrontmatter(lines, key, value, options = {}) {
+	const includeEmptyValues = options.includeEmptyValues === true;
+	const normalizedValue = typeof value === "string" ? trimString(value) : value;
+	if ((normalizedValue === "" || normalizedValue == null) && !includeEmptyValues) {
+		return;
+	}
+	lines.push(`${key}: ${yamlString(value ?? "")}`);
+}
+
+function pushOptionalListFrontmatter(lines, key, values, options = {}) {
+	const includeEmptyValues = options.includeEmptyValues === true;
+	if (!Array.isArray(values) || values.length === 0) {
+		if (includeEmptyValues) {
+			lines.push(`${key}: []`);
+		}
+		return;
+	}
+	lines.push([`${key}:`, ...values.map((value) => `  - ${yamlString(value)}`)].join("\n"));
+}
+
 function buildCandidatePlan(entry, pathMode, permalinkAudit) {
 	const targetCollection = entry.legacyType === "page" ? "spec" : "posts";
 	const candidateBase =
@@ -385,6 +405,31 @@ function collapseWhitespace(source) {
 		.trim();
 }
 
+function buildFrontmatterLines(entry, candidatePlan, permalinkAudit, options = {}) {
+	const lines = [
+		"---",
+		`title: ${yamlString(candidatePlan.candidateTitle)}`,
+		`published: ${entry.published.toISOString()}`,
+		`updated: ${entry.updated.toISOString()}`,
+		`draft: ${entry.sourceStatus === "draft" ? "true" : "false"}`,
+	];
+
+	pushOptionalScalarFrontmatter(lines, "commentStatus", entry.commentStatus ?? "", options);
+	pushOptionalScalarFrontmatter(lines, "password", entry.postPassword ?? "", options);
+	pushOptionalScalarFrontmatter(lines, "alias", permalinkAudit.alias ?? "", options);
+	pushOptionalScalarFrontmatter(lines, "description", entry.excerpt ?? "", options);
+	pushOptionalListFrontmatter(lines, "tags", entry.tags, options);
+
+	if (candidatePlan.targetCollection === "posts") {
+		const resolvedCategory =
+			trimString(entry.categories[0] ?? "") || trimString(options.defaultCategory ?? "");
+		pushOptionalScalarFrontmatter(lines, "category", resolvedCategory, options);
+	}
+
+	lines.push("---");
+	return lines;
+}
+
 export function transformEntryToPreview(entry, options = {}) {
 	const permalinkAudit = resolvePermalinkAudit({
 		legacyType: entry.legacyType,
@@ -427,22 +472,12 @@ export function transformEntryToPreview(entry, options = {}) {
 	body = finalizePreviewMarkdown(body);
 	body = collapseWhitespace(body);
 
-	const frontmatterLines = [
-		"---",
-		`title: ${yamlString(candidatePlan.candidateTitle)}`,
-		`published: ${entry.published.toISOString()}`,
-		`updated: ${entry.updated.toISOString()}`,
-		`draft: ${entry.sourceStatus === "draft" ? "true" : "false"}`,
-		`commentStatus: ${yamlString(entry.commentStatus ?? "")}`,
-		`password: ${yamlString(entry.postPassword ?? "")}`,
-		`alias: ${yamlString(permalinkAudit.alias ?? "")}`,
-		`description: ${yamlString(entry.excerpt ?? "")}`,
-		entry.tags.length
-			? ["tags:", ...entry.tags.map((tag) => `  - ${yamlString(tag)}`)].join("\n")
-			: "tags: []",
-		`category: ${entry.categories[0] ? yamlString(entry.categories[0]) : '""'}`,
-		"---",
-	];
+	const frontmatterLines = buildFrontmatterLines(
+		entry,
+		candidatePlan,
+		permalinkAudit,
+		options,
+	);
 
 	return {
 		legacyId: entry.legacyId,
