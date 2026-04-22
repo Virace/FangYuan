@@ -12,6 +12,7 @@ import { getPostKeyFromEntry } from "@utils/comments/post-key";
 import type { PostEntry } from "@utils/content-utils";
 import { resolveContentImage } from "@utils/image-source";
 import { shouldEnablePhotoSwipe } from "@utils/photoswipe-utils";
+import { resolveTocConfig } from "@utils/toc-config";
 import { url } from "@utils/url-utils";
 import type { ImageMetadata, MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
@@ -39,6 +40,12 @@ const resolvedCoverImage = await resolveContentImage(
 	entry.data.image as string | ImageMetadata | undefined,
 	entry.filePath?.replace(/\\/g, "/"),
 );
+const resolvedToc = resolveTocConfig({
+	pageKind: "post",
+	siteToc: siteConfig.toc,
+	headingsCount: headings.length,
+	frontmatterToc: entry.data.toc,
+});
 const postKey = getPostKeyFromEntry(entry.id);
 const postUrl = Astro.url.toString();
 
@@ -59,7 +66,7 @@ const jsonLd = {
 		: siteConfig.lang.replace("_", "-"),
 };
 ---
-<MainGridLayout banner={entry.data.image} title={entry.data.title} description={entry.data.description} lang={entry.data.lang} setOGTypeArticle={true} headings={headings} enablePhotoSwipe={enablePhotoSwipe}>
+<MainGridLayout banner={entry.data.image} title={entry.data.title} description={entry.data.description} lang={entry.data.lang} setOGTypeArticle={true} headings={headings} resolvedToc={resolvedToc} enablePhotoSwipe={enablePhotoSwipe}>
     <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
     <div class="flex w-full rounded-panel overflow-hidden relative mb-4">
         <div id="post-container" class:list={["card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full ", {}]}>

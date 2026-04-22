@@ -240,7 +240,7 @@ test("desktop search field shows a visible focus treatment without transition-al
 
 test("swup container transition avoids transition-all", async ({ page }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
-	await prepareStablePage(page, "/posts/welcome/");
+	await prepareStablePage(page, SITE_ROUTES.postBasic);
 
 	await page.evaluate(() => {
 		document.documentElement.classList.add("is-changing");
@@ -272,6 +272,14 @@ test("desktop toc updates hash when first heading is clicked", async ({ page }) 
 	await firstTocLink.click();
 
 	await expect(page).toHaveURL(new RegExp(`${href}$`));
+});
+
+test("spec page does not render toc by default", async ({ page }) => {
+	await page.setViewportSize({ width: 1600, height: 900 });
+	await prepareStablePage(page, SITE_ROUTES.about);
+
+	await expect(page.locator("#toc-wrapper")).toHaveCount(0);
+	await expect(page.locator("#toc a")).toHaveCount(0);
 });
 
 test("desktop back-to-top button appears after scroll and returns to top", async ({
@@ -308,7 +316,7 @@ test("photoswipe assets are scoped to image pages and cover click opens lightbox
 test("empty comment sort switch keeps composer position stable", async ({
 	page,
 }) => {
-	const commentTestRoute = "/posts/welcome/";
+	const commentTestRoute = SITE_ROUTES.postBasic;
 
 	await page.setViewportSize(VIEWPORTS.desktop);
 	const commentApiStub = await installEmptyCommentsApiStub(page);
@@ -349,7 +357,7 @@ test("empty comment sort switch keeps composer position stable", async ({
 test("comment composer input shows a visible focus treatment", async ({
 	page,
 }) => {
-	const commentTestRoute = "/posts/welcome/";
+	const commentTestRoute = SITE_ROUTES.postBasic;
 
 	await page.setViewportSize(VIEWPORTS.desktop);
 	await installEmptyCommentsApiStub(page);
@@ -370,7 +378,7 @@ test("comment composer input shows a visible focus treatment", async ({
 test("disabled comments bootstrap hides the entire comment section", async ({
 	page,
 }) => {
-	const commentTestRoute = "/posts/welcome/";
+	const commentTestRoute = SITE_ROUTES.postBasic;
 	await page.setViewportSize(VIEWPORTS.desktop);
 	await installCommentsBootstrapStub(page, buildDisabledCommentsBootstrapResponse());
 	await prepareStablePage(page, commentTestRoute);
@@ -384,7 +392,7 @@ test("disabled comments bootstrap hides the entire comment section", async ({
 test("comments bootstrap failure hides the comment section and logs to console only", async ({
 	page,
 }) => {
-	const commentTestRoute = "/posts/welcome/";
+	const commentTestRoute = SITE_ROUTES.postBasic;
 	const consoleErrors = captureConsoleErrors(page);
 
 	await page.setViewportSize(VIEWPORTS.desktop);
@@ -417,7 +425,7 @@ test("comments bootstrap failure hides the comment section and logs to console o
 test("empty comment submit highlights required fields and focuses the first invalid input", async ({
 	page,
 }) => {
-	const commentTestRoute = "/posts/welcome/";
+	const commentTestRoute = SITE_ROUTES.postBasic;
 
 	await page.setViewportSize(VIEWPORTS.desktop);
 	await installEmptyCommentsApiStub(page);
@@ -449,7 +457,7 @@ test("empty comment submit highlights required fields and focuses the first inva
 });
 
 test("comment emoji trigger keeps the emoji visually centered", async ({ page }) => {
-	const commentTestRoute = "/posts/welcome/";
+	const commentTestRoute = SITE_ROUTES.postBasic;
 
 	await page.setViewportSize(VIEWPORTS.desktop);
 	await installEmptyCommentsApiStub(page);

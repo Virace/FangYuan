@@ -8,9 +8,9 @@ export const SITE_ROUTES = {
 	home: "/",
 	about: "/about/",
 	archive: "/archive/",
-	postBasic: "/posts/markdown/",
-	postComplex: "/posts/markdown-extended/",
-	postWithCover: "/posts/guide/",
+	postBasic: "/markdown-extended/",
+	postComplex: "/markdown-extended/",
+	postWithCover: "/agents-of-shield/",
 } as const;
 
 export const VIEWPORTS = {

@@ -51,6 +51,13 @@ const localAliasImageSchema = z
 			"Non-relative local cover images are treated as root aliases under src/ or site/.",
 	});
 
+const tocFrontmatterSchema = z
+	.object({
+		enable: z.boolean().optional(),
+		depth: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+	})
+	.optional();
+
 const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 	loader: glob({
 		base: `${contentRoot}/posts`,
@@ -64,6 +71,7 @@ const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 			updated: z.date().optional(),
 			alias: z.string().optional().default(""),
 			permalink: z.string().optional().default(""),
+			toc: tocFrontmatterSchema,
 			draft: z.boolean().optional().default(false),
 			description: z.string().optional().default(""),
 			image: z
@@ -100,6 +108,7 @@ const specCollection: ReturnType<typeof defineCollection> = defineCollection({
 	schema: z.object({
 		alias: z.string().optional().default(""),
 		permalink: z.string().optional().default(""),
+		toc: tocFrontmatterSchema,
 		published: z.date().optional(),
 		updated: z.date().optional(),
 	}),

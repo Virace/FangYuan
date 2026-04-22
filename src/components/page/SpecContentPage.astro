@@ -6,15 +6,23 @@ import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import type { SpecContentEntry } from "@utils/content-routes";
 import { shouldEnablePhotoSwipe } from "@utils/photoswipe-utils";
+import { resolveTocConfig } from "@utils/toc-config";
+import { siteConfig } from "../../config";
 
 const { entry } = Astro.props as {
 	entry: SpecContentEntry;
 };
 const pageTitle = entry.id === "about" ? i18n(I18nKey.about) : entry.id;
-const { Content } = await render(entry as never);
+const { Content, headings } = await render(entry as never);
 const enablePhotoSwipe = shouldEnablePhotoSwipe(entry.body);
+const resolvedToc = resolveTocConfig({
+	pageKind: "spec",
+	siteToc: siteConfig.toc,
+	headingsCount: headings.length,
+	frontmatterToc: entry.data.toc,
+});
 ---
-<MainGridLayout title={pageTitle} description={pageTitle} enablePhotoSwipe={enablePhotoSwipe}>
+<MainGridLayout title={pageTitle} description={pageTitle} headings={headings} resolvedToc={resolvedToc} enablePhotoSwipe={enablePhotoSwipe}>
     <div class="flex w-full rounded-panel overflow-hidden relative min-h-32">
         <div class="card-base z-10 px-9 py-6 relative w-full ">
             <Markdown class="mt-2">

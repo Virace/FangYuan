@@ -10,12 +10,18 @@ type BaseContentEntry<TData extends Record<string, unknown>> = {
 	body?: string;
 };
 
+type TocFrontmatter = {
+	enable?: boolean;
+	depth?: 1 | 2 | 3;
+};
+
 type PostRouteData = {
 	title: string;
 	published: Date;
 	updated?: Date;
 	alias?: string;
 	permalink?: string;
+	toc?: TocFrontmatter;
 	draft?: boolean;
 	description?: string;
 	image?: unknown;
@@ -35,6 +41,7 @@ type PostRouteData = {
 type SpecRouteData = {
 	alias?: string;
 	permalink?: string;
+	toc?: TocFrontmatter;
 	published?: Date;
 	updated?: Date;
 	[key: string]: unknown;
@@ -83,12 +90,16 @@ export type RootPageRoute =
 			page: unknown;
 	  };
 
-export function shouldExposePostEntry(entry: {
-	data?: {
-		draft?: boolean;
-	};
-}): boolean {
-	return entry.data?.draft !== true;
+export function shouldExposePostEntry(entry: { data?: unknown }): boolean {
+	if (
+		typeof entry.data === "object" &&
+		entry.data !== null &&
+		"draft" in entry.data
+	) {
+		return (entry.data as { draft?: boolean }).draft !== true;
+	}
+
+	return true;
 }
 
 type UpdatedDateProviders = {

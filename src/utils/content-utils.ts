@@ -5,6 +5,7 @@ import {
 	getPostRouteManifest,
 	shouldExposePostEntry,
 } from "@utils/content-routes";
+import type { TocFrontmatterOverride } from "@utils/toc-config";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 import type { ImageMetadata } from "astro";
 
@@ -14,6 +15,7 @@ export type PostData = {
 	updated?: Date;
 	alias: string;
 	permalink: string;
+	toc?: TocFrontmatterOverride;
 	draft: boolean;
 	description: string;
 	image: string | ImageMetadata;
