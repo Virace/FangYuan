@@ -179,7 +179,20 @@ export const defaultPageMetricsConfig: PageMetricsConfig = {
 };
 
 export const defaultPageFeedbackConfig: PageFeedbackConfig = {
-	enable: false,
+	enable: true,
 	qingyan: null,
-	rewardOptions: [],
+	rewardOptions: [
+		{
+			id: "wechat",
+			name: "微信",
+			image: "/images/reward/wechat-placeholder.svg",
+			alt: "微信打赏二维码",
+		},
+		{
+			id: "alipay",
+			name: "支付宝",
+			image: "/images/reward/alipay-placeholder.svg",
+			alt: "支付宝打赏二维码",
+		},
+	],
 };
