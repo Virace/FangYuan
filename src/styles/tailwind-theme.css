@@ -169,24 +169,6 @@
 	white-space: nowrap;
 }
 
-@utility post-card-body-no-cover {
-	@media (min-width: 48rem) {
-		width: calc(100% - 52px - 0.75rem);
-	}
-}
-
-@utility post-card-body-with-cover {
-	@media (min-width: 48rem) {
-		width: calc(100% - var(--coverWidth) - 0.75rem);
-	}
-}
-
-@utility post-card-cover-frame {
-	@media (min-width: 48rem) {
-		width: var(--coverWidth);
-	}
-}
-
 @utility archive-side-col {
 	width: 15%;
 

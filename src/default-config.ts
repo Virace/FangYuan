@@ -111,12 +111,14 @@ export const defaultNavBarConfig: NavBarConfig = {
 	// - LinkPresets.About
 	//
 	// 默认只选当前主题认可的默认项：
+	// - LinkPresets.Home
 	// - LinkPresets.Archive
 	// - LinkPresets.About
 	//
 	// About 属于保留语义入口。
 	// 它会跟随 spec/about 当前解析出来的公开路径，例如 /about/ 或 /about.html。
 	links: [
+		LinkPresets.Home,
 		LinkPresets.Archive,
 		LinkPresets.About,
 		{
