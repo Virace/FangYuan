@@ -10,6 +10,8 @@ export const id: Translation = {
 	[Key.tags]: "Tag",
 	[Key.categories]: "Kategori",
 	[Key.recentPosts]: "Postingan Terbaru",
+	[Key.pinned]: "TOP",
+	[Key.pinnedPosts]: "Pinned",
 
 	[Key.comments]: "Komentar",
 	[Key.commentsLoading]: "Memuat komentar...",

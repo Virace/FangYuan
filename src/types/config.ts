@@ -41,6 +41,7 @@ export type SiteConfig = {
 	subtitle: string;
 	postsPerPage?: number | null;
 	postSort: PostSortConfig;
+	showPinnedInArchiveTimeline: boolean;
 
 	lang:
 		| "en"

@@ -7,6 +7,8 @@ const I18nKey = {
 	tags: "tags",
 	categories: "categories",
 	recentPosts: "recentPosts",
+	pinned: "pinned",
+	pinnedPosts: "pinnedPosts",
 
 	comments: "comments",
 	commentsLoading: "commentsLoading",

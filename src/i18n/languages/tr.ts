@@ -10,6 +10,8 @@ export const tr: Translation = {
 	[Key.tags]: "Taglar",
 	[Key.categories]: "Katagoriler",
 	[Key.recentPosts]: "Son Paylaşımlar",
+	[Key.pinned]: "TOP",
+	[Key.pinnedPosts]: "Pinned",
 
 	[Key.comments]: "Yorumlar",
 	[Key.commentsLoading]: "Yorumlar yükleniyor...",

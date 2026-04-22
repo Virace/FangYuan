@@ -24,6 +24,7 @@ export const defaultSiteConfig: SiteConfig = {
 		key: "published", // 文章默认排序字段；支持 title / published / updated / alias / filename
 		order: "desc", // 同一 sticky 层内的排序方向；sticky=0 表示未置顶，非零数值越大越靠前
 	},
+	showPinnedInArchiveTimeline: true, // true 时归档页顶部展示置顶分组后，年份时间轴中仍保留这些置顶文章
 	lang: "zh_CN", // 站点语言代码，例如 "en"、"zh_CN"、"zh_TW"、"ja"
 	themeColor: {
 		hue: 250, // 默认主题色 Hue，范围 0-360；例如 red=0、teal=200、cyan=250、pink=345

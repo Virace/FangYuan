@@ -10,6 +10,8 @@ export const zh_CN: Translation = {
 	[Key.tags]: "标签",
 	[Key.categories]: "分类",
 	[Key.recentPosts]: "最新文章",
+	[Key.pinned]: "置顶",
+	[Key.pinnedPosts]: "置顶",
 
 	[Key.comments]: "评论",
 	[Key.commentsLoading]: "正在加载评论...",
