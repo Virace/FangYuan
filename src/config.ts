@@ -26,6 +26,10 @@ import type {
 import { normalizeCommentConfig } from "./utils/comments/options";
 import type { ExternalSiteConfigYaml } from "./utils/external-site-config";
 import { mergeNavBarLinks } from "./utils/navbar-links";
+import {
+	normalizeConfiguredBase,
+	normalizeConfiguredSite,
+} from "./utils/site-runtime-config";
 
 type ExternalSiteConfig = ExternalSiteConfigYaml["siteConfig"];
 type ExternalNavBarConfig = ExternalSiteConfigYaml["navBarConfig"];
@@ -58,6 +62,8 @@ function mergeSiteConfig(
 	return {
 		...defaultConfig,
 		...override,
+		site: normalizeConfiguredSite(override.site ?? defaultConfig.site),
+		base: normalizeConfiguredBase(override.base ?? defaultConfig.base),
 		themeColor: {
 			...defaultConfig.themeColor,
 			...override.themeColor,

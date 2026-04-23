@@ -25,7 +25,7 @@ test("cross-template swup route flow stays stable", async ({ page }) => {
 	await expect(page).not.toHaveTitle(aboutTitle);
 
 	await page.locator(`a[href="${SITE_ROUTES.postBasic}"]`).first().click();
-	await page.waitForURL("**/posts/markdown/");
+	await page.waitForURL((url) => url.pathname === SITE_ROUTES.postBasic);
 	await expect(page.locator("#swup-container")).toBeVisible();
 	await expect(page).toHaveTitle(/Markdown Example - FangYuan/);
 	await expect(page.locator("[data-swup-announcement]")).toHaveAttribute(

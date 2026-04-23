@@ -8,6 +8,10 @@ import {
 	type ExternalSiteConfigYaml,
 	loadExternalSiteConfigYaml,
 } from "./external-site-config.ts";
+import {
+	normalizeConfiguredBase,
+	normalizeConfiguredSite,
+} from "./site-runtime-config.ts";
 import { resolveSiteSourceContext } from "./site-source-context.ts";
 
 type ContentRoot = "./src/content" | string;
@@ -20,6 +24,11 @@ export type ExternalPermalinkConfig = {
 	updatedDateMode?: UpdatedDateMode | null;
 	updatedDateFallback?: UpdatedDateFallback | null;
 	postPatternRulePatterns: string[];
+};
+
+export type ExternalAstroSiteConfig = {
+	site: string | null;
+	base: string;
 };
 
 function loadResolvedExternalSiteConfig(): ExternalSiteConfigYaml | null {
@@ -62,8 +71,26 @@ export function extractExternalPermalinkConfig(
 	};
 }
 
+export function extractExternalAstroSiteConfig(
+	config: ExternalSiteConfigYaml | null,
+): ExternalAstroSiteConfig | null {
+	const siteConfig = config?.siteConfig;
+	if (!siteConfig) {
+		return null;
+	}
+
+	return {
+		site: normalizeConfiguredSite(siteConfig.site),
+		base: normalizeConfiguredBase(siteConfig.base),
+	};
+}
+
 export function loadExternalPermalinkConfig(): ExternalPermalinkConfig | null {
 	return extractExternalPermalinkConfig(loadResolvedExternalSiteConfig());
+}
+
+export function loadExternalAstroSiteConfig(): ExternalAstroSiteConfig | null {
+	return extractExternalAstroSiteConfig(loadResolvedExternalSiteConfig());
 }
 
 export function loadExternalExpressiveCodeConfig(): { theme?: string } | null {

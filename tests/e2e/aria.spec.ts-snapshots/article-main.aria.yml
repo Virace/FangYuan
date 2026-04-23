@@ -151,27 +151,20 @@
         - link "Back to reference 1":
           - /url: "#user-content-fnref-1"
           - text: ""
+  - paragraph: 支持这篇文章
+  - button "请作者喝杯咖啡"
   - text: Markdown Example
-  - link "https://github.com/posts/markdown/":
-    - /url: https://github.com/posts/markdown/
+  - link /http:\/\/localhost:\d+\/markdown\//:
+    - /url: http://localhost:4321/markdown/
   - text: /作者 FangYuan 发布于 \d+-\d+-\d+ 许可协议/
   - link "MIT":
     - /url: https://opensource.org/license/mit
   - img
   - link "Simple Guides for FangYuan":
-    - /url: /posts/guide/
+    - /url: /guide/
     - img
     - text: ""
   - link "Include Video in the Posts":
-    - /url: /posts/video/
+    - /url: /video/
     - text: ""
     - img
-  - text: /© \d+ FangYuan\. Licensed under MIT\. \//
-  - link "RSS":
-    - /url: /rss.xml
-  - text: /
-  - link "Sitemap":
-    - /url: /sitemap-index.xml
-  - text: Built with
-  - link "Astro":
-    - /url: https://astro.build

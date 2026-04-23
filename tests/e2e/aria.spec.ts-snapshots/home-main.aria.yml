@@ -1,7 +1,7 @@
 - main:
   - heading "主页" [level=1]
   - link "Markdown Extended Features":
-    - /url: /posts/markdown-extended/
+    - /url: /markdown-extended/
     - text: ""
     - img
   - img
@@ -26,12 +26,12 @@
   - link "View all posts with the FangYuan tag":
     - /url: /archive/?tag=FangYuan
     - text: ""
-  - text: /Read more about Markdown features in FangYuan \d+ 字 \| 1 分钟/
+  - text: /Read more about Markdown features in FangYuan \d+ 字 \| 2 分钟/
   - link "Markdown Extended Features":
-    - /url: /posts/markdown-extended/
+    - /url: /markdown-extended/
     - img
   - link "Expressive Code Example":
-    - /url: /posts/expressive-code/
+    - /url: /expressive-code/
     - text: ""
     - img
   - img
@@ -54,10 +54,10 @@
     - text: ""
   - text: /How code blocks look in Markdown using Expressive Code\. \d+ 字 \| 4 分钟/
   - link "Expressive Code Example":
-    - /url: /posts/expressive-code/
+    - /url: /expressive-code/
     - img
   - link "Simple Guides for FangYuan":
-    - /url: /posts/guide/
+    - /url: /guide/
     - text: ""
     - img
   - img
@@ -80,11 +80,11 @@
     - text: ""
   - text: /How to use this blog template\. \d+ 字 \| 1 分钟/
   - link "Simple Guides for FangYuan":
-    - /url: /posts/guide/
+    - /url: /guide/
     - img
     - img "Cover Image of the Post"
   - link "Markdown Example":
-    - /url: /posts/markdown/
+    - /url: /markdown/
     - text: ""
     - img
   - img
@@ -107,10 +107,10 @@
     - text: ""
   - text: /A simple example of a Markdown blog post\. \d+ 字 \| 2 分钟/
   - link "Markdown Example":
-    - /url: /posts/markdown/
+    - /url: /markdown/
     - img
   - link "Include Video in the Posts":
-    - /url: /posts/video/
+    - /url: /video/
     - text: ""
     - img
   - img
@@ -129,17 +129,8 @@
     - text: ""
   - text: /This post demonstrates how to include embedded video in a blog post\. \d+ 字 \| 1 分钟/
   - link "Include Video in the Posts":
-    - /url: /posts/video/
+    - /url: /video/
     - img
   - img
   - text: "1"
   - img
-  - text: /© \d+ FangYuan\. Licensed under MIT\. \//
-  - link "RSS":
-    - /url: /rss.xml
-  - text: /
-  - link "Sitemap":
-    - /url: /sitemap-index.xml
-  - text: Built with
-  - link "Astro":
-    - /url: https://astro.build

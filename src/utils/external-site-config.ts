@@ -58,6 +58,16 @@ const postSortKeySchema = z.enum([
 ]);
 const sortOrderSchema = z.enum(["asc", "desc"]);
 const tocDepthSchema = z.union([z.literal(1), z.literal(2), z.literal(3)]);
+const siteUrlSchema = z
+	.string()
+	.refine((value) => {
+		try {
+			new URL(value);
+			return true;
+		} catch {
+			return false;
+		}
+	}, "Invalid site URL");
 const qingyanSchema = z
 	.object({
 		siteKey: z.string(),
@@ -104,6 +114,8 @@ const externalSiteConfigSchema: z.ZodTypeAny = z
 			.object({
 				title: z.string().optional(),
 				subtitle: z.string().optional(),
+				site: siteUrlSchema.nullable().optional(),
+				base: z.string().optional(),
 				postsPerPage: z.number().int().nonnegative().nullable().optional(),
 				showPinnedInArchiveTimeline: z.boolean().optional(),
 				lang: z

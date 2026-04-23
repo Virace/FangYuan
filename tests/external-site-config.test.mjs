@@ -17,6 +17,8 @@ test("loadExternalSiteConfigYaml parses a valid site.config.yaml", async (t) => 
 		configPath,
 		`
 siteConfig:
+  site: https://virace.dev
+  base: /notes/
   title: Virace Notes
   subtitle: Demo
   toc:
@@ -38,6 +40,8 @@ qingyanDevProxyTarget: http://localhost:4401
 	);
 
 	const loaded = loadExternalSiteConfigYaml(configPath);
+	assert.equal(loaded?.siteConfig?.site, "https://virace.dev");
+	assert.equal(loaded?.siteConfig?.base, "/notes/");
 	assert.equal(loaded?.siteConfig?.title, "Virace Notes");
 	assert.equal(loaded?.siteConfig?.toc?.depth, 2);
 	assert.equal(loaded?.profileConfig?.name, "Virace");

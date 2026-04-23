@@ -95,7 +95,7 @@ const bannerOffset =
 		<meta name="author" content={profileConfig.name}>
 
 		<meta property="og:site_name" content={siteConfig.title}>
-		<meta property="og:url" content={Astro.url}>
+		{Astro.site && <meta property="og:url" content={Astro.url}>}
 		<meta property="og:title" content={pageTitle}>
 		<meta property="og:description" content={description || pageTitle}>
 		{setOGTypeArticle ? (
@@ -105,7 +105,7 @@ const bannerOffset =
         )}
 
 		<meta name="twitter:card" content="summary_large_image">
-		<meta property="twitter:url" content={Astro.url}>
+		{Astro.site && <meta property="twitter:url" content={Astro.url}>}
 		<meta name="twitter:title" content={pageTitle}>
 		<meta name="twitter:description" content={description || pageTitle}>
 
@@ -159,7 +159,14 @@ const bannerOffset =
 		<slot name="head"></slot>
 		{enablePhotoSwipe && <link rel="stylesheet" href={photoSwipeStylesUrl} data-photoswipe-style="true" />}
 
-		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
+		{Astro.site && (
+			<link
+				rel="alternate"
+				type="application/rss+xml"
+				title={profileConfig.name}
+				href={new URL(url("rss.xml"), Astro.site).toString()}
+			/>
+		)}
 
 	</head>
 	<body class=" min-h-screen transition " class:list={[{"is-home": isHomePage, "lg:is-home": isHomePage, "enable-banner": enableBanner}]}

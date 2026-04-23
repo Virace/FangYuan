@@ -19,12 +19,16 @@ function getRequiredPublicPath(post: {
 }
 
 export async function GET(context: APIContext): Promise<Response> {
+	if (!context.site) {
+		return new Response(null, { status: 204 });
+	}
+
 	const blog = await getSortedPosts();
 
 	return rss({
 		title: siteConfig.title,
 		description: siteConfig.subtitle || "No description",
-		site: context.site ?? "https://github.com/Virace/FangYuan",
+		site: context.site,
 		items: blog.map((post) => {
 			return {
 				title: post.data.title,

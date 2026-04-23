@@ -5,6 +5,17 @@
 # 数组字段通常是整体替换；navBarConfig.links 比较特殊，即使你没写 About，也会自动补回保留语义入口。
 
 siteConfig:
+  # 真实站点域名，只允许填写 origin，不要带路径。
+  # 正确示例：https://example.com
+  # 错误示例：https://example.com/blog/
+  # 留空（null）时，构建仍可继续，但 sitemap、RSS、canonical 等依赖真实绝对 URL 的正式产物会被禁用或降级。
+  site: null
+
+  # 部署子路径前缀。
+  # 根路径部署保持 / ；如果站点部署在 https://example.com/blog/，这里填写 /blog/。
+  # 运行时会自动规范成带前后斜杠的形式，因此 blog、/blog、/blog/ 最终都会归一化为 /blog/。
+  base: /
+
   # 站点主标题。
   title: {{SITE_TITLE}}
 
@@ -85,7 +96,7 @@ siteConfig:
     # - auto：普通路径补末尾斜杠，.html 路径保持原样
     # - always：所有公开路径都补末尾斜杠
     # - never：所有公开路径都移除末尾斜杠
-    # 注意：这里控制的是公开 URL 语义，不是让你动态切换 Astro 内部构建输出模式。
+    # 这是固定连接规则的一部分，不建议再把它单独抽成部署环境配置，否则很容易和路径模板一起形成冲突组合。
     trailingSlash: auto
 
     # 只对文章生效的局部路径规则，用来按文章内部目录覆写 postsPattern。

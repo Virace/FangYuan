@@ -39,6 +39,8 @@ export type PermalinkConfig = {
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
+	site: string | null;
+	base: string;
 	postsPerPage?: number | null;
 	postSort: PostSortConfig;
 	showPinnedInArchiveTimeline: boolean;

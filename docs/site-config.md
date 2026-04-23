@@ -11,6 +11,18 @@
 - 数组字段通常不会逐项合并，而是你填写什么就整体使用什么。
 - `navBarConfig.links` 比较特殊：当你显式提供 `links` 时，会以你的列表为主，但保留语义入口 `About` 如果缺失会被自动补回。
 
+和部署环境直接相关的公开站点参数也放在这里统一维护：
+
+- `siteConfig.site`：真实站点域名，只允许 origin，不带路径
+- `siteConfig.base`：部署子路径前缀，例如 `/blog/`
+
+这两项和 `permalink` 一样都会影响最终公开 URL，但职责不同：
+
+- `site` / `base` 负责“站点部署环境”
+- `permalink.*` 负责“内容公开路径规则”
+
+`trailingSlash` 继续留在 `permalink` 内，不单独抽成另一套 deployment 配置，避免和固定连接规则交叉后形成更多冲突组合。
+
 ## 位置与加载
 
 - 默认位置：`site/site.config.yaml`
@@ -62,6 +74,32 @@
 
 - 作用：站点副标题。
 - 默认值：来自内部默认配置。
+
+#### `siteConfig.site`
+
+- 作用：真实站点域名，用于 sitemap、RSS、canonical、社交分享和 JSON-LD 等依赖绝对 URL 的产物。
+- 规则：
+  - 这里只允许填写 origin，例如 `https://example.com`
+  - 不要带路径、查询参数或 hash
+  - 如果站点部署在子路径，请把路径部分写到 `siteConfig.base`
+- 留空行为：
+  - 构建仍可继续
+  - `sitemap` 不会生成
+  - `rss.xml` 会降级为空响应
+  - 页面里依赖真实绝对 URL 的链接声明也会被跳过
+
+#### `siteConfig.base`
+
+- 作用：部署子路径前缀。
+- 典型场景：
+  - 根路径部署：`/`
+  - 子路径部署：`/blog/`
+- 归一化规则：
+  - `blog`
+  - `/blog`
+  - `/blog/`
+  最终都会被规范成 `/blog/`
+- 注意：这里控制的是站点部署前缀，不负责内容 permalink 的路径语义。
 
 #### `siteConfig.postsPerPage`
 

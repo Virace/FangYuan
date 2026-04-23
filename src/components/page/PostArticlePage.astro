@@ -58,7 +58,7 @@ const jsonLd = {
 	author: {
 		"@type": "Person",
 		name: profileConfig.name,
-		url: Astro.site,
+		...(Astro.site ? { url: Astro.site.toString() } : {}),
 	},
 	datePublished: formatDateToYYYYMMDD(entry.data.published),
 	inLanguage: entry.data.lang

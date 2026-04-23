@@ -36,17 +36,27 @@ import {
 	isQingYanMockTarget,
 } from "./src/utils/qingyan/mock-api.mjs";
 import {
+	loadExternalAstroSiteConfig,
 	loadExternalQingYanDevProxyTarget,
 	loadExternalPermalinkConfig,
 	loadExternalExpressiveCodeConfig,
 } from "./src/utils/site-source.ts";
+import {
+	normalizeConfiguredBase,
+	normalizeConfiguredSite,
+} from "./src/utils/site-runtime-config.ts";
 import { resolveAstroBuildConfig } from "./src/utils/permalink-materialization.ts";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
+const externalAstroSiteConfig = loadExternalAstroSiteConfig();
 const externalPermalinkConfig = loadExternalPermalinkConfig();
+const siteUrl =
+	externalAstroSiteConfig?.site ?? normalizeConfiguredSite(defaultSiteConfig.site);
+const basePath =
+	externalAstroSiteConfig?.base ?? normalizeConfiguredBase(defaultSiteConfig.base);
 const permalinkBuildMode = resolveAstroBuildConfig({
 	postsPattern:
 		externalPermalinkConfig?.postsPattern ??
@@ -117,8 +127,8 @@ const qingyanMockPlugin = useQingYanMock ? createQingYanMockPlugin() : null;
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://github.com/Virace/FangYuan",
-	base: "/",
+	...(siteUrl ? { site: siteUrl } : {}),
+	base: basePath,
 	trailingSlash: permalinkBuildMode.trailingSlash,
 	build: {
 		format: permalinkBuildMode.buildFormat,
@@ -219,7 +229,7 @@ export default defineConfig({
 			},
 		}),
 		svelte(),
-		sitemap(),
+		...(siteUrl ? [sitemap()] : []),
 	],
 	markdown: {
 		remarkPlugins: [

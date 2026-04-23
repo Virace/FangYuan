@@ -8,6 +8,31 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(currentDir, "..", "..");
 const distRoot = path.join(repoRoot, "dist");
 const tempSitesRoot = path.join(repoRoot, ".temp", "test-sites");
+const buildLockRoot = path.join(tempSitesRoot, ".build-lock");
+
+function sleep(ms) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	});
+}
+
+async function acquireBuildLock() {
+	await mkdir(tempSitesRoot, { recursive: true });
+
+	for (;;) {
+		try {
+			await mkdir(buildLockRoot);
+			return;
+		} catch (error) {
+			if (error && typeof error === "object" && error.code === "EEXIST") {
+				await sleep(100);
+				continue;
+			}
+
+			throw error;
+		}
+	}
+}
 
 function run(command, args, expectedStatus = 0, extraEnv = {}) {
 	const result =
@@ -37,6 +62,8 @@ export async function withExternalSiteFixture(t, callback) {
 	const previousMode = process.env.FANGYUAN_SITE_MODE;
 	const previousRoot = process.env.FANGYUAN_SITE_ROOT;
 
+	await acquireBuildLock();
+
 	process.env.FANGYUAN_SITE_MODE = "external";
 	process.env.FANGYUAN_SITE_ROOT = fixtureRoot;
 
@@ -55,6 +82,7 @@ export async function withExternalSiteFixture(t, callback) {
 
 		await rm(fixtureRoot, { recursive: true, force: true });
 		await rm(distRoot, { recursive: true, force: true });
+		await rm(buildLockRoot, { recursive: true, force: true });
 	});
 
 	await mkdir(path.join(fixtureRoot, "content", "posts"), { recursive: true });

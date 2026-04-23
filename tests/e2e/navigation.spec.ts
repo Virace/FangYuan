@@ -11,7 +11,7 @@ test("swup navigation updates title and article shell", async ({ page }) => {
 	await gotoAndWaitForApp(page, SITE_ROUTES.home);
 	await page.locator(`a[href="${SITE_ROUTES.postBasic}"]`).first().click();
 
-	await page.waitForURL("**/posts/markdown/");
+	await page.waitForURL((url) => url.pathname === SITE_ROUTES.postBasic);
 
 	await expect(page).toHaveTitle(/Markdown Example - FangYuan/);
 	await expect(page.locator("#post-container")).toContainText("Markdown Example");

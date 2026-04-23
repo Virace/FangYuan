@@ -60,6 +60,6 @@ test("swup navigation target page has no critical or serious axe violations", as
 	await gotoAndWaitForApp(page, SITE_ROUTES.home);
 	await page.locator(`a[href="${SITE_ROUTES.postBasic}"]`).first().click();
 
-	await page.waitForURL("**/posts/markdown/");
+	await page.waitForURL((url) => url.pathname === SITE_ROUTES.postBasic);
 	await expectNoCriticalOrSeriousViolations(page);
 });

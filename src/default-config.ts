@@ -19,6 +19,8 @@ import {
 export const defaultSiteConfig: SiteConfig = {
 	title: "FangYuan",
 	subtitle: "方圆",
+	site: null, // 真实站点域名，留空时不会生成依赖绝对 URL 的正式产物
+	base: "/", // 部署子路径前缀，例如 "/blog/"；根路径部署保持 "/"
 	postsPerPage: null, // null / 0 表示使用内置默认分页大小；填数字则会应用你指定的每页文章数
 	postSort: {
 		key: "published", // 文章默认排序字段；支持 title / published / updated / alias / filename

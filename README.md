@@ -1,6 +1,13 @@
 # FangYuan / 方圆
 
-FangYuan 是一个基于 Astro 的个人站点二开基线项目。当前首次提交的目标，是把上游模板仓库整理成一个干净、可回溯、便于后续继续设计主题与内容的项目起点。
+FangYuan 是一个基于 Astro 的个人站点二开仓库，主要用于自用主题、内容与站点能力的持续演进。
+
+当前仓库采用轻量发布约定：
+
+- `develop` 用于日常开发与集成
+- `main` 只保留“可直接构建使用”的稳定结果
+- 不强制维护对外语义化版本号
+- 不强制发布 Git tag 或 GitHub Release
 
 ## 上游说明
 
@@ -18,19 +25,28 @@ pnpm install
 pnpm dev
 pnpm check
 pnpm build
+pnpm test:node
 ```
 
 ## 浏览器质量门禁
 
 ```bash
+pnpm test:node
 pnpm test:e2e
 pnpm test:e2e:visual
 pnpm test:e2e:update
 ```
 
+- `pnpm test:node` 运行仓库内 Node 级回归测试
 - `pnpm test:e2e` 默认不包含视觉快照测试
 - `pnpm test:e2e:visual` 和 `pnpm test:e2e:update` 主要用于本地视觉回归
 - 更新快照前先确认变化是预期设计，而不是偶发回归
+
+## 分支约定
+
+- `main` 的目标不是“正式发版历史”，而是“当前可直接使用的稳定分支”
+- 合入 `main` 前至少应保证 `pnpm build` 与当前基线测试没有明显问题
+- 如果后续需要做内部可追溯标记，优先使用提交 ID 或日期加提交短 SHA，而不是强行维护数字版本号
 
 ## 项目结构
 

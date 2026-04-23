@@ -1,7 +1,8 @@
 {
   "name": "fangyuan",
+  "private": true,
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.0-internal",
   "scripts": {
     "dev": "astro dev",
     "dev:internal": "cross-env FANGYUAN_SITE_MODE=internal astro dev",
@@ -21,6 +22,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
+    "test:node": "node --test --test-concurrency=1",
     "test:e2e": "pnpm build:internal && playwright test tests/e2e/smoke.spec.ts tests/e2e/navigation.spec.ts tests/e2e/interaction.spec.ts tests/e2e/a11y.spec.ts tests/e2e/aria.spec.ts tests/e2e/upgrade-regression.spec.ts",
     "test:e2e:headed": "pnpm build:internal && playwright test --headed tests/e2e/smoke.spec.ts tests/e2e/navigation.spec.ts tests/e2e/interaction.spec.ts tests/e2e/a11y.spec.ts tests/e2e/aria.spec.ts tests/e2e/upgrade-regression.spec.ts",
     "test:e2e:visual": "pnpm build:internal && playwright test tests/e2e/visual.spec.ts",
