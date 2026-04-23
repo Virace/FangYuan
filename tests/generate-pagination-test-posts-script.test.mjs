@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { generatePaginationTestPosts } from "../scripts/generate-pagination-test-posts.js";
+import { generatePaginationTestPosts } from "../scripts/content/generate-pagination-test-posts.js";
 
 test("generatePaginationTestPosts keeps src/content/posts/test-pagination as the default output root", async (t) => {
 	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-pagination-src-"));

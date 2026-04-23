@@ -20,7 +20,7 @@ pnpm check
 pnpm build
 ```
 
-## Browser Quality Gate
+## 浏览器质量门禁
 
 ```bash
 pnpm test:e2e
@@ -30,36 +30,38 @@ pnpm test:e2e:update
 
 - `pnpm test:e2e` 默认不包含视觉快照测试
 - `pnpm test:e2e:visual` 和 `pnpm test:e2e:update` 主要用于本地视觉回归
-- 更新 snapshot 前先确认变化是预期设计，而不是偶发回归
+- 更新快照前先确认变化是预期设计，而不是偶发回归
 
 ## 项目结构
 
 - 默认配置：`src/config.ts`
 - 文章内容：`src/content/posts/`
-- About 页面：`src/content/spec/about.md`
+- 关于页面：`src/content/spec/about.md`
 - 当前项目主身份：`FangYuan`
 
 ## 外部 site 输入层
 
-`develop` 分支当前支持一个本地 `site/` 输入层，用于把真实站点的内容、配置和资源从主题源码中拆出。该能力仍在演进，README 只记录稳定入口与基本目录，不追踪所有开发中细节。
-
-- `site/config.ts`：本地站点配置覆盖入口
-- `site/content/`：本地内容目录
-- `site/assets/`：本地图片和其他静态资源目录
+- 配置文件：`site/site.config.yaml`
+- 内容目录：`site/content/`
+- 资源目录：`site/assets/`
 
 初始化本地 `site/` 目录：
 
 ```bash
-node scripts/init-site.js
+node scripts/site/init-site.js
 ```
 
-初始化脚本会创建基础目录、最小配置和示例内容，方便本地启动后继续调整。
+更多说明：
+
+- `docs/site-config.md`
+- `docs/init-site.md`
+- `docs/scripts.md`
 
 说明：
 
 - `site/` 已加入 `.gitignore`，用于承载本地站点输入，不进入主题仓库版本控制
-- 开发分支中的目录组织和字段语义仍可能继续调整
-- 若 README 与当前实现存在差异，以当前代码和 `pnpm build` 行为为准
+- 初始化脚本会复制维护中的 `scripts/site/template.config.yaml` 模板，并替换少量初始化占位符
+- 生成后的 `site/site.config.yaml` 需要直接维护，而不是回写运行时代码
 
 ### 图片输入语义
 
@@ -68,14 +70,14 @@ node scripts/init-site.js
 - `site/assets/` 与 `src/` 下现有资源目录都可以作为本地图片输入来源
 - 具体解析细节仍可能随开发分支调整，以实际构建结果为准
 
-### Resource Strategy
+### 资源策略
 
 - 正文字体与代码字体通过 Astro Font API 注册，不再依赖直接 `@fontsource/*` CSS import
 - `astro.config.mjs` 中保留了一组可选的全局图片编码默认值，但默认关闭，避免把不同图片用法强行收口到一套统一参数
 - `public/**` 图片路径继续按直接静态资源处理
 - 远程图片 URL 默认继续透传；只有未来单独规划并授权的可信来源，才会进一步纳入 Astro 处理
-- 浏览器视觉快照若因字体分发策略调整而变化，应先确认是预期设计结果，再决定是否更新 baseline
+- 浏览器视觉快照若因字体分发策略调整而变化，应先确认是预期设计结果，再决定是否更新基线
 
 ## 许可
 
-本仓库继续使用 MIT License。
+本仓库继续使用 MIT 许可证。

@@ -1,4 +1,4 @@
-/* This is a script to create a new post markdown file with front-matter */
+/* 用于创建带头信息的新文章 Markdown 文件 */
 
 import fs from "fs"
 import path from "path"
@@ -17,12 +17,12 @@ const args = process.argv.slice(2)
 if (args.length === 0) {
   console.error(`Error: No filename argument provided
 Usage: npm run new-post -- <filename>`)
-  process.exit(1) // Terminate the script and return error code 1
+  process.exit(1) // 终止脚本并返回错误码 1
 }
 
 let fileName = args[0]
 
-// Add .md extension if not present
+// 如果没有扩展名，则自动补上 .md
 const fileExtensionRegex = /\.(md|mdx)$/i
 if (!fileExtensionRegex.test(fileName)) {
   fileName += ".md"
@@ -36,7 +36,7 @@ if (fs.existsSync(fullPath)) {
   process.exit(1)
 }
 
-// recursive mode creates multi-level directories
+// recursive 模式会自动创建多级目录
 const dirPath = path.dirname(fullPath)
 if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true })

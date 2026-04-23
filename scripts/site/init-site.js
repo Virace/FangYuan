@@ -2,10 +2,9 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { promptInitSiteOptions } from "./init-site-prompts.js"
-import {
-	buildSiteConfigTemplate,
-	buildWelcomePostTemplate,
-} from "./init-site-template.js"
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url))
+const templateConfigPath = path.join(currentDir, "template.config.yaml")
 
 function ensureDirectory(directoryPath, createdDirectories, operations, execution) {
 	if (fs.existsSync(directoryPath)) {
@@ -35,13 +34,24 @@ function ensureDirectory(directoryPath, createdDirectories, operations, executio
 	})
 }
 
-function ensureFile(targetPath, content, createdFiles, operations, execution) {
+function ensureFile(
+	targetPath,
+	content,
+	createdFiles,
+	operations,
+	execution,
+	metadata = {},
+) {
+	const mode = metadata.mode ?? "write"
+	const sourcePath = metadata.sourcePath
+
 	if (fs.existsSync(targetPath)) {
 		operations.push({
 			kind: "file",
-			mode: "write",
+			mode,
 			status: "existing",
 			path: targetPath,
+			...(sourcePath ? { sourcePath } : {}),
 		})
 		return
 	}
@@ -49,9 +59,10 @@ function ensureFile(targetPath, content, createdFiles, operations, execution) {
 	if (execution.dryRun) {
 		operations.push({
 			kind: "file",
-			mode: "write",
+			mode,
 			status: "planned",
 			path: targetPath,
+			...(sourcePath ? { sourcePath } : {}),
 		})
 		return
 	}
@@ -60,9 +71,10 @@ function ensureFile(targetPath, content, createdFiles, operations, execution) {
 	createdFiles.push(targetPath)
 	operations.push({
 		kind: "file",
-		mode: "write",
+		mode,
 		status: "created",
 		path: targetPath,
+		...(sourcePath ? { sourcePath } : {}),
 	})
 }
 
@@ -171,12 +183,7 @@ function resolveInitSiteOptions(input = {}) {
 		profileName: input.profileName ?? "Your Name",
 		profileBio: input.profileBio ?? "Write something here.",
 		qingyanSiteKey: input.qingyanSiteKey ?? "fangyuan",
-		qingyanApiBase: input.qingyanApiBase ?? "/api",
 		qingyanDevProxyTarget: input.qingyanDevProxyTarget ?? null,
-		enableComments: input.enableComments ?? true,
-		enablePageMetrics: input.enablePageMetrics ?? true,
-		enablePageFeedback: input.enablePageFeedback ?? true,
-		includeRewardPlaceholders: input.includeRewardPlaceholders ?? true,
 	}
 }
 
@@ -224,7 +231,69 @@ function parseCliOptions(argv = process.argv.slice(2)) {
 	}
 }
 
-export function ensureExternalSiteScaffold(rootDir = process.cwd(), input = {}, runtime = {}) {
+function escapeYamlScalar(value) {
+	const normalized = String(value ?? "").replace(/\r\n/g, "\n")
+	return JSON.stringify(normalized)
+}
+
+function materializeSiteConfigTemplate(templateSource, options) {
+	const replacements = new Map([
+		["{{SITE_TITLE}}", escapeYamlScalar(options.siteTitle ?? "My Site")],
+		["{{SITE_SUBTITLE}}", escapeYamlScalar(options.siteSubtitle ?? "My subtitle")],
+		["{{PROFILE_NAME}}", escapeYamlScalar(options.profileName ?? "Your Name")],
+		[
+			"{{PROFILE_BIO}}",
+			escapeYamlScalar(options.profileBio ?? "Write something here."),
+		],
+		[
+			"{{QINGYAN_SITE_KEY}}",
+			escapeYamlScalar(options.qingyanSiteKey ?? "fangyuan"),
+		],
+		[
+			"{{QINGYAN_DEV_PROXY_TARGET}}",
+			options.qingyanDevProxyTarget
+				? escapeYamlScalar(options.qingyanDevProxyTarget)
+				: "null",
+		],
+	])
+
+	let rendered = templateSource
+	for (const [needle, replacement] of replacements) {
+		rendered = rendered.replaceAll(needle, replacement)
+	}
+
+	return rendered
+}
+
+export async function renderSiteConfigTemplate(options) {
+	const templateSource = await fs.promises.readFile(templateConfigPath, "utf8")
+	return materializeSiteConfigTemplate(templateSource, options)
+}
+
+export function buildWelcomePostTemplate(options) {
+	return `---
+title: Welcome to ${options.siteTitle}
+published: 2026-04-14
+description: The first scaffolded post for the external site content layer.
+tags: [FangYuan, Site, Demo]
+category: Getting Started
+draft: false
+---
+
+# Welcome to ${options.siteTitle}
+
+This post is created by \`node scripts/site/init-site.js\` to keep a fresh \`site/\` scaffold buildable.
+
+- Replace this file with your own first post when you are ready.
+- If your \`site/\` already contains real files, the scaffold script will not backfill demo posts.
+`
+}
+
+export async function ensureExternalSiteScaffold(
+	rootDir = process.cwd(),
+	input = {},
+	runtime = {},
+) {
 	const options = resolveInitSiteOptions(input)
 	const execution = resolveExecutionOptions(runtime)
 	const siteRoot = execution.siteRoot
@@ -241,6 +310,7 @@ export function ensureExternalSiteScaffold(rootDir = process.cwd(), input = {}, 
 	const siteDemoPostPath = path.join(sitePostsRoot, "welcome.md")
 	const shouldSeedDemoPost =
 		!execution.seedFromSrcContent && !directoryHasFiles(siteRoot)
+	const renderedSiteConfig = await renderSiteConfigTemplate(options)
 
 	const createdDirectories = []
 	const createdFiles = []
@@ -270,10 +340,14 @@ export function ensureExternalSiteScaffold(rootDir = process.cwd(), input = {}, 
 	)
 	ensureFile(
 		siteConfigPath,
-		buildSiteConfigTemplate(options),
+		renderedSiteConfig,
 		createdFiles,
 		operations,
 		execution,
+		{
+			mode: "copy",
+			sourcePath: templateConfigPath,
+		},
 	)
 
 	if (shouldSeedDemoPost) {
@@ -301,7 +375,11 @@ function isExecutedDirectly() {
 if (isExecutedDirectly()) {
 	const cliOptions = parseCliOptions()
 	const options = await promptInitSiteOptions()
-	const result = ensureExternalSiteScaffold(process.cwd(), options, cliOptions)
+	const result = await ensureExternalSiteScaffold(
+		process.cwd(),
+		options,
+		cliOptions,
+	)
 
 	console.log(cliOptions.dryRun ? "Planned actions:" : "Applied actions:")
 	for (const operation of result.operations) {

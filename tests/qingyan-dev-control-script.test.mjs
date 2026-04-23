@@ -8,7 +8,7 @@ import {
 	parseQingYanDevControlArgs,
 	resolveQingYanDevControlTarget,
 	runQingYanDevControl,
-} from "../scripts/qingyan-dev-control.mjs";
+} from "../scripts/qingyan/qingyan-dev-control.mjs";
 
 test("parseQingYanDevControlArgs parses scenario flags into a normalized option bag", () => {
 	assert.deepEqual(

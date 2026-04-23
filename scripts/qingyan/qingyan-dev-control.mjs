@@ -57,7 +57,7 @@ export function parseQingYanDevControlArgs(argv) {
 	const normalizedArgv = argv.filter((arg) => arg !== "--");
 	if (normalizedArgv.length === 0) {
 		throw new Error(
-			"Usage: node scripts/qingyan-dev-control.mjs <scenario|reset|state> [flags]",
+			"Usage: node scripts/qingyan/qingyan-dev-control.mjs <scenario|reset|state> [flags]",
 		);
 	}
 

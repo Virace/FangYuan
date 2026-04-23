@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { ensureExternalSiteScaffold } from "../scripts/init-site.js";
+import { ensureExternalSiteScaffold } from "../scripts/site/init-site.js";
 
 function hasPath(targetPath) {
 	return existsSync(targetPath);
@@ -26,7 +26,7 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		"utf8",
 	);
 
-	const result = ensureExternalSiteScaffold(tempRoot, {
+	const result = await ensureExternalSiteScaffold(tempRoot, {
 		siteTitle: "Virace Notes",
 		siteSubtitle: "QingYan ready",
 		profileName: "Virace",
@@ -80,14 +80,15 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		path.join(tempRoot, "site", "site.config.yaml"),
 		"utf8",
 	);
-	assert.match(siteConfigSource, /siteConfig:/);
-	assert.match(siteConfigSource, /title: Virace Notes/);
+	assert.match(siteConfigSource, /title: "?Virace Notes"?/);
+	assert.match(siteConfigSource, /profileConfig:[\s\S]*name: "?Virace"?/);
+	assert.match(
+		siteConfigSource,
+		/qingyanDevProxyTarget: "?http:\/\/localhost:4401"?/,
+	);
+	assert.match(siteConfigSource, /永久链接规则/);
 	assert.match(siteConfigSource, /navBarConfig:/);
-	assert.match(siteConfigSource, /profileConfig:/);
-	assert.match(siteConfigSource, /bio: Personal notes/);
-	assert.match(siteConfigSource, /qingyanDevProxyTarget: http:\/\/localhost:4401/);
-	assert.match(siteConfigSource, /commentConfig:[\s\S]*enable: true[\s\S]*qingyan:/);
-	assert.match(siteConfigSource, /rewardOptions:/);
+	assert.match(siteConfigSource, /pageFeedbackConfig:/);
 
 	const demoPostSource = await readFile(
 		path.join(tempRoot, "site", "content", "posts", "welcome.md"),
@@ -129,7 +130,7 @@ test("ensureExternalSiteScaffold treats an empty site directory as a fresh site 
 		recursive: true,
 	});
 
-	ensureExternalSiteScaffold(tempRoot);
+	await ensureExternalSiteScaffold(tempRoot);
 
 	assert.equal(
 		hasPath(path.join(tempRoot, "site", "content", "posts", "welcome.md")),
@@ -166,8 +167,8 @@ test("ensureExternalSiteScaffold is idempotent and preserves existing user files
 		"utf8",
 	);
 
-	ensureExternalSiteScaffold(tempRoot);
-	const secondRun = ensureExternalSiteScaffold(tempRoot);
+	await ensureExternalSiteScaffold(tempRoot);
+	const secondRun = await ensureExternalSiteScaffold(tempRoot);
 
 	const aboutContent = await readFile(
 		path.join(tempRoot, "site", "content", "spec", "about.md"),
@@ -216,7 +217,7 @@ test("ensureExternalSiteScaffold dry-run reports planned actions without writing
 		"utf8",
 	);
 
-	const result = ensureExternalSiteScaffold(
+	const result = await ensureExternalSiteScaffold(
 		tempRoot,
 		{
 			siteTitle: "Dry Run Site",
@@ -270,11 +271,14 @@ test("ensureExternalSiteScaffold dry-run reports planned actions without writing
 			(operation) =>
 				operation.kind === "file" &&
 				operation.status === "planned" &&
-				operation.mode === "write" &&
-				operation.path === path.join(tempRoot, "site", "site.config.yaml"),
+				operation.mode === "copy" &&
+				operation.path === path.join(tempRoot, "site", "site.config.yaml") &&
+				operation.sourcePath?.endsWith(
+					path.join("scripts", "site", "template.config.yaml"),
+				),
 		),
 		true,
-		"dry-run should report planned site.config.yaml creation",
+		"dry-run should report template-based site.config.yaml creation",
 	);
 });
 
@@ -294,7 +298,7 @@ test("ensureExternalSiteScaffold can scaffold into a custom site root", async (t
 		"utf8",
 	);
 
-	ensureExternalSiteScaffold(tempRoot, {}, { siteRoot: customSiteRoot });
+	await ensureExternalSiteScaffold(tempRoot, {}, { siteRoot: customSiteRoot });
 
 	assert.equal(hasPath(path.join(customSiteRoot, "site.config.yaml")), true);
 	assert.equal(
@@ -327,7 +331,7 @@ test("ensureExternalSiteScaffold can seed external content from src/content", as
 		"utf8",
 	);
 
-	ensureExternalSiteScaffold(tempRoot, {}, {
+	await ensureExternalSiteScaffold(tempRoot, {}, {
 		siteRoot: customSiteRoot,
 		seedFromSrcContent: true,
 	});

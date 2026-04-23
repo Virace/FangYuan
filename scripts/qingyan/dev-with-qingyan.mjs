@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { spawn, spawnSync } from "node:child_process";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const fangYuanRoot = path.resolve(currentDir, "..");
+const fangYuanRoot = path.resolve(currentDir, "..", "..");
 const qingYanRoot = path.resolve(fangYuanRoot, "..", "QingYan");
 
 const pnpmBin = "pnpm";

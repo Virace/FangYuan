@@ -205,7 +205,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
   const { count, target } = parseCliArgs(process.argv.slice(2))
 
   if (!Number.isInteger(count) || count <= 0) {
-    console.error("Usage: node scripts/generate-pagination-test-posts.js [count] [--target=src|site]")
+    console.error("Usage: node scripts/content/generate-pagination-test-posts.js [count] [--target=src|site]")
     process.exit(1)
   }
 
