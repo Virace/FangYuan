@@ -1,7 +1,15 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 
-export function pathsEqual(path1: string, path2: string) {
+export function getArchivePath(): string {
+	return "/archive/";
+}
+
+export function getHomePaginationPath(pageNumber: number): string {
+	return pageNumber <= 1 ? "/" : `/${pageNumber}/`;
+}
+
+export function pathsEqual(path1: string, path2: string): boolean {
 	const normalizedPath1 = path1.replace(/^\/|\/$/g, "").toLowerCase();
 	const normalizedPath2 = path2.replace(/^\/|\/$/g, "").toLowerCase();
 	return normalizedPath1 === normalizedPath2;
@@ -13,12 +21,27 @@ function joinUrl(...parts: string[]): string {
 }
 
 export function getPostUrlBySlug(slug: string): string {
-	return url(`/posts/${slug}/`);
+	throw new Error(
+		`Use getPostUrlByEntry() or resolved publicPath instead of raw entry id "${slug}".`,
+	);
+}
+
+export function getPostUrlByEntry(entry: {
+	id: string;
+	data?: {
+		publicPath?: string;
+	};
+}): string {
+	if (!entry.data?.publicPath) {
+		throw new Error(`Post entry "${entry.id}" is missing resolved publicPath.`);
+	}
+
+	return url(entry.data.publicPath);
 }
 
 export function getTagUrl(tag: string): string {
-	if (!tag) return url("/archive/");
-	return url(`/archive/?tag=${encodeURIComponent(tag.trim())}`);
+	if (!tag) return url(getArchivePath());
+	return url(`${getArchivePath()}?tag=${encodeURIComponent(tag.trim())}`);
 }
 
 export function getCategoryUrl(category: string | null): string {
@@ -27,8 +50,10 @@ export function getCategoryUrl(category: string | null): string {
 		category.trim() === "" ||
 		category.trim().toLowerCase() === i18n(I18nKey.uncategorized).toLowerCase()
 	)
-		return url("/archive/?uncategorized=true");
-	return url(`/archive/?category=${encodeURIComponent(category.trim())}`);
+		return url(`${getArchivePath()}?uncategorized=true`);
+	return url(
+		`${getArchivePath()}?category=${encodeURIComponent(category.trim())}`,
+	);
 }
 
 export function getDir(path: string): string {
@@ -39,6 +64,6 @@ export function getDir(path: string): string {
 	return path.substring(0, lastSlashIndex + 1);
 }
 
-export function url(path: string) {
+export function url(path: string): string {
 	return joinUrl("", import.meta.env.BASE_URL, path);
 }

@@ -1,50 +1,63 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
+import {
+	getPostRouteManifest,
+	shouldExposePostEntry,
+} from "@utils/content-routes";
+import type { TocFrontmatterOverride } from "@utils/toc-config";
 import { getCategoryUrl } from "@utils/url-utils.ts";
+import type { ImageMetadata } from "astro";
 
-// // Retrieve posts and sort them by publication date
-async function getRawSortedPosts() {
-	const allBlogPosts = await getCollection("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
-	});
+export type PostData = {
+	title: string;
+	published: Date;
+	updated?: Date;
+	alias: string;
+	permalink: string;
+	toc?: TocFrontmatterOverride;
+	draft: boolean;
+	description: string;
+	image: string | ImageMetadata;
+	tags: string[];
+	category: string | null;
+	lang: string;
+	sticky: number;
+	prevTitle: string;
+	prevSlug: string;
+	nextTitle: string;
+	nextSlug: string;
+	publicPath?: string;
+	prevPermalink?: string;
+	nextPermalink?: string;
+};
 
-	const sorted = allBlogPosts.sort((a, b) => {
-		const dateA = new Date(a.data.published);
-		const dateB = new Date(b.data.published);
-		return dateA > dateB ? -1 : 1;
-	});
-	return sorted;
+export type PostEntry = Omit<CollectionEntry<"posts">, "data"> & {
+	data: PostData;
+};
+
+export async function getSortedPosts(): Promise<PostEntry[]> {
+	const postRoutes = await getPostRouteManifest();
+
+	return postRoutes.entries.map((route) => ({
+		...route.entry,
+		collection: "posts" as const,
+		id: route.entryId,
+		data: route.entry.data as PostData,
+	}));
 }
 
-export async function getSortedPosts() {
-	const sorted = await getRawSortedPosts();
-
-	for (let i = 1; i < sorted.length; i++) {
-		sorted[i].data.nextSlug = sorted[i - 1].slug;
-		sorted[i].data.nextTitle = sorted[i - 1].data.title;
-	}
-	for (let i = 0; i < sorted.length - 1; i++) {
-		sorted[i].data.prevSlug = sorted[i + 1].slug;
-		sorted[i].data.prevTitle = sorted[i + 1].data.title;
-	}
-
-	return sorted;
-}
 export type PostForList = {
 	slug: string;
-	data: CollectionEntry<"posts">["data"];
+	data: PostData;
 };
-export async function getSortedPostsList(): Promise<PostForList[]> {
-	const sortedFullPosts = await getRawSortedPosts();
 
-	// delete post.body
-	const sortedPostsList = sortedFullPosts.map((post) => ({
-		slug: post.slug,
+export async function getSortedPostsList(): Promise<PostForList[]> {
+	const sortedFullPosts = await getSortedPosts();
+	return sortedFullPosts.map((post) => ({
+		slug: post.id,
 		data: post.data,
 	}));
-
-	return sortedPostsList;
 }
 export type Tag = {
 	name: string;
@@ -52,12 +65,13 @@ export type Tag = {
 };
 
 export async function getTagList(): Promise<Tag[]> {
-	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
-	});
+	const allBlogPosts = (await getCollection(
+		"posts",
+		(entry: CollectionEntry<"posts">) => shouldExposePostEntry(entry),
+	)) as PostEntry[];
 
 	const countMap: { [key: string]: number } = {};
-	allBlogPosts.forEach((post: { data: { tags: string[] } }) => {
+	allBlogPosts.forEach((post) => {
 		post.data.tags.forEach((tag: string) => {
 			if (!countMap[tag]) countMap[tag] = 0;
 			countMap[tag]++;
@@ -79,11 +93,12 @@ export type Category = {
 };
 
 export async function getCategoryList(): Promise<Category[]> {
-	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
-	});
+	const allBlogPosts = (await getCollection(
+		"posts",
+		(entry: CollectionEntry<"posts">) => shouldExposePostEntry(entry),
+	)) as PostEntry[];
 	const count: { [key: string]: number } = {};
-	allBlogPosts.forEach((post: { data: { category: string | null } }) => {
+	allBlogPosts.forEach((post) => {
 		if (!post.data.category) {
 			const ucKey = i18n(I18nKey.uncategorized);
 			count[ucKey] = count[ucKey] ? count[ucKey] + 1 : 1;

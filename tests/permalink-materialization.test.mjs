@@ -1,0 +1,65 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+	applyTrailingSlash,
+	getPaginationPublicPath,
+	getStandaloneRoutePublicPath,
+	materializePublicPath,
+	resolveAstroBuildConfig,
+} from "../src/utils/permalink-materialization.ts";
+
+test("applyTrailingSlash keeps html path plus always as a trailing-slash public path", () => {
+	assert.equal(applyTrailingSlash("/hello.html", "always"), "/hello.html/");
+});
+
+test("materializePublicPath maps html plus always to html directory output", () => {
+	assert.deepEqual(materializePublicPath("/hello.html/"), {
+		publicPath: "/hello.html/",
+		routeParam: "hello.html",
+		buildFamily: "directory",
+		outputPath: "hello.html/index.html",
+	});
+});
+
+test("materializePublicPath maps slashless public paths to file output", () => {
+	assert.deepEqual(materializePublicPath("/hello"), {
+		publicPath: "/hello",
+		routeParam: "hello",
+		buildFamily: "file",
+		outputPath: "hello.html",
+	});
+});
+
+test("getPaginationPublicPath returns directory pagination paths", () => {
+	assert.equal(getPaginationPublicPath(1, "directory"), "/");
+	assert.equal(getPaginationPublicPath(2, "directory"), "/2/");
+});
+
+test("getPaginationPublicPath returns file pagination paths", () => {
+	assert.equal(getPaginationPublicPath(1, "file"), "/");
+	assert.equal(getPaginationPublicPath(2, "file"), "/2.html");
+});
+
+test("getStandaloneRoutePublicPath returns directory route paths", () => {
+	assert.equal(getStandaloneRoutePublicPath("archive", "directory"), "/archive/");
+});
+
+test("getStandaloneRoutePublicPath returns file route paths", () => {
+	assert.equal(getStandaloneRoutePublicPath("archive", "file"), "/archive.html");
+});
+
+test("resolveAstroBuildConfig rejects incompatible global materialization families", () => {
+	assert.deepEqual(
+		resolveAstroBuildConfig({
+			postsPattern: "/%slug%.html",
+			pagesPattern: "/%slug%",
+			trailingSlash: "auto",
+			postPatternRulePatterns: [],
+		}),
+		{
+			buildFormat: "preserve",
+			trailingSlash: "ignore",
+		},
+	);
+});

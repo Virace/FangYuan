@@ -1,18 +1,19 @@
 ---
-title: Embedding Video in FangYuan Posts
-published: 2024-04-03
-description: 记录 FangYuan 默认内容中嵌入视频的方式。
-tags: [Video, FangYuan, Example]
-category: Notes
+title: Include Video in the Posts
+published: 2023-08-01
+description: This post demonstrates how to include embedded video in a blog post.
+tags: [Example, Video]
+category: Examples
 draft: false
 ---
 
-This note keeps working embed examples for the FangYuan baseline. When future content needs video, copy the platform embed code directly into the Markdown file.
+Just copy the embed code from YouTube or other platforms, and paste it in the markdown file.
 
 ```yaml
 ---
-title: Embedding Video in FangYuan Posts
-published: 2024-04-03
+title: Include Video in the Post
+published: 2023-10-19
+// ...
 ---
 
 <iframe width="100%" height="468" src="https://www.youtube.com/embed/5gIf0_xpFPI?si=N1WTorLKL0uwLsU_" title="YouTube video player" frameborder="0" allowfullscreen></iframe>

@@ -1,78 +1,232 @@
+import { LinkPresets } from "./constants/link-presets";
+import {
+	defaultCommentConfig,
+	defaultExpressiveCodeConfig,
+	defaultFooterConfig,
+	defaultLicenseConfig,
+	defaultNavBarConfig,
+	defaultNavBarI18n,
+	defaultPageFeedbackConfig,
+	defaultPageMetricsConfig,
+	defaultProfileConfig,
+	defaultSiteConfig,
+} from "./default-config";
 import type {
+	CommentConfig,
 	ExpressiveCodeConfig,
+	FooterConfig,
 	LicenseConfig,
 	NavBarConfig,
+	NavBarI18nConfig,
+	PageFeedbackConfig,
+	PageMetricsConfig,
 	ProfileConfig,
 	SiteConfig,
 } from "./types/config";
-import { LinkPreset } from "./types/config";
+import { normalizeCommentConfig } from "./utils/comments/options";
+import type { ExternalSiteConfigYaml } from "./utils/external-site-config";
+import { mergeNavBarLinks } from "./utils/navbar-links";
+import {
+	normalizeConfiguredBase,
+	normalizeConfiguredSite,
+} from "./utils/site-runtime-config";
 
-export const siteConfig: SiteConfig = {
-	title: "FangYuan",
-	subtitle: "方圆",
-	lang: "zh_CN", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
-	themeColor: {
-		hue: 250, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
-		fixed: false, // Hide the theme color picker for visitors
-	},
-	banner: {
-		enable: false,
-		src: "assets/images/demo-banner.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
-		position: "center", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default
-		credit: {
-			enable: false, // Display the credit text of the banner image
-			text: "", // Credit text to be displayed
-			url: "", // (Optional) URL link to the original artwork or artist's page
+type ExternalSiteConfig = ExternalSiteConfigYaml["siteConfig"];
+type ExternalNavBarConfig = ExternalSiteConfigYaml["navBarConfig"];
+type ExternalProfileConfig = ExternalSiteConfigYaml["profileConfig"];
+let externalSiteConfig: ExternalSiteConfigYaml | null = null;
+
+if (import.meta.env.SSR) {
+	const [{ loadExternalSiteConfigYaml }, { resolveSiteSourceContext }] =
+		await Promise.all([
+			import("./utils/external-site-config.ts"),
+			import("./utils/site-source-context.ts"),
+		]);
+	const siteSourceContext = resolveSiteSourceContext();
+
+	externalSiteConfig =
+		siteSourceContext.useExternalConfig &&
+		siteSourceContext.externalConfigPath !== null
+			? loadExternalSiteConfigYaml(siteSourceContext.externalConfigPath)
+			: null;
+}
+
+function mergeSiteConfig(
+	defaultConfig: SiteConfig,
+	override?: ExternalSiteConfig,
+): SiteConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		site: normalizeConfiguredSite(override.site ?? defaultConfig.site),
+		base: normalizeConfiguredBase(override.base ?? defaultConfig.base),
+		themeColor: {
+			...defaultConfig.themeColor,
+			...override.themeColor,
 		},
-	},
-	toc: {
-		enable: true, // Display the table of contents on the right side of the post
-		depth: 2, // Maximum heading depth to show in the table, from 1 to 3
-	},
-	favicon: [
-		// Leave this array empty to use the default favicon
-		// {
-		//   src: '/favicon/icon.png',    // Path of the favicon, relative to the /public directory
-		//   theme: 'light',              // (Optional) Either 'light' or 'dark', set only if you have different favicons for light and dark mode
-		//   sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
-		// }
-	],
+		banner: {
+			...defaultConfig.banner,
+			...override.banner,
+			credit: {
+				...defaultConfig.banner.credit,
+				...override.banner?.credit,
+			},
+		},
+		toc: {
+			...defaultConfig.toc,
+			...override.toc,
+		},
+		postSort: {
+			...defaultConfig.postSort,
+			...override.postSort,
+		},
+		favicon: override.favicon ?? defaultConfig.favicon,
+		permalink: {
+			...defaultConfig.permalink,
+			...override.permalink,
+			postPatternRules:
+				override.permalink?.postPatternRules ??
+				defaultConfig.permalink.postPatternRules,
+		},
+	};
+}
+
+function mergeNavBarConfig(
+	defaultConfig: NavBarConfig,
+	override?: ExternalNavBarConfig,
+): NavBarConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		links: mergeNavBarLinks(defaultConfig.links, override.links, [
+			LinkPresets.About,
+		]),
+	};
+}
+
+function mergeProfileConfig(
+	defaultConfig: ProfileConfig,
+	override?: ExternalProfileConfig,
+): ProfileConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		links: override.links ?? defaultConfig.links,
+	};
+}
+
+function mergeCommentConfig(
+	defaultConfig: CommentConfig,
+	override?: Partial<CommentConfig>,
+): CommentConfig {
+	if (!override) {
+		return normalizeCommentConfig(defaultConfig);
+	}
+
+	return normalizeCommentConfig({
+		...defaultConfig,
+		...override,
+		qingyan: override.qingyan ?? defaultConfig.qingyan,
+	});
+}
+
+function mergePageMetricsConfig(
+	defaultConfig: PageMetricsConfig,
+	override?: Partial<PageMetricsConfig>,
+): PageMetricsConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		qingyan: override.qingyan ?? defaultConfig.qingyan,
+	};
+}
+
+function mergePageFeedbackConfig(
+	defaultConfig: PageFeedbackConfig,
+	override?: Partial<PageFeedbackConfig>,
+): PageFeedbackConfig {
+	if (!override) {
+		return defaultConfig;
+	}
+
+	return {
+		...defaultConfig,
+		...override,
+		qingyan: override.qingyan ?? defaultConfig.qingyan,
+		rewardOptions: override.rewardOptions ?? defaultConfig.rewardOptions,
+	};
+}
+
+export const siteConfig: SiteConfig = mergeSiteConfig(
+	defaultSiteConfig,
+	externalSiteConfig?.siteConfig,
+);
+
+export const navBarConfig: NavBarConfig = mergeNavBarConfig(
+	defaultNavBarConfig,
+	externalSiteConfig?.navBarConfig,
+);
+
+export const navBarI18n: NavBarI18nConfig = {
+	...defaultNavBarI18n,
+	...externalSiteConfig?.navBarI18n,
 };
 
-export const navBarConfig: NavBarConfig = {
-	links: [
-		LinkPreset.Home,
-		LinkPreset.Archive,
-		LinkPreset.About,
-		{
-			name: "GitHub",
-			url: "https://github.com/Virace/FangYuan", // Internal links should not include the base path, as it is automatically added
-			external: true, // Show an external link icon and will open in a new tab
-		},
-	],
-};
+export const profileConfig: ProfileConfig = mergeProfileConfig(
+	defaultProfileConfig,
+	externalSiteConfig?.profileConfig,
+);
 
-export const profileConfig: ProfileConfig = {
-	avatar: "assets/images/demo-avatar.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
-	name: "FangYuan",
-	bio: "用于后续主题与内容演进的个人站点二开基线。",
-	links: [
-		{
-			name: "GitHub",
-			icon: "fa6-brands:github",
-			url: "https://github.com/Virace/FangYuan",
-		},
-	],
+export const footerConfig: FooterConfig = {
+	...defaultFooterConfig,
+	...externalSiteConfig?.footerConfig,
 };
 
 export const licenseConfig: LicenseConfig = {
-	enable: true,
-	name: "MIT",
-	url: "https://opensource.org/license/mit",
+	...defaultLicenseConfig,
+	...externalSiteConfig?.licenseConfig,
 };
 
 export const expressiveCodeConfig: ExpressiveCodeConfig = {
-	// Note: Some styles (such as background color) are being overridden, see the astro.config.mjs file.
-	// Please select a dark theme, as this blog theme currently only supports dark background color
-	theme: "github-dark",
+	...defaultExpressiveCodeConfig,
+	...externalSiteConfig?.expressiveCodeConfig,
+};
+
+export const commentConfig: CommentConfig = mergeCommentConfig(
+	defaultCommentConfig,
+	externalSiteConfig?.commentConfig,
+);
+
+export const pageMetricsConfig: PageMetricsConfig = mergePageMetricsConfig(
+	defaultPageMetricsConfig,
+	externalSiteConfig?.pageMetricsConfig,
+);
+
+export const pageFeedbackConfig: PageFeedbackConfig = mergePageFeedbackConfig(
+	defaultPageFeedbackConfig,
+	externalSiteConfig?.pageFeedbackConfig,
+);
+
+export const configImageBaseRoots: Readonly<{
+	banner: "site" | "src";
+	avatar: "site" | "src";
+}> = {
+	banner: externalSiteConfig?.siteConfig?.banner?.src ? "site" : "src",
+	avatar: externalSiteConfig?.profileConfig?.avatar ? "site" : "src",
 };

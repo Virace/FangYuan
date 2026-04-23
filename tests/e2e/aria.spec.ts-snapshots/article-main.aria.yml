@@ -1,0 +1,170 @@
+- main:
+  - img
+  - text: /\d+ 字/
+  - img
+  - text: 2 分钟 Markdown Example
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the Examples category":
+    - /url: /archive/?category=Examples
+    - text: ""
+  - img
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the Blogging tag":
+    - /url: /archive/?tag=Blogging
+    - text: ""
+  - text: /
+  - link "View all posts with the Demo tag":
+    - /url: /archive/?tag=Demo
+    - text: ""
+  - 'heading "An h1 header #" [level=1]':
+    - text: ""
+    - link "#":
+      - /url: "#an-h1-header"
+  - paragraph: Paragraphs are separated by a blank line.
+  - paragraph:
+    - text: 2nd paragraph.
+    - emphasis: Italic
+    - text: ","
+    - strong: bold
+    - text: ", and"
+    - code: monospace
+    - text: ". Itemized lists look like:"
+  - list:
+    - listitem: this one
+    - listitem: that one
+    - listitem: the other one
+  - paragraph: Note that --- not considering the asterisk --- the actual text content starts at 4-columns in.
+  - blockquote:
+    - paragraph: Block quotes are written like so.
+    - paragraph: They can span multiple paragraphs, if you like.
+  - paragraph: /Use 3 dashes for an em-dash\. Use 2 dashes for ranges \(ex\., “it’s all in chapters \d+—\d+”\)\. Three dots … will be converted to an ellipsis\. Unicode is supported\. ☺/
+  - 'heading "An h2 header #" [level=2]':
+    - text: ""
+    - link "#":
+      - /url: "#an-h2-header"
+  - paragraph: "Here’s a numbered list:"
+  - list:
+    - listitem: first item
+    - listitem: second item
+    - listitem: third item
+  - paragraph: "Note again how the actual text starts at 4 columns in (4 characters from the left side). Here’s a code sample:"
+  - figure:
+    - text: plaintext
+    - code: "/# Let me re-iterate \\.\\.\\. for i in 1 \\.\\. \\d+ \\{ do-something\\(i\\) \\}/"
+    - button "Copy code":
+      - img
+      - img
+  - paragraph: "As you probably guessed, indented 4 spaces. By the way, instead of indenting the block, you can use delimited blocks, if you like:"
+  - figure:
+    - text: plaintext
+    - code: "define foobar() { print \"Welcome to flavor country!\"; }"
+    - button "Copy code":
+      - img
+      - img
+  - paragraph: "(which makes copying & pasting easier). You can optionally mark the delimited block for Pandoc to syntax highlight it:"
+  - figure:
+    - text: python
+    - code: "/import time # Quick, count to ten! for i in range\\(\\d+\\): # \\(but not \\*too\\* quick\\) time\\.sleep\\(0\\.5\\) print i/"
+    - button "Copy code":
+      - img
+      - img
+  - 'heading "An h3 header #" [level=3]':
+    - text: ""
+    - link "#":
+      - /url: "#an-h3-header"
+  - paragraph: "Now a nested list:"
+  - list:
+    - listitem:
+      - paragraph: "First, get these ingredients:"
+      - list:
+        - listitem: carrots
+        - listitem: celery
+        - listitem: lentils
+    - listitem:
+      - paragraph: Boil some water.
+    - listitem:
+      - paragraph: "Dump everything in the pot and follow this algorithm:"
+      - figure:
+        - text: plaintext
+        - code: /find wooden spoon uncover pot stir cover pot balance wooden spoon precariously on pot handle wait \d+ minutes goto first step \(or shut off burner when done\)/
+        - button "Copy code":
+          - img
+          - img
+      - paragraph: Do not bump wooden spoon or it will fall.
+  - paragraph: Notice again how text always lines up on 4-space indents (including that last line which continues item 3 above).
+  - paragraph:
+    - text: Here’s a link to
+    - link "a website":
+      - /url: http://foo.bar
+    - text: ", to a"
+    - link "local doc":
+      - /url: local-doc.html
+    - text: ", and to a"
+    - link "section heading in the current doc":
+      - /url: "#an-h2-header"
+    - text: . Here’s a footnote
+    - superscript:
+      - link "1":
+        - /url: "#user-content-fn-1"
+    - text: .
+  - paragraph: "Tables can look like this:"
+  - paragraph: size material color
+  - separator
+  - paragraph: /9 leather brown \d+ hemp canvas natural \d+ glass transparent/
+  - paragraph: "Table: Shoes, their sizes, and what they’re made of"
+  - paragraph: "(The above is the caption for the table.) Pandoc also supports multi-line tables:"
+  - separator
+  - paragraph: keyword text
+  - separator
+  - paragraph: red Sunsets, apples, and other red or reddish things.
+  - paragraph: green Leaves, grass, frogs and other things it’s not easy being.
+  - separator
+  - paragraph: A horizontal rule follows.
+  - separator
+  - paragraph: "Here’s a definition list:"
+  - paragraph: "apples : Good for making applesauce. oranges : Citrus! tomatoes : There’s no “e” in tomatoe."
+  - paragraph: Again, text is indented 4 spaces. (Put a blank line between each term/definition pair to spread things out more.)
+  - paragraph: "Here’s a “line block”:"
+  - paragraph: "| Line one | Line too | Line tree"
+  - paragraph: "and images can be specified like so:"
+  - paragraph:
+    - text: "Inline math equations go in like so:"
+    - math: ω = d ϕ / d t
+    - text: ". Display math should get its own line and be put in in double-dollarsigns:"
+  - paragraph:
+    - math: I = ∫ ρ R 2 d V
+  - math: /π = \d+\.\d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ …/
+  - paragraph: "And note that you can backslash-escape any punctuation characters which you wish to be displayed literally, ex.: `foo`, *bar*, etc."
+  - 'heading "Footnotes #" [level=2]':
+    - text: ""
+    - link "#":
+      - /url: "#footnote-label"
+  - list:
+    - listitem:
+      - paragraph:
+        - text: Footnote text goes here.
+        - link "Back to reference 1":
+          - /url: "#user-content-fnref-1"
+          - text: ""
+  - paragraph: 支持这篇文章
+  - button "请作者喝杯咖啡"
+  - text: Markdown Example
+  - link /http:\/\/localhost:\d+\/markdown\//:
+    - /url: http://localhost:4321/markdown/
+  - text: /作者 FangYuan 发布于 \d+-\d+-\d+ 许可协议/
+  - link "MIT":
+    - /url: https://opensource.org/license/mit
+  - img
+  - link "Simple Guides for FangYuan":
+    - /url: /guide/
+    - img
+    - text: ""
+  - link "Include Video in the Posts":
+    - /url: /video/
+    - text: ""
+    - img
