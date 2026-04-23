@@ -3,6 +3,8 @@ import {
 	type ImageFunction,
 	type SchemaContext,
 } from "astro:content";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { resolveContentRoot } from "./utils/site-source";
@@ -22,6 +24,9 @@ function generateMarkdownId(entry: string): string {
 }
 
 const contentRoot = resolveContentRoot();
+const loaderContentRoot = path.isAbsolute(contentRoot)
+	? pathToFileURL(contentRoot).href
+	: contentRoot;
 
 const publicPathSchema = z.string().regex(/^\/(?!\/).+/, {
 	message: "Public image URLs must start with a single leading slash.",
@@ -60,7 +65,7 @@ const tocFrontmatterSchema = z
 
 const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 	loader: glob({
-		base: `${contentRoot}/posts`,
+		base: `${loaderContentRoot}/posts`,
 		pattern: "**/*.md",
 		generateId: ({ entry }) => generateMarkdownId(entry),
 	}),
@@ -101,7 +106,7 @@ const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 
 const specCollection: ReturnType<typeof defineCollection> = defineCollection({
 	loader: glob({
-		base: `${contentRoot}/spec`,
+		base: `${loaderContentRoot}/spec`,
 		pattern: "**/*.md",
 		generateId: ({ entry }) => generateMarkdownId(entry),
 	}),

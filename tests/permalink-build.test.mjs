@@ -23,19 +23,18 @@ test(
 			}) => {
 				await writeFile(
 					siteConfigPath,
-					`export const siteConfig = {
-  title: "HTML Slash Demo",
-  subtitle: "demo",
-  permalink: {
-    postsPattern: "/articles/%slug%.html",
-    pagesPattern: "/%slug%",
-    trailingSlash: "always",
-    postPatternRules: [],
-    aliasValidation: "error",
-    updatedDateMode: "manual",
-    updatedDateFallback: "none",
-  },
-};`,
+					`siteConfig:
+  title: HTML Slash Demo
+  subtitle: demo
+  permalink:
+    postsPattern: /articles/%slug%.html
+    pagesPattern: /%slug%
+    trailingSlash: always
+    postPatternRules: []
+    aliasValidation: error
+    updatedDateMode: manual
+    updatedDateFallback: none
+`,
 					"utf8",
 				);
 
@@ -87,19 +86,18 @@ test(
 			}) => {
 				await writeFile(
 					siteConfigPath,
-					`export const siteConfig = {
-  title: "Mixed Family Demo",
-  subtitle: "demo",
-  permalink: {
-    postsPattern: "/%slug%.html",
-    pagesPattern: "/%slug%",
-    trailingSlash: "auto",
-    postPatternRules: [],
-    aliasValidation: "error",
-    updatedDateMode: "manual",
-    updatedDateFallback: "none",
-  },
-};`,
+					`siteConfig:
+  title: Mixed Family Demo
+  subtitle: demo
+  permalink:
+    postsPattern: /%slug%.html
+    pagesPattern: /%slug%
+    trailingSlash: auto
+    postPatternRules: []
+    aliasValidation: error
+    updatedDateMode: manual
+    updatedDateFallback: none
+`,
 					"utf8",
 				);
 
@@ -157,21 +155,20 @@ test(
 			}) => {
 				await writeFile(
 					siteConfigPath,
-					`export const siteConfig = {
-  title: "Rule Demo",
-  subtitle: "demo",
-  permalink: {
-    postsPattern: "/%path%/%slug%",
-    pagesPattern: "/%slug%",
-    trailingSlash: "auto",
-    postPatternRules: [
-      { match: "wp/**", pattern: "/%year%/%monthnum%/%day%/%slug%" },
-    ],
-    aliasValidation: "error",
-    updatedDateMode: "manual",
-    updatedDateFallback: "none",
-  },
-};`,
+					`siteConfig:
+  title: Rule Demo
+  subtitle: demo
+  permalink:
+    postsPattern: /%path%/%slug%
+    pagesPattern: /%slug%
+    trailingSlash: auto
+    postPatternRules:
+      - match: wp/**
+        pattern: /%year%/%monthnum%/%day%/%slug%
+    aliasValidation: error
+    updatedDateMode: manual
+    updatedDateFallback: none
+`,
 					"utf8",
 				);
 
@@ -230,19 +227,18 @@ test(
 
 				await writeFile(
 					siteConfigPath,
-					`export const siteConfig = {
-  title: "Updated Probe",
-  subtitle: "demo",
-  permalink: {
-    postsPattern: "/%path%/%slug%",
-    pagesPattern: "/%slug%",
-    trailingSlash: "auto",
-    postPatternRules: [],
-    aliasValidation: "error",
-    updatedDateMode: "git",
-    updatedDateFallback: "filesystem",
-  },
-};`,
+					`siteConfig:
+  title: Updated Probe
+  subtitle: demo
+  permalink:
+    postsPattern: /%path%/%slug%
+    pagesPattern: /%slug%
+    trailingSlash: auto
+    postPatternRules: []
+    aliasValidation: error
+    updatedDateMode: git
+    updatedDateFallback: filesystem
+`,
 					"utf8",
 				);
 

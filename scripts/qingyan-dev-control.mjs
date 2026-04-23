@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { parse } from "yaml";
 
 const DEFAULT_TARGET = "http://127.0.0.1:4401";
 const DEFAULT_SITE_KEY = "default";
@@ -10,17 +11,14 @@ function trimString(value) {
 	return typeof value === "string" ? value.trim() : "";
 }
 
-function readLiteralDevProxyTarget(cwd) {
-	const siteConfigPath = path.join(cwd, "site", "config.ts");
+function readConfiguredDevProxyTarget(cwd) {
+	const siteConfigPath = path.join(cwd, "site", "site.config.yaml");
 	if (!existsSync(siteConfigPath)) {
 		return "";
 	}
 
-	const source = readFileSync(siteConfigPath, "utf8");
-	const match = source.match(
-		/export const qingyanDevProxyTarget = ["'`]([^"'`]+)["'`];?/,
-	);
-	return trimString(match?.[1] ?? "");
+	const parsed = parse(readFileSync(siteConfigPath, "utf8")) ?? {};
+	return trimString(parsed.qingyanDevProxyTarget ?? "");
 }
 
 function normalizeHttpTarget(rawTarget) {
@@ -136,7 +134,7 @@ export function resolveQingYanDevControlTarget({
 		trimString(cliTarget) ||
 		trimString(env.QINGYAN_DEV_CONTROL_TARGET) ||
 		trimString(env.QINGYAN_DEV_PROXY_TARGET) ||
-		readLiteralDevProxyTarget(cwd) ||
+		readConfiguredDevProxyTarget(cwd) ||
 		DEFAULT_TARGET;
 
 	return normalizeHttpTarget(rawTarget);

@@ -24,55 +24,28 @@ import type {
 	SiteConfig,
 } from "./types/config";
 import { normalizeCommentConfig } from "./utils/comments/options";
+import type { ExternalSiteConfigYaml } from "./utils/external-site-config";
 import { mergeNavBarLinks } from "./utils/navbar-links";
 
-type ExternalSiteConfig = Omit<
-	Partial<SiteConfig>,
-	"themeColor" | "banner" | "toc" | "permalink" | "postSort"
-> & {
-	themeColor?: Partial<SiteConfig["themeColor"]>;
-	banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
-		credit?: Partial<SiteConfig["banner"]["credit"]>;
-	};
-	toc?: Partial<SiteConfig["toc"]>;
-	permalink?: Partial<SiteConfig["permalink"]> & {
-		postPatternRules?: SiteConfig["permalink"]["postPatternRules"];
-	};
-	postSort?: Partial<SiteConfig["postSort"]>;
-};
+type ExternalSiteConfig = ExternalSiteConfigYaml["siteConfig"];
+type ExternalNavBarConfig = ExternalSiteConfigYaml["navBarConfig"];
+type ExternalProfileConfig = ExternalSiteConfigYaml["profileConfig"];
+let externalSiteConfig: ExternalSiteConfigYaml | null = null;
 
-type ExternalNavBarConfig = {
-	links?: NavBarConfig["links"];
-};
+if (import.meta.env.SSR) {
+	const [{ loadExternalSiteConfigYaml }, { resolveSiteSourceContext }] =
+		await Promise.all([
+			import("./utils/external-site-config.ts"),
+			import("./utils/site-source-context.ts"),
+		]);
+	const siteSourceContext = resolveSiteSourceContext();
 
-type ExternalNavBarI18n = NavBarI18nConfig;
-
-type ExternalProfileConfig = Omit<Partial<ProfileConfig>, "links"> & {
-	links?: ProfileConfig["links"];
-};
-
-type ExternalSiteConfigModule = {
-	siteConfig?: ExternalSiteConfig;
-	navBarConfig?: ExternalNavBarConfig;
-	navBarI18n?: ExternalNavBarI18n;
-	profileConfig?: ExternalProfileConfig;
-	footerConfig?: Partial<FooterConfig>;
-	licenseConfig?: Partial<LicenseConfig>;
-	expressiveCodeConfig?: Partial<ExpressiveCodeConfig>;
-	commentConfig?: CommentConfig;
-	pageMetricsConfig?: PageMetricsConfig;
-	pageFeedbackConfig?: PageFeedbackConfig;
-};
-
-const externalSiteConfigModules = import.meta.glob<ExternalSiteConfigModule>(
-	"../site/config.ts",
-	{ eager: true },
-);
-
-const externalSiteConfig =
-	(Object.values(externalSiteConfigModules)[0] as
-		| ExternalSiteConfigModule
-		| undefined) ?? null;
+	externalSiteConfig =
+		siteSourceContext.useExternalConfig &&
+		siteSourceContext.externalConfigPath !== null
+			? loadExternalSiteConfigYaml(siteSourceContext.externalConfigPath)
+			: null;
+}
 
 function mergeSiteConfig(
 	defaultConfig: SiteConfig,
@@ -150,7 +123,7 @@ function mergeProfileConfig(
 
 function mergeCommentConfig(
 	defaultConfig: CommentConfig,
-	override?: CommentConfig,
+	override?: Partial<CommentConfig>,
 ): CommentConfig {
 	if (!override) {
 		return normalizeCommentConfig(defaultConfig);
@@ -165,7 +138,7 @@ function mergeCommentConfig(
 
 function mergePageMetricsConfig(
 	defaultConfig: PageMetricsConfig,
-	override?: PageMetricsConfig,
+	override?: Partial<PageMetricsConfig>,
 ): PageMetricsConfig {
 	if (!override) {
 		return defaultConfig;
@@ -180,7 +153,7 @@ function mergePageMetricsConfig(
 
 function mergePageFeedbackConfig(
 	defaultConfig: PageFeedbackConfig,
-	override?: PageFeedbackConfig,
+	override?: Partial<PageFeedbackConfig>,
 ): PageFeedbackConfig {
 	if (!override) {
 		return defaultConfig;

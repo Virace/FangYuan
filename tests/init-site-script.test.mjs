@@ -45,25 +45,21 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		true,
 		"init-site should create site/content/posts",
 	);
-
 	assert.equal(
 		hasPath(path.join(tempRoot, "site", "content", "spec")),
 		true,
 		"init-site should create site/content/spec",
 	);
-
 	assert.equal(
 		hasPath(path.join(tempRoot, "site", "assets")),
 		true,
 		"init-site should create site/assets",
 	);
-
 	assert.equal(
 		hasPath(path.join(tempRoot, "site", "content", "spec", "about.md")),
 		true,
 		"init-site should copy the default about.md into site/content/spec",
 	);
-
 	assert.equal(
 		hasPath(path.join(tempRoot, "site", "content", "posts", "welcome.md")),
 		true,
@@ -81,44 +77,17 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 	);
 
 	const siteConfigSource = await readFile(
-		path.join(tempRoot, "site", "config.ts"),
+		path.join(tempRoot, "site", "site.config.yaml"),
 		"utf8",
 	);
-	assert.match(
-		siteConfigSource,
-		/export const siteConfig = \{[\s\S]*title: "Virace Notes"/,
-		"init-site should scaffold a site config template from explicit init options",
-	);
-	assert.match(
-		siteConfigSource,
-		/export const navBarConfig = \{/,
-		"init-site should scaffold the navBarConfig section",
-	);
-	assert.match(
-		siteConfigSource,
-		/export const profileConfig = \{/,
-		"init-site should scaffold the profileConfig section",
-	);
-	assert.match(
-		siteConfigSource,
-		/bio: "Personal notes"/,
-		"init-site should scaffold the profile bio from explicit init options",
-	);
-	assert.match(
-		siteConfigSource,
-		/export const qingyanDevProxyTarget = "http:\/\/localhost:4401";/,
-		"init-site should scaffold a literal QingYan dev proxy target when configured",
-	);
-	assert.match(
-		siteConfigSource,
-		/enable: true,\s+qingyan:/,
-		"init-site should scaffold enabled QingYan-backed feature blocks",
-	);
-	assert.match(
-		siteConfigSource,
-		/rewardOptions:/,
-		"init-site should scaffold reward options when placeholders are enabled",
-	);
+	assert.match(siteConfigSource, /siteConfig:/);
+	assert.match(siteConfigSource, /title: Virace Notes/);
+	assert.match(siteConfigSource, /navBarConfig:/);
+	assert.match(siteConfigSource, /profileConfig:/);
+	assert.match(siteConfigSource, /bio: Personal notes/);
+	assert.match(siteConfigSource, /qingyanDevProxyTarget: http:\/\/localhost:4401/);
+	assert.match(siteConfigSource, /commentConfig:[\s\S]*enable: true[\s\S]*qingyan:/);
+	assert.match(siteConfigSource, /rewardOptions:/);
 
 	const demoPostSource = await readFile(
 		path.join(tempRoot, "site", "content", "posts", "welcome.md"),
@@ -192,8 +161,8 @@ test("ensureExternalSiteScaffold is idempotent and preserves existing user files
 		"utf8",
 	);
 	await writeFile(
-		path.join(tempRoot, "site", "config.ts"),
-		'export const siteConfig = { title: "Existing Site" };\n',
+		path.join(tempRoot, "site", "site.config.yaml"),
+		"siteConfig:\n  title: Existing Site\n",
 		"utf8",
 	);
 
@@ -211,13 +180,13 @@ test("ensureExternalSiteScaffold is idempotent and preserves existing user files
 	);
 
 	const siteConfigSource = await readFile(
-		path.join(tempRoot, "site", "config.ts"),
+		path.join(tempRoot, "site", "site.config.yaml"),
 		"utf8",
 	);
 	assert.equal(
 		siteConfigSource,
-		'export const siteConfig = { title: "Existing Site" };\n',
-		"init-site should preserve an existing site/config.ts",
+		"siteConfig:\n  title: Existing Site\n",
+		"init-site should preserve an existing site.config.yaml",
 	);
 
 	assert.equal(
@@ -225,7 +194,6 @@ test("ensureExternalSiteScaffold is idempotent and preserves existing user files
 		0,
 		"running init-site twice should not recreate files",
 	);
-
 	assert.equal(
 		hasPath(path.join(tempRoot, "site", "content", "posts", "welcome.md")),
 		false,
@@ -272,9 +240,9 @@ test("ensureExternalSiteScaffold dry-run reports planned actions without writing
 		"dry-run should not create site/content/posts",
 	);
 	assert.equal(
-		hasPath(path.join(tempRoot, "site", "config.ts")),
+		hasPath(path.join(tempRoot, "site", "site.config.yaml")),
 		false,
-		"dry-run should not create site/config.ts",
+		"dry-run should not create site.config.yaml",
 	);
 	assert.equal(
 		result.createdDirectories.length,
@@ -303,9 +271,69 @@ test("ensureExternalSiteScaffold dry-run reports planned actions without writing
 				operation.kind === "file" &&
 				operation.status === "planned" &&
 				operation.mode === "write" &&
-				operation.path === path.join(tempRoot, "site", "config.ts"),
+				operation.path === path.join(tempRoot, "site", "site.config.yaml"),
 		),
 		true,
-		"dry-run should report planned site/config.ts creation",
+		"dry-run should report planned site.config.yaml creation",
+	);
+});
+
+test("ensureExternalSiteScaffold can scaffold into a custom site root", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-site-"));
+	const customSiteRoot = path.join(tempRoot, ".temp", "demo-site");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await mkdir(path.join(tempRoot, "src", "content", "spec"), {
+		recursive: true,
+	});
+	await writeFile(
+		path.join(tempRoot, "src", "content", "spec", "about.md"),
+		"# About\n",
+		"utf8",
+	);
+
+	ensureExternalSiteScaffold(tempRoot, {}, { siteRoot: customSiteRoot });
+
+	assert.equal(hasPath(path.join(customSiteRoot, "site.config.yaml")), true);
+	assert.equal(
+		hasPath(path.join(customSiteRoot, "content", "spec", "about.md")),
+		true,
+	);
+});
+
+test("ensureExternalSiteScaffold can seed external content from src/content", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-site-"));
+	const customSiteRoot = path.join(tempRoot, ".temp", "seeded-site");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await mkdir(path.join(tempRoot, "src", "content", "spec"), {
+		recursive: true,
+	});
+	await mkdir(path.join(tempRoot, "src", "content", "posts"), {
+		recursive: true,
+	});
+	await writeFile(
+		path.join(tempRoot, "src", "content", "spec", "about.md"),
+		"# About\n",
+		"utf8",
+	);
+	await writeFile(
+		path.join(tempRoot, "src", "content", "posts", "hello.md"),
+		"# Hello\n",
+		"utf8",
+	);
+
+	ensureExternalSiteScaffold(tempRoot, {}, {
+		siteRoot: customSiteRoot,
+		seedFromSrcContent: true,
+	});
+
+	assert.equal(
+		hasPath(path.join(customSiteRoot, "content", "posts", "hello.md")),
+		true,
 	);
 });

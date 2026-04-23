@@ -4,24 +4,28 @@ import path from "node:path";
 import { readFile, writeFile } from "node:fs/promises";
 
 import {
-	runBuild,
-	withMutableSiteFixture,
+	withExternalSiteFixture,
 } from "./test-helpers/site-fixture.mjs";
 
 test("global toc hard switch removes toc markup from post and spec pages", async (t) => {
-	await withMutableSiteFixture(
+	await withExternalSiteFixture(
 		t,
-		async ({ distRoot, postDir, siteAboutPath, siteConfigPath, markCreated }) => {
+		async ({
+			distRoot,
+			postDir,
+			siteAboutPath,
+			siteConfigPath,
+			markCreated,
+			runExternalBuild,
+		}) => {
 			const postPath = markCreated(path.join(postDir, "markdown.md"));
 
 			await writeFile(
 				siteConfigPath,
-				`export const siteConfig = {
-	toc: {
-		enable: false,
-		depth: 2,
-	},
-};
+				`siteConfig:
+  toc:
+    enable: false
+    depth: 2
 `,
 				"utf8",
 			);
@@ -57,7 +61,7 @@ toc:
 				"utf8",
 			);
 
-			runBuild();
+			runExternalBuild();
 
 			const postHtml = await readFile(
 				path.join(distRoot, "markdown", "index.html"),
@@ -77,17 +81,15 @@ toc:
 });
 
 test("spec frontmatter can opt into toc when the global switch is on", async (t) => {
-	await withMutableSiteFixture(
+	await withExternalSiteFixture(
 		t,
-		async ({ distRoot, siteAboutPath, siteConfigPath }) => {
+		async ({ distRoot, siteAboutPath, siteConfigPath, runExternalBuild }) => {
 			await writeFile(
 				siteConfigPath,
-				`export const siteConfig = {
-	toc: {
-		enable: true,
-		depth: 2,
-	},
-};
+				`siteConfig:
+  toc:
+    enable: true
+    depth: 2
 `,
 				"utf8",
 			);
@@ -110,7 +112,7 @@ toc:
 				"utf8",
 			);
 
-			runBuild();
+			runExternalBuild();
 
 			const aboutHtml = await readFile(
 				path.join(distRoot, "about", "index.html"),

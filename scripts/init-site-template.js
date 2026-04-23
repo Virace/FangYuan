@@ -1,108 +1,88 @@
-function renderQingYanConfigBlock({ enabled, siteKey, apiBase }) {
+function renderQingYanYaml({ enabled, siteKey, apiBase }, indent = "  ") {
 	if (!enabled) {
-		return "null"
+		return `${indent}qingyan: null`
 	}
 
-	return `{
-		siteKey: ${JSON.stringify(siteKey)},
-		apiBase: ${JSON.stringify(apiBase)},
-	}`
+	return `${indent}qingyan:
+${indent}  siteKey: ${siteKey}
+${indent}  apiBase: ${apiBase}`
 }
 
-function renderRewardOptions(includeRewardPlaceholders) {
+function renderRewardOptionsYaml(includeRewardPlaceholders) {
 	if (!includeRewardPlaceholders) {
-		return "[]"
+		return "  rewardOptions: []"
 	}
 
-	return `[
-		{
-			id: "wechat",
-			name: "微信",
-			image: "/images/reward/wechat-placeholder.svg",
-			alt: "微信打赏二维码",
-		},
-		{
-			id: "alipay",
-			name: "支付宝",
-			image: "/images/reward/alipay-placeholder.svg",
-			alt: "支付宝打赏二维码",
-		},
-	]`
+	return `  rewardOptions:
+    - id: wechat
+      name: 微信
+      image: /images/reward/wechat-placeholder.svg
+      alt: 微信打赏二维码
+    - id: alipay
+      name: 支付宝
+      image: /images/reward/alipay-placeholder.svg
+      alt: 支付宝打赏二维码`
 }
 
 export function buildSiteConfigTemplate(options) {
 	const qingyanDevProxyLine = options.qingyanDevProxyTarget
-		? `export const qingyanDevProxyTarget = ${JSON.stringify(options.qingyanDevProxyTarget)};`
-		: '// export const qingyanDevProxyTarget = "http://localhost:4401";'
+		? `qingyanDevProxyTarget: ${options.qingyanDevProxyTarget}`
+		: "qingyanDevProxyTarget: null"
 
-	return `import type {
-	CommentConfig,
-	PageFeedbackConfig,
-	PageMetricsConfig,
-} from "../src/types/config";
-import { LinkPresets } from "../src/constants/link-presets";
+	return `siteConfig:
+  title: ${options.siteTitle}
+  subtitle: ${options.siteSubtitle}
 
-export const siteConfig = {
-	title: ${JSON.stringify(options.siteTitle)},
-	subtitle: ${JSON.stringify(options.siteSubtitle)},
-};
+navBarI18n:
+  nav.github: GitHub
 
-export const navBarI18n = {
-	"nav.github": "GitHub",
-};
+navBarConfig:
+  links:
+    - name: nav.archive
+      url: /archive/
+    - name: nav.about
+      ref:
+        collection: spec
+        id: about
+    - id: nav.github
+      name: nav.github
+      url: https://github.com/yourname/yourrepo
+      external: true
 
-export const navBarConfig = {
-	links: [
-		LinkPresets.Archive,
-		LinkPresets.About,
-		{
-			id: "nav.github",
-			name: "nav.github",
-			url: "https://github.com/yourname/yourrepo",
-			external: true,
-		},
-	],
-};
+profileConfig:
+  name: ${options.profileName}
+  bio: ${options.profileBio}
+  links: []
 
-export const profileConfig = {
-	name: ${JSON.stringify(options.profileName)},
-	bio: ${JSON.stringify(options.profileBio)},
-	links: [],
-};
-
-export const expressiveCodeConfig = {
-	theme: "github-dark",
-};
+expressiveCodeConfig:
+  theme: github-dark
 
 ${qingyanDevProxyLine}
 
-export const commentConfig: CommentConfig = {
-	enable: ${options.enableComments},
-	qingyan: ${renderQingYanConfigBlock({
+commentConfig:
+  enable: ${options.enableComments}
+${renderQingYanYaml({
 		enabled: options.enableComments,
 		siteKey: options.qingyanSiteKey,
 		apiBase: options.qingyanApiBase,
-	})},
-};
+	})}
 
-export const pageMetricsConfig: PageMetricsConfig = {
-	enable: ${options.enablePageMetrics},
-	qingyan: ${renderQingYanConfigBlock({
+pageMetricsConfig:
+  enable: ${options.enablePageMetrics}
+${renderQingYanYaml({
 		enabled: options.enablePageMetrics,
 		siteKey: options.qingyanSiteKey,
 		apiBase: options.qingyanApiBase,
-	})},
-};
+	})}
 
-export const pageFeedbackConfig: PageFeedbackConfig = {
-	enable: ${options.enablePageFeedback},
-	qingyan: ${renderQingYanConfigBlock({
+pageFeedbackConfig:
+  enable: ${options.enablePageFeedback}
+${renderQingYanYaml({
 		enabled: options.enablePageFeedback,
 		siteKey: options.qingyanSiteKey,
 		apiBase: options.qingyanApiBase,
-	})},
-	rewardOptions: ${renderRewardOptions(options.includeRewardPlaceholders)},
-};
+	})}
+${renderRewardOptionsYaml(options.includeRewardPlaceholders)}
 `
 }
 

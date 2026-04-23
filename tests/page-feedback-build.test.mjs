@@ -26,15 +26,12 @@ test(
 			}) => {
 				await writeFile(
 					siteConfigPath,
-					`export const pageFeedbackConfig = {
-  rewardOptions: [
-    {
-      name: "Coffee",
-      icon: "material-symbols:coffee-rounded",
-      link: "https://example.com/coffee",
-    },
-  ],
-};
+					`pageFeedbackConfig:
+  rewardOptions:
+    - id: coffee
+      name: Coffee
+      image: /images/reward/wechat-placeholder.svg
+      alt: Coffee
 `,
 					"utf8",
 				);

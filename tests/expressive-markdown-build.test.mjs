@@ -20,19 +20,18 @@ test(
 			async ({ siteConfigPath, siteAboutPath, postDir, distRoot, markCreated }) => {
 				await writeFile(
 					siteConfigPath,
-					`export const siteConfig = {
-  title: "Expressive Markdown Demo",
-  subtitle: "demo",
-  permalink: {
-    postsPattern: "/%slug%",
-    pagesPattern: "/%slug%",
-    trailingSlash: "auto",
-    postPatternRules: [],
-    aliasValidation: "error",
-    updatedDateMode: "manual",
-    updatedDateFallback: "none",
-  },
-};`,
+					`siteConfig:
+  title: Expressive Markdown Demo
+  subtitle: demo
+  permalink:
+    postsPattern: /%slug%
+    pagesPattern: /%slug%
+    trailingSlash: auto
+    postPatternRules: []
+    aliasValidation: error
+    updatedDateMode: manual
+    updatedDateFallback: none
+`,
 					"utf8",
 				);
 				await writeFile(siteAboutPath, "# About\n", "utf8");

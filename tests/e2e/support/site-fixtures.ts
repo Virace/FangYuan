@@ -5,12 +5,13 @@ const mockGitHubAvatar =
 	"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%234b5563'/%3E%3Ctext x='32' y='38' font-size='24' text-anchor='middle' fill='white'%3EGH%3C/text%3E%3C/svg%3E";
 
 export const SITE_ROUTES = {
+	// These baseline routes are only valid when the suite runs in internal mode.
 	home: "/",
 	about: "/about/",
 	archive: "/archive/",
-	postBasic: "/markdown-extended/",
+	postBasic: "/markdown/",
 	postComplex: "/markdown-extended/",
-	postWithCover: "/agents-of-shield/",
+	postWithCover: "/guide/",
 } as const;
 
 export const VIEWPORTS = {

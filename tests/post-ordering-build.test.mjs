@@ -26,23 +26,21 @@ test(
 			}) => {
 				await writeFile(
 					siteConfigPath,
-					`export const siteConfig = {
-  title: "Ordering Demo",
-  subtitle: "demo",
-  postSort: {
-    key: "updated",
-    order: "desc",
-  },
-  permalink: {
-    postsPattern: "/%slug%",
-    pagesPattern: "/%slug%",
-    trailingSlash: "auto",
-    postPatternRules: [],
-    aliasValidation: "error",
-    updatedDateMode: "manual",
-    updatedDateFallback: "none",
-  },
-};`,
+					`siteConfig:
+  title: Ordering Demo
+  subtitle: demo
+  postSort:
+    key: updated
+    order: desc
+  permalink:
+    postsPattern: /%slug%
+    pagesPattern: /%slug%
+    trailingSlash: auto
+    postPatternRules: []
+    aliasValidation: error
+    updatedDateMode: manual
+    updatedDateFallback: none
+`,
 					"utf8",
 				);
 				await writeFile(siteAboutPath, "# About\n", "utf8");
@@ -144,14 +142,13 @@ test(
 			}) => {
 				await writeFile(
 					siteConfigPath,
-					`export const siteConfig = {
-  title: "Ordering Demo",
-  subtitle: "demo",
-  postSort: {
-    key: "title",
-    order: "asc",
-  },
-};`,
+					`siteConfig:
+  title: Ordering Demo
+  subtitle: demo
+  postSort:
+    key: title
+    order: asc
+`,
 					"utf8",
 				);
 				await writeFile(siteAboutPath, "# About\n", "utf8");

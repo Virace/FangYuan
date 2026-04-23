@@ -63,7 +63,7 @@ test("parseQingYanDevControlArgs ignores pnpm passthrough double-dash tokens", (
 	);
 });
 
-test("resolveQingYanDevControlTarget prefers cli flag, then env, then literal site/config.ts value", async (t) => {
+test("resolveQingYanDevControlTarget prefers cli flag, then env, then site.config.yaml value", async (t) => {
 	const tempRoot = await mkdtemp(
 		path.join(os.tmpdir(), "fangyuan-qingyan-target-"),
 	);
@@ -73,8 +73,8 @@ test("resolveQingYanDevControlTarget prefers cli flag, then env, then literal si
 
 	await mkdir(path.join(tempRoot, "site"), { recursive: true });
 	await writeFile(
-		path.join(tempRoot, "site", "config.ts"),
-		'export const qingyanDevProxyTarget = "http://localhost:4401";\n',
+		path.join(tempRoot, "site", "site.config.yaml"),
+		"qingyanDevProxyTarget: http://localhost:4401\n",
 		"utf8",
 	);
 

@@ -17,52 +17,39 @@ test(
 			async ({ siteConfigPath, siteAboutPath, specDir, distRoot }) => {
 				await writeFile(
 					siteConfigPath,
-					`import { LinkPresets } from "../src/constants/link-presets";
+					`siteConfig:
+  title: Nav Demo
+  subtitle: demo
+  permalink:
+    postsPattern: /%path%/%slug%.html
+    pagesPattern: /%slug%.html
+    trailingSlash: auto
+    postPatternRules: []
+    aliasValidation: error
+    updatedDateMode: manual
+    updatedDateFallback: none
 
-export const siteConfig = {
-  title: "Nav Demo",
-  subtitle: "demo",
-  permalink: {
-    postsPattern: "/%path%/%slug%.html",
-    pagesPattern: "/%slug%.html",
-    trailingSlash: "auto",
-    postPatternRules: [],
-    aliasValidation: "error",
-    updatedDateMode: "manual",
-    updatedDateFallback: "none",
-  },
-};
+navBarI18n:
+  nav.spec.aaa: 文档
+  nav.repo: 代码仓库
 
-export const navBarI18n = {
-  "nav.spec.aaa": "文档",
-  "nav.repo": "代码仓库",
-};
-
-export const navBarConfig = {
-  links: [
-    LinkPresets.Archive,
-    {
-      name: "about",
-      ref: {
-        collection: "spec",
-        id: "aaa",
-      },
-    },
-    {
-      name: "nav.spec.aaa",
-      ref: {
-        collection: "spec",
-        id: "aaa",
-      },
-    },
-    {
-      id: "nav.github",
-      name: "nav.repo",
-      url: "https://example.com/repo",
-      external: true,
-    },
-  ],
-};`,
+navBarConfig:
+  links:
+    - name: nav.archive
+      url: /archive/
+    - name: about
+      ref:
+        collection: spec
+        id: aaa
+    - name: nav.spec.aaa
+      ref:
+        collection: spec
+        id: aaa
+    - id: nav.github
+      name: nav.repo
+      url: https://example.com/repo
+      external: true
+`,
 					"utf8",
 				);
 
@@ -104,42 +91,60 @@ AAA content
 );
 
 test(
-	"build fails with explicit about error when spec about content is missing",
+	"build falls back to default about route when external about content is missing",
 	{ concurrency: false },
 	async (t) => {
 		await withMutableSiteFixture(
 			t,
-			async ({ siteAboutPath, siteConfigPath }) => {
+			async ({ distRoot, siteAboutPath, siteConfigPath, postDir, markCreated }) => {
 				await writeFile(
 					siteConfigPath,
-					`import { LinkPresets } from "../src/constants/link-presets";
+					`siteConfig:
+  title: Broken About Demo
+  subtitle: demo
+  permalink:
+    postsPattern: /%path%/%slug%.html
+    pagesPattern: /%slug%.html
+    trailingSlash: auto
+    postPatternRules: []
+    aliasValidation: error
+    updatedDateMode: manual
+    updatedDateFallback: none
 
-export const siteConfig = {
-  title: "Broken About Demo",
-  subtitle: "demo",
-  permalink: {
-    postsPattern: "/%path%/%slug%.html",
-    pagesPattern: "/%slug%.html",
-    trailingSlash: "auto",
-    postPatternRules: [],
-    aliasValidation: "error",
-    updatedDateMode: "manual",
-    updatedDateFallback: "none",
-  },
-};
-
-export const navBarConfig = {
-  links: [
-    LinkPresets.Archive,
-  ],
-};`,
+navBarConfig:
+  links:
+    - name: nav.archive
+      url: /archive/
+`,
 					"utf8",
 				);
 
+				await writeFile(
+					markCreated(path.join(postDir, "probe.md")),
+					`---
+title: Probe
+published: 2026-04-21
+description: demo
+tags: [Demo]
+category: Demo
+draft: false
+---
+Probe
+`,
+					"utf8",
+				);
 				await rm(siteAboutPath, { force: true });
 
-				const result = runBuild(1);
-				assert.match(result.stdout + result.stderr, /About page content not found/);
+				runBuild();
+
+				const homeHtml = await readFile(path.join(distRoot, "index.html"), "utf8");
+				const aboutHtml = await readFile(
+					path.join(distRoot, "about.html"),
+					"utf8",
+				);
+
+				assert.match(homeHtml, /href="\/about\.html"/);
+				assert.match(aboutHtml, /About/i);
 			},
 		);
 	},

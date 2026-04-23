@@ -1,40 +1,40 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
-import {
-	extractExternalPermalinkConfig,
-	normalizeAliasOrThrow,
-} from "../src/utils/site-source.ts";
+import { loadExternalSiteConfigYaml } from "../src/utils/external-site-config.ts";
+import { extractExternalPermalinkConfig } from "../src/utils/site-source.ts";
 
-test("normalizeAliasOrThrow rejects dots by default", () => {
-	assert.throws(
-		() => normalizeAliasOrThrow("post.html", "error"),
-		/alias.*\./i,
+test("extractExternalPermalinkConfig reads trailingSlash and patterns from loaded YAML config", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-permalink-"));
+	const configPath = path.join(tempRoot, "site.config.yaml");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await writeFile(
+		configPath,
+		`
+siteConfig:
+  permalink:
+    postsPattern: /%path%/%slug%
+    pagesPattern: /%slug%
+    trailingSlash: auto
+    aliasValidation: error
+    updatedDateMode: manual
+    updatedDateFallback: none
+    postPatternRules:
+      - match: wp/**
+        pattern: /%year%/%monthnum%/%day%/%slug%
+`,
+		"utf8",
 	);
-});
 
-test("normalizeAliasOrThrow can normalize dots when explicitly enabled", () => {
-	assert.equal(normalizeAliasOrThrow("post.html", "normalize"), "post-html");
-});
+	const loaded = loadExternalSiteConfigYaml(configPath);
 
-test("extractExternalPermalinkConfig reads trailingSlash and patterns from site config text", () => {
-	const source = `
-export const siteConfig = {
-	permalink: {
-		postsPattern: "/%path%/%slug%",
-		pagesPattern: "/%slug%",
-		trailingSlash: "auto",
-		aliasValidation: "error",
-		updatedDateMode: "manual",
-		updatedDateFallback: "none",
-		postPatternRules: [
-			{ match: "wp/**", pattern: "/%year%/%monthnum%/%day%/%slug%" },
-		],
-	},
-};
-`;
-
-	assert.deepEqual(extractExternalPermalinkConfig(source), {
+	assert.deepEqual(extractExternalPermalinkConfig(loaded), {
 		postsPattern: "/%path%/%slug%",
 		pagesPattern: "/%slug%",
 		trailingSlash: "auto",
@@ -43,4 +43,15 @@ export const siteConfig = {
 		updatedDateFallback: "none",
 		postPatternRulePatterns: ["/%year%/%monthnum%/%day%/%slug%"],
 	});
+});
+
+test("extractExternalPermalinkConfig returns null when permalink override is missing", () => {
+	assert.equal(
+		extractExternalPermalinkConfig({
+			siteConfig: {
+				title: "Virace Notes",
+			},
+		}),
+		null,
+	);
 });

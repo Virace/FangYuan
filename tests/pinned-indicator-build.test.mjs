@@ -26,14 +26,13 @@ test(
 			}) => {
 				await writeFile(
 					siteConfigPath,
-					`export const siteConfig = {
-  title: "Pinned Demo",
-  subtitle: "demo",
-  postSort: {
-    key: "updated",
-    order: "desc",
-  },
-};`,
+					`siteConfig:
+  title: Pinned Demo
+  subtitle: demo
+  postSort:
+    key: updated
+    order: desc
+`,
 					"utf8",
 				);
 				await writeFile(siteAboutPath, "# About\n", "utf8");
