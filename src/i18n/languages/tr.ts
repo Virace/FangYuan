@@ -10,8 +10,8 @@ export const tr: Translation = {
 	[Key.tags]: "Taglar",
 	[Key.categories]: "Katagoriler",
 	[Key.recentPosts]: "Son Paylaşımlar",
-	[Key.pinned]: "TOP",
-	[Key.pinnedPosts]: "Pinned",
+	[Key.pinned]: "Sabit",
+	[Key.pinnedPosts]: "Sabitlenenler",
 
 	[Key.comments]: "Yorumlar",
 	[Key.commentsLoading]: "Yorumlar yükleniyor...",
@@ -26,7 +26,7 @@ export const tr: Translation = {
 	[Key.commentsReply]: "Yanıtla",
 	[Key.commentsReplying]: "Bu yoruma yanıt yazılıyor.",
 	[Key.commentsCancelReply]: "Yanıtı iptal et",
-	[Key.commentsEmoji]: "Emoji",
+	[Key.commentsEmoji]: "İfade",
 	[Key.commentsCaptcha]: "Doğrulama kodu",
 	[Key.commentsCaptchaRefresh]: "Doğrulama kodunu yenile",
 	[Key.commentsCaptchaVerify]: "Doğrula",
@@ -44,11 +44,11 @@ export const tr: Translation = {
 	[Key.commentsVoteFailed]:
 		"Oy gönderilemedi. Lütfen daha sonra tekrar deneyin.",
 	[Key.commentsVoteConfirmTipUp]:
-		"Confirm this upvote? You will not be able to change it later.",
+		"Bu olumlu oyu onaylıyor musun? Daha sonra değiştiremezsin.",
 	[Key.commentsVoteConfirmTipDown]:
-		"Confirm this downvote? You will not be able to change it later.",
-	[Key.commentsVoteConfirmProceed]: "Confirm",
-	[Key.commentsVoteConfirmCancel]: "Cancel",
+		"Bu olumsuz oyu onaylıyor musun? Daha sonra değiştiremezsin.",
+	[Key.commentsVoteConfirmProceed]: "Onayla",
+	[Key.commentsVoteConfirmCancel]: "Vazgeç",
 	[Key.commentsSortNewest]: "En yeni önce",
 	[Key.commentsSortOldest]: "En eski önce",
 	[Key.commentsPaginationPrevious]: "Önceki",
@@ -94,14 +94,14 @@ export const tr: Translation = {
 	[Key.author]: "Yazar",
 	[Key.publishedAt]: "Yayınlanma:",
 	[Key.pageViews]: "Görüntülenme",
-	[Key.pageFeedbackLike]: "Like",
-	[Key.pageFeedbackLiked]: "Liked",
+	[Key.pageFeedbackLike]: "Beğen",
+	[Key.pageFeedbackLiked]: "Beğenildi",
 	[Key.pageFeedbackLikeFailed]:
-		"Failed to submit the like. Please try again later.",
-	[Key.pageFeedbackReward]: "Buy the author a coffee",
-	[Key.pageFeedbackRewardTitle]: "Support this post",
+		"Beğeni gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+	[Key.pageFeedbackReward]: "Yazara bir kahve ısmarla",
+	[Key.pageFeedbackRewardTitle]: "Bu yazıyı destekle",
 	[Key.pageFeedbackRewardDescription]:
-		"If this post helped you, you can support the author through the channels below.",
-	[Key.pageFeedbackClose]: "Close",
+		"Bu yazı işine yaradıysa aşağıdaki kanallar üzerinden yazarı destekleyebilirsin.",
+	[Key.pageFeedbackClose]: "Kapat",
 	[Key.license]: "Lisans",
 };

@@ -2,16 +2,16 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ja: Translation = {
-	[Key.home]: "Home",
-	[Key.about]: "About",
-	[Key.archive]: "Archive",
+	[Key.home]: "ホーム",
+	[Key.about]: "このサイトについて",
+	[Key.archive]: "アーカイブ",
 	[Key.search]: "検索",
 
 	[Key.tags]: "タグ",
 	[Key.categories]: "カテゴリ",
 	[Key.recentPosts]: "最近の投稿",
-	[Key.pinned]: "TOP",
-	[Key.pinnedPosts]: "Pinned",
+	[Key.pinned]: "固定",
+	[Key.pinnedPosts]: "固定された投稿",
 
 	[Key.comments]: "コメント",
 	[Key.commentsLoading]: "コメントを読み込み中...",
@@ -44,11 +44,11 @@ export const ja: Translation = {
 	[Key.commentsVoteFailed]:
 		"投票の送信に失敗しました。後でもう一度お試しください。",
 	[Key.commentsVoteConfirmTipUp]:
-		"Confirm this upvote? You will not be able to change it later.",
+		"この高評価を確定しますか？ 後から変更できません。",
 	[Key.commentsVoteConfirmTipDown]:
-		"Confirm this downvote? You will not be able to change it later.",
-	[Key.commentsVoteConfirmProceed]: "Confirm",
-	[Key.commentsVoteConfirmCancel]: "Cancel",
+		"この低評価を確定しますか？ 後から変更できません。",
+	[Key.commentsVoteConfirmProceed]: "確認",
+	[Key.commentsVoteConfirmCancel]: "キャンセル",
 	[Key.commentsSortNewest]: "新しい順",
 	[Key.commentsSortOldest]: "古い順",
 	[Key.commentsPaginationPrevious]: "前へ",
@@ -94,14 +94,14 @@ export const ja: Translation = {
 	[Key.author]: "作者",
 	[Key.publishedAt]: "公開日",
 	[Key.pageViews]: "閲覧数",
-	[Key.pageFeedbackLike]: "Like",
-	[Key.pageFeedbackLiked]: "Liked",
+	[Key.pageFeedbackLike]: "いいね",
+	[Key.pageFeedbackLiked]: "いいね済み",
 	[Key.pageFeedbackLikeFailed]:
-		"Failed to submit the like. Please try again later.",
-	[Key.pageFeedbackReward]: "Buy the author a coffee",
-	[Key.pageFeedbackRewardTitle]: "Support this post",
+		"いいねの送信に失敗しました。後でもう一度お試しください。",
+	[Key.pageFeedbackReward]: "作者にコーヒーをおごる",
+	[Key.pageFeedbackRewardTitle]: "この記事を応援",
 	[Key.pageFeedbackRewardDescription]:
-		"If this post helped you, you can support the author through the channels below.",
-	[Key.pageFeedbackClose]: "Close",
+		"この投稿が役に立ったら、下記の方法で作者を支援できます。",
+	[Key.pageFeedbackClose]: "閉じる",
 	[Key.license]: "ライセンス",
 };

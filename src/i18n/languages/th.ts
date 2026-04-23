@@ -10,8 +10,8 @@ export const th: Translation = {
 	[Key.tags]: "ป้ายกำกับ",
 	[Key.categories]: "หมวดหมู่",
 	[Key.recentPosts]: "โพสต์ล่าสุด",
-	[Key.pinned]: "TOP",
-	[Key.pinnedPosts]: "Pinned",
+	[Key.pinned]: "ปักหมุด",
+	[Key.pinnedPosts]: "โพสต์ที่ปักหมุด",
 
 	[Key.comments]: "ความคิดเห็น",
 	[Key.commentsLoading]: "กำลังโหลดความคิดเห็น...",
@@ -38,11 +38,11 @@ export const th: Translation = {
 	[Key.commentsVoteDown]: "โหวตลง",
 	[Key.commentsVoteFailed]: "ส่งการโหวตไม่สำเร็จ กรุณาลองใหม่ภายหลัง",
 	[Key.commentsVoteConfirmTipUp]:
-		"Confirm this upvote? You will not be able to change it later.",
+		"ยืนยันการโหวตขึ้นนี้หรือไม่? คุณจะไม่สามารถเปลี่ยนได้ภายหลัง",
 	[Key.commentsVoteConfirmTipDown]:
-		"Confirm this downvote? You will not be able to change it later.",
-	[Key.commentsVoteConfirmProceed]: "Confirm",
-	[Key.commentsVoteConfirmCancel]: "Cancel",
+		"ยืนยันการโหวตลงนี้หรือไม่? คุณจะไม่สามารถเปลี่ยนได้ภายหลัง",
+	[Key.commentsVoteConfirmProceed]: "ยืนยัน",
+	[Key.commentsVoteConfirmCancel]: "ยกเลิก",
 	[Key.commentsSortNewest]: "ใหม่ล่าสุดก่อน",
 	[Key.commentsSortOldest]: "เก่าสุดก่อน",
 	[Key.commentsPaginationPrevious]: "ก่อนหน้า",
@@ -85,14 +85,14 @@ export const th: Translation = {
 	[Key.author]: "ผู้เขียน",
 	[Key.publishedAt]: "เผยแพร่เมื่อ",
 	[Key.pageViews]: "ยอดเข้าชม",
-	[Key.pageFeedbackLike]: "Like",
-	[Key.pageFeedbackLiked]: "Liked",
+	[Key.pageFeedbackLike]: "ถูกใจ",
+	[Key.pageFeedbackLiked]: "ถูกใจแล้ว",
 	[Key.pageFeedbackLikeFailed]:
-		"Failed to submit the like. Please try again later.",
-	[Key.pageFeedbackReward]: "Buy the author a coffee",
-	[Key.pageFeedbackRewardTitle]: "Support this post",
+		"ส่งการถูกใจไม่สำเร็จ กรุณาลองใหม่ภายหลัง",
+	[Key.pageFeedbackReward]: "เลี้ยงกาแฟผู้เขียน",
+	[Key.pageFeedbackRewardTitle]: "สนับสนุนบทความนี้",
 	[Key.pageFeedbackRewardDescription]:
-		"If this post helped you, you can support the author through the channels below.",
-	[Key.pageFeedbackClose]: "Close",
+		"หากบทความนี้เป็นประโยชน์ คุณสามารถสนับสนุนผู้เขียนผ่านช่องทางด้านล่างได้",
+	[Key.pageFeedbackClose]: "ปิด",
 	[Key.license]: "สัญญาอนุญาต",
 };

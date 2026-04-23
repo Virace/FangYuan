@@ -10,8 +10,8 @@ export const ko: Translation = {
 	[Key.tags]: "태그",
 	[Key.categories]: "카테고리",
 	[Key.recentPosts]: "최근 게시물",
-	[Key.pinned]: "TOP",
-	[Key.pinnedPosts]: "Pinned",
+	[Key.pinned]: "고정",
+	[Key.pinnedPosts]: "고정된 글",
 
 	[Key.comments]: "댓글",
 	[Key.commentsLoading]: "댓글 불러오는 중...",
@@ -44,11 +44,11 @@ export const ko: Translation = {
 	[Key.commentsVoteFailed]:
 		"투표를 전송하지 못했습니다. 잠시 후 다시 시도해 주세요.",
 	[Key.commentsVoteConfirmTipUp]:
-		"Confirm this upvote? You will not be able to change it later.",
+		"이 추천을 확정하시겠습니까? 이후에는 변경할 수 없습니다.",
 	[Key.commentsVoteConfirmTipDown]:
-		"Confirm this downvote? You will not be able to change it later.",
-	[Key.commentsVoteConfirmProceed]: "Confirm",
-	[Key.commentsVoteConfirmCancel]: "Cancel",
+		"이 비추천을 확정하시겠습니까? 이후에는 변경할 수 없습니다.",
+	[Key.commentsVoteConfirmProceed]: "확인",
+	[Key.commentsVoteConfirmCancel]: "취소",
 	[Key.commentsSortNewest]: "최신순",
 	[Key.commentsSortOldest]: "오래된순",
 	[Key.commentsPaginationPrevious]: "이전",
@@ -93,14 +93,14 @@ export const ko: Translation = {
 	[Key.author]: "저자",
 	[Key.publishedAt]: "게시일",
 	[Key.pageViews]: "조회수",
-	[Key.pageFeedbackLike]: "Like",
-	[Key.pageFeedbackLiked]: "Liked",
+	[Key.pageFeedbackLike]: "좋아요",
+	[Key.pageFeedbackLiked]: "좋아요 완료",
 	[Key.pageFeedbackLikeFailed]:
-		"Failed to submit the like. Please try again later.",
-	[Key.pageFeedbackReward]: "Buy the author a coffee",
-	[Key.pageFeedbackRewardTitle]: "Support this post",
+		"좋아요를 전송하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+	[Key.pageFeedbackReward]: "작성자에게 커피 사주기",
+	[Key.pageFeedbackRewardTitle]: "이 글 후원하기",
 	[Key.pageFeedbackRewardDescription]:
-		"If this post helped you, you can support the author through the channels below.",
-	[Key.pageFeedbackClose]: "Close",
+		"이 글이 도움이 되었다면 아래 방법으로 작성자를 후원할 수 있습니다.",
+	[Key.pageFeedbackClose]: "닫기",
 	[Key.license]: "라이선스",
 };
