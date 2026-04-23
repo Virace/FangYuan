@@ -29,6 +29,7 @@ test(
 					`siteConfig:
   title: Ordering Demo
   subtitle: demo
+  site: https://ordering.example.test
   postSort:
     key: updated
     order: desc
