@@ -32,3 +32,9 @@ yarn.lock
 
 # local agent artifacts
 .serena/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
