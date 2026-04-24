@@ -16,7 +16,9 @@ export function normalizeConfiguredSite(
 	return resolved.origin;
 }
 
-export function normalizeConfiguredBase(base: string | null | undefined): string {
+export function normalizeConfiguredBase(
+	base: string | null | undefined,
+): string {
 	const normalized = base?.trim();
 	if (!normalized || normalized === "/") {
 		return "/";

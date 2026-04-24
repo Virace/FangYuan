@@ -58,16 +58,14 @@ const postSortKeySchema = z.enum([
 ]);
 const sortOrderSchema = z.enum(["asc", "desc"]);
 const tocDepthSchema = z.union([z.literal(1), z.literal(2), z.literal(3)]);
-const siteUrlSchema = z
-	.string()
-	.refine((value) => {
-		try {
-			new URL(value);
-			return true;
-		} catch {
-			return false;
-		}
-	}, "Invalid site URL");
+const siteUrlSchema = z.string().refine((value) => {
+	try {
+		new URL(value);
+		return true;
+	} catch {
+		return false;
+	}
+}, "Invalid site URL");
 const qingyanSchema = z
 	.object({
 		siteKey: z.string(),

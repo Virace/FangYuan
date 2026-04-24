@@ -93,8 +93,7 @@ export const id: Translation = {
 	[Key.pageViews]: "Dilihat",
 	[Key.pageFeedbackLike]: "Suka",
 	[Key.pageFeedbackLiked]: "Disukai",
-	[Key.pageFeedbackLikeFailed]:
-		"Gagal mengirim suka. Silakan coba lagi nanti.",
+	[Key.pageFeedbackLikeFailed]: "Gagal mengirim suka. Silakan coba lagi nanti.",
 	[Key.pageFeedbackReward]: "Traktir penulis kopi",
 	[Key.pageFeedbackRewardTitle]: "Dukung postingan ini",
 	[Key.pageFeedbackRewardDescription]:
