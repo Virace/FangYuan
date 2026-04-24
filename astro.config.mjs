@@ -53,11 +53,18 @@ const expressiveCodeConfig = {
 };
 const externalAstroSiteConfig = loadExternalAstroSiteConfig();
 const externalPermalinkConfig = loadExternalPermalinkConfig();
+const envSiteUrl = normalizeConfiguredSite(process.env.FANGYUAN_SITE);
+const envBasePath =
+	process.env.FANGYUAN_BASE === undefined
+		? null
+		: normalizeConfiguredBase(process.env.FANGYUAN_BASE);
 const siteUrl =
 	externalAstroSiteConfig?.site ??
+	envSiteUrl ??
 	normalizeConfiguredSite(defaultSiteConfig.site);
 const basePath =
 	externalAstroSiteConfig?.base ??
+	envBasePath ??
 	normalizeConfiguredBase(defaultSiteConfig.base);
 const permalinkBuildMode = resolveAstroBuildConfig({
 	postsPattern:

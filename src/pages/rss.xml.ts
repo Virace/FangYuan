@@ -24,11 +24,12 @@ export async function GET(context: APIContext): Promise<Response> {
 	}
 
 	const blog = await getSortedPosts();
+	const siteRootUrl = new URL(url("/"), context.site);
 
 	return rss({
 		title: siteConfig.title,
 		description: siteConfig.subtitle || "No description",
-		site: context.site,
+		site: siteRootUrl,
 		items: blog.map((post) => {
 			return {
 				title: post.data.title,

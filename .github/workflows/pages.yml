@@ -38,6 +38,9 @@ jobs:
 
       - name: Build current demo content
         run: pnpm build:internal
+        env:
+          FANGYUAN_SITE: https://virace.github.io
+          FANGYUAN_BASE: /FangYuan/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
