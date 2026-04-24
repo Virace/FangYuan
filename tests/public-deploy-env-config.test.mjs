@@ -1,0 +1,82 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+	applyPublicQingYanCommentConfig,
+	applyPublicQingYanPageFeedbackConfig,
+	applyPublicQingYanPageMetricsConfig,
+	resolvePublicQingYanConfig,
+	resolvePublicSiteConfigOverride,
+} from "../src/utils/public-deploy-env-config.ts";
+
+test("public deploy env resolves root-domain site and base overrides", () => {
+	assert.deepEqual(
+		resolvePublicSiteConfigOverride({
+			PUBLIC_FANGYUAN_SITE: "https://fangyuan.oogoo.top/",
+			PUBLIC_FANGYUAN_BASE: "/",
+		}),
+		{
+			site: "https://fangyuan.oogoo.top",
+			base: "/",
+		},
+	);
+});
+
+test("public deploy env enables QingYan with default same-origin API", () => {
+	assert.deepEqual(
+		resolvePublicQingYanConfig({
+			PUBLIC_FANGYUAN_DEMO_QINGYAN: "true",
+		}),
+		{
+			siteKey: "default",
+			apiBase: "/api",
+		},
+	);
+});
+
+test("public deploy env applies QingYan to all frontend integration surfaces", () => {
+	const qingyan = {
+		siteKey: "default",
+		apiBase: "/api",
+	};
+
+	assert.deepEqual(
+		applyPublicQingYanCommentConfig(
+			{
+				enable: false,
+				qingyan: null,
+			},
+			qingyan,
+		),
+		{
+			enable: true,
+			qingyan,
+		},
+	);
+	assert.deepEqual(
+		applyPublicQingYanPageMetricsConfig(
+			{
+				enable: false,
+				qingyan: null,
+			},
+			qingyan,
+		),
+		{
+			enable: true,
+			qingyan,
+		},
+	);
+	assert.deepEqual(
+		applyPublicQingYanPageFeedbackConfig(
+			{
+				enable: false,
+				qingyan: null,
+			},
+			qingyan,
+		),
+		{
+			enable: true,
+			qingyan,
+		},
+	);
+});

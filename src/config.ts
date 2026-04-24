@@ -27,6 +27,13 @@ import { normalizeCommentConfig } from "./utils/comments/options";
 import type { ExternalSiteConfigYaml } from "./utils/external-site-config";
 import { mergeNavBarLinks } from "./utils/navbar-links";
 import {
+	applyPublicQingYanCommentConfig,
+	applyPublicQingYanPageFeedbackConfig,
+	applyPublicQingYanPageMetricsConfig,
+	resolvePublicQingYanConfig,
+	resolvePublicSiteConfigOverride,
+} from "./utils/public-deploy-env-config";
+import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
 } from "./utils/site-runtime-config";
@@ -50,6 +57,10 @@ if (import.meta.env.SSR) {
 			? loadExternalSiteConfigYaml(siteSourceContext.externalConfigPath)
 			: null;
 }
+const publicSiteConfigOverride = resolvePublicSiteConfigOverride(
+	import.meta.env,
+);
+const publicQingYanConfig = resolvePublicQingYanConfig(import.meta.env);
 
 function mergeSiteConfig(
 	defaultConfig: SiteConfig,
@@ -173,10 +184,10 @@ function mergePageFeedbackConfig(
 	};
 }
 
-export const siteConfig: SiteConfig = mergeSiteConfig(
-	defaultSiteConfig,
-	externalSiteConfig?.siteConfig,
-);
+export const siteConfig: SiteConfig = mergeSiteConfig(defaultSiteConfig, {
+	...externalSiteConfig?.siteConfig,
+	...publicSiteConfigOverride,
+});
 
 export const navBarConfig: NavBarConfig = mergeNavBarConfig(
 	defaultNavBarConfig,
@@ -208,20 +219,28 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	...externalSiteConfig?.expressiveCodeConfig,
 };
 
-export const commentConfig: CommentConfig = mergeCommentConfig(
-	defaultCommentConfig,
-	externalSiteConfig?.commentConfig,
+export const commentConfig: CommentConfig = applyPublicQingYanCommentConfig(
+	mergeCommentConfig(defaultCommentConfig, externalSiteConfig?.commentConfig),
+	publicQingYanConfig,
 );
 
-export const pageMetricsConfig: PageMetricsConfig = mergePageMetricsConfig(
-	defaultPageMetricsConfig,
-	externalSiteConfig?.pageMetricsConfig,
-);
+export const pageMetricsConfig: PageMetricsConfig =
+	applyPublicQingYanPageMetricsConfig(
+		mergePageMetricsConfig(
+			defaultPageMetricsConfig,
+			externalSiteConfig?.pageMetricsConfig,
+		),
+		publicQingYanConfig,
+	);
 
-export const pageFeedbackConfig: PageFeedbackConfig = mergePageFeedbackConfig(
-	defaultPageFeedbackConfig,
-	externalSiteConfig?.pageFeedbackConfig,
-);
+export const pageFeedbackConfig: PageFeedbackConfig =
+	applyPublicQingYanPageFeedbackConfig(
+		mergePageFeedbackConfig(
+			defaultPageFeedbackConfig,
+			externalSiteConfig?.pageFeedbackConfig,
+		),
+		publicQingYanConfig,
+	);
 
 export const configImageBaseRoots: Readonly<{
 	banner: "site" | "src";
