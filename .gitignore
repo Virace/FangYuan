@@ -32,11 +32,9 @@ yarn.lock
 
 # local agent artifacts
 .serena/
-.temp/
-/site/
 
-# Playwright artifacts
-playwright-report/
-test-results/
-tests/e2e/visual.spec.ts-snapshots/
-.playwright-mcp/
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
