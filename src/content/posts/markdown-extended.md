@@ -1,188 +1,97 @@
 ---
-title: Markdown Extended Features
-published: 2024-05-01
-updated: 2024-11-29
-description: 'Read more about Markdown features in FangYuan'
-image: ''
-tags: [Demo, Example, Markdown, FangYuan]
-category: 'Examples'
-draft: false 
+title: Markdown 扩展功能
+published: 2026-02-02
+updated: 2026-04-24
+description: "了解 FangYuan 中支持的 Markdown 扩展能力。"
+image: ""
+tags: [示例, Markdown, FangYuan]
+category: "示例"
+draft: false
 ---
 
-## GitHub Repository Cards
+## GitHub 仓库卡片
 
-You can add dynamic cards that link to GitHub repositories, on page load, the repository information is pulled from the GitHub API.
+可以在文章里插入链接到 GitHub 仓库的动态卡片。页面加载时，会自动从 GitHub API 拉取仓库信息。
 
 ::github{repo="Fabrizz/MMM-OnSpotify"}
 
-Create a GitHub repository card with the code `::github{repo="<owner>/<repo>"}`.
+使用 `::github{repo="<owner>/<repo>"}` 就能创建一张 GitHub 仓库卡片。
 
 ```markdown
 ::github{repo="Virace/FangYuan"}
 ```
 
-## Admonitions
+## 提示块
 
-Following types of admonitions are supported: `note` `tip` `important` `warning` `caution`
+当前支持以下几种提示块类型：`note`、`tip`、`important`、`warning`、`caution`
 
 :::note
-Highlights information that users should take into account, even when skimming.
+即使只是快速浏览，也应该注意这类信息。
 :::
 
 :::tip
-Optional information to help a user be more successful.
+这类补充信息可以帮助读者更顺利地完成操作。
 :::
 
 :::important
-Crucial information necessary for users to succeed.
+这类信息通常是顺利完成任务所必需的关键内容。
 :::
 
 :::warning
-Critical content demanding immediate user attention due to potential risks.
+这类内容通常与潜在风险有关，需要读者立即关注。
 :::
 
 :::caution
-Negative potential consequences of an action.
+这类内容用于提醒某个操作可能带来的负面后果。
 :::
 
-### Basic Syntax
+### 基础语法
 
 ```markdown
 :::note
-Highlights information that users should take into account, even when skimming.
+即使只是快速浏览，也应该注意这类信息。
 :::
 
 :::tip
-Optional information to help a user be more successful.
+这类补充信息可以帮助读者更顺利地完成操作。
 :::
 ```
 
-### Custom Titles
+### 自定义标题
 
-The title of the admonition can be customized.
+提示块标题也可以自定义。
 
-:::note[MY CUSTOM TITLE]
-This is a note with a custom title.
+:::note[自定义标题]
+这是一个带自定义标题的 `note` 类型提示块。
 :::
 
 ```markdown
-:::note[MY CUSTOM TITLE]
-This is a note with a custom title.
+:::note[自定义标题]
+这是一个带自定义标题的 `note` 类型提示块。
 :::
 ```
 
-### GitHub Syntax
+### GitHub 语法
 
 > [!TIP]
-> [The GitHub syntax](https://github.com/orgs/community/discussions/16925) is also supported.
+> 也兼容 [GitHub 提示块语法](https://github.com/orgs/community/discussions/16925)。
 
 ```
 > [!NOTE]
-> The GitHub syntax is also supported.
+> 也兼容 GitHub 的提示块语法。
 
 > [!TIP]
-> The GitHub syntax is also supported.
+> 也兼容 GitHub 的提示块语法。
 ```
 
-### Spoiler
+### 剧透
 
-You can add spoilers to your text. The text also supports **Markdown** syntax.
+可以在正文里插入剧透内容，剧透内部同样支持 **Markdown** 语法。
 
-The content :spoiler[is hidden **ayyy**]!
+这段内容 :spoiler[会被隐藏 **嘿嘿**]！
 
 ```markdown
-The content :spoiler[is hidden **ayyy**]!
-
+这段内容 :spoiler[会被隐藏 **嘿嘿**]！
 ```
 
-## Inline Highlight
-
-Use inline highlight when a sentence needs emphasis but a full block would be too heavy.
-
-普通强调：:hl[重点信息]{tone="note"}
-
-建议提示：:hl[推荐做法]{tone="tip"}
-
-强提醒：:hl[需要特别注意]{tone="warning"}
-
-```markdown
-:hl[重点信息]{tone="note"}
-
-:hl[推荐做法]{tone="tip"}
-
-:hl[需要特别注意]{tone="warning"}
-```
-
-## Fold
-
-Use fold blocks for optional details, update logs, or longer examples.
-
-:::fold{title="展开示例"}
-这里是默认折叠的内容。
-:::
-
-```markdown
-:::fold{title="展开示例"}
-这里是默认折叠的内容。
-:::
-```
-
-### Fold Options
-
-You can control the default open state and the title icon directly in the directive.
-
-默认关闭，不写 `open`：
-
-:::fold{title="默认关闭示例"}
-这里默认保持折叠。
-:::
-
-默认展开，显式写 `open="true"`：
-
-:::fold{title="默认展开示例" open="true"}
-这里会在页面加载时直接展开。
-:::
-
-隐藏左侧图标：
-
-:::fold{title="无图标示例" icon="none"}
-这里保留标题和箭头，但不显示左侧图标。
-:::
-
-替换图标：
-
-:::fold{title="书签图标示例" icon="bookmark"}
-可选图标包括 `file` `note` `tip` `warning` `question` `bookmark` `sparkles` `none`
-:::
-
-```markdown
-:::fold{title="默认关闭示例"}
-这里默认保持折叠。
-:::
-
-:::fold{title="默认展开示例" open="true"}
-这里会在页面加载时直接展开。
-:::
-
-:::fold{title="无图标示例" icon="none"}
-这里保留标题和箭头，但不显示左侧图标。
-:::
-
-:::fold{title="书签图标示例" icon="bookmark"}
-可选图标包括 `file` `note` `tip` `warning` `question` `bookmark` `sparkles` `none`
-:::
-```
-
-## Aside
-
-Use aside blocks for side notes that should not interrupt the main narrative.
-
-:::aside
-这是一段补充说明，适合放背景、PS、或轻量提醒。
-:::
-
-```markdown
-:::aside
-这是一段补充说明，适合放背景、PS、或轻量提醒。
-:::
-```
+行内高亮、折叠块和 Aside 这几类 FangYuan 后续补充的内容指令，已经单独整理到《内容指令扩展示例》里，方便分别查看效果。

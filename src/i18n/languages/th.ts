@@ -87,8 +87,7 @@ export const th: Translation = {
 	[Key.pageViews]: "ยอดเข้าชม",
 	[Key.pageFeedbackLike]: "ถูกใจ",
 	[Key.pageFeedbackLiked]: "ถูกใจแล้ว",
-	[Key.pageFeedbackLikeFailed]:
-		"ส่งการถูกใจไม่สำเร็จ กรุณาลองใหม่ภายหลัง",
+	[Key.pageFeedbackLikeFailed]: "ส่งการถูกใจไม่สำเร็จ กรุณาลองใหม่ภายหลัง",
 	[Key.pageFeedbackReward]: "เลี้ยงกาแฟผู้เขียน",
 	[Key.pageFeedbackRewardTitle]: "สนับสนุนบทความนี้",
 	[Key.pageFeedbackRewardDescription]:

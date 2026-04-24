@@ -14,6 +14,7 @@ const tinyBlueSvg =
 	'<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><rect width="4" height="4" fill="#0ea5e9"/></svg>';
 const tinyOrangeSvg =
 	'<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><rect width="4" height="4" fill="#f97316"/></svg>';
+const optimizedAssetPattern = /\/static\/.*\.(?:png|webp|jpg|jpeg|svg)/;
 
 test(
 	"relative article covers stay optimized while public config avatars pass through unchanged",
@@ -87,8 +88,8 @@ profileConfig:
 				);
 				const homeHtml = await readFile(path.join(distRoot, "index.html"), "utf8");
 
-				assert.match(articleHtml, /_astro\/.*\.(png|webp|jpg|jpeg|svg)/);
-				assert.match(homeHtml, /_astro\/.*\.(png|webp|jpg|jpeg|svg)/);
+				assert.match(articleHtml, optimizedAssetPattern);
+				assert.match(homeHtml, optimizedAssetPattern);
 				assert.match(homeHtml, /\/icon\/__site-image-test-avatar\.svg/);
 				assert.doesNotMatch(articleHtml, /src\/generated|site-content/);
 			},
@@ -208,7 +209,7 @@ draft: false
 				);
 
 				assert.match(homeHtml, /https:\/\/cdn\.example\.com\/avatar\.png/);
-				assert.match(articleHtml, /_astro\/.*\.(png|webp|jpg|jpeg|svg)/);
+				assert.match(articleHtml, optimizedAssetPattern);
 			},
 		);
 	},

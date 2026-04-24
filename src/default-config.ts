@@ -37,8 +37,8 @@ export const defaultSiteConfig: SiteConfig = {
 		src: "assets/images/demo-banner.png", // 不以 "/" 开头时相对 src/ 或 site/；以 "/" 开头时相对 public/
 		position: "center", // 等价于 object-position，只支持 "top" | "center" | "bottom"
 		credit: {
-			enable: true, // 是否显示横幅图片署名
-			text: "credit 文本", // 署名文案
+			enable: false, // 是否显示横幅图片署名
+			text: "", // 署名文案
 			url: "", // 可选，点击后跳到原作品或作者主页
 		},
 	},
@@ -135,7 +135,7 @@ export const defaultNavBarConfig: NavBarConfig = {
 export const defaultProfileConfig: ProfileConfig = {
 	avatar: "assets/images/demo-avatar.png", // 不以 "/" 开头时相对 src/ 或 site/；以 "/" 开头时相对 public/
 	name: "FangYuan",
-	bio: "用于后续主题与内容演进的个人站点二开基线。",
+	bio: "在清晰结构与柔和表达之间，打磨一个长期演进的个人站点。",
 	links: [
 		{
 			name: "GitHub",

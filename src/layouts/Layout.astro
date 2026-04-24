@@ -169,7 +169,7 @@ const bannerOffset =
 		)}
 
 	</head>
-	<body class=" min-h-screen transition " class:list={[{"is-home": isHomePage, "lg:is-home": isHomePage, "enable-banner": enableBanner}]}
+	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
 		  data-overlayscrollbars-initialize
 	>
 		<GlobalStyles />
@@ -216,6 +216,26 @@ const bannerOffset =
 
 .enable-banner.is-home #sidebar-sticky {
 	top: calc(1rem - var(--banner-height-extend));
+}
+
+@media (min-width: 1024px) {
+	.enable-banner.lg\:is-home #banner-wrapper {
+		height: var(--banner-height-home);
+		transform: translateY(var(--banner-height-extend));
+	}
+
+	.enable-banner.lg\:is-home #banner {
+		height: var(--banner-height-home);
+		transform: translateY(0);
+	}
+
+	.enable-banner.lg\:is-home #main-grid {
+		transform: translateY(var(--banner-height-extend));
+	}
+
+	.enable-banner.lg\:is-home #sidebar-sticky {
+		top: calc(1rem - var(--banner-height-extend));
+	}
 }
 
 .navbar-hidden {
