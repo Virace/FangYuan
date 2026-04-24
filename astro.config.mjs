@@ -24,9 +24,10 @@ import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-cop
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
 import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
-import { remarkExpressiveMarkdown } from "./src/plugins/remark-expressive-markdown.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
+import { remarkExpressiveMarkdown } from "./src/plugins/remark-expressive-markdown.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
+import { resolveAstroBuildConfig } from "./src/utils/permalink-materialization.ts";
 import {
 	normalizeQingYanDevProxyPath,
 	normalizeQingYanDevProxyRequestPath,
@@ -36,16 +37,15 @@ import {
 	isQingYanMockTarget,
 } from "./src/utils/qingyan/mock-api.mjs";
 import {
-	loadExternalAstroSiteConfig,
-	loadExternalQingYanDevProxyTarget,
-	loadExternalPermalinkConfig,
-	loadExternalExpressiveCodeConfig,
-} from "./src/utils/site-source.ts";
-import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
 } from "./src/utils/site-runtime-config.ts";
-import { resolveAstroBuildConfig } from "./src/utils/permalink-materialization.ts";
+import {
+	loadExternalAstroSiteConfig,
+	loadExternalExpressiveCodeConfig,
+	loadExternalPermalinkConfig,
+	loadExternalQingYanDevProxyTarget,
+} from "./src/utils/site-source.ts";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
@@ -54,9 +54,11 @@ const expressiveCodeConfig = {
 const externalAstroSiteConfig = loadExternalAstroSiteConfig();
 const externalPermalinkConfig = loadExternalPermalinkConfig();
 const siteUrl =
-	externalAstroSiteConfig?.site ?? normalizeConfiguredSite(defaultSiteConfig.site);
+	externalAstroSiteConfig?.site ??
+	normalizeConfiguredSite(defaultSiteConfig.site);
 const basePath =
-	externalAstroSiteConfig?.base ?? normalizeConfiguredBase(defaultSiteConfig.base);
+	externalAstroSiteConfig?.base ??
+	normalizeConfiguredBase(defaultSiteConfig.base);
 const permalinkBuildMode = resolveAstroBuildConfig({
 	postsPattern:
 		externalPermalinkConfig?.postsPattern ??
@@ -79,35 +81,23 @@ const globalImageServiceConfig = {
 	jpeg: { mozjpeg: true },
 	webp: { effort: 6, alphaQuality: 80 },
 	avif: { effort: 4, chromaSubsampling: "4:2:0" },
-	png: { compressionLevel: 9 },
+	png: { compressionLevel: 7 },
 };
-const qingyanDevProxy = qingyanDevProxyTarget && !useQingYanMock
-	? {
-			"/api": {
-				target: qingyanDevProxyTarget,
-				changeOrigin: true,
-				rewrite: normalizeQingYanDevProxyPath,
-			},
-		}
-	: undefined;
-const qingyanDevProxyMiddlewarePlugin = qingyanDevProxyTarget && !useQingYanMock
-	? {
-			name: "fangyuan-qingyan-dev-proxy-normalizer",
-			configureServer(server) {
-				const normalizeMiddleware = (req, _res, next) => {
-					if (req.url) {
-						req.url = normalizeQingYanDevProxyRequestPath(req.url);
-					}
-					next();
-				};
-
-				server.middlewares.stack.unshift({
-					route: "",
-					handle: normalizeMiddleware,
-				});
-			},
-			configurePreviewServer(server) {
-				return () => {
+const qingyanDevProxy =
+	qingyanDevProxyTarget && !useQingYanMock
+		? {
+				"/api": {
+					target: qingyanDevProxyTarget,
+					changeOrigin: true,
+					rewrite: normalizeQingYanDevProxyPath,
+				},
+			}
+		: undefined;
+const qingyanDevProxyMiddlewarePlugin =
+	qingyanDevProxyTarget && !useQingYanMock
+		? {
+				name: "fangyuan-qingyan-dev-proxy-normalizer",
+				configureServer(server) {
 					const normalizeMiddleware = (req, _res, next) => {
 						if (req.url) {
 							req.url = normalizeQingYanDevProxyRequestPath(req.url);
@@ -119,10 +109,24 @@ const qingyanDevProxyMiddlewarePlugin = qingyanDevProxyTarget && !useQingYanMock
 						route: "",
 						handle: normalizeMiddleware,
 					});
-				};
-			},
-		}
-	: null;
+				},
+				configurePreviewServer(server) {
+					return () => {
+						const normalizeMiddleware = (req, _res, next) => {
+							if (req.url) {
+								req.url = normalizeQingYanDevProxyRequestPath(req.url);
+							}
+							next();
+						};
+
+						server.middlewares.stack.unshift({
+							route: "",
+							handle: normalizeMiddleware,
+						});
+					};
+				},
+			}
+		: null;
 const qingyanMockPlugin = useQingYanMock ? createQingYanMockPlugin() : null;
 
 // https://astro.build/config
@@ -132,6 +136,7 @@ export default defineConfig({
 	trailingSlash: permalinkBuildMode.trailingSlash,
 	build: {
 		format: permalinkBuildMode.buildFormat,
+		assets: "static",
 	},
 	fonts: [
 		{
@@ -286,7 +291,9 @@ export default defineConfig({
 	vite: {
 		plugins: [
 			tailwindcss(),
-			...(qingyanDevProxyMiddlewarePlugin ? [qingyanDevProxyMiddlewarePlugin] : []),
+			...(qingyanDevProxyMiddlewarePlugin
+				? [qingyanDevProxyMiddlewarePlugin]
+				: []),
 			...(qingyanMockPlugin ? [qingyanMockPlugin] : []),
 		],
 		...(qingyanDevProxy
