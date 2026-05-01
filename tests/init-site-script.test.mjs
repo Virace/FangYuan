@@ -56,6 +56,11 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		"init-site should create site/assets",
 	);
 	assert.equal(
+		hasPath(path.join(tempRoot, "site", "assets", "README.md")),
+		true,
+		"init-site should document the safe external asset directory",
+	);
+	assert.equal(
 		hasPath(path.join(tempRoot, "site", "content", "spec", "about.md")),
 		true,
 		"init-site should copy the default about.md into site/content/spec",
@@ -87,8 +92,16 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		/qingyanDevProxyTarget: "?http:\/\/localhost:4401"?/,
 	);
 	assert.match(siteConfigSource, /永久链接规则/);
+	assert.match(siteConfigSource, /安全本地写法：assets\/images\/banner.webp/);
 	assert.match(siteConfigSource, /navBarConfig:/);
 	assert.match(siteConfigSource, /pageFeedbackConfig:/);
+
+	const assetsReadmeSource = await readFile(
+		path.join(tempRoot, "site", "assets", "README.md"),
+		"utf8",
+	);
+	assert.match(assetsReadmeSource, /site\/assets/);
+	assert.match(assetsReadmeSource, /assets\/images\/banner\.webp/);
 
 	const demoPostSource = await readFile(
 		path.join(tempRoot, "site", "content", "posts", "welcome.md"),

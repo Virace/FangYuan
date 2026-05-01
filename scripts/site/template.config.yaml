@@ -46,8 +46,9 @@ siteConfig:
     enable: true
 
     # 横幅图片路径。
-    # 以 / 开头时按 public/ 静态资源解析；不以 / 开头时按 src/ 或外部站点根目录资源解析。
-    # 配置层图片建议优先使用 /public/...、public/...、稳定的相对资源路径或远程 URL。
+    # 安全本地写法：assets/images/banner.webp，图片放在外部站点根目录 assets/ 下。
+    # CDN 写法：https://cdn.example.com/banner.webp，不会被本地构建打包或校验。
+    # 不建议在外部站点根目录新增 public/ 后写 /xxx 或 public/xxx；当前这类路径指向 FangYuan 主题仓库 public/。
     src: assets/images/demo-banner.png
 
     # 横幅图片垂直对齐方式，只支持 top / center / bottom。
@@ -168,7 +169,9 @@ navBarConfig:
 
 profileConfig:
   # 头像图片路径。
-  # 路径规则与 banner.src 一致：推荐使用远程 URL、/public/...、public/... 或稳定的相对资源路径。
+  # 安全本地写法：assets/images/avatar.png，图片放在外部站点根目录 assets/ 下。
+  # CDN 写法：https://cdn.example.com/avatar.png，不会被本地构建打包或校验。
+  # 注意：FangYuan 当前没有独立 logo 配置项；这里是侧栏作者头像，不是 favicon。
   avatar: assets/images/demo-avatar.png
 
   # 作者显示名。

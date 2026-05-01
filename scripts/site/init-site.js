@@ -5,6 +5,23 @@ import { promptInitSiteOptions } from "./init-site-prompts.js"
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url))
 const templateConfigPath = path.join(currentDir, "template.config.yaml")
+const assetReadmeSource = `# site/assets
+
+这里存放外部站点自有静态图片。
+
+安全写法：
+
+- \`assets/images/banner.webp\`：站点 banner
+- \`assets/images/avatar.png\`：作者头像
+- \`assets/posts/<slug>/cover.webp\`：文章封面
+- \`content/posts/<slug>/screenshot.webp\`：文章正文相对图片
+
+在 \`site.config.yaml\` 或文章 frontmatter 中引用 \`assets/...\` 时，FangYuan 会把它当作 external site root 下的本地图片输入，并交给 Astro 图片管线处理。
+
+不要在这里存放迁移审计、预览或中间转换数据。
+
+CDN 图片可以继续使用 \`https://...\`，但它不会被本地构建打包或校验。
+`
 
 function ensureDirectory(directoryPath, createdDirectories, operations, execution) {
 	if (fs.existsSync(directoryPath)) {
@@ -303,6 +320,7 @@ export async function ensureExternalSiteScaffold(
 	const sitePostsRoot = path.join(siteContentRoot, "posts")
 	const siteSpecRoot = path.join(siteContentRoot, "spec")
 	const siteAssetsRoot = path.join(siteRoot, "assets")
+	const siteAssetsReadmePath = path.join(siteAssetsRoot, "README.md")
 	const srcContentRoot = path.join(rootDir, "src", "content")
 	const defaultAboutPath = path.join(srcContentRoot, "spec", "about.md")
 	const siteAboutPath = path.join(siteSpecRoot, "about.md")
@@ -319,6 +337,13 @@ export async function ensureExternalSiteScaffold(
 	ensureDirectory(sitePostsRoot, createdDirectories, operations, execution)
 	ensureDirectory(siteSpecRoot, createdDirectories, operations, execution)
 	ensureDirectory(siteAssetsRoot, createdDirectories, operations, execution)
+	ensureFile(
+		siteAssetsReadmePath,
+		assetReadmeSource,
+		createdFiles,
+		operations,
+		execution,
+	)
 
 	if (execution.seedFromSrcContent) {
 		copyDirectoryContents(
