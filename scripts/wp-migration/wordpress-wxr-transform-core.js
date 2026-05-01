@@ -1,6 +1,7 @@
 import { extractWxrEntries, resolvePermalinkAudit } from "./wordpress-wxr-audit-core.js";
 import { applyUserTransformRules } from "./wordpress-wxr-transform.user.js";
-import { safeParseJson, slugifyFileStem, trimString } from "./wordpress-wxr-audit-utils.js";
+import { buildCandidatePlan } from "./wordpress-wxr-candidate-plan.js";
+import { safeParseJson, trimString } from "./wordpress-wxr-audit-utils.js";
 
 function yamlString(value) {
 	return JSON.stringify(String(value ?? ""));
@@ -24,40 +25,6 @@ function pushOptionalListFrontmatter(lines, key, values, options = {}) {
 		return;
 	}
 	lines.push([`${key}:`, ...values.map((value) => `  - ${yamlString(value)}`)].join("\n"));
-}
-
-function buildCandidatePlan(entry, pathMode, permalinkAudit) {
-	const targetCollection = entry.legacyType === "page" ? "spec" : "posts";
-	const candidateBase =
-		trimString(permalinkAudit.alias) ||
-		trimString(entry.postName) ||
-		trimString(entry.title) ||
-		trimString(entry.legacyId);
-	const candidateFileName = slugifyFileStem(candidateBase);
-	const candidateTitle =
-		entry.sourceStatus === "draft" &&
-		permalinkAudit.aliasSource === "wp:post_id" &&
-		trimString(entry.title)
-			? `${trimString(entry.title)}-草稿`
-			: entry.title;
-	if (pathMode === "date-tree" && targetCollection === "posts") {
-		const year = String(entry.published.getUTCFullYear());
-		const month = String(entry.published.getUTCMonth() + 1).padStart(2, "0");
-		const day = String(entry.published.getUTCDate()).padStart(2, "0");
-		return {
-			targetCollection,
-			candidateFileName,
-			candidateTitle,
-			candidateRelativePath: `${targetCollection}/${year}/${month}/${day}/${candidateFileName}.md`,
-		};
-	}
-
-	return {
-		targetCollection,
-		candidateFileName,
-		candidateTitle,
-		candidateRelativePath: `${targetCollection}/${candidateFileName}.md`,
-	};
 }
 
 function extractAttr(source, attributeName) {
@@ -597,7 +564,7 @@ function buildFrontmatterLines(entry, candidatePlan, permalinkAudit, options = {
 
 	pushOptionalScalarFrontmatter(lines, "commentStatus", entry.commentStatus ?? "", options);
 	pushOptionalScalarFrontmatter(lines, "password", entry.postPassword ?? "", options);
-	pushOptionalScalarFrontmatter(lines, "alias", permalinkAudit.alias ?? "", options);
+	pushOptionalScalarFrontmatter(lines, "alias", candidatePlan.candidateAlias ?? "", options);
 	pushOptionalScalarFrontmatter(lines, "description", entry.excerpt ?? "", options);
 	pushOptionalListFrontmatter(lines, "tags", entry.tags, options);
 
@@ -672,7 +639,7 @@ export function transformEntryToPreview(entry, options = {}) {
 		legacyId: entry.legacyId,
 		legacyType: entry.legacyType,
 		title: candidatePlan.candidateTitle,
-		alias: permalinkAudit.alias,
+		alias: candidatePlan.candidateAlias,
 		candidateRelativePath: candidatePlan.candidateRelativePath,
 		targetCollection: candidatePlan.targetCollection,
 		notes,

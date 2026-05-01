@@ -29,6 +29,7 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	enablePhotoSwipe?: boolean;
+	canonicalPath?: string;
 }
 
 let {
@@ -38,6 +39,7 @@ let {
 	lang,
 	setOGTypeArticle,
 	enablePhotoSwipe = false,
+	canonicalPath,
 } = Astro.props;
 
 // apply a class to the body element to decide the height of the banner, only used for initial page load
@@ -80,6 +82,10 @@ const bannerOffsetByPosition = {
 };
 const bannerOffset =
 	bannerOffsetByPosition[siteConfig.banner.position || "center"];
+const canonicalUrl =
+	Astro.site && canonicalPath
+		? new URL(url(canonicalPath), Astro.site).toString()
+		: Astro.url.toString();
 ---
 
 <!DOCTYPE html>
@@ -95,7 +101,7 @@ const bannerOffset =
 		<meta name="author" content={profileConfig.name}>
 
 		<meta property="og:site_name" content={siteConfig.title}>
-		{Astro.site && <meta property="og:url" content={Astro.url}>}
+		{Astro.site && <meta property="og:url" content={canonicalUrl}>}
 		<meta property="og:title" content={pageTitle}>
 		<meta property="og:description" content={description || pageTitle}>
 		{setOGTypeArticle ? (
@@ -105,7 +111,7 @@ const bannerOffset =
         )}
 
 		<meta name="twitter:card" content="summary_large_image">
-		{Astro.site && <meta property="twitter:url" content={Astro.url}>}
+		{Astro.site && <meta property="twitter:url" content={canonicalUrl}>}
 		<meta name="twitter:title" content={pageTitle}>
 		<meta name="twitter:description" content={description || pageTitle}>
 

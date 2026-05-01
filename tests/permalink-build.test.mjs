@@ -89,6 +89,7 @@ test(
 					`siteConfig:
   title: Mixed Family Demo
   subtitle: demo
+  site: https://fangyuan.example
   permalink:
     postsPattern: /%slug%.html
     pagesPattern: /%slug%
@@ -130,9 +131,15 @@ Hello world
 					path.join(distRoot, "about", "index.html"),
 					"utf8",
 				);
+				const sitemapXml = await readFile(
+					path.join(distRoot, "sitemap-0.xml"),
+					"utf8",
+				);
 
 				assert.match(homeHtml, /href="\/mixed-family-demo\.html"/);
 				assert.match(homeHtml, /href="\/about\/"/);
+				assert.match(sitemapXml, /https:\/\/fangyuan\.example\/mixed-family-demo\.html/);
+				assert.match(sitemapXml, /https:\/\/fangyuan\.example\/about\//);
 				assert.match(articleHtml, /Hello world/);
 				assert.match(aboutHtml, /About/);
 			},

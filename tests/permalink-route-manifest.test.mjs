@@ -51,6 +51,47 @@ test("buildContentRouteManifest keeps entry.id as postKey source while exposing 
 	assert.equal(manifest.posts[0].outputPath, "guide/intro/index.html");
 });
 
+test("buildContentRouteManifest maps html public paths to Astro file output", () => {
+	const manifest = buildContentRouteManifest({
+		posts: [
+			{
+				id: "demo",
+				data: {
+					title: "Demo",
+					published: new Date("2024-04-21"),
+					updated: undefined,
+					alias: "demo",
+					permalink: "",
+					draft: false,
+					description: "",
+					image: "",
+					tags: [],
+					category: "",
+					lang: "",
+					prevTitle: "",
+					prevSlug: "",
+					nextTitle: "",
+					nextSlug: "",
+				},
+			},
+		],
+		specPages: [],
+		permalinkConfig: {
+			postsPattern: "/%slug%.html",
+			pagesPattern: "/%slug%",
+			trailingSlash: "auto",
+			postPatternRules: [],
+			aliasValidation: "error",
+			updatedDateMode: "manual",
+			updatedDateFallback: "none",
+		},
+	});
+
+	assert.equal(manifest.posts[0].publicPath, "/demo.html");
+	assert.equal(manifest.posts[0].routeParam, "demo");
+	assert.equal(manifest.posts[0].outputPath, "demo.html");
+});
+
 test("findContentRouteBySegments resolves a post route without changing the internal entry id", () => {
 	const route = findContentRouteBySegments(
 		[

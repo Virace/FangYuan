@@ -14,7 +14,7 @@ import {
 } from "../scripts/wp-migration/wordpress-wxr-transform.js";
 import { buildSampleWxr, SAMPLE_WXR } from "./test-helpers/wordpress-wxr-fixture.mjs";
 
-test("transformEntryToPreview keeps draft id fallback and title suffix", () => {
+test("transformEntryToPreview prefixes draft id fallback alias and file name", () => {
 	const result = transformEntryToPreview(
 		{
 			legacyId: "99",
@@ -35,8 +35,55 @@ test("transformEntryToPreview keeps draft id fallback and title suffix", () => {
 	);
 
 	assert.equal(result.title, "Draft Only-草稿");
-	assert.equal(result.alias, "99");
-	assert.match(result.markdown, /alias: "99"/);
+	assert.equal(result.alias, "draft-99");
+	assert.equal(result.candidateRelativePath, "posts/draft-99.md");
+	assert.match(result.markdown, /alias: "draft-99"/);
+});
+
+test("transformEntryToPreview preserves numeric postname html aliases and query id access boundaries", () => {
+	const prettyNumeric = transformEntryToPreview(
+		{
+			legacyId: "2160",
+			legacyType: "post",
+			title: "2160",
+			link: "https://example.com/2160.html",
+			postName: "2160",
+			author: "Virace",
+			sourceStatus: "publish",
+			excerpt: "",
+			contentHtml: "<p>Hello</p>",
+			published: new Date("2024-04-21T12:00:00.000Z"),
+			updated: new Date("2024-04-21T12:00:00.000Z"),
+			categories: [],
+			tags: [],
+		},
+		{ pathMode: "flat", detectLinkPattern: true },
+	);
+	const queryIdAccess = transformEntryToPreview(
+		{
+			legacyId: "2161",
+			legacyType: "post",
+			title: "ID Access",
+			link: "https://example.com/?p=2161",
+			postName: "",
+			author: "Virace",
+			sourceStatus: "publish",
+			excerpt: "",
+			contentHtml: "<p>Hello</p>",
+			published: new Date("2024-04-21T12:00:00.000Z"),
+			updated: new Date("2024-04-21T12:00:00.000Z"),
+			categories: [],
+			tags: [],
+		},
+		{ pathMode: "flat", detectLinkPattern: true },
+	);
+
+	assert.equal(prettyNumeric.alias, "2160");
+	assert.equal(prettyNumeric.candidateRelativePath, "posts/2160.md");
+	assert.match(prettyNumeric.markdown, /alias: "2160"/);
+	assert.equal(queryIdAccess.alias, "");
+	assert.equal(queryIdAccess.candidateRelativePath, "posts/id-access.md");
+	assert.doesNotMatch(queryIdAccess.markdown, /alias: "post-2161"/);
 });
 
 test("transformWxrToPreview renders first-batch semantics into markdown placeholders", () => {

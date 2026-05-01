@@ -5,6 +5,10 @@ import { url } from "@utils/url-utils";
 import type { APIContext } from "astro";
 import { siteConfig } from "@/config";
 
+export function getAbsolutePublicUrl(site: URL, publicPath: string): string {
+	return new URL(url(publicPath), site).href;
+}
+
 function getRequiredPublicPath(post: {
 	id: string;
 	data: {
@@ -23,8 +27,9 @@ export async function GET(context: APIContext): Promise<Response> {
 		return new Response(null, { status: 204 });
 	}
 
+	const site = context.site;
 	const blog = await getSortedPosts();
-	const siteRootUrl = new URL(url("/"), context.site);
+	const siteRootUrl = new URL(url("/"), site);
 
 	return rss({
 		title: siteConfig.title,
@@ -35,7 +40,7 @@ export async function GET(context: APIContext): Promise<Response> {
 				title: post.data.title,
 				pubDate: post.data.published,
 				description: post.data.description || "",
-				link: url(getRequiredPublicPath(post)),
+				link: getAbsolutePublicUrl(site, getRequiredPublicPath(post)),
 				content: renderFeedHtml(
 					typeof post.body === "string" ? post.body : String(post.body || ""),
 				),

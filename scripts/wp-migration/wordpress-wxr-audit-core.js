@@ -5,50 +5,14 @@ import {
 	scanWpBlockHits,
 } from "./wordpress-wxr-audit-scan.js";
 import { buildAuditSummary } from "./wordpress-wxr-audit-summary.js";
-import { slugifyFileStem, trimString } from "./wordpress-wxr-audit-utils.js";
-
-function buildCandidatePlan(entry, pathMode, permalinkAudit) {
-	const targetCollection = entry.legacyType === "page" ? "spec" : "posts";
-	const candidateBase =
-		trimString(permalinkAudit.alias) ||
-		trimString(entry.postName) ||
-		trimString(entry.title) ||
-		trimString(entry.legacyId);
-	const candidateFileName = slugifyFileStem(candidateBase);
-	const candidateTitle =
-		entry.sourceStatus === "draft" &&
-		permalinkAudit.aliasSource === "wp:post_id" &&
-		trimString(entry.title)
-			? `${trimString(entry.title)}-草稿`
-			: entry.title;
-	if (pathMode === "date-tree" && targetCollection === "posts") {
-		const year = String(entry.published.getUTCFullYear());
-		const month = String(entry.published.getUTCMonth() + 1).padStart(2, "0");
-		const day = String(entry.published.getUTCDate()).padStart(2, "0");
-		return {
-			targetCollection,
-			candidateFileName,
-			candidateTitle,
-			candidatePathMode: pathMode,
-			candidateRelativePath: `${targetCollection}/${year}/${month}/${day}/${candidateFileName}.md`,
-		};
-	}
-
-	return {
-		targetCollection,
-		candidateFileName,
-		candidateTitle,
-		candidatePathMode: pathMode,
-		candidateRelativePath: `${targetCollection}/${candidateFileName}.md`,
-	};
-}
+import { buildCandidatePlan } from "./wordpress-wxr-candidate-plan.js";
 
 function buildRecordBase(entry, permalinkAudit, candidatePlan) {
 	return {
 		legacyId: entry.legacyId,
 		legacyType: entry.legacyType,
 		title: entry.title,
-		alias: permalinkAudit.alias,
+		alias: candidatePlan.candidateAlias,
 		permalinkCandidate: permalinkAudit.permalinkCandidate,
 		aliasRaw: permalinkAudit.aliasRaw,
 		aliasSource: permalinkAudit.aliasSource,
@@ -126,10 +90,16 @@ export function buildAuditReport(source, options = {}) {
 			wpPermalinkTemplate: metadata.wpPermalinkTemplate,
 			detectLinkPattern: metadata.detectLinkPattern,
 		});
+		const candidatePlan = buildCandidatePlan(
+			entry,
+			metadata.pathMode,
+			permalinkAudit,
+		);
 		return {
 			...entry,
 			...permalinkAudit,
-			...buildCandidatePlan(entry, metadata.pathMode, permalinkAudit),
+			...candidatePlan,
+			alias: candidatePlan.candidateAlias,
 		};
 	});
 

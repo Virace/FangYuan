@@ -352,7 +352,7 @@ test("buildAuditReport upgrades simple html and shortcode mappings into transfor
 	assert.equal(alertHit?.category, "safe");
 });
 
-test("buildAuditReport marks draft fallback titles for later manual cleanup", () => {
+test("buildAuditReport prefixes draft id fallback candidate aliases and file names", () => {
 	const report = buildAuditReport(
 		buildSampleWxr({
 			title: "Draft Only",
@@ -372,9 +372,54 @@ test("buildAuditReport marks draft fallback titles for later manual cleanup", ()
 		},
 	);
 
-	assert.equal(report.entries[0].alias, "99");
+	assert.equal(report.entries[0].alias, "draft-99");
 	assert.equal(report.entries[0].suggestedAction, "defer");
 	assert.equal(report.records[0].candidateTitle, "Draft Only-草稿");
+	assert.equal(report.records[0].candidateRelativePath, "posts/draft-99.md");
+});
+
+test("buildAuditReport preserves numeric postname html aliases but leaves query id access manual", () => {
+	const prettyReport = buildAuditReport(
+		buildSampleWxr({
+			title: "2160",
+			link: "https://example.com/2160.html",
+			legacyId: "2160",
+			postName: "2160",
+			status: "publish",
+		}),
+		{
+			contentTypes: ["post"],
+			pathMode: "flat",
+			filenameSource: "title",
+			reportFormats: ["json", "md"],
+			wpPermalinkTemplate: "",
+			detectLinkPattern: true,
+			defaultFrontmatter: {},
+		},
+	);
+	const queryReport = buildAuditReport(
+		buildSampleWxr({
+			title: "ID Access",
+			link: "https://example.com/?p=2161",
+			legacyId: "2161",
+			postName: "",
+			status: "publish",
+		}),
+		{
+			contentTypes: ["post"],
+			pathMode: "flat",
+			filenameSource: "title",
+			reportFormats: ["json", "md"],
+			wpPermalinkTemplate: "",
+			detectLinkPattern: true,
+			defaultFrontmatter: {},
+		},
+	);
+
+	assert.equal(prettyReport.entries[0].alias, "2160");
+	assert.equal(prettyReport.records[0].candidateRelativePath, "posts/2160.md");
+	assert.equal(queryReport.entries[0].alias, "");
+	assert.equal(queryReport.records[0].candidateRelativePath, "posts/id-access.md");
 });
 
 test("buildAuditReport reclassifies approved background blocks into transform-ready semantics", () => {

@@ -22,7 +22,7 @@ const resolvedToc = resolveTocConfig({
 	frontmatterToc: entry.data.toc,
 });
 ---
-<MainGridLayout title={pageTitle} description={pageTitle} headings={headings} resolvedToc={resolvedToc} enablePhotoSwipe={enablePhotoSwipe}>
+<MainGridLayout title={pageTitle} description={pageTitle} canonicalPath={entry.data.publicPath as string | undefined} headings={headings} resolvedToc={resolvedToc} enablePhotoSwipe={enablePhotoSwipe}>
     <div class="flex w-full rounded-panel overflow-hidden relative min-h-32">
         <div class="card-base z-10 px-9 py-6 relative w-full ">
             <Markdown class="mt-2">
