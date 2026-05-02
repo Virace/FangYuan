@@ -12,10 +12,8 @@ let dialogEl: HTMLDialogElement | null = null;
 let activeRewardId = "";
 let modalActive = false;
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
-let displayedImage = "";
-let imageLoading = false;
-let imagePresented = false;
-let imageRequestToken = 0;
+let mountedRewardIds: ReadonlySet<string> = new Set();
+let presentedRewardIds: ReadonlySet<string> = new Set();
 
 $: if (!activeRewardId && options.length > 0) {
 	activeRewardId = options[0].id;
@@ -24,8 +22,8 @@ $: if (!activeRewardId && options.length > 0) {
 $: activeOption =
 	options.find((option) => option.id === activeRewardId) ?? options[0] ?? null;
 
-$: if (activeOption?.image) {
-	void syncRewardImage(activeOption.image);
+$: if (open && activeOption?.image && !mountedRewardIds.has(activeOption.id)) {
+	mountedRewardIds = new Set(mountedRewardIds).add(activeOption.id);
 }
 
 $: if (open && dialogEl && !dialogEl.open) {
@@ -81,57 +79,12 @@ function handleBackdropClick(event: MouseEvent) {
 	}
 }
 
-function preloadImage(src: string) {
-	return new Promise<void>((resolve) => {
-		const image = new Image();
-		image.onload = () => resolve();
-		image.onerror = () => resolve();
-		image.src = src;
-	});
-}
-
-async function syncRewardImage(src: string) {
-	if (!src) {
+function presentRewardImage(id: string) {
+	if (presentedRewardIds.has(id)) {
 		return;
 	}
 
-	if (!displayedImage) {
-		imageRequestToken += 1;
-		imageLoading = false;
-		displayedImage = src;
-		imagePresented = false;
-		await tick();
-		requestAnimationFrame(() => {
-			imagePresented = true;
-		});
-		return;
-	}
-
-	if (displayedImage === src) {
-		imageRequestToken += 1;
-		imageLoading = false;
-		imagePresented = true;
-		return;
-	}
-
-	const token = ++imageRequestToken;
-	imageLoading = true;
-	await preloadImage(src);
-
-	if (token !== imageRequestToken) {
-		return;
-	}
-
-	imagePresented = false;
-	displayedImage = src;
-	await tick();
-	requestAnimationFrame(() => {
-		if (token !== imageRequestToken) {
-			return;
-		}
-		imagePresented = true;
-		imageLoading = false;
-	});
+	presentedRewardIds = new Set(presentedRewardIds).add(id);
 }
 
 onDestroy(() => {
@@ -194,22 +147,22 @@ onDestroy(() => {
 					<div
 						class="relative flex min-h-80 items-center justify-center rounded-[1.25rem] bg-card-bg p-4"
 					>
-						{#if displayedImage}
+						{#each options as option (option.id)}
+							{#if option.image && mountedRewardIds.has(option.id)}
 							<img
 								class="feedback-reward-image h-72 w-72 rounded-xl object-contain"
-								class:feedback-reward-image-presented={imagePresented}
-								src={displayedImage}
-								alt={activeOption.alt ?? activeOption.name}
+								class:hidden={option.id !== activeRewardId}
+								class:feedback-reward-image-presented={presentedRewardIds.has(
+									option.id,
+								)}
+								src={option.image}
+								alt={option.alt ?? option.name}
+								aria-hidden={option.id !== activeRewardId}
+								on:load={() => presentRewardImage(option.id)}
+								on:error={() => presentRewardImage(option.id)}
 							/>
-						{/if}
-
-						<div
-							class="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[1.25rem] bg-card-bg/80 backdrop-blur-[1px] transition-opacity duration-150"
-							class:opacity-100={imageLoading}
-							class:opacity-0={!imageLoading}
-						>
-							<div class="h-16 w-16 animate-pulse rounded-2xl border border-line-divider bg-soft-contrast"></div>
-						</div>
+							{/if}
+						{/each}
 					</div>
 				</div>
 			{/if}

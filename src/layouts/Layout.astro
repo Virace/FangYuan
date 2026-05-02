@@ -80,6 +80,19 @@ const resolvedFavicons: Favicon[] = await Promise.all(
 	})),
 );
 
+function resolveFaviconHref(src: string): string {
+	if (!src.startsWith("/")) {
+		return src;
+	}
+
+	const baseUrl = import.meta.env.BASE_URL;
+	if (baseUrl !== "/" && src.startsWith(baseUrl)) {
+		return src;
+	}
+
+	return url(src);
+}
+
 // const siteLang = siteConfig.lang.replace('_', '-')
 if (!lang) {
 	lang = `${siteConfig.lang}`;
@@ -130,7 +143,7 @@ const canonicalUrl =
 		<meta name="generator" content={Astro.generator} />
 		{resolvedFavicons.map(favicon => (
 			<link rel="icon"
-				  href={favicon.src.startsWith('/') ? url(favicon.src) : favicon.src}
+				  href={resolveFaviconHref(favicon.src)}
 				  sizes={favicon.sizes}
 				  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
 			/>

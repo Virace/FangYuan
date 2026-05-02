@@ -272,6 +272,7 @@ test(
 					`siteConfig:
   title: SVG Favicon Demo
   subtitle: demo
+  base: /test/
   banner:
     enable: false
   favicon:
@@ -304,6 +305,9 @@ Probe
 				const normalizedFixtureRoot = fixtureRoot.replaceAll("\\", "/");
 
 				assert.match(homeHtml, /rel="icon"/);
+				assert.doesNotMatch(homeHtml, /href="\/test\/test\/static\//);
+				assert.match(homeHtml, /href="\/test\/static\/favicon-light\.[^"]+\.svg"/);
+				assert.match(homeHtml, /href="\/test\/static\/favicon-dark\.[^"]+\.svg"/);
 				assert.doesNotMatch(homeHtml, new RegExp(normalizedFixtureRoot));
 				assert.doesNotMatch(homeHtml, /assets\/images\/favicon-(?:light|dark)\.svg/);
 			},
