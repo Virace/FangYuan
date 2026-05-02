@@ -1,6 +1,6 @@
 import { getContentRouteManifest } from "@utils/content-routes";
-import { getAbsolutePublicUrl } from "./rss.xml";
 import type { APIContext } from "astro";
+import { getAbsolutePublicUrl } from "./rss.xml";
 
 export const prerender = true;
 
@@ -9,7 +9,8 @@ function renderXmlUrl(location: string): string {
 }
 
 export async function GET(context: APIContext): Promise<Response> {
-	if (!context.site) {
+	const site = context.site;
+	if (!site) {
 		return new Response(null, { status: 204 });
 	}
 
@@ -20,7 +21,9 @@ export async function GET(context: APIContext): Promise<Response> {
 		...manifest.routes.map((route) => route.publicPath),
 	];
 	const uniqueUrls = Array.from(
-		new Set(pageUrls.map((publicPath) => getAbsolutePublicUrl(context.site!, publicPath))),
+		new Set(
+			pageUrls.map((publicPath) => getAbsolutePublicUrl(site, publicPath)),
+		),
 	).sort((left, right) => left.localeCompare(right, "en", { numeric: true }));
 	const body = [
 		'<?xml version="1.0" encoding="UTF-8"?>',

@@ -1,5 +1,5 @@
-import { getAbsolutePublicUrl } from "./rss.xml";
 import type { APIContext } from "astro";
+import { getAbsolutePublicUrl } from "./rss.xml";
 
 export const prerender = true;
 
