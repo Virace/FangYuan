@@ -442,6 +442,59 @@ function resolvePageAnnouncement() {
 	return resolveSwupAnnouncementText(document, document.title)
 }
 
+type SwupContentScrollVisit = {
+	to: { hash?: string }
+	history?: { popstate?: boolean }
+	scroll: {
+		target?: string | false
+		animate?: boolean
+	}
+}
+
+function shouldPreScrollVisit(visit: SwupContentScrollVisit) {
+	return (
+		!visit.history?.popstate &&
+		!visit.to.hash &&
+		!visit.scroll.target &&
+		window.scrollY > 16
+	)
+}
+
+function scrollToTopBeforeSwap() {
+	const startY = window.scrollY
+	if (startY <= 16) {
+		window.scrollTo(0, 0)
+		return Promise.resolve()
+	}
+
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+	if (prefersReducedMotion) {
+		window.scrollTo(0, 0)
+		return Promise.resolve()
+	}
+
+	const duration = Math.min(520, Math.max(260, startY * 0.24))
+	const startTime = performance.now()
+
+	return new Promise<void>(resolve => {
+		const step = (now: number) => {
+			const progress = Math.min(1, (now - startTime) / duration)
+			const eased = 1 - (1 - progress) ** 3
+			window.scrollTo(0, Math.round(startY * (1 - eased)))
+
+			if (progress < 1) {
+				requestAnimationFrame(step)
+				return
+			}
+
+			window.scrollTo(0, 0)
+			resolve()
+		}
+
+		requestAnimationFrame(step)
+	})
+}
+
 /* Load settings when entering the site */
 init();
 
@@ -482,6 +535,21 @@ const setup = () => {
 		}
 
 		visit.a11y.announce = announcement
+	})
+	window.swup.hooks.before('content:scroll', (visit: SwupContentScrollVisit) => {
+		if (visit.to.hash || visit.scroll.target) {
+			return
+		}
+
+		visit.scroll.animate = false
+	})
+	window.swup.hooks.before('visit:start', async (visit: SwupContentScrollVisit) => {
+		if (!shouldPreScrollVisit(visit)) {
+			return
+		}
+
+		visit.scroll.animate = false
+		await scrollToTopBeforeSwap()
 	})
 	window.swup.hooks.on('content:replace', initCustomScrollbar)
 	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
