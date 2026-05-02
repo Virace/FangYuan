@@ -54,6 +54,7 @@ import {
 	loadExternalQingYanDevProxyTarget,
 } from "./src/utils/site-source.ts";
 import { resolveSiteSourceContext } from "./src/utils/site-source-context.ts";
+import { externalSiteAssetDevPrefix } from "./src/utils/external-site-assets.ts";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
@@ -339,6 +340,71 @@ function externalSiteAssetPlugin() {
 	};
 }
 
+function getMimeType(filePath) {
+	const extension = path.extname(filePath).toLowerCase();
+	if (extension === ".svg") return "image/svg+xml";
+	if (extension === ".png") return "image/png";
+	if (extension === ".jpg" || extension === ".jpeg") return "image/jpeg";
+	if (extension === ".webp") return "image/webp";
+	if (extension === ".gif") return "image/gif";
+	if (extension === ".avif") return "image/avif";
+	return "application/octet-stream";
+}
+
+function tryDecodeExternalSiteAssetUrl(url) {
+	const [pathname] = url.split("?");
+	if (!pathname?.startsWith(externalSiteAssetDevPrefix)) {
+		return null;
+	}
+
+	try {
+		return decodeURIComponent(pathname.slice(externalSiteAssetDevPrefix.length));
+	} catch {
+		return null;
+	}
+}
+
+function serveExternalSiteAsset(req, res, next) {
+	if (!req.url) {
+		next();
+		return;
+	}
+
+	const reference = tryDecodeExternalSiteAssetUrl(req.url);
+	if (!reference || !isExternalSiteAsset(reference)) {
+		next();
+		return;
+	}
+
+	const targetPath = path.resolve(externalSiteRoot, reference);
+	const normalizedTargetPath = targetPath.replace(/\\/g, "/").toLowerCase();
+	if (
+		normalizedTargetPath !== normalizedExternalSiteRoot &&
+		!normalizedTargetPath.startsWith(`${normalizedExternalSiteRoot}/`)
+	) {
+		res.statusCode = 403;
+		res.end("Forbidden");
+		return;
+	}
+
+	if (!fs.existsSync(targetPath)) {
+		next();
+		return;
+	}
+
+	res.setHeader("Content-Type", getMimeType(targetPath));
+	fs.createReadStream(targetPath).pipe(res);
+}
+
+function externalSiteAssetDevServerPlugin() {
+	return {
+		name: "fangyuan-external-site-asset-dev-server",
+		configureServer(server) {
+			server.middlewares.use(serveExternalSiteAsset);
+		},
+	};
+}
+
 // https://astro.build/config
 export default defineConfig({
 	...(siteUrl ? { site: siteUrl } : {}),
@@ -512,6 +578,7 @@ export default defineConfig({
 		plugins: [
 			externalSiteAssetModulePlugin(),
 			externalSiteAssetPlugin(),
+			externalSiteAssetDevServerPlugin(),
 			tailwindcss(),
 			...(qingyanDevProxyMiddlewarePlugin
 				? [qingyanDevProxyMiddlewarePlugin]

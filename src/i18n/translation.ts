@@ -38,6 +38,12 @@ const map: { [key: string]: Translation } = {
 	tr_tr: tr,
 };
 
+const builtInNavKeyAliases: Record<string, I18nKey> = {
+	"nav.home": "home",
+	"nav.archive": "archive",
+	"nav.about": "about",
+};
+
 export function getTranslation(lang: string): Translation {
 	return map[lang.toLowerCase()] || defaultTranslation;
 }
@@ -57,5 +63,6 @@ export function resolveI18nKey(
 
 	const lang = siteConfig.lang || "en";
 	const translation = getTranslation(lang) as Record<string, string>;
-	return translation[key] ?? key;
+	const translationKey = builtInNavKeyAliases[key] ?? key;
+	return translation[translationKey] ?? key;
 }

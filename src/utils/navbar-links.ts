@@ -9,13 +9,21 @@ type ResolveNavbarLinksOptions = {
 	translateLabel?: (key: string) => string;
 };
 
+const builtInNavKeyIds = new Map([
+	["nav.home", "home"],
+	["nav.archive", "archive"],
+	["nav.about", "about"],
+]);
+
 function isRefLink(link: NavBarLink): link is NavBarRefLink {
 	return "ref" in link;
 }
 
 export function getNavBarLinkId(link: Pick<NavBarLink, "id" | "name">): string {
 	const normalizedId = link.id?.trim();
-	return normalizedId && normalizedId.length > 0 ? normalizedId : link.name;
+	const rawId =
+		normalizedId && normalizedId.length > 0 ? normalizedId : link.name.trim();
+	return builtInNavKeyIds.get(rawId) ?? rawId;
 }
 
 function assertValidLink(link: NavBarLink): void {

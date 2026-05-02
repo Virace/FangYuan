@@ -1,12 +1,31 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
+import { siteConfig } from "../config";
+import {
+	getPaginationPublicPath,
+	getStandaloneRoutePublicPath,
+	resolveAstroBuildConfig,
+} from "./permalink-materialization";
+
+function getBuiltInRouteBuildFormat(): "directory" | "file" {
+	const buildConfig = resolveAstroBuildConfig({
+		postsPattern: siteConfig.permalink.postsPattern,
+		pagesPattern: siteConfig.permalink.pagesPattern,
+		trailingSlash: siteConfig.permalink.trailingSlash,
+		postPatternRulePatterns: siteConfig.permalink.postPatternRules.map(
+			(rule) => rule.pattern,
+		),
+	});
+
+	return buildConfig.buildFormat === "file" ? "file" : "directory";
+}
 
 export function getArchivePath(): string {
-	return "/archive/";
+	return getStandaloneRoutePublicPath("archive", getBuiltInRouteBuildFormat());
 }
 
 export function getHomePaginationPath(pageNumber: number): string {
-	return pageNumber <= 1 ? "/" : `/${pageNumber}/`;
+	return getPaginationPublicPath(pageNumber, getBuiltInRouteBuildFormat());
 }
 
 export function pathsEqual(path1: string, path2: string): boolean {

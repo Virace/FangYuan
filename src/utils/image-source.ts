@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import externalImageModules from "virtual:fangyuan-site-assets";
 import type { ImageMetadata } from "astro";
+import { getExternalSiteAssetDevUrl } from "./external-site-assets";
 
 export type ImageBaseRoot = "src" | "site";
 export type ResolvedImageSource = ImageMetadata | string | undefined;
@@ -256,6 +257,10 @@ export async function resolveConfigAssetUrl(
 
 	if (isPublicUrl(value) || isPublicAlias(value)) {
 		return assertPublicFileExists(value);
+	}
+
+	if (baseRoot === "site" && import.meta.env.DEV) {
+		return getExternalSiteAssetDevUrl(assertExternalAssetReference(value));
 	}
 
 	return (await resolveRootAlias(value, baseRoot)).src;
