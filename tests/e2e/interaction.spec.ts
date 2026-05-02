@@ -167,16 +167,22 @@ test("desktop toc updates hash when first heading is clicked", async ({ page }) 
 	await expect(firstTocLink).toBeVisible();
 
 	const href = await firstTocLink.getAttribute("href");
+	if (!href) {
+		throw new Error("Expected first TOC link to have an href.");
+	}
 	await firstTocLink.click();
 
-	await expect(page).toHaveURL(new RegExp(`${href}$`));
+	await expect
+		.poll(async () => page.evaluate(() => decodeURIComponent(location.hash)))
+		.toBe(href);
 });
 
-test("spec page does not render toc by default", async ({ page }) => {
+test("spec page does not render toc entries by default", async ({ page }) => {
 	await page.setViewportSize({ width: 1600, height: 900 });
 	await prepareStablePage(page, SITE_ROUTES.about);
 
-	await expect(page.locator("#toc-wrapper")).toHaveCount(0);
+	await expect(page.locator("#toc-wrapper")).toBeAttached();
+	await expect(page.locator("table-of-contents")).toHaveCount(0);
 	await expect(page.locator("#toc a")).toHaveCount(0);
 });
 
