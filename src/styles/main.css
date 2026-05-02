@@ -451,11 +451,15 @@
 
 .search-field-input {
     background-color: transparent;
-    color: inherit;
+    color: rgb(0 0 0 / 0.5);
     outline: none;
     transition:
         width 0.15s cubic-bezier(0.4, 0, 0.2, 1),
         color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .search-field-input {
+    color: rgb(255 255 255 / 0.5);
 }
 
 .comment-form-field-label {

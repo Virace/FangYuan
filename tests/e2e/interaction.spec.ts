@@ -2,6 +2,7 @@ import { expect, test, type Locator } from "@playwright/test";
 import {
 	SITE_ROUTES,
 	VIEWPORTS,
+	disableMotion,
 	gotoAndWaitForApp,
 	openMobileNavMenu,
 	openMobileSearchPanel,
@@ -15,6 +16,28 @@ async function readComputedStyleValue(locator: Locator, property: string) {
 			getComputedStyle(node as HTMLElement).getPropertyValue(styleProperty),
 		property,
 	);
+}
+
+async function readComputedRgb(locator: Locator, property: string) {
+	return locator.evaluate((node, styleProperty) => {
+		const value = getComputedStyle(node as HTMLElement)
+			.getPropertyValue(styleProperty)
+			.trim();
+		const match = value.match(
+			/^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/,
+		);
+
+		if (!match) {
+			throw new Error(`Expected ${styleProperty} to be rgb/rgba, got ${value}`);
+		}
+
+		return {
+			value,
+			red: Number(match[1]),
+			green: Number(match[2]),
+			blue: Number(match[3]),
+		};
+	}, property);
 }
 
 test("mobile search panel opens and shows search results", async ({ page }) => {
@@ -90,6 +113,27 @@ test("desktop search field shows a visible focus treatment without transition-al
 			return transitionProperty.trim();
 		})
 		.not.toBe("all");
+});
+
+test("desktop search input keeps readable text color in dark mode", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await page.addInitScript(() => {
+		localStorage.setItem("theme", "dark");
+		localStorage.setItem("hue", "250");
+	});
+	await gotoAndWaitForApp(page, SITE_ROUTES.home);
+	await disableMotion(page);
+
+	const searchInput = page.locator("#search-bar input");
+	await expect(searchInput).toBeVisible();
+	await searchInput.fill("Markdown");
+
+	const color = await readComputedRgb(searchInput, "color");
+	expect(color.red).toBeGreaterThan(200);
+	expect(color.green).toBeGreaterThan(200);
+	expect(color.blue).toBeGreaterThan(200);
 });
 
 test("swup container transition avoids transition-all", async ({ page }) => {
