@@ -23,11 +23,11 @@ FangYuan 现在更适合按“双仓”来维护：公开仓库存放主题源�
 
 ## 内容负责什么
 
-真实站点内容更适合放在外部 `site/` 输入层里维护：
+真实站点内容更适合放在外部站点输入层里维护。这个外部根目录可以是 FangYuan 仓库内的 `site/`，也可以是任意符合结构的独立目录：
 
-- `site/site.config.yaml`
-- `site/content/`
-- `site/assets/`
+- `<siteRoot>/site.config.yaml`
+- `<siteRoot>/content/`
+- `<siteRoot>/assets/`
 
 这样一来，主题仓库可以继续公开，正式文章、页面和站点配置则可以单独放在私有仓库里，再通过同步或挂载方式进入构建流程。
 
@@ -44,7 +44,7 @@ pnpm build:external
 ```
 
 - `internal`：使用仓库内 `src/content/` 和默认配置，适合主题演示、功能测试和公开 demo
-- `external`：使用 `site/` 下的真实内容与配置，适合联调正式站点
+- `external`：使用外部站点根目录下的真实内容与配置，适合联调正式站点
 
 这样可以保证“同一套主题代码”既能展示 demo，又能服务正式站点。
 

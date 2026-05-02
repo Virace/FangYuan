@@ -5,23 +5,106 @@ import { promptInitSiteOptions } from "./init-site-prompts.js"
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url))
 const templateConfigPath = path.join(currentDir, "template.config.yaml")
-const assetReadmeSource = `# site/assets
+const assetReadmeSource = `# <siteRoot>/assets
 
-这里存放外部站点自有静态图片。
+这里存放外部站点自有静态图片。外部站点根目录不一定是 FangYuan 仓库内的 \`site/\`，实际位置由初始化脚本参数或 \`FANGYUAN_SITE_ROOT\` 决定。
 
 安全写法：
 
-- \`assets/images/banner.webp\`：站点 banner
-- \`assets/images/avatar.png\`：作者头像
+- 替换位置：\`assets/images/banner.svg\`：站点 banner
+- 替换位置：\`assets/images/avatar.svg\`：作者头像
+- 替换位置：\`assets/favicon/icon.svg\`：站点 favicon
+- 替换位置：\`assets/reward/wechat.svg\`：微信打赏二维码
+- 替换位置：\`assets/reward/alipay.svg\`：支付宝打赏二维码
+- 替换位置：\`assets/icons/police-emblem.svg\`：公安备案图标
 - \`assets/posts/<slug>/cover.webp\`：文章封面
 - \`content/posts/<slug>/screenshot.webp\`：文章正文相对图片
 
-在 \`site.config.yaml\` 或文章 frontmatter 中引用 \`assets/...\` 时，FangYuan 会把它当作 external site root 下的本地图片输入，并交给 Astro 图片管线处理。
+在 \`site.config.yaml\` 或文章 frontmatter 中引用 \`assets/...\` 时，FangYuan 会把它当作 external site root 下的本地图片输入，并交给 Astro 图片管线处理。未被当前配置或内容引用的占位符不会进入最终 \`dist\`。
 
 不要在这里存放迁移审计、预览或中间转换数据。
 
 CDN 图片可以继续使用 \`https://...\`，但它不会被本地构建打包或校验。
 `
+
+function buildSvgPlaceholder({ width, height, title, subtitle, fill, accent }) {
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}">
+  <rect width="${width}" height="${height}" rx="${Math.round(Math.min(width, height) * 0.08)}" fill="${fill}"/>
+  <rect x="${Math.round(width * 0.06)}" y="${Math.round(height * 0.12)}" width="${Math.round(width * 0.88)}" height="${Math.round(height * 0.76)}" rx="${Math.round(Math.min(width, height) * 0.05)}" fill="none" stroke="${accent}" stroke-width="${Math.max(2, Math.round(Math.min(width, height) * 0.015))}" stroke-dasharray="12 10"/>
+  <text x="50%" y="48%" text-anchor="middle" font-family="Arial, sans-serif" font-size="${Math.round(Math.min(width, height) * 0.14)}" font-weight="700" fill="${accent}">${title}</text>
+  <text x="50%" y="62%" text-anchor="middle" font-family="Arial, sans-serif" font-size="${Math.round(Math.min(width, height) * 0.07)}" fill="${accent}">${subtitle}</text>
+</svg>
+`
+}
+
+const assetPlaceholders = [
+	{
+		relativePath: path.join("images", "banner.svg"),
+		content: buildSvgPlaceholder({
+			width: 1400,
+			height: 900,
+			title: "Banner",
+			subtitle: "替换 assets/images/banner.svg",
+			fill: "#f8fafc",
+			accent: "#2563eb",
+		}),
+	},
+	{
+		relativePath: path.join("images", "avatar.svg"),
+		content: buildSvgPlaceholder({
+			width: 512,
+			height: 512,
+			title: "Avatar",
+			subtitle: "替换 assets/images/avatar.svg",
+			fill: "#fefce8",
+			accent: "#ca8a04",
+		}),
+	},
+	{
+		relativePath: path.join("favicon", "icon.svg"),
+		content: buildSvgPlaceholder({
+			width: 256,
+			height: 256,
+			title: "FY",
+			subtitle: "替换 favicon",
+			fill: "#eef2ff",
+			accent: "#4f46e5",
+		}),
+	},
+	{
+		relativePath: path.join("reward", "wechat.svg"),
+		content: buildSvgPlaceholder({
+			width: 512,
+			height: 512,
+			title: "WeChat",
+			subtitle: "替换微信二维码",
+			fill: "#ecfdf5",
+			accent: "#16a34a",
+		}),
+	},
+	{
+		relativePath: path.join("reward", "alipay.svg"),
+		content: buildSvgPlaceholder({
+			width: 512,
+			height: 512,
+			title: "Alipay",
+			subtitle: "替换支付宝二维码",
+			fill: "#eff6ff",
+			accent: "#0284c7",
+		}),
+	},
+	{
+		relativePath: path.join("icons", "police-emblem.svg"),
+		content: buildSvgPlaceholder({
+			width: 128,
+			height: 128,
+			title: "备案",
+			subtitle: "替换图标",
+			fill: "#f1f5f9",
+			accent: "#475569",
+		}),
+	},
+]
 
 function ensureDirectory(directoryPath, createdDirectories, operations, execution) {
 	if (fs.existsSync(directoryPath)) {
@@ -84,6 +167,7 @@ function ensureFile(
 		return
 	}
 
+	fs.mkdirSync(path.dirname(targetPath), { recursive: true })
 	fs.writeFileSync(targetPath, content, "utf8")
 	createdFiles.push(targetPath)
 	operations.push({
@@ -299,10 +383,10 @@ draft: false
 
 # Welcome to ${options.siteTitle}
 
-This post is created by \`node scripts/site/init-site.js\` to keep a fresh \`site/\` scaffold buildable.
+This post is created by \`node scripts/site/init-site.js\` to keep a fresh external site root buildable.
 
 - Replace this file with your own first post when you are ready.
-- If your \`site/\` already contains real files, the scaffold script will not backfill demo posts.
+- If your external site root already contains real files, the scaffold script will not backfill demo posts.
 `
 }
 
@@ -344,6 +428,15 @@ export async function ensureExternalSiteScaffold(
 		operations,
 		execution,
 	)
+	for (const placeholder of assetPlaceholders) {
+		ensureFile(
+			path.join(siteAssetsRoot, placeholder.relativePath),
+			placeholder.content,
+			createdFiles,
+			operations,
+			execution,
+		)
+	}
 
 	if (execution.seedFromSrcContent) {
 		copyDirectoryContents(

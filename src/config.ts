@@ -254,7 +254,15 @@ export const pageFeedbackConfig: PageFeedbackConfig =
 export const configImageBaseRoots: Readonly<{
 	banner: "site" | "src";
 	avatar: "site" | "src";
+	favicon: "site" | "src";
+	reward: "site" | "src";
+	police: "site" | "src";
 }> = {
 	banner: externalSiteConfig?.siteConfig?.banner?.src ? "site" : "src",
 	avatar: externalSiteConfig?.profileConfig?.avatar ? "site" : "src",
+	favicon: externalSiteConfig?.siteConfig?.favicon ? "site" : "src",
+	reward: externalSiteConfig?.pageFeedbackConfig?.reward?.options
+		? "site"
+		: "src",
+	police: externalSiteConfig?.footerConfig?.policeRecord ? "site" : "src",
 };

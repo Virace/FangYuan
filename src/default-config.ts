@@ -34,7 +34,7 @@ export const defaultSiteConfig: SiteConfig = {
 	},
 	banner: {
 		enable: true,
-		src: "assets/images/demo-banner.png", // 不以 "/" 开头时相对 src/ 或 site/；以 "/" 开头时相对 public/
+		src: "assets/images/demo-banner.png", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
 		position: "center", // 等价于 object-position，只支持 "top" | "center" | "bottom"
 		credit: {
 			enable: false, // 是否显示横幅图片署名
@@ -49,7 +49,7 @@ export const defaultSiteConfig: SiteConfig = {
 	favicon: [
 		// 留空时使用默认 favicon
 		// {
-		//   src: "/favicon/icon.png",    // 相对 public/ 的路径
+		//   src: "assets/favicon/icon.png",
 		//   theme: "light",              // 可选：light 或 dark；只有亮暗两套图标时才需要
 		//   sizes: "32x32",              // 可选：用于区分不同尺寸图标
 		// }
@@ -133,7 +133,7 @@ export const defaultNavBarConfig: NavBarConfig = {
 };
 
 export const defaultProfileConfig: ProfileConfig = {
-	avatar: "assets/images/demo-avatar.png", // 不以 "/" 开头时相对 src/ 或 site/；以 "/" 开头时相对 public/
+	avatar: "assets/images/demo-avatar.png", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
 	name: "FangYuan",
 	bio: "在清晰结构与柔和表达之间，打磨一个长期演进的个人站点。",
 	links: [
@@ -192,13 +192,13 @@ export const defaultPageFeedbackConfig: PageFeedbackConfig = {
 			{
 				id: "wechat",
 				name: "微信",
-				image: "/images/reward/wechat-placeholder.svg",
+				image: "assets/reward/wechat.svg",
 				alt: "微信打赏二维码",
 			},
 			{
 				id: "alipay",
 				name: "支付宝",
-				image: "/images/reward/alipay-placeholder.svg",
+				image: "assets/reward/alipay.svg",
 				alt: "支付宝打赏二维码",
 			},
 		],

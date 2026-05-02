@@ -1,5 +1,6 @@
 ---
-import { profileConfig, siteConfig } from "../config";
+import policeEmblem from "../assets/icons/police-emblem.png";
+import { configImageBaseRoots, profileConfig, siteConfig } from "../config";
 import {
 	footerCustomHtmlLooksLikeMarkup,
 	getFooterCustomHtml,
@@ -8,6 +9,7 @@ import {
 	getFooterPoliceRecord,
 	getFooterPoliceRecordUrl,
 } from "../utils/footer-utils";
+import { resolveConfigAssetUrl } from "../utils/image-source";
 import { url } from "../utils/url-utils";
 
 const currentYear = new Date().getFullYear();
@@ -17,6 +19,13 @@ const customHtmlIsMarkup = footerCustomHtmlLooksLikeMarkup();
 const icpRecord = getFooterIcpRecord();
 const policeRecord = getFooterPoliceRecord();
 const policeRecordUrl = getFooterPoliceRecordUrl();
+const policeEmblemSrc =
+	policeRecord !== "" && configImageBaseRoots.police === "site"
+		? ((await resolveConfigAssetUrl(
+				"assets/icons/police-emblem.svg",
+				"site",
+			)) ?? policeEmblem.src)
+		: policeEmblem.src;
 ---
 
 <div class="transition my-10 border-t border-dashed border-footer-divider"></div>
@@ -62,12 +71,12 @@ const policeRecordUrl = getFooterPoliceRecordUrl();
 						rel="noreferrer"
 						href={policeRecordUrl}
 					>
-						<img src={url("icon/police-emblem.png")} alt="" aria-hidden="true" class="h-4 w-4 object-contain" />
+						<img src={policeEmblemSrc} alt="" aria-hidden="true" class="h-4 w-4 object-contain" />
 						{policeRecord}
 					</a>
 				) : (
 					<span class="inline-flex items-center gap-2">
-						<img src={url("icon/police-emblem.png")} alt="" aria-hidden="true" class="h-4 w-4 object-contain" />
+						<img src={policeEmblemSrc} alt="" aria-hidden="true" class="h-4 w-4 object-contain" />
 						{policeRecord}
 					</span>
 				)

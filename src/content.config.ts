@@ -53,7 +53,7 @@ const localAliasImageSchema = z
 	.string()
 	.regex(/^(?!\.{1,2}\/)(?!\/)(?!public\/)(?!https?:\/\/)(?!data:).+/, {
 		message:
-			"Non-relative local cover images are treated as root aliases under src/ or site/.",
+			"Non-relative local cover images are treated as root aliases under src/ or the external site root.",
 	});
 
 const tocFrontmatterSchema = z

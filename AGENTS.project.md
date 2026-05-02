@@ -102,7 +102,7 @@
 - `src/plugins/`：Markdown / rehype / remark / expressive-code 插件扩展。
 - `src/content/`：内容集合定义与 Markdown 内容。
 - `src/styles/`：全局样式、变量和 markdown / transition / scrollbar 等专项样式。
-- `site/`：用户侧网站的本地文章与配置存放处，开发和联调时允许直接修改，用来承接真实站点覆盖内容；不要把它当成仓库 demo 基线。
+- `site/`：默认本地外部站点根目录，仅作为开发和联调时的便捷默认值；真实外部数据源可以是任意符合结构的目录，并通过 `FANGYUAN_SITE_ROOT` 指向。不要把外部数据源硬编码为仓库同级 `site/`，也不要把 `site/` 当成仓库 demo 基线。
 
 ### 文件命名
 
@@ -148,7 +148,7 @@
 
 ### 本地站点覆盖与 demo 基线
 
-- `site/` 用于用户真实站点的本地覆盖输入，包括文章、页面与站点配置；本地开发、联调和验收时可以直接改这里。
+- `site/` 是默认本地外部站点根目录，包括文章、页面、站点配置与 `assets/`；本地开发、联调和验收时可以直接改这里，但实现上必须支持任意 `FANGYUAN_SITE_ROOT`。
 - 仓库自带 demo 与默认行为仍以 `src/default-config.ts` 为基线；涉及默认展示、默认配置、demo 行为或可复用 fallback 时，应优先写入 `src/default-config.ts`，而不是只落在 `site/`。
 - 对 `site/` 的修改默认视为用户侧本地数据调整，不自动推断为应入库的演示样例；是否提交 `site/` 相关改动，以用户当轮要求和仓库忽略规则为准。
 
@@ -187,9 +187,10 @@
 
 ### 静态资源与样式
 
-- 站点共享图片资源放在 `src/assets/images/`。
+- 主题内置共享图片资源放在 `src/assets/`，并通过 Astro/Vite 资源管线导入。
+- 外部站点自有共享图片资源放在外部站点根目录 `<siteRoot>/assets/`，在配置或 frontmatter 中写成 `assets/...`；未被当前配置或内容引用的占位符不应进入最终 `dist`。
 - 与文章强绑定的图片资源优先和文章 Markdown 同目录共置，例如 `src/content/posts/<slug>/cover.jpeg`。
-- 需要公开绝对路径访问的静态资源放在 `public/`，当前典型用法是 favicon。
+- `public/` 不再作为默认静态资源发布入口；favicon、备案图标、打赏二维码等默认走 `src/assets/` 或外部 `<siteRoot>/assets/`。
 - 样式以 Tailwind utility class 为主，配合 `src/styles/` 下的全局 CSS / Stylus 文件；新增样式时优先复用现有变量和样式入口，不新开重复主题系统。
 - 对 `client:only="svelte"` island 中在 Swup 切页后仍必须稳定生效的 UI 行为，关键样式不要放在组件局部 `<style>` 中；应下沉到 `src/styles/main.css` 或其他全局样式入口。
 - 这条规则尤其适用于 `dialog/modal/drawer/popover` 这类依赖 `dialog[open]`、`::backdrop`、动画类名、定位类名的交互；若关键样式只存在于组件局部作用域，Swup 路由切换后可能出现“弹层跑到左上角、动画丢失、backdrop 失效”这类回归。

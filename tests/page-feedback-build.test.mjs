@@ -24,6 +24,20 @@ test(
 				distRoot,
 				markCreated,
 			}) => {
+				await mkdir(
+					path.join(path.dirname(siteConfigPath), "assets", "reward"),
+					{ recursive: true },
+				);
+				await writeFile(
+					path.join(
+						path.dirname(siteConfigPath),
+						"assets",
+						"reward",
+						"wechat.svg",
+					),
+					'<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><rect width="4" height="4"/></svg>',
+					"utf8",
+				);
 				await writeFile(
 					siteConfigPath,
 					`pageFeedbackConfig:
@@ -31,7 +45,7 @@ test(
     options:
       - id: coffee
         name: Coffee
-        image: /images/reward/wechat-placeholder.svg
+        image: assets/reward/wechat.svg
         alt: Coffee
 `,
 					"utf8",
@@ -84,6 +98,20 @@ test(
 				distRoot,
 				markCreated,
 			}) => {
+				await mkdir(
+					path.join(path.dirname(siteConfigPath), "assets", "reward"),
+					{ recursive: true },
+				);
+				await writeFile(
+					path.join(
+						path.dirname(siteConfigPath),
+						"assets",
+						"reward",
+						"wechat.svg",
+					),
+					'<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><rect width="4" height="4"/></svg>',
+					"utf8",
+				);
 				await writeFile(
 					siteConfigPath,
 					`pageFeedbackConfig:
@@ -98,7 +126,7 @@ test(
     options:
       - id: coffee
         name: Coffee
-        image: /images/reward/wechat-placeholder.svg
+        image: assets/reward/wechat.svg
         alt: Coffee
 `,
 					"utf8",

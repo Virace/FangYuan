@@ -1,5 +1,5 @@
 # FangYuan 外部站点配置模板
-# 复制后的目标文件：site/site.config.yaml
+# 复制后的目标文件：<siteRoot>/site.config.yaml
 # 这份文件只覆盖你显式填写的字段，未填写项会继续回退到 src/default-config.ts。
 # 严格模式下会拒绝未知字段，不能依赖“多写几个字段碰碰运气”。
 # 数组字段通常是整体替换；navBarConfig.links 比较特殊，即使你没写 About，也会自动补回保留语义入口。
@@ -46,10 +46,11 @@ siteConfig:
     enable: true
 
     # 横幅图片路径。
-    # 安全本地写法：assets/images/banner.webp，图片放在外部站点根目录 assets/ 下。
+    # 替换位置：assets/images/banner.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
+    # 安全本地写法：assets/images/banner.svg，图片放在外部站点根目录 assets/ 下。
     # CDN 写法：https://cdn.example.com/banner.webp，不会被本地构建打包或校验。
-    # 不建议在外部站点根目录新增 public/ 后写 /xxx 或 public/xxx；当前这类路径指向 FangYuan 主题仓库 public/。
-    src: assets/images/demo-banner.png
+    # 不建议在外部站点根目录新增 public/ 后写 /xxx 或 public/xxx；这不是 external site 的资源目录，也不会自动发布。
+    src: assets/images/banner.svg
 
     # 横幅图片垂直对齐方式，只支持 top / center / bottom。
     position: center
@@ -72,10 +73,16 @@ siteConfig:
     depth: 2
 
   # favicon 列表。
+  # 替换位置：assets/favicon/icon.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
   # 留空数组表示继续使用内置默认 favicon 配置。
-  favicon: []
+  favicon:
+    - src: assets/favicon/icon.svg
+      # 可选，区分亮色或暗色图标，只支持 light / dark。
+      theme: light
+      # 可选，用于区分不同尺寸图标。
+      sizes: 256x256
   # favicon:
-  #   - src: /favicon/icon.png
+  #   - src: assets/favicon/icon.svg
   #     # 可选，区分亮色或暗色图标，只支持 light / dark。
   #     theme: light
   #     # 可选，用于区分不同尺寸图标。
@@ -169,10 +176,11 @@ navBarConfig:
 
 profileConfig:
   # 头像图片路径。
-  # 安全本地写法：assets/images/avatar.png，图片放在外部站点根目录 assets/ 下。
+  # 替换位置：assets/images/avatar.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
+  # 安全本地写法：assets/images/avatar.svg，图片放在外部站点根目录 assets/ 下。
   # CDN 写法：https://cdn.example.com/avatar.png，不会被本地构建打包或校验。
   # 注意：FangYuan 当前没有独立 logo 配置项；这里是侧栏作者头像，不是 favicon。
-  avatar: assets/images/demo-avatar.png
+  avatar: assets/images/avatar.svg
 
   # 作者显示名。
   name: {{PROFILE_NAME}}
@@ -197,6 +205,7 @@ footerConfig:
   icp: null
 
   # 公安备案号。设为 null 表示不显示。
+  # 替换位置：assets/icons/police-emblem.svg，初始化脚本会创建这个占位图；只有填写 policeRecord 时才会引用。
   policeRecord: null
 
 licenseConfig:
@@ -266,8 +275,9 @@ pageFeedbackConfig:
 
   reward:
     # 打赏开关。
-    # 关闭后即使 options 里仍有二维码配置，也不会显示打赏入口。
-    enable: true
+    # 默认关闭。初始化脚本仍会创建二维码占位图，想预览效果时把这里改成 true 即可。
+    # 关闭后即使 options 里仍有二维码配置，也不会显示打赏入口，也不会把这些占位图打进最终 dist。
+    enable: false
 
     # 打赏项列表。
     # 一旦显式填写，会整体替换默认数组，不会逐项合并。
@@ -276,12 +286,14 @@ pageFeedbackConfig:
         # 前端稳定标识，建议保持短且唯一。
         name: 微信
         # 打赏二维码图片路径。
-        image: /images/reward/wechat-placeholder.svg
+        # 替换位置：assets/reward/wechat.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
+        image: assets/reward/wechat.svg
         # 图片替代文本。
         alt: 微信打赏二维码
       - id: alipay
         name: 支付宝
-        image: /images/reward/alipay-placeholder.svg
+        # 替换位置：assets/reward/alipay.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
+        image: assets/reward/alipay.svg
         alt: 支付宝打赏二维码
 
 # 本地 QingYan 代理目标。

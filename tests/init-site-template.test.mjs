@@ -47,6 +47,8 @@ test("renderSiteConfigTemplate replaces placeholders without dropping comments",
 	assert.match(rendered, /profileConfig:[\s\S]*name: "?Virace"?/);
 	assert.match(rendered, /qingyanDevProxyTarget: "?http:\/\/localhost:4401"?/);
 	assert.match(rendered, /永久链接规则/);
+	assert.match(rendered, /替换位置：assets\/images\/banner\.svg/);
+	assert.match(rendered, /reward:[\s\S]*enable: false/);
 	assert.doesNotMatch(rendered, /\{\{SITE_TITLE\}\}/);
 });
 
@@ -57,6 +59,7 @@ test("buildWelcomePostTemplate keeps scaffold source and user-facing replacement
 
 	assert.match(source, /^---[\s\S]*title: Welcome to Virace Notes/m);
 	assert.match(source, /This post is created by `node scripts\/site\/init-site.js`/);
+	assert.match(source, /fresh external site root buildable/);
 });
 
 test("rendered template is accepted by the strict YAML schema", async (t) => {
@@ -80,5 +83,8 @@ test("rendered template is accepted by the strict YAML schema", async (t) => {
 
 	assert.equal(loaded?.siteConfig?.title, "Virace Notes");
 	assert.equal(loaded?.profileConfig?.name, "Virace");
+	assert.equal(loaded?.siteConfig?.banner?.src, "assets/images/banner.svg");
+	assert.equal(loaded?.profileConfig?.avatar, "assets/images/avatar.svg");
+	assert.equal(loaded?.pageFeedbackConfig?.reward?.enable, false);
 	assert.equal(loaded?.qingyanDevProxyTarget, null);
 });

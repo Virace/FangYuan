@@ -61,8 +61,8 @@
 - `pageFeedbackConfig.reward.options` 不和默认数组逐项合并：
   规则：一旦显式填写，就整体替换默认打赏项。
 - 配置层图片路径不要假设任意外部根目录别名可直接被 Astro 识别：
-  推荐：站点自有图片放在外部站点根目录 `assets/`，并写成 `assets/...`；远程图片写完整 `https://...`。
-- `/xxx` 或 `public/xxx` 当前指向 FangYuan 主题仓库 `public/`，不要把外部站点自有图片放到外部根目录 `public/` 后假设会自动发布。
+  推荐：站点自有图片放在外部站点根目录 `<siteRoot>/assets/`，并写成 `assets/...`；远程图片写完整 `https://...`。
+- `/xxx` 或 `public/xxx` 不是 external site 的资源目录；当前构建不会再把 FangYuan 仓库 `public/` 作为默认资源入口复制到 `dist`。外部站点自有图片不要放到外部根目录 `public/` 后假设会自动发布。
 
 ## 配置分区
 
@@ -139,10 +139,10 @@
 
 - 作用：横幅图片路径。
 - 路径规则：
-  - `assets/images/banner.webp`：推荐。指向外部站点根目录 `assets/images/banner.webp`，会作为本地图片输入参与构建。
+  - `assets/images/banner.svg`：推荐。指向外部站点根目录 `assets/images/banner.svg`，会作为本地图片输入参与构建。
   - `https://cdn.example.com/banner.webp`：可用。远程图片会原样透传，不会被本地构建打包或校验。
-  - `/favicon/icon.png` 或 `public/favicon/icon.png`：指向 FangYuan 主题仓库 `public/`，不是外部站点根目录 `public/`。
-- 建议：站点自有横幅优先放在外部站点根目录 `assets/`，不要依赖临时构建产物路径。
+  - `/favicon/icon.png` 或 `public/favicon/icon.png`：不是 external site 的资源目录，也不会从 FangYuan 仓库 `public/` 复制旧占位资源。
+- 建议：站点自有横幅优先放在外部站点根目录 `<siteRoot>/assets/`，不要依赖临时构建产物路径。`init-site` 默认会创建 `assets/images/banner.svg` 作为替换占位符。
 
 #### `siteConfig.banner.position`
 
@@ -179,8 +179,8 @@
 #### `siteConfig.favicon[].src`
 
 - 作用：图标路径。
-- 建议：当前通常写主题 `public/` 下的稳定静态路径，例如 `/favicon/icon.png`。
-- 注意：这不是外部站点根目录 `public/`。如果需要让每个外部站点自带 favicon，先确认对应发布链路已经支持 external public assets。
+- 建议：写外部站点根目录 `<siteRoot>/assets/` 下的稳定路径，例如 `assets/favicon/icon.svg`。
+- 注意：`init-site` 默认会创建 `assets/favicon/icon.svg` 作为替换占位符。留空数组则继续使用 FangYuan 内置默认 favicon。
 
 #### `siteConfig.favicon[].theme`
 
@@ -312,7 +312,7 @@
 
 - 作用：头像图片路径。
 - 路径规则：和 `siteConfig.banner.src` 一致。
-- 安全本地写法：`assets/images/avatar.png`。
+- 安全本地写法：`assets/images/avatar.svg`。`init-site` 默认会创建这个替换占位符。
 - 注意：FangYuan 当前没有独立 logo 配置项；这里是侧栏作者头像，不是 favicon。
 
 #### `profileConfig.name`
@@ -466,7 +466,7 @@
 #### `pageFeedbackConfig.reward.options[].image`
 
 - 作用：打赏二维码图片路径。
-- 路径规则：和横幅、头像配置一致。站点自有二维码建议放在外部站点根目录 `assets/` 下，例如 `assets/reward/wechat.png`；写 `/images/reward/...` 时指向 FangYuan 主题仓库的 `public/` 内置占位图。
+- 路径规则：和横幅、头像配置一致。站点自有二维码建议放在外部站点根目录 `<siteRoot>/assets/` 下，例如 `assets/reward/wechat.svg`。`init-site` 默认会创建 `assets/reward/wechat.svg` 和 `assets/reward/alipay.svg` 作为替换占位符。
 
 #### `pageFeedbackConfig.reward.options[].alt`
 

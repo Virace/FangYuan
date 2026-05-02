@@ -18,6 +18,7 @@ import type { ImageMetadata, MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import {
 	commentConfig,
+	configImageBaseRoots,
 	licenseConfig,
 	pageFeedbackConfig,
 	pageMetricsConfig,
@@ -25,6 +26,7 @@ import {
 	siteConfig,
 } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
+import { resolveConfigAssetUrl } from "../../utils/image-source";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 import PostMetadata from "../PostMeta.astro";
 
@@ -52,7 +54,16 @@ const postUrl =
 		? new URL(url(entry.data.publicPath), Astro.site).toString()
 		: Astro.url.toString();
 const feedbackRewardOptions = pageFeedbackConfig.reward.enable
-	? pageFeedbackConfig.reward.options
+	? await Promise.all(
+			pageFeedbackConfig.reward.options.map(async (option) => ({
+				...option,
+				image:
+					(await resolveConfigAssetUrl(
+						option.image,
+						configImageBaseRoots.reward,
+					)) ?? option.image,
+			})),
+		)
 	: [];
 const shouldRenderPageFeedback =
 	pageFeedbackConfig.enable &&

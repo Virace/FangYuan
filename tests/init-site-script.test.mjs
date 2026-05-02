@@ -61,6 +61,36 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		"init-site should document the safe external asset directory",
 	);
 	assert.equal(
+		hasPath(path.join(tempRoot, "site", "assets", "images", "banner.svg")),
+		true,
+		"init-site should create a replaceable banner placeholder",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", "assets", "images", "avatar.svg")),
+		true,
+		"init-site should create a replaceable avatar placeholder",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", "assets", "favicon", "icon.svg")),
+		true,
+		"init-site should create a replaceable favicon placeholder",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", "assets", "reward", "wechat.svg")),
+		true,
+		"init-site should create a replaceable WeChat reward placeholder",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", "assets", "reward", "alipay.svg")),
+		true,
+		"init-site should create a replaceable Alipay reward placeholder",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", "assets", "icons", "police-emblem.svg")),
+		true,
+		"init-site should create a replaceable police record icon placeholder",
+	);
+	assert.equal(
 		hasPath(path.join(tempRoot, "site", "content", "spec", "about.md")),
 		true,
 		"init-site should copy the default about.md into site/content/spec",
@@ -92,7 +122,11 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		/qingyanDevProxyTarget: "?http:\/\/localhost:4401"?/,
 	);
 	assert.match(siteConfigSource, /永久链接规则/);
-	assert.match(siteConfigSource, /安全本地写法：assets\/images\/banner.webp/);
+	assert.match(siteConfigSource, /替换位置：assets\/images\/banner\.svg/);
+	assert.match(siteConfigSource, /src: assets\/images\/banner\.svg/);
+	assert.match(siteConfigSource, /avatar: assets\/images\/avatar\.svg/);
+	assert.match(siteConfigSource, /src: assets\/favicon\/icon\.svg/);
+	assert.match(siteConfigSource, /enable: false[\s\S]*image: assets\/reward\/wechat\.svg/);
 	assert.match(siteConfigSource, /navBarConfig:/);
 	assert.match(siteConfigSource, /pageFeedbackConfig:/);
 
@@ -100,8 +134,8 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		path.join(tempRoot, "site", "assets", "README.md"),
 		"utf8",
 	);
-	assert.match(assetsReadmeSource, /site\/assets/);
-	assert.match(assetsReadmeSource, /assets\/images\/banner\.webp/);
+	assert.match(assetsReadmeSource, /<siteRoot>\/assets/);
+	assert.match(assetsReadmeSource, /替换位置：`assets\/images\/banner\.svg`/);
 
 	const demoPostSource = await readFile(
 		path.join(tempRoot, "site", "content", "posts", "welcome.md"),
