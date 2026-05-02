@@ -55,6 +55,7 @@ import {
 } from "./src/utils/site-source.ts";
 import { resolveSiteSourceContext } from "./src/utils/site-source-context.ts";
 import { externalSiteAssetDevPrefix } from "./src/utils/external-site-assets.ts";
+import { createDevStaticAssetMiddleware } from "./src/utils/dev-static-assets.mjs";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
@@ -351,56 +352,19 @@ function getMimeType(filePath) {
 	return "application/octet-stream";
 }
 
-function tryDecodeExternalSiteAssetUrl(url) {
-	const [pathname] = url.split("?");
-	if (!pathname?.startsWith(externalSiteAssetDevPrefix)) {
-		return null;
-	}
-
-	try {
-		return decodeURIComponent(pathname.slice(externalSiteAssetDevPrefix.length));
-	} catch {
-		return null;
-	}
-}
-
-function serveExternalSiteAsset(req, res, next) {
-	if (!req.url) {
-		next();
-		return;
-	}
-
-	const reference = tryDecodeExternalSiteAssetUrl(req.url);
-	if (!reference || !isExternalSiteAsset(reference)) {
-		next();
-		return;
-	}
-
-	const targetPath = path.resolve(externalSiteRoot, reference);
-	const normalizedTargetPath = targetPath.replace(/\\/g, "/").toLowerCase();
-	if (
-		normalizedTargetPath !== normalizedExternalSiteRoot &&
-		!normalizedTargetPath.startsWith(`${normalizedExternalSiteRoot}/`)
-	) {
-		res.statusCode = 403;
-		res.end("Forbidden");
-		return;
-	}
-
-	if (!fs.existsSync(targetPath)) {
-		next();
-		return;
-	}
-
-	res.setHeader("Content-Type", getMimeType(targetPath));
-	fs.createReadStream(targetPath).pipe(res);
-}
-
 function externalSiteAssetDevServerPlugin() {
+	const devStaticAssetMiddleware = createDevStaticAssetMiddleware({
+		cwd: process.cwd(),
+		externalSiteRoot,
+		externalSiteAssetDevPrefix,
+		getMimeType,
+		isExternalSiteAsset,
+	});
+
 	return {
 		name: "fangyuan-external-site-asset-dev-server",
 		configureServer(server) {
-			server.middlewares.use(serveExternalSiteAsset);
+			server.middlewares.use(devStaticAssetMiddleware);
 		},
 	};
 }
