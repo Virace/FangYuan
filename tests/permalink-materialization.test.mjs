@@ -42,12 +42,12 @@ test("materializePublicPath strips html suffix for Astro file output", () => {
 
 test("getPaginationPublicPath returns directory pagination paths", () => {
 	assert.equal(getPaginationPublicPath(1, "directory"), "/");
-	assert.equal(getPaginationPublicPath(2, "directory"), "/2/");
+	assert.equal(getPaginationPublicPath(2, "directory"), "/page/2/");
 });
 
 test("getPaginationPublicPath returns file pagination paths", () => {
 	assert.equal(getPaginationPublicPath(1, "file"), "/");
-	assert.equal(getPaginationPublicPath(2, "file"), "/2.html");
+	assert.equal(getPaginationPublicPath(2, "file"), "/page/2.html");
 });
 
 test("getStandaloneRoutePublicPath returns directory route paths", () => {

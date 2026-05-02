@@ -225,16 +225,18 @@ About content
 
 				const homeHtml = await readFile(path.join(distRoot, "index.html"), "utf8");
 				await readFile(path.join(distRoot, "archive.html"), "utf8");
-				await readFile(path.join(distRoot, "2.html"), "utf8");
+				await readFile(path.join(distRoot, "page", "2.html"), "utf8");
+				await readFile(path.join(distRoot, "404.html"), "utf8");
 
 				assert.match(homeHtml, /aria-label="主页"/);
 				assert.match(homeHtml, /aria-label="归档"/);
 				assert.match(homeHtml, /aria-label="关于"/);
 				assert.match(homeHtml, /href="\/archive\.html"/);
-				assert.match(homeHtml, /href="\/2\.html"/);
+				assert.match(homeHtml, /href="\/page\/2\.html"/);
 				assert.doesNotMatch(homeHtml, /nav\.home|nav\.archive|nav\.about/);
 				assert.doesNotMatch(homeHtml, /href="\/archive\/"/);
 				assert.doesNotMatch(homeHtml, /href="\/2\/"/);
+				assert.doesNotMatch(homeHtml, /href="\/2\.html"/);
 			},
 		);
 	},

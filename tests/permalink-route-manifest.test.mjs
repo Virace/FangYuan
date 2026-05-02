@@ -138,7 +138,104 @@ test("buildContentRouteManifest rejects spec pages that occupy the built-in arch
 	);
 });
 
-test("buildContentRouteManifest rejects directory content routes that occupy root pagination paths", () => {
+test("buildContentRouteManifest rejects content routes that occupy built-in file routes", () => {
+	assert.throws(
+		() =>
+			buildContentRouteManifest({
+				posts: [],
+				specPages: [
+					{
+						id: "archive-copy",
+						data: {
+							alias: "",
+							permalink: "/archive.html",
+							published: new Date("2026-04-21"),
+						},
+					},
+				],
+				permalinkConfig: {
+					postsPattern: "/%slug%.html",
+					pagesPattern: "/%slug%",
+					trailingSlash: "auto",
+					postPatternRules: [],
+					aliasValidation: "error",
+					updatedDateMode: "manual",
+					updatedDateFallback: "none",
+				},
+			}),
+		/reserved public path "\/archive\.html"/i,
+	);
+});
+
+test("buildContentRouteManifest rejects content routes that occupy the 404 page", () => {
+	assert.throws(
+		() =>
+			buildContentRouteManifest({
+				posts: [],
+				specPages: [
+					{
+						id: "not-found-copy",
+						data: {
+							alias: "",
+							permalink: "/404.html",
+							published: new Date("2026-04-21"),
+						},
+					},
+				],
+				permalinkConfig: {
+					postsPattern: "/%slug%.html",
+					pagesPattern: "/%slug%",
+					trailingSlash: "auto",
+					postPatternRules: [],
+					aliasValidation: "error",
+					updatedDateMode: "manual",
+					updatedDateFallback: "none",
+				},
+			}),
+		/reserved public path "\/404\.html"/i,
+	);
+});
+
+test("buildContentRouteManifest allows root numeric content routes after pagination moves under page", () => {
+	const manifest = buildContentRouteManifest({
+		posts: [
+			{
+				id: "notes/two",
+				data: {
+					title: "Two",
+					published: new Date("2026-04-21"),
+					updated: undefined,
+					alias: "2",
+					permalink: "",
+					draft: false,
+					description: "",
+					image: "",
+					tags: [],
+					category: "",
+					lang: "",
+					prevTitle: "",
+					prevSlug: "",
+					nextTitle: "",
+					nextSlug: "",
+				},
+			},
+		],
+		specPages: [],
+		permalinkConfig: {
+			postsPattern: "/%slug%",
+			pagesPattern: "/%slug%",
+			trailingSlash: "auto",
+			postPatternRules: [],
+			aliasValidation: "error",
+			updatedDateMode: "manual",
+			updatedDateFallback: "none",
+		},
+	});
+
+	assert.equal(manifest.posts[0].publicPath, "/2/");
+});
+
+test("buildContentRouteManifest rejects directory content routes that occupy page pagination paths", () => {
 	assert.throws(
 		() =>
 			buildContentRouteManifest({
@@ -149,8 +246,8 @@ test("buildContentRouteManifest rejects directory content routes that occupy roo
 							title: "Two",
 							published: new Date("2026-04-21"),
 							updated: undefined,
-							alias: "2",
-							permalink: "",
+							alias: "",
+							permalink: "/page/2/",
 							draft: false,
 							description: "",
 							image: "",
@@ -175,7 +272,48 @@ test("buildContentRouteManifest rejects directory content routes that occupy roo
 					updatedDateFallback: "none",
 				},
 			}),
-		/reserved public path "\/2\/"/i,
+		/reserved public path "\/page\/2\/"/i,
+	);
+});
+
+test("buildContentRouteManifest rejects file content routes that occupy page pagination paths", () => {
+	assert.throws(
+		() =>
+			buildContentRouteManifest({
+				posts: [
+					{
+						id: "notes/two",
+						data: {
+							title: "Two",
+							published: new Date("2026-04-21"),
+							updated: undefined,
+							alias: "",
+							permalink: "/page/2.html",
+							draft: false,
+							description: "",
+							image: "",
+							tags: [],
+							category: "",
+							lang: "",
+							prevTitle: "",
+							prevSlug: "",
+							nextTitle: "",
+							nextSlug: "",
+						},
+					},
+				],
+				specPages: [],
+				permalinkConfig: {
+					postsPattern: "/%slug%.html",
+					pagesPattern: "/%slug%",
+					trailingSlash: "auto",
+					postPatternRules: [],
+					aliasValidation: "error",
+					updatedDateMode: "manual",
+					updatedDateFallback: "none",
+				},
+			}),
+		/reserved public path "\/page\/2\.html"/i,
 	);
 });
 

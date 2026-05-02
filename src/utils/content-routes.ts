@@ -155,19 +155,20 @@ function normalizeComparablePublicPath(publicPath: string): string {
 	return publicPath.replace(/\/+$/, "");
 }
 
-function assertRouteDoesNotOccupyReservedDirectoryPath(
-	route: RoutedContentEntry,
-): void {
-	if (route.buildFamily !== "directory") {
-		return;
-	}
-
+function assertRouteDoesNotOccupyReservedPath(route: RoutedContentEntry): void {
 	const normalizedPublicPath = normalizeComparablePublicPath(route.publicPath);
 	const occupiesHomeRoute = normalizedPublicPath === "/";
-	const occupiesRootPagination = /^\/\d+$/.test(normalizedPublicPath);
-	const occupiesArchiveRoot = normalizedPublicPath === "/archive";
+	const occupiesHomePagination = /^\/page\/\d+(?:\.html)?$/.test(
+		normalizedPublicPath,
+	);
+	const occupiesBuiltInRoute = new Set([
+		"/404",
+		"/404.html",
+		"/archive",
+		"/archive.html",
+	]).has(normalizedPublicPath);
 
-	if (!occupiesHomeRoute && !occupiesRootPagination && !occupiesArchiveRoot) {
+	if (!occupiesHomeRoute && !occupiesHomePagination && !occupiesBuiltInRoute) {
 		return;
 	}
 
@@ -251,13 +252,13 @@ export function buildContentRouteManifest({
 	const byPublicPath = new Map<string, RoutedContentEntry>();
 	const postRoutes = posts.map((entry) => {
 		const route = buildPostRoute(entry, permalinkConfig);
-		assertRouteDoesNotOccupyReservedDirectoryPath(route);
+		assertRouteDoesNotOccupyReservedPath(route);
 		ensureUniquePublicPath(byPublicPath, route);
 		return route;
 	});
 	const specRoutes = specPages.map((entry) => {
 		const route = buildSpecRoute(entry, permalinkConfig);
-		assertRouteDoesNotOccupyReservedDirectoryPath(route);
+		assertRouteDoesNotOccupyReservedPath(route);
 		ensureUniquePublicPath(byPublicPath, route);
 		return route;
 	});

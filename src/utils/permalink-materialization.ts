@@ -112,7 +112,9 @@ export function getPaginationPublicPath(
 		return "/";
 	}
 
-	return buildFormat === "file" ? `/${pageNumber}.html` : `/${pageNumber}/`;
+	return buildFormat === "file"
+		? `/page/${pageNumber}.html`
+		: `/page/${pageNumber}/`;
 }
 
 export function getStandaloneRoutePublicPath(
