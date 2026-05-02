@@ -151,7 +151,7 @@ Probe
 );
 
 test(
-	"file-family external sites render localized built-in nav links and matching pagination URLs",
+	"mixed permalink external sites render localized built-in nav links and matching pagination URLs",
 	{ concurrency: false },
 	async (t) => {
 		await withMutableSiteFixture(
@@ -167,7 +167,7 @@ test(
   permalink:
     postsPattern: /%slug%.html
     pagesPattern: /%slug%
-    trailingSlash: never
+    trailingSlash: auto
     postPatternRules: []
     aliasValidation: error
     updatedDateMode: manual
@@ -224,19 +224,18 @@ About content
 				runBuild();
 
 				const homeHtml = await readFile(path.join(distRoot, "index.html"), "utf8");
-				await readFile(path.join(distRoot, "archive.html"), "utf8");
-				await readFile(path.join(distRoot, "page", "2.html"), "utf8");
+				await readFile(path.join(distRoot, "archive", "index.html"), "utf8");
+				await readFile(path.join(distRoot, "page", "2", "index.html"), "utf8");
 				await readFile(path.join(distRoot, "404.html"), "utf8");
 
 				assert.match(homeHtml, /aria-label="主页"/);
 				assert.match(homeHtml, /aria-label="归档"/);
 				assert.match(homeHtml, /aria-label="关于"/);
-				assert.match(homeHtml, /href="\/archive\.html"/);
-				assert.match(homeHtml, /href="\/page\/2\.html"/);
+				assert.match(homeHtml, /href="\/archive\/"/);
+				assert.match(homeHtml, /href="\/page\/2\/"/);
 				assert.doesNotMatch(homeHtml, /nav\.home|nav\.archive|nav\.about/);
-				assert.doesNotMatch(homeHtml, /href="\/archive\/"/);
-				assert.doesNotMatch(homeHtml, /href="\/2\/"/);
-				assert.doesNotMatch(homeHtml, /href="\/2\.html"/);
+				assert.doesNotMatch(homeHtml, /href="\/archive\.html"/);
+				assert.doesNotMatch(homeHtml, /href="\/page\/2\.html"/);
 			},
 		);
 	},

@@ -1,11 +1,13 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { siteConfig } from "../config";
+import { resolvePermalinkForEntry } from "./permalink.ts";
 import {
 	getPaginationPublicPath,
-	getStandaloneRoutePublicPath,
 	resolveAstroBuildConfig,
 } from "./permalink-materialization";
+
+const builtInRoutePublished = new Date("1970-01-01T00:00:00.000Z");
 
 function getBuiltInRouteBuildFormat(): "directory" | "file" {
 	const buildConfig = resolveAstroBuildConfig({
@@ -21,7 +23,17 @@ function getBuiltInRouteBuildFormat(): "directory" | "file" {
 }
 
 export function getArchivePath(): string {
-	return getStandaloneRoutePublicPath("archive", getBuiltInRouteBuildFormat());
+	return resolvePermalinkForEntry({
+		entryType: "spec",
+		entryId: "archive",
+		fileStem: "archive",
+		alias: "",
+		permalink: "",
+		pattern: siteConfig.permalink.pagesPattern,
+		published: builtInRoutePublished,
+		aliasValidation: siteConfig.permalink.aliasValidation,
+		trailingSlash: siteConfig.permalink.trailingSlash,
+	});
 }
 
 export function getHomePaginationPath(pageNumber: number): string {
