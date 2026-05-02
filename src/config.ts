@@ -41,6 +41,7 @@ import {
 type ExternalSiteConfig = ExternalSiteConfigYaml["siteConfig"];
 type ExternalNavBarConfig = ExternalSiteConfigYaml["navBarConfig"];
 type ExternalProfileConfig = ExternalSiteConfigYaml["profileConfig"];
+type ExternalPageFeedbackConfig = ExternalSiteConfigYaml["pageFeedbackConfig"];
 let externalSiteConfig: ExternalSiteConfigYaml | null = null;
 
 if (import.meta.env.SSR) {
@@ -170,7 +171,7 @@ function mergePageMetricsConfig(
 
 function mergePageFeedbackConfig(
 	defaultConfig: PageFeedbackConfig,
-	override?: Partial<PageFeedbackConfig>,
+	override?: ExternalPageFeedbackConfig,
 ): PageFeedbackConfig {
 	if (!override) {
 		return defaultConfig;
@@ -180,7 +181,15 @@ function mergePageFeedbackConfig(
 		...defaultConfig,
 		...override,
 		qingyan: override.qingyan ?? defaultConfig.qingyan,
-		rewardOptions: override.rewardOptions ?? defaultConfig.rewardOptions,
+		like: {
+			...defaultConfig.like,
+			...override.like,
+		},
+		reward: {
+			...defaultConfig.reward,
+			...override.reward,
+			options: override.reward?.options ?? defaultConfig.reward.options,
+		},
 	};
 }
 

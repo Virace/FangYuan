@@ -27,11 +27,12 @@ test(
 				await writeFile(
 					siteConfigPath,
 					`pageFeedbackConfig:
-  rewardOptions:
-    - id: coffee
-      name: Coffee
-      image: /images/reward/wechat-placeholder.svg
-      alt: Coffee
+  reward:
+    options:
+      - id: coffee
+        name: Coffee
+        image: /images/reward/wechat-placeholder.svg
+        alt: Coffee
 `,
 					"utf8",
 				);
@@ -65,6 +66,70 @@ Reward only feedback demo.
 				);
 				assert.match(articleHtml, /Coffee/);
 				assert.doesNotMatch(articleHtml, /CommentSection/);
+			},
+		);
+	},
+);
+
+test(
+	"build omits PostFeedback when like and reward are both disabled",
+	{ concurrency: false },
+	async (t) => {
+		await withMutableSiteFixture(
+			t,
+			async ({
+				siteConfigPath,
+				postDir,
+				siteAboutPath,
+				distRoot,
+				markCreated,
+			}) => {
+				await writeFile(
+					siteConfigPath,
+					`pageFeedbackConfig:
+  enable: true
+  qingyan:
+    siteKey: fangyuan-test
+    apiBase: /api
+  like:
+    enable: false
+  reward:
+    enable: false
+    options:
+      - id: coffee
+        name: Coffee
+        image: /images/reward/wechat-placeholder.svg
+        alt: Coffee
+`,
+					"utf8",
+				);
+				await writeFile(siteAboutPath, "# About\n", "utf8");
+				await writePost(
+					postDir,
+					markCreated,
+					"__disabled-feedback-demo/index.md",
+					`---
+title: Disabled Feedback Demo
+published: 2026-04-22
+description: disabled feedback should not mount
+tags: [Demo]
+category: Demo
+draft: false
+---
+Disabled feedback demo.
+`,
+				);
+
+				runBuild();
+
+				const articleHtml = await readFile(
+					path.join(distRoot, "__disabled-feedback-demo", "index.html"),
+					"utf8",
+				);
+
+				assert.doesNotMatch(articleHtml, /PostFeedback/);
+				assert.doesNotMatch(articleHtml, /Coffee/);
+				assert.doesNotMatch(articleHtml, /支持这篇文章/);
 			},
 		);
 	},

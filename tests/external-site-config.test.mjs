@@ -92,6 +92,47 @@ qingyanDevProxyTarget: null
 	assert.equal(loaded?.qingyanDevProxyTarget, null);
 });
 
+test("loadExternalSiteConfigYaml accepts page feedback like and reward switches", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-config-"));
+	const configPath = path.join(tempRoot, "site.config.yaml");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await writeFile(
+		configPath,
+		`
+pageFeedbackConfig:
+  enable: true
+  qingyan:
+    siteKey: virace-notes
+    apiBase: /api
+  like:
+    enable: false
+  reward:
+    enable: true
+    options:
+      - id: coffee
+        name: Coffee
+        image: assets/reward/coffee.png
+        alt: Coffee reward QR code
+`,
+		"utf8",
+	);
+
+	const loaded = loadExternalSiteConfigYaml(configPath);
+	assert.equal(loaded?.pageFeedbackConfig?.like?.enable, false);
+	assert.equal(loaded?.pageFeedbackConfig?.reward?.enable, true);
+	assert.deepEqual(loaded?.pageFeedbackConfig?.reward?.options, [
+		{
+			id: "coffee",
+			name: "Coffee",
+			image: "assets/reward/coffee.png",
+			alt: "Coffee reward QR code",
+		},
+	]);
+});
+
 test("loadExternalSiteConfigYaml accepts the full rendered template", async (t) => {
 	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-config-"));
 	const configPath = path.join(tempRoot, "site.config.yaml");
@@ -160,4 +201,25 @@ test("loadExternalSiteConfigYaml rejects unknown nested keys", async (t) => {
 	);
 
 	assert.throws(() => loadExternalSiteConfigYaml(configPath), /banner/i);
+});
+
+test("loadExternalSiteConfigYaml rejects legacy page feedback rewardOptions", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-config-"));
+	const configPath = path.join(tempRoot, "site.config.yaml");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await writeFile(
+		configPath,
+		`pageFeedbackConfig:
+  rewardOptions:
+    - id: coffee
+      name: Coffee
+      image: /images/reward/wechat-placeholder.svg
+`,
+		"utf8",
+	);
+
+	assert.throws(() => loadExternalSiteConfigYaml(configPath), /rewardOptions/);
 });

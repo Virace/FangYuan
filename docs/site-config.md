@@ -54,9 +54,11 @@
 - `ref` 链接不能再写 `external`。
 - 导航项的稳定标识取 `id`，没有 `id` 时退回 `name`。最终标识必须唯一，重复会报错。
 - `pageMetricsConfig.qingyan`、`pageFeedbackConfig.qingyan`、`commentConfig.qingyan` 都是可选的，但是否真正启用前端功能，还要结合各自的 `enable` 字段一起看。
+- `pageFeedbackConfig` 的文章页区块采用“点赞或打赏”的或运算：
+  规则：`pageFeedbackConfig.enable=true`，并且 `like` 或 `reward` 至少一项实际可显示时，才渲染“支持这篇文章”区块。
 - `commentConfig.rootLimit` 和 `commentConfig.maxDepth` 会在运行时做归一化：
   规则：会向下取整，并限制最小值为 `1`。
-- `pageFeedbackConfig.rewardOptions` 不和默认数组逐项合并：
+- `pageFeedbackConfig.reward.options` 不和默认数组逐项合并：
   规则：一旦显式填写，就整体替换默认打赏项。
 - 配置层图片路径不要假设任意外部根目录别名可直接被 Astro 识别：
   推荐：站点自有图片放在外部站点根目录 `assets/`，并写成 `assets/...`；远程图片写完整 `https://...`。
@@ -424,6 +426,8 @@
 #### `pageFeedbackConfig.enable`
 
 - 作用：页面反馈面板开关。
+- 规则：这是总开关；单独开启它不会强制渲染区块，还需要点赞或打赏至少一项实际可显示。
+- 关闭行为：设为 `false` 时，无论点赞和打赏子配置如何，文章页都不会渲染“支持这篇文章”区块。
 
 #### `pageFeedbackConfig.qingyan.siteKey`
 
@@ -433,25 +437,38 @@
 
 - 作用：页面反馈使用的 QingYan API 基础路径。
 
-#### `pageFeedbackConfig.rewardOptions`
+#### `pageFeedbackConfig.like.enable`
+
+- 作用：控制“支持这篇文章”区块里的点赞按钮。
+- 规则：只有 `pageFeedbackConfig.enable=true`、`like.enable=true` 且 `qingyan` 非空时，点赞按钮才会实际显示。
+- 注意：这里不控制评论区的评论点赞；评论区点赞由评论后端能力和评论组件控制。
+
+#### `pageFeedbackConfig.reward.enable`
+
+- 作用：控制“支持这篇文章”区块里的打赏按钮。
+- 规则：只有 `pageFeedbackConfig.enable=true`、`reward.enable=true` 且 `reward.options` 非空时，打赏按钮才会实际显示。
+- 关闭行为：设为 `false` 后，即使仍保留二维码配置，也不会显示打赏入口。
+
+#### `pageFeedbackConfig.reward.options`
 
 - 作用：打赏选项列表。
 - 合并规则：一旦显式填写，会整体替换默认数组。
-- 冲突提醒：即使 `qingyan` 为 `null`，只要 `enable=true` 且 `rewardOptions` 非空，仍然可以走纯打赏展示模式。
+- 冲突提醒：即使 `qingyan` 为 `null`，只要 `enable=true`、`reward.enable=true` 且 `reward.options` 非空，仍然可以走纯打赏展示模式。
 
-#### `pageFeedbackConfig.rewardOptions[].id`
+#### `pageFeedbackConfig.reward.options[].id`
 
 - 作用：打赏项稳定标识。
 
-#### `pageFeedbackConfig.rewardOptions[].name`
+#### `pageFeedbackConfig.reward.options[].name`
 
 - 作用：打赏项名称。
 
-#### `pageFeedbackConfig.rewardOptions[].image`
+#### `pageFeedbackConfig.reward.options[].image`
 
 - 作用：打赏二维码图片路径。
+- 路径规则：和横幅、头像配置一致。站点自有二维码建议放在外部站点根目录 `assets/` 下，例如 `assets/reward/wechat.png`；写 `/images/reward/...` 时指向 FangYuan 主题仓库的 `public/` 内置占位图。
 
-#### `pageFeedbackConfig.rewardOptions[].alt`
+#### `pageFeedbackConfig.reward.options[].alt`
 
 - 作用：打赏二维码图片替代文本。
 

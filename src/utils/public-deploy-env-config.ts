@@ -69,5 +69,15 @@ export function applyPublicQingYanPageFeedbackConfig(
 	config: PageFeedbackConfig,
 	qingyan: QingYanClientConfig | null,
 ): PageFeedbackConfig {
-	return qingyan ? { ...config, enable: true, qingyan } : config;
+	return qingyan
+		? {
+				...config,
+				enable: true,
+				qingyan,
+				like: {
+					...config.like,
+					enable: true,
+				},
+			}
+		: config;
 }

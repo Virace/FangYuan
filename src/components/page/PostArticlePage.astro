@@ -51,6 +51,13 @@ const postUrl =
 	Astro.site && entry.data.publicPath
 		? new URL(url(entry.data.publicPath), Astro.site).toString()
 		: Astro.url.toString();
+const feedbackRewardOptions = pageFeedbackConfig.reward.enable
+	? pageFeedbackConfig.reward.options
+	: [];
+const shouldRenderPageFeedback =
+	pageFeedbackConfig.enable &&
+	((pageFeedbackConfig.like.enable && pageFeedbackConfig.qingyan) ||
+		feedbackRewardOptions.length > 0);
 
 const jsonLd = {
 	"@context": "https://schema.org",
@@ -129,13 +136,14 @@ const jsonLd = {
                 <Content />
             </Markdown>
 
-            {pageFeedbackConfig.enable && (
+            {shouldRenderPageFeedback && (
                 <PostFeedback
                     client:only="svelte"
                     postKey={postKey}
                     postTitle={entry.data.title}
                     postUrl={postUrl}
-                    rewardOptions={pageFeedbackConfig.rewardOptions ?? []}
+                    enableLike={pageFeedbackConfig.like.enable}
+                    rewardItems={feedbackRewardOptions}
                 />
             )}
 

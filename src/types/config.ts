@@ -193,5 +193,11 @@ export type PageMetricsConfig = {
 export type PageFeedbackConfig = {
 	enable: boolean;
 	qingyan?: QingYanClientConfig | null;
-	rewardOptions?: RewardOption[];
+	like: {
+		enable: boolean;
+	};
+	reward: {
+		enable: boolean;
+		options: RewardOption[];
+	};
 };

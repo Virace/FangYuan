@@ -22,7 +22,8 @@ import RewardModal from "./RewardModal.svelte";
 export let postKey: string;
 export let postTitle = "";
 export let postUrl = "";
-export let rewardOptions: RewardOption[] = [];
+export let enableLike = true;
+export let rewardItems: RewardOption[] = [];
 
 const qingyanClient = getQingYanClient();
 
@@ -48,8 +49,8 @@ let pendingLikeAction = false;
 let noticeTimer: ReturnType<typeof setTimeout> | null = null;
 let captchaFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 
-$: showLike = capability?.supportsLike ?? false;
-$: showReward = rewardOptions.length > 0;
+$: showLike = enableLike && (capability?.supportsLike ?? false);
+$: showReward = rewardItems.length > 0;
 $: showCard = showLike || showReward;
 
 function clearNoticeTimer() {
@@ -361,7 +362,7 @@ onDestroy(() => {
 
 	<RewardModal
 		open={rewardOpen}
-		options={rewardOptions}
+		options={rewardItems}
 		onClose={() => (rewardOpen = false)}
 	/>
 {/if}

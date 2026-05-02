@@ -41,7 +41,10 @@ export type ExternalSiteConfigYaml = {
 	expressiveCodeConfig?: Partial<ExpressiveCodeConfig>;
 	commentConfig?: Partial<CommentConfig>;
 	pageMetricsConfig?: Partial<PageMetricsConfig>;
-	pageFeedbackConfig?: Partial<PageFeedbackConfig>;
+	pageFeedbackConfig?: Partial<Omit<PageFeedbackConfig, "like" | "reward">> & {
+		like?: Partial<PageFeedbackConfig["like"]>;
+		reward?: Partial<PageFeedbackConfig["reward"]>;
+	};
 	qingyanDevProxyTarget?: string | null;
 };
 
@@ -272,7 +275,19 @@ const externalSiteConfigSchema: z.ZodTypeAny = z
 			.object({
 				enable: z.boolean().optional(),
 				qingyan: qingyanSchema,
-				rewardOptions: z.array(rewardOptionSchema).optional(),
+				like: z
+					.object({
+						enable: z.boolean().optional(),
+					})
+					.strict()
+					.optional(),
+				reward: z
+					.object({
+						enable: z.boolean().optional(),
+						options: z.array(rewardOptionSchema).optional(),
+					})
+					.strict()
+					.optional(),
 			})
 			.strict()
 			.optional(),

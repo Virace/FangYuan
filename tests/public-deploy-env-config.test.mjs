@@ -71,12 +71,26 @@ test("public deploy env applies QingYan to all frontend integration surfaces", (
 			{
 				enable: false,
 				qingyan: null,
+				like: {
+					enable: false,
+				},
+				reward: {
+					enable: false,
+					options: [],
+				},
 			},
 			qingyan,
 		),
 		{
 			enable: true,
 			qingyan,
+			like: {
+				enable: true,
+			},
+			reward: {
+				enable: false,
+				options: [],
+			},
 		},
 	);
 });

@@ -248,29 +248,41 @@ pageMetricsConfig:
 
 pageFeedbackConfig:
   # 页面反馈面板总开关。
+  # 只有总开关开启，并且点赞或打赏至少一项开启时，文章页才会渲染“支持这篇文章”区块。
   enable: true
 
   # 设为 null 时不会走 QingYan 反馈后端。
-  # 但只要 enable=true 且 rewardOptions 非空，仍然可以走纯打赏展示模式。
+  # 只有 like.enable=true 且 qingyan 非空时，点赞按钮才会显示。
+  # 打赏可以不依赖 QingYan，只要 reward.enable=true 且 reward.options 非空即可显示。
   qingyan: null
   # qingyan:
   #   siteKey: {{QINGYAN_SITE_KEY}}
   #   apiBase: /api
 
-  # 打赏项列表。
-  # 一旦显式填写，会整体替换默认数组，不会逐项合并。
-  rewardOptions:
-    - id: wechat
-      # 前端稳定标识，建议保持短且唯一。
-      name: 微信
-      # 打赏二维码图片路径。
-      image: /images/reward/wechat-placeholder.svg
-      # 图片替代文本。
-      alt: 微信打赏二维码
-    - id: alipay
-      name: 支付宝
-      image: /images/reward/alipay-placeholder.svg
-      alt: 支付宝打赏二维码
+  like:
+    # 页面点赞开关。
+    # 这是“支持这篇文章”区块中的点赞按钮，不是评论区里的评论点赞。
+    enable: true
+
+  reward:
+    # 打赏开关。
+    # 关闭后即使 options 里仍有二维码配置，也不会显示打赏入口。
+    enable: true
+
+    # 打赏项列表。
+    # 一旦显式填写，会整体替换默认数组，不会逐项合并。
+    options:
+      - id: wechat
+        # 前端稳定标识，建议保持短且唯一。
+        name: 微信
+        # 打赏二维码图片路径。
+        image: /images/reward/wechat-placeholder.svg
+        # 图片替代文本。
+        alt: 微信打赏二维码
+      - id: alipay
+        name: 支付宝
+        image: /images/reward/alipay-placeholder.svg
+        alt: 支付宝打赏二维码
 
 # 本地 QingYan 代理目标。
 # 仅用于开发期 FangYuan 访问本地 QingYan 服务，不是正式对外配置。
