@@ -32,6 +32,7 @@ import { remarkExpressiveMarkdown } from "./src/plugins/remark-expressive-markdo
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 import { resolveSiteBuildPaths } from "./scripts/site/build-paths.mjs";
 import { resolveAstroBuildConfig } from "./src/utils/permalink-materialization.ts";
+import { clearContentRouteManifestCache } from "./src/utils/content-routes.ts";
 import {
 	normalizeQingYanDevProxyPath,
 	normalizeQingYanDevProxyRequestPath,
@@ -348,17 +349,21 @@ function externalSiteAssetPlugin() {
 	};
 }
 
-function externalSiteDevWatchPlugin() {
+function externalSiteDevWatchIntegration() {
 	return {
 		name: "fangyuan-external-site-dev-watch",
-		configureServer(server) {
-			registerExternalSiteDevWatch({
-				server,
-				siteRoot: externalSiteRoot,
-				enabled:
-					siteSourceContext.useExternalContent ||
-					siteSourceContext.useExternalConfig,
-			});
+		hooks: {
+			"astro:server:setup"({ server, refreshContent }) {
+				registerExternalSiteDevWatch({
+					server,
+					siteRoot: externalSiteRoot,
+					enabled:
+						siteSourceContext.useExternalContent ||
+						siteSourceContext.useExternalConfig,
+					refreshContent,
+					clearContentRouteManifestCache,
+				});
+			},
 		},
 	};
 }
@@ -431,6 +436,7 @@ export default defineConfig({
 			}
 		: {}),
 	integrations: [
+		externalSiteDevWatchIntegration(),
 		swup({
 			theme: false,
 			animationClass: "transition-swup-", // see https://swup.js.org/options/#animationselector
@@ -564,7 +570,6 @@ export default defineConfig({
 		plugins: [
 			externalSiteAssetModulePlugin(),
 			externalSiteAssetPlugin(),
-			externalSiteDevWatchPlugin(),
 			externalSiteAssetDevServerPlugin(),
 			tailwindcss(),
 			...(qingyanDevProxyMiddlewarePlugin

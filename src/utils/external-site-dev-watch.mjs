@@ -33,13 +33,23 @@ function reloadServer(server) {
 	server.ws?.send({ type: "full-reload", path: "*" });
 }
 
-export function registerExternalSiteDevWatch({ server, siteRoot, enabled }) {
+function notifyContentChanged(server) {
+	server.environments?.ssr?.hot.send("astro:content-changed", {});
+}
+
+export function registerExternalSiteDevWatch({
+	server,
+	siteRoot,
+	enabled,
+	refreshContent,
+	clearContentRouteManifestCache,
+}) {
 	if (!enabled) {
 		return;
 	}
 
 	server.watcher.add(resolveExternalSiteWatchPaths(siteRoot));
-	server.watcher.on("all", (_eventName, changedPath) => {
+	server.watcher.on("all", async (_eventName, changedPath) => {
 		if (!isInsideExternalSiteRoot(siteRoot, changedPath)) {
 			return;
 		}
@@ -49,6 +59,9 @@ export function registerExternalSiteDevWatch({ server, siteRoot, enabled }) {
 			return;
 		}
 
+		await refreshContent?.();
+		clearContentRouteManifestCache?.();
+		notifyContentChanged(server);
 		reloadServer(server);
 	});
 }

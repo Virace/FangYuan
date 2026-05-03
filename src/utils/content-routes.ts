@@ -388,6 +388,10 @@ export async function applyEffectiveUpdatedDates(
 
 let cachedManifestPromise: Promise<ContentRouteManifest> | null = null;
 
+export function clearContentRouteManifestCache(): void {
+	cachedManifestPromise = null;
+}
+
 export async function getContentRouteManifest(): Promise<ContentRouteManifest> {
 	if (!cachedManifestPromise) {
 		cachedManifestPromise = (async () => {
