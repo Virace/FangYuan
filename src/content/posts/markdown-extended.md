@@ -21,6 +21,52 @@ draft: false
 ::github{repo="Virace/FangYuan"}
 ```
 
+## Bilibili 视频
+
+提供视频的 BV 号即可插入 Bilibili 播放器，`p` 用于指定分 P，`title` 用于辅助说明。
+
+::bilibili{bvid="BV1fK4y1s7Qf" p="1" title="Bilibili 视频示例"}
+
+```markdown
+::bilibili{bvid="BV1fK4y1s7Qf" p="1" title="Bilibili 视频示例"}
+```
+
+## 外链卡片
+
+外链卡片适合友链页面。只提供标题、描述和链接时，会按外链域名使用 favicon fallback；如果有站点 logo，也可以显式传入一个完整图片 URL。
+
+::link-card{url="https://astro.build" title="Astro" description="适合构建内容站点的 Web 框架。"}
+
+::link-card{url="https://github.com/Virace/FangYuan" title="FangYuan" description="当前站点主题仓库。" logo="https://github.githubassets.com/favicons/favicon.svg"}
+
+```markdown
+::link-card{url="https://astro.build" title="Astro" description="适合构建内容站点的 Web 框架。"}
+
+::link-card{url="https://github.com/Virace/FangYuan" title="FangYuan" description="当前站点主题仓库。" logo="https://github.githubassets.com/favicons/favicon.svg"}
+```
+
+### 多列友链
+
+多张卡片可以放进 `link-grid` 容器中，布局会根据屏幕宽度自动换列。
+
+:::link-grid
+::link-card{url="https://astro.build" title="Astro" description="适合构建内容站点的 Web 框架。"}
+
+::link-card{url="https://svelte.dev" title="Svelte" description="用于构建交互组件的前端框架。"}
+
+::link-card{url="https://vite.dev" title="Vite" description="现代前端工具链。"}
+:::
+
+```markdown
+:::link-grid
+::link-card{url="https://astro.build" title="Astro" description="适合构建内容站点的 Web 框架。"}
+
+::link-card{url="https://svelte.dev" title="Svelte" description="用于构建交互组件的前端框架。"}
+
+::link-card{url="https://vite.dev" title="Vite" description="现代前端工具链。"}
+:::
+```
+
 ## 提示块
 
 当前支持以下几种提示块类型：`note`、`tip`、`important`、`warning`、`caution`

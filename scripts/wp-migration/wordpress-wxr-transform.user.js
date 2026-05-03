@@ -32,7 +32,7 @@ function renderBilibiliShortcodes(source, _notes, helpers) {
 			if (!bvid) {
 				return "";
 			}
-			return `\n\n<iframe width="100%" height="468" src="//player.bilibili.com/player.html?bvid=${bvid}&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>\n\n`;
+			return `\n\n::bilibili{bvid=${helpers.yamlString(bvid)}}\n\n`;
 		},
 	);
 }

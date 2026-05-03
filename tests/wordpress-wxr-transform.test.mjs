@@ -126,7 +126,8 @@ test("transformWxrToPreview renders first-batch semantics into markdown placehol
 	assert.match(entry.markdown, /^> line 1/m);
 	assert.match(entry.markdown, /:::warning[\s\S]*Alert[\s\S]*:::/m);
 	assert.match(entry.markdown, /:::fold\{title="Fold me"\}/);
-	assert.match(entry.markdown, /player\.bilibili\.com\/player\.html\?bvid=BV1xx411c7mD/);
+	assert.match(entry.markdown, /::bilibili\{bvid="BV1xx411c7mD"\}/);
+	assert.doesNotMatch(entry.markdown, /player\.bilibili\.com\/player\.html/);
 	assert.doesNotMatch(entry.markdown, /music id/);
 	assert.match(entry.markdown, /\[Gist\]\(https:\/\/gist\.github\.com\/Virace\/f6036bfd2baa8129ec6b142230b10924\)/);
 	assert.match(entry.markdown, /- \[x86\.dll\]\(https:\/\/example\.com\/x86\.dll\)/);

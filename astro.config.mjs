@@ -26,7 +26,10 @@ import {
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
+import { BilibiliVideoComponent } from "./src/plugins/rehype-component-bilibili-video.mjs";
 import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
+import { LinkCardComponent } from "./src/plugins/rehype-component-link-card.mjs";
+import { LinkGridComponent } from "./src/plugins/rehype-component-link-grid.mjs";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkExpressiveMarkdown } from "./src/plugins/remark-expressive-markdown.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
@@ -524,7 +527,10 @@ export default defineConfig({
 				rehypeComponents,
 				{
 					components: {
+						bilibili: BilibiliVideoComponent,
 						github: GithubCardComponent,
+						"link-card": LinkCardComponent,
+						"link-grid": LinkGridComponent,
 						note: (x, y) => AdmonitionComponent(x, y, "note"),
 						tip: (x, y) => AdmonitionComponent(x, y, "tip"),
 						important: (x, y) => AdmonitionComponent(x, y, "important"),
