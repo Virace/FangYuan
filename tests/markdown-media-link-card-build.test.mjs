@@ -11,8 +11,27 @@ async function writePost(postDir, markCreated, relativePath, source) {
 	await writeFile(absolutePath, source, "utf8");
 }
 
+async function writeSvg(filePath, label) {
+	await mkdir(path.dirname(filePath), { recursive: true });
+	await writeFile(
+		filePath,
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><title>${label}</title><rect width="32" height="32" fill="#2563eb"/></svg>`,
+		"utf8",
+	);
+}
+
 function countMatches(source, pattern) {
 	return [...source.matchAll(pattern)].length;
+}
+
+function getAnchorHtml(source, href) {
+	const start = source.indexOf(`<a class="card-link no-styling" href="${href}"`);
+	assert.notEqual(start, -1, `expected link card for ${href}`);
+
+	const end = source.indexOf("</a>", start);
+	assert.notEqual(end, -1, `expected closing link card tag for ${href}`);
+
+	return source.slice(start, end + "</a>".length);
 }
 
 test(
@@ -46,6 +65,14 @@ test(
 					"utf8",
 				);
 				await writeFile(siteAboutPath, "# About\n", "utf8");
+				await writeSvg(
+					path.join(path.dirname(siteConfigPath), "assets", "friends", "example-logo.svg"),
+					"asset link logo",
+				);
+				await writeSvg(
+					path.join(postDir, "relative-link-logo.svg"),
+					"relative link logo",
+				);
 				await writePost(
 					postDir,
 					markCreated,
@@ -70,7 +97,9 @@ draft: false
 
 ::link-card{url="https://logo.example.com" title="Logo Site" description="A site with remote logo." logo="https://logo.example.com/logo.svg"}
 
-::link-card{url="https://asset.example.com" title="Asset Logo" description="Should be rejected in phase one." logo="assets/friends/example-logo.svg"}
+::link-card{url="https://asset.example.com" title="Asset Logo" description="External site asset logo." logo="assets/friends/example-logo.svg"}
+
+::link-card{url="https://relative.example.com" title="Relative Logo" description="Article-relative logo." logo="./relative-link-logo.svg"}
 
 ::link-card{url="javascript:alert(1)" title="Bad Site" description="Should not become a link."}
 
@@ -122,11 +151,24 @@ draft: false
 					articleHtml,
 					/<img(?=[^>]*lc-logo)(?=[^>]*src="https:\/\/logo\.example\.com\/logo\.svg")[^>]*>/,
 				);
-				assert.doesNotMatch(articleHtml, /assets\/friends\/example-logo\.svg/);
-				assert.match(
+				const assetLogoCard = getAnchorHtml(
 					articleHtml,
-					/data-md-directive-error="Invalid link-card logo"/,
+					"https://asset.example.com",
 				);
+				const relativeLogoCard = getAnchorHtml(
+					articleHtml,
+					"https://relative.example.com",
+				);
+				assert.match(
+					assetLogoCard,
+					/<img(?=[^>]*lc-logo)(?=[^>]*src="\/static\/[^"]+\.svg")[^>]*>/,
+				);
+				assert.match(
+					relativeLogoCard,
+					/<img(?=[^>]*lc-logo)(?=[^>]*src="\/static\/[^"]+\.svg")[^>]*>/,
+				);
+				assert.doesNotMatch(articleHtml, /assets\/friends\/example-logo\.svg/);
+				assert.doesNotMatch(articleHtml, /\.\/relative-link-logo\.svg/);
 				assert.doesNotMatch(articleHtml, /href="javascript:alert\(1\)"/);
 				assert.match(
 					articleHtml,
