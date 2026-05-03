@@ -50,6 +50,28 @@ qingyanDevProxyTarget: http://localhost:4401
 	assert.equal(loaded?.qingyanDevProxyTarget, "http://localhost:4401");
 });
 
+test("loadExternalSiteConfigYaml accepts FangYuan config migration metadata", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-yaml-"));
+	const configPath = path.join(tempRoot, "site.config.yaml");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await writeFile(
+		configPath,
+		`
+fangyuanConfigVersion: 1
+siteConfig:
+  title: Versioned
+`,
+		"utf8",
+	);
+
+	const loaded = loadExternalSiteConfigYaml(configPath);
+	assert.equal(loaded?.fangyuanConfigVersion, 1);
+	assert.equal(loaded?.siteConfig?.title, "Versioned");
+});
+
 test("loadExternalSiteConfigYaml throws on invalid toc depth", async (t) => {
 	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-yaml-"));
 	const configPath = path.join(tempRoot, "site.config.yaml");

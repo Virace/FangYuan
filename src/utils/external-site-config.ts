@@ -15,6 +15,7 @@ import type {
 } from "../types/config";
 
 export type ExternalSiteConfigYaml = {
+	fangyuanConfigVersion?: number;
 	siteConfig?: Omit<
 		Partial<SiteConfig>,
 		"themeColor" | "banner" | "toc" | "permalink" | "postSort"
@@ -111,6 +112,7 @@ const rewardOptionSchema = z
 
 const externalSiteConfigSchema: z.ZodTypeAny = z
 	.object({
+		fangyuanConfigVersion: z.number().int().nonnegative().optional(),
 		siteConfig: z
 			.object({
 				title: z.string().optional(),

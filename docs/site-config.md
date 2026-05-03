@@ -48,6 +48,7 @@
 
 ## 严格模式与冲突规则
 
+- `fangyuanConfigVersion` 是 FangYuan migration 元数据，位于 YAML 顶层；缺失时视为旧版本配置，由 `update-site` 负责补齐。
 - 未知字段会被直接拒绝，不能靠“多写几个字段试试”。
 - `navBarConfig.links` 里的每一项必须二选一：
   规则：`url` 和 `ref` 只能出现一个，不能同时出现，也不能同时缺失。
@@ -63,6 +64,28 @@
 - 配置层图片路径不要假设任意外部根目录别名可直接被 Astro 识别：
   推荐：站点自有图片放在外部站点根目录 `<siteRoot>/assets/`，并写成 `assets/...`；远程图片写完整 `https://...`。
 - `/xxx` 或 `public/xxx` 不是 external site 的资源目录；当前构建不会再把 FangYuan 仓库 `public/` 作为默认资源入口复制到 `dist`。外部站点自有图片不要放到外部根目录 `public/` 后假设会自动发布。
+
+## 配置更新与备份
+
+已有外部站点使用 `update-site` 检查和应用配置迁移：
+
+```bash
+node scripts/site/update-site.js --site-root ../my-site --dry-run
+node scripts/site/update-site.js --site-root ../my-site --apply
+```
+
+默认不传 `--apply` 时就是 dry-run，不会写任何文件。`--apply` 写回任何已有文件前会先备份原文件；同一次更新的备份都放在同一个时间戳目录，目录内部保持原相对路径：
+
+```text
+<siteRoot>/.backup/YYYYMMDD-HHMMSS/frontmatter.json
+<siteRoot>/.backup/YYYYMMDD-HHMMSS/.vscode/extensions.json
+<siteRoot>/.backup/YYYYMMDD-HHMMSS/.vscode/settings.json
+<siteRoot>/.backup/YYYYMMDD-HHMMSS/site.config.yaml
+```
+
+第一版迁移使用 YAML 解析后再写回；注释和原始格式可能被规范化。正式应用前先看 dry-run 报告，并确认备份路径符合预期。
+
+当旧字段和新字段同时存在且值不一致时，`update-site` 会要求人工处理。例如旧版 `pageFeedbackConfig.rewardOptions` 和新版 `pageFeedbackConfig.reward.options` 冲突时，不会自动猜测保留哪一份。
 
 ## 配置分区
 

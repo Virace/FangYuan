@@ -2,8 +2,12 @@
 
 ## `scripts/site`
 
-- `init-site.js`：根据维护中的模板初始化外部站点根目录
-- `init-site-prompts.js`：处理 `init-site` 的交互输入归一化
+- `init-site.js`：根据维护中的模板初始化外部站点根目录；无参数时交互式执行，传入参数时按参数式执行
+- `init-site-prompts.js`：处理 `init-site` 的交互输入归一化，包括是否生成 Front Matter CMS 与 VS Code 辅助配置
+- `update-site.js`：更新已经创建的外部站点根目录；默认 dry-run，`--apply` 后才写入
+- `update-site-editors.js`：规划并应用 `frontmatter.json` 与 `.vscode/` 编辑器辅助配置更新
+- `update-site-config.js`：读取、备份并写回外部 `site.config.yaml` 迁移结果
+- `update-site-config-migrations.js`：维护 `site.config.yaml` 的版本化迁移规则
 - `template.config.yaml`：面向用户维护的外部站点配置模板
 
 ## `scripts/qingyan`

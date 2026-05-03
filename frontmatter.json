@@ -2,18 +2,24 @@
   "$schema": "https://frontmatter.codes/frontmatter.schema.json",
   "frontMatter.framework.id": "astro",
   "frontMatter.preview.host": "http://localhost:4321",
-  "frontMatter.content.publicFolder": "public",
+  "frontMatter.content.publicFolder": "src/assets",
   "frontMatter.content.pageFolders": [
     {
       "title": "posts",
-      "path": "[[workspace]]/src/content/posts"
+      "path": "[[workspace]]/src/content/posts",
+      "contentTypes": ["default"]
+    },
+    {
+      "title": "spec",
+      "path": "[[workspace]]/src/content/spec",
+      "contentTypes": ["spec"]
     }
   ],
   "frontMatter.taxonomy.contentTypes": [
     {
       "name": "default",
       "pageBundle": true,
-      "previewPath": "'blog'",
+      "previewPath": "'posts'",
       "filePrefix": null,
       "clearEmpty": true,
       "fields": [
@@ -36,6 +42,40 @@
           "isPublishDate": true
         },
         {
+          "title": "updated",
+          "name": "updated",
+          "type": "datetime",
+          "isModifiedDate": true
+        },
+        {
+          "title": "alias",
+          "name": "alias",
+          "type": "string"
+        },
+        {
+          "title": "permalink",
+          "name": "permalink",
+          "type": "string"
+        },
+        {
+          "title": "toc",
+          "name": "toc",
+          "type": "fields",
+          "fields": [
+            {
+              "title": "enable",
+              "name": "enable",
+              "type": "boolean"
+            },
+            {
+              "title": "depth",
+              "name": "depth",
+              "type": "choice",
+              "choices": [1, 2, 3]
+            }
+          ]
+        },
+        {
           "title": "preview",
           "name": "image",
           "type": "image",
@@ -52,14 +92,71 @@
           "type": "string"
         },
         {
+          "title": "lang",
+          "name": "lang",
+          "type": "string"
+        },
+        {
+          "title": "sticky",
+          "name": "sticky",
+          "type": "number",
+          "numberOptions": {
+            "min": 0,
+            "step": 1
+          }
+        },
+        {
           "title": "draft",
           "name": "draft",
           "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "spec",
+      "pageBundle": true,
+      "previewPath": "'spec'",
+      "filePrefix": null,
+      "clearEmpty": true,
+      "fields": [
+        {
+          "title": "alias",
+          "name": "alias",
+          "type": "string"
         },
         {
-          "title": "language",
-          "name": "language",
+          "title": "permalink",
+          "name": "permalink",
           "type": "string"
+        },
+        {
+          "title": "toc",
+          "name": "toc",
+          "type": "fields",
+          "fields": [
+            {
+              "title": "enable",
+              "name": "enable",
+              "type": "boolean"
+            },
+            {
+              "title": "depth",
+              "name": "depth",
+              "type": "choice",
+              "choices": [1, 2, 3]
+            }
+          ]
+        },
+        {
+          "title": "published",
+          "name": "published",
+          "type": "datetime"
+        },
+        {
+          "title": "updated",
+          "name": "updated",
+          "type": "datetime",
+          "isModifiedDate": true
         }
       ]
     }

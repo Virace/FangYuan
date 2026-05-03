@@ -5,7 +5,10 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { ensureExternalSiteScaffold } from "../scripts/site/init-site.js";
+import {
+	ensureExternalSiteScaffold,
+	parseCliOptions,
+} from "../scripts/site/init-site.js";
 
 function hasPath(targetPath) {
 	return existsSync(targetPath);
@@ -100,6 +103,21 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		true,
 		"init-site should scaffold a demo post into site/content/posts for a fresh site",
 	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", "frontmatter.json")),
+		true,
+		"init-site should copy the Front Matter CMS config into the external site root",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", ".vscode", "extensions.json")),
+		true,
+		"init-site should create VS Code extension recommendations for external authoring",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", ".vscode", "settings.json")),
+		true,
+		"init-site should create VS Code Front Matter CMS workspace settings",
+	);
 
 	const aboutContent = await readFile(
 		path.join(tempRoot, "site", "content", "spec", "about.md"),
@@ -136,6 +154,42 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 	);
 	assert.match(assetsReadmeSource, /<siteRoot>\/assets/);
 	assert.match(assetsReadmeSource, /替换位置：`assets\/images\/banner\.svg`/);
+
+	const frontmatterConfig = JSON.parse(
+		await readFile(path.join(tempRoot, "site", "frontmatter.json"), "utf8"),
+	);
+	assert.deepEqual(frontmatterConfig["frontMatter.content.pageFolders"], [
+		{
+			title: "posts",
+			path: "[[workspace]]/content/posts",
+			contentTypes: ["default"],
+		},
+		{
+			title: "spec",
+			path: "[[workspace]]/content/spec",
+			contentTypes: ["spec"],
+		},
+	]);
+	assert.deepEqual(
+		frontmatterConfig["frontMatter.content.publicFolder"],
+		"assets",
+		"external Front Matter CMS media root should point at the external asset directory",
+	);
+
+	const vscodeExtensions = JSON.parse(
+		await readFile(
+			path.join(tempRoot, "site", ".vscode", "extensions.json"),
+			"utf8",
+		),
+	);
+	assert.deepEqual(vscodeExtensions.recommendations, [
+		"eliostruyf.vscode-front-matter",
+	]);
+
+	const vscodeSettings = JSON.parse(
+		await readFile(path.join(tempRoot, "site", ".vscode", "settings.json"), "utf8"),
+	);
+	assert.equal(vscodeSettings["frontMatter.dashboard.openOnStart"], false);
 
 	const demoPostSource = await readFile(
 		path.join(tempRoot, "site", "content", "posts", "welcome.md"),
@@ -293,6 +347,16 @@ test("ensureExternalSiteScaffold dry-run reports planned actions without writing
 		"dry-run should not create site.config.yaml",
 	);
 	assert.equal(
+		hasPath(path.join(tempRoot, "site", "frontmatter.json")),
+		false,
+		"dry-run should not create frontmatter.json",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", ".vscode", "extensions.json")),
+		false,
+		"dry-run should not create VS Code extension recommendations",
+	);
+	assert.equal(
 		result.createdDirectories.length,
 		0,
 		"dry-run should not report created directories",
@@ -326,6 +390,62 @@ test("ensureExternalSiteScaffold dry-run reports planned actions without writing
 		),
 		true,
 		"dry-run should report template-based site.config.yaml creation",
+	);
+	assert.equal(
+		result.operations.some(
+			(operation) =>
+				operation.kind === "file" &&
+				operation.status === "planned" &&
+				operation.mode === "copy" &&
+				operation.path === path.join(tempRoot, "site", "frontmatter.json") &&
+				operation.sourcePath?.endsWith("frontmatter.json"),
+		),
+		true,
+		"dry-run should report Front Matter CMS config creation",
+	);
+	assert.equal(
+		result.operations.some(
+			(operation) =>
+				operation.kind === "file" &&
+				operation.status === "planned" &&
+				operation.mode === "write" &&
+				operation.path ===
+					path.join(tempRoot, "site", ".vscode", "extensions.json"),
+		),
+		true,
+		"dry-run should report VS Code recommendation creation",
+	);
+});
+
+test("ensureExternalSiteScaffold can skip optional editor authoring files", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-site-"));
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await mkdir(path.join(tempRoot, "src", "content", "spec"), {
+		recursive: true,
+	});
+	await writeFile(
+		path.join(tempRoot, "src", "content", "spec", "about.md"),
+		"# About\n",
+		"utf8",
+	);
+
+	await ensureExternalSiteScaffold(tempRoot, {
+		includeFrontmatterConfig: false,
+		includeVSCodeConfig: false,
+	});
+
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", "frontmatter.json")),
+		false,
+		"frontmatter.json should be optional",
+	);
+	assert.equal(
+		hasPath(path.join(tempRoot, "site", ".vscode", "extensions.json")),
+		false,
+		"VS Code recommendations should be optional",
 	);
 });
 
@@ -386,5 +506,61 @@ test("ensureExternalSiteScaffold can seed external content from src/content", as
 	assert.equal(
 		hasPath(path.join(customSiteRoot, "content", "posts", "hello.md")),
 		true,
+	);
+});
+
+test("parseCliOptions uses interactive mode only when no arguments are passed", () => {
+	assert.deepEqual(parseCliOptions([]), {
+		interactive: true,
+		initOptions: {
+			includeFrontmatterConfig: true,
+			includeVSCodeConfig: true,
+		},
+		runtimeOptions: {
+			dryRun: false,
+			seedFromSrcContent: false,
+			siteRoot: null,
+		},
+	});
+
+	assert.deepEqual(
+		parseCliOptions([
+			"--dry-run",
+			"--site-root",
+			"../external-site",
+			"--site-title",
+			"Virace Notes",
+			"--site-subtitle",
+			"External authoring",
+			"--profile-name",
+			"Virace",
+			"--profile-bio",
+			"Notes",
+			"--qingyan-site-key",
+			"virace-notes",
+			"--qingyan-dev-proxy-target",
+			"http://localhost:4401",
+			"--seed-from-src-content",
+			"--no-frontmatter",
+			"--no-vscode",
+		]),
+		{
+			interactive: false,
+			initOptions: {
+				siteTitle: "Virace Notes",
+				siteSubtitle: "External authoring",
+				profileName: "Virace",
+				profileBio: "Notes",
+				qingyanSiteKey: "virace-notes",
+				qingyanDevProxyTarget: "http://localhost:4401",
+				includeFrontmatterConfig: false,
+				includeVSCodeConfig: false,
+			},
+			runtimeOptions: {
+				dryRun: true,
+				seedFromSrcContent: true,
+				siteRoot: "../external-site",
+			},
+		},
 	);
 });

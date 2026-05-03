@@ -5,6 +5,21 @@ import { promptInitSiteOptions } from "./init-site-prompts.js"
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url))
 const templateConfigPath = path.join(currentDir, "template.config.yaml")
+const frontmatterConfigPath = path.join(currentDir, "..", "..", "frontmatter.json")
+const vscodeExtensionsSource = `${JSON.stringify(
+	{
+		recommendations: ["eliostruyf.vscode-front-matter"],
+	},
+	null,
+	2,
+)}\n`
+const vscodeSettingsSource = `${JSON.stringify(
+	{
+		"frontMatter.dashboard.openOnStart": false,
+	},
+	null,
+	2,
+)}\n`
 const assetReadmeSource = `# <siteRoot>/assets
 
 这里存放外部站点自有静态图片。外部站点根目录不一定是 FangYuan 仓库内的 \`site/\`，实际位置由初始化脚本参数或 \`FANGYUAN_SITE_ROOT\` 决定。
@@ -285,6 +300,8 @@ function resolveInitSiteOptions(input = {}) {
 		profileBio: input.profileBio ?? "Write something here.",
 		qingyanSiteKey: input.qingyanSiteKey ?? "fangyuan",
 		qingyanDevProxyTarget: input.qingyanDevProxyTarget ?? null,
+		includeFrontmatterConfig: input.includeFrontmatterConfig ?? true,
+		includeVSCodeConfig: input.includeVSCodeConfig ?? true,
 	}
 }
 
@@ -319,16 +336,51 @@ function formatOperationForConsole(rootDir, operation) {
 	return `${prefix} write ${getRelativePath(rootDir, operation.path)}`
 }
 
-function parseCliOptions(argv = process.argv.slice(2)) {
-	const siteRootIndex = argv.indexOf("--site-root")
+function getCliValue(argv, name) {
+	const index = argv.indexOf(name)
+	if (index < 0) {
+		return undefined
+	}
+	return argv[index + 1]
+}
+
+export function parseCliOptions(argv = process.argv.slice(2)) {
+	const interactive = argv.length === 0
 
 	return {
-		dryRun: argv.includes("--dry-run"),
-		seedFromSrcContent: argv.includes("--seed-from-src-content"),
-		siteRoot:
-			siteRootIndex >= 0 && argv[siteRootIndex + 1]
-				? argv[siteRootIndex + 1]
-				: null,
+		interactive,
+		initOptions: {
+			...(getCliValue(argv, "--site-title")
+				? { siteTitle: getCliValue(argv, "--site-title") }
+				: {}),
+			...(getCliValue(argv, "--site-subtitle")
+				? { siteSubtitle: getCliValue(argv, "--site-subtitle") }
+				: {}),
+			...(getCliValue(argv, "--profile-name")
+				? { profileName: getCliValue(argv, "--profile-name") }
+				: {}),
+			...(getCliValue(argv, "--profile-bio")
+				? { profileBio: getCliValue(argv, "--profile-bio") }
+				: {}),
+			...(getCliValue(argv, "--qingyan-site-key")
+				? { qingyanSiteKey: getCliValue(argv, "--qingyan-site-key") }
+				: {}),
+			...(getCliValue(argv, "--qingyan-dev-proxy-target")
+				? {
+						qingyanDevProxyTarget: getCliValue(
+							argv,
+							"--qingyan-dev-proxy-target",
+						),
+					}
+				: {}),
+			includeFrontmatterConfig: !argv.includes("--no-frontmatter"),
+			includeVSCodeConfig: !argv.includes("--no-vscode"),
+		},
+		runtimeOptions: {
+			dryRun: argv.includes("--dry-run"),
+			seedFromSrcContent: argv.includes("--seed-from-src-content"),
+			siteRoot: getCliValue(argv, "--site-root") ?? null,
+		},
 	}
 }
 
@@ -371,6 +423,27 @@ export async function renderSiteConfigTemplate(options) {
 	return materializeSiteConfigTemplate(templateSource, options)
 }
 
+export async function renderFrontmatterConfigTemplate() {
+	const source = await fs.promises.readFile(frontmatterConfigPath, "utf8")
+	const config = JSON.parse(source)
+
+	config["frontMatter.content.publicFolder"] = "assets"
+	config["frontMatter.content.pageFolders"] = [
+		{
+			title: "posts",
+			path: "[[workspace]]/content/posts",
+			contentTypes: ["default"],
+		},
+		{
+			title: "spec",
+			path: "[[workspace]]/content/spec",
+			contentTypes: ["spec"],
+		},
+	]
+
+	return `${JSON.stringify(config, null, 2)}\n`
+}
+
 export function buildWelcomePostTemplate(options) {
 	return `---
 title: Welcome to ${options.siteTitle}
@@ -409,10 +482,14 @@ export async function ensureExternalSiteScaffold(
 	const defaultAboutPath = path.join(srcContentRoot, "spec", "about.md")
 	const siteAboutPath = path.join(siteSpecRoot, "about.md")
 	const siteConfigPath = path.join(siteRoot, "site.config.yaml")
+	const siteFrontmatterConfigPath = path.join(siteRoot, "frontmatter.json")
+	const siteVSCodeExtensionsPath = path.join(siteRoot, ".vscode", "extensions.json")
+	const siteVSCodeSettingsPath = path.join(siteRoot, ".vscode", "settings.json")
 	const siteDemoPostPath = path.join(sitePostsRoot, "welcome.md")
 	const shouldSeedDemoPost =
 		!execution.seedFromSrcContent && !directoryHasFiles(siteRoot)
 	const renderedSiteConfig = await renderSiteConfigTemplate(options)
+	const renderedFrontmatterConfig = await renderFrontmatterConfigTemplate()
 
 	const createdDirectories = []
 	const createdFiles = []
@@ -467,6 +544,36 @@ export async function ensureExternalSiteScaffold(
 			sourcePath: templateConfigPath,
 		},
 	)
+	if (options.includeFrontmatterConfig) {
+		ensureFile(
+			siteFrontmatterConfigPath,
+			renderedFrontmatterConfig,
+			createdFiles,
+			operations,
+			execution,
+			{
+				mode: "copy",
+				sourcePath: frontmatterConfigPath,
+			},
+		)
+	}
+
+	if (options.includeVSCodeConfig) {
+		ensureFile(
+			siteVSCodeExtensionsPath,
+			vscodeExtensionsSource,
+			createdFiles,
+			operations,
+			execution,
+		)
+		ensureFile(
+			siteVSCodeSettingsPath,
+			vscodeSettingsSource,
+			createdFiles,
+			operations,
+			execution,
+		)
+	}
 
 	if (shouldSeedDemoPost) {
 		ensureFile(
@@ -492,11 +599,13 @@ function isExecutedDirectly() {
 
 if (isExecutedDirectly()) {
 	const cliOptions = parseCliOptions()
-	const options = await promptInitSiteOptions()
+	const options = cliOptions.interactive
+		? await promptInitSiteOptions()
+		: cliOptions.initOptions
 	const result = await ensureExternalSiteScaffold(
 		process.cwd(),
 		options,
-		cliOptions,
+		cliOptions.runtimeOptions,
 	)
 
 	console.log(cliOptions.dryRun ? "Planned actions:" : "Applied actions:")

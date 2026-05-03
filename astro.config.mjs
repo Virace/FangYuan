@@ -58,6 +58,7 @@ import { resolveSiteSourceContext } from "./src/utils/site-source-context.ts";
 import { externalSiteAssetDevPrefix } from "./src/utils/external-site-assets.ts";
 import { registerExternalSiteDevWatch } from "./src/utils/external-site-dev-watch.mjs";
 import { createDevStaticAssetMiddleware } from "./src/utils/dev-static-assets.mjs";
+import { resolveDevWatchIgnoredPatterns } from "./src/utils/dev-watch-ignore.mjs";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
@@ -74,6 +75,7 @@ const externalPermalinkConfig = loadExternalPermalinkConfig();
 const siteBuildPaths = resolveSiteBuildPaths();
 const externalSiteRoot =
 	siteSourceContext.siteRoot ?? path.join(process.cwd(), "site");
+const devWatchIgnoredPatterns = resolveDevWatchIgnoredPatterns(process.cwd());
 const emptyPublicDir = ".temp/empty-public";
 fs.mkdirSync(path.join(process.cwd(), emptyPublicDir), { recursive: true });
 const envSiteUrl = normalizeConfiguredSite(process.env.FANGYUAN_SITE);
@@ -576,6 +578,9 @@ export default defineConfig({
 						fs: {
 							allow: [process.cwd(), externalSiteRoot],
 						},
+						watch: {
+							ignored: devWatchIgnoredPatterns,
+						},
 						proxy: qingyanDevProxy,
 					},
 					preview: {
@@ -586,6 +591,9 @@ export default defineConfig({
 					server: {
 						fs: {
 							allow: [process.cwd(), externalSiteRoot],
+						},
+						watch: {
+							ignored: devWatchIgnoredPatterns,
 						},
 					},
 				}),

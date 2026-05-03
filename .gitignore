@@ -30,6 +30,7 @@ yarn.lock
 # ide
 .idea
 *.iml
+.frontmatter/database/
 
 # local agent artifacts
 .serena/
