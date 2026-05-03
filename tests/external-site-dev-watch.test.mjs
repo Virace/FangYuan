@@ -3,6 +3,9 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+	createDevWatcherListenerLimitPlugin,
+	devWatcherMinListenerLimit,
+	raiseDevWatcherListenerLimit,
 	registerExternalSiteConfigWatch,
 	registerExternalSiteDevWatch,
 	resolveExternalSiteWatchPaths,
@@ -178,6 +181,38 @@ test("external site config watch registers config as Astro watch file", () => {
 	});
 
 	assert.deepEqual(watchedFiles, [path.join(siteRoot, "site.config.yaml")]);
+});
+
+test("dev watcher listener limit is raised before later plugins attach listeners", () => {
+	const watcher = new EventTarget();
+	let listenerLimit = 10;
+
+	watcher.getMaxListeners = () => listenerLimit;
+	watcher.setMaxListeners = (value) => {
+		listenerLimit = value;
+	};
+
+	const plugin = createDevWatcherListenerLimitPlugin();
+
+	plugin.configureServer({ watcher });
+
+	assert.equal(listenerLimit, devWatcherMinListenerLimit);
+});
+
+test("dev watcher listener limit preserves higher custom limits", () => {
+	const calls = [];
+	const watcher = {
+		getMaxListeners() {
+			return 64;
+		},
+		setMaxListeners(value) {
+			calls.push(value);
+		},
+	};
+
+	raiseDevWatcherListenerLimit(watcher);
+
+	assert.deepEqual(calls, []);
 });
 
 test("external site dev watcher does nothing when disabled", () => {

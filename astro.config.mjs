@@ -62,6 +62,7 @@ import {
 import { resolveSiteSourceContext } from "./src/utils/site-source/context.ts";
 import { externalSiteAssetDevPrefix } from "./src/utils/site-source/assets.ts";
 import {
+	createDevWatcherListenerLimitPlugin,
 	registerExternalSiteConfigWatch,
 	registerExternalSiteDevWatch,
 } from "./src/utils/site-source/dev-watch.mjs";
@@ -584,6 +585,7 @@ export default defineConfig({
 			],
 		},
 		plugins: [
+			createDevWatcherListenerLimitPlugin(),
 			externalSiteAssetModulePlugin(),
 			externalSiteAssetPlugin(),
 			externalSiteAssetDevServerPlugin(),

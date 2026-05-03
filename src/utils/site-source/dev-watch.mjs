@@ -1,11 +1,41 @@
 import path from "node:path";
 
+export const devWatcherMinListenerLimit = 32;
+
 export function resolveExternalSiteWatchPaths(siteRoot) {
 	return [
 		path.join(siteRoot, "site.config.yaml"),
 		path.join(siteRoot, "content"),
 		path.join(siteRoot, "assets"),
 	];
+}
+
+export function raiseDevWatcherListenerLimit(
+	watcher,
+	minLimit = devWatcherMinListenerLimit,
+) {
+	if (
+		!watcher ||
+		typeof watcher.getMaxListeners !== "function" ||
+		typeof watcher.setMaxListeners !== "function"
+	) {
+		return;
+	}
+
+	const currentLimit = watcher.getMaxListeners();
+	if (currentLimit !== 0 && currentLimit < minLimit) {
+		watcher.setMaxListeners(minLimit);
+	}
+}
+
+export function createDevWatcherListenerLimitPlugin() {
+	return {
+		name: "fangyuan-dev-watcher-listener-limit",
+		enforce: "pre",
+		configureServer(server) {
+			raiseDevWatcherListenerLimit(server.watcher);
+		},
+	};
 }
 
 export function isInsideExternalSiteRoot(siteRoot, changedPath) {
