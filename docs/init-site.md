@@ -77,9 +77,8 @@ node scripts/site/init-site.js --site-root ../my-site --site-title "My Site" --d
 - `assets/favicon/icon.svg`
 - `assets/reward/wechat.svg`
 - `assets/reward/alipay.svg`
-- `assets/icons/police-emblem.svg`
 
-这些文件用于降低首次预览成本。未被当前配置或内容引用的占位符不会进入最终 `dist`。例如：
+这些文件用于降低首次预览成本。未被当前配置或内容引用的占位符不会进入最终 `dist`。公安备案图标是 FangYuan 主题内置资源，不需要放入外部站点 `assets/`。例如：
 
 ```yaml
 siteConfig:

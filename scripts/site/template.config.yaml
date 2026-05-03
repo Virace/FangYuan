@@ -205,7 +205,7 @@ footerConfig:
   icp: null
 
   # 公安备案号。设为 null 表示不显示。
-  # 替换位置：assets/icons/police-emblem.svg，初始化脚本会创建这个占位图；只有填写 policeRecord 时才会引用。
+  # 公安备案图标由 FangYuan 主题内置；这里只配置备案号文本。
   policeRecord: null
 
 licenseConfig:

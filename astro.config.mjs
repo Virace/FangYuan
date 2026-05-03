@@ -302,9 +302,6 @@ function collectExternalSiteAssetReferences() {
 			addExternalSiteAssetReference(references, option.image);
 		}
 	}
-	if (externalSiteConfig?.footerConfig?.policeRecord) {
-		addExternalSiteAssetReference(references, "assets/icons/police-emblem.svg");
-	}
 	collectExternalContentAssetReferences(references);
 
 	return [...references].filter((reference) => {

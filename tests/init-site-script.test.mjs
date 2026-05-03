@@ -89,9 +89,14 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		"init-site should create a replaceable Alipay reward placeholder",
 	);
 	assert.equal(
+		hasPath(path.join(tempRoot, "site", "assets", "icons", "police-emblem.png")),
+		false,
+		"init-site should not create a theme-owned police record PNG placeholder",
+	);
+	assert.equal(
 		hasPath(path.join(tempRoot, "site", "assets", "icons", "police-emblem.svg")),
-		true,
-		"init-site should create a replaceable police record icon placeholder",
+		false,
+		"init-site should not create a theme-owned police record SVG placeholder",
 	);
 	assert.equal(
 		hasPath(path.join(tempRoot, "site", "content", "spec", "about.md")),

@@ -31,11 +31,12 @@ const assetReadmeSource = `# <siteRoot>/assets
 - 替换位置：\`assets/favicon/icon.svg\`：站点 favicon
 - 替换位置：\`assets/reward/wechat.svg\`：微信打赏二维码
 - 替换位置：\`assets/reward/alipay.svg\`：支付宝打赏二维码
-- 替换位置：\`assets/icons/police-emblem.svg\`：公安备案图标
 - \`assets/posts/<slug>/cover.webp\`：文章封面
 - \`content/posts/<slug>/screenshot.webp\`：文章正文相对图片
 
 在 \`site.config.yaml\` 或文章 frontmatter 中引用 \`assets/...\` 时，FangYuan 会把它当作 external site root 下的本地图片输入，并交给 Astro 图片管线处理。未被当前配置或内容引用的占位符不会进入最终 \`dist\`。
+
+公安备案图标是 FangYuan 主题内置资源，不需要放入外部站点 \`assets/\`。
 
 不要在这里存放迁移审计、预览或中间转换数据。
 
@@ -106,17 +107,6 @@ const assetPlaceholders = [
 			subtitle: "替换支付宝二维码",
 			fill: "#eff6ff",
 			accent: "#0284c7",
-		}),
-	},
-	{
-		relativePath: path.join("icons", "police-emblem.svg"),
-		content: buildSvgPlaceholder({
-			width: 128,
-			height: 128,
-			title: "备案",
-			subtitle: "替换图标",
-			fill: "#f1f5f9",
-			accent: "#475569",
 		}),
 	},
 ]

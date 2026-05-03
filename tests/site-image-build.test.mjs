@@ -359,6 +359,58 @@ profileConfig:
 );
 
 test(
+	"police record uses the theme-owned emblem without requiring an external site asset",
+	{ concurrency: false },
+	async (t) => {
+		await withMutableSiteFixture(
+			t,
+			async ({ distRoot, postDir, siteAboutPath, siteConfigPath, markCreated }) => {
+				const articleDir = markCreated(path.join(postDir, "__police-record"));
+
+				await mkdir(articleDir, { recursive: true });
+				await writeFile(
+					path.join(articleDir, "index.md"),
+					`---
+title: Police Record
+published: 2026-04-14
+description: Police record probe.
+tags: [Demo]
+category: Demo
+draft: false
+---
+
+Police record probe.
+`,
+					"utf8",
+				);
+				await writeFile(siteAboutPath, "# About\n", "utf8");
+				await writeFile(
+					siteConfigPath,
+					`siteConfig:
+  title: Police Record
+  subtitle: Probe
+  banner:
+    enable: false
+
+footerConfig:
+  policeRecord: "公网安备 00000000000000号"
+`,
+					"utf8",
+				);
+
+				runBuild();
+
+				const homeHtml = await readFile(path.join(distRoot, "index.html"), "utf8");
+
+				assert.match(homeHtml, /公网安备 00000000000000号/);
+				assert.match(homeHtml, optimizedAssetPattern);
+				assert.doesNotMatch(homeHtml, /assets\/icons\/police-emblem/);
+			},
+		);
+	},
+);
+
+test(
 	"invalid relative cover image paths should fail instead of being remapped",
 	{ concurrency: false },
 	async (t) => {
