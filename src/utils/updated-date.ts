@@ -17,7 +17,7 @@ type ResolveUpdatedDateInput = {
 };
 
 const execFileAsync = promisify(execFile);
-const repoRoot = fangyuanRoot;
+const repoRoot = path.resolve(process.env.FANGYUAN_ROOT ?? fangyuanRoot);
 
 function normalizeDate(
 	value: Date | string | number | null | undefined,

@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { AutoDismissTone } from "@utils/notice";
+import type { AutoDismissTone } from "@utils/browser/notice";
 import { onDestroy, tick } from "svelte";
 
 export let message = "";

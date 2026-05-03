@@ -1,8 +1,8 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
+import type { AutoDismissTone } from "@utils/browser/notice";
 import type { CommentCaptchaState } from "@utils/comments/provider";
-import type { AutoDismissTone } from "@utils/notice";
 import { fade, scale, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
 import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";

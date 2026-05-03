@@ -7,7 +7,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
-import { resolveContentRoot } from "./utils/site-source";
+import { resolveContentRoot } from "./utils/site-source/source";
 
 function generateMarkdownId(entry: string): string {
 	const normalizedEntry = entry.replace(/\\/g, "/");

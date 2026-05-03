@@ -24,19 +24,19 @@ import type {
 	SiteConfig,
 } from "./types/config";
 import { normalizeCommentConfig } from "./utils/comments/options";
-import type { ExternalSiteConfigYaml } from "./utils/external-site-config";
 import { mergeNavBarLinks } from "./utils/navbar-links";
+import type { ExternalSiteConfigYaml } from "./utils/site-source/external-config";
 import {
 	applyPublicQingYanCommentConfig,
 	applyPublicQingYanPageFeedbackConfig,
 	applyPublicQingYanPageMetricsConfig,
 	resolvePublicQingYanConfig,
 	resolvePublicSiteConfigOverride,
-} from "./utils/public-deploy-env-config";
+} from "./utils/site-source/public-deploy-env";
 import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
-} from "./utils/site-runtime-config";
+} from "./utils/site-source/runtime-config";
 
 type ExternalSiteConfig = ExternalSiteConfigYaml["siteConfig"];
 type ExternalNavBarConfig = ExternalSiteConfigYaml["navBarConfig"];
@@ -47,8 +47,8 @@ let externalSiteConfig: ExternalSiteConfigYaml | null = null;
 if (import.meta.env.SSR) {
 	const [{ loadExternalSiteConfigYaml }, { resolveSiteSourceContext }] =
 		await Promise.all([
-			import("./utils/external-site-config.ts"),
-			import("./utils/site-source-context.ts"),
+			import("./utils/site-source/external-config.ts"),
+			import("./utils/site-source/context.ts"),
 		]);
 	const siteSourceContext = resolveSiteSourceContext();
 

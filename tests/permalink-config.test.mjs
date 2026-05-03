@@ -4,8 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { loadExternalSiteConfigYaml } from "../src/utils/external-site-config.ts";
-import { extractExternalPermalinkConfig } from "../src/utils/site-source.ts";
+import { loadExternalSiteConfigYaml } from "../src/utils/site-source/external-config.ts";
+import { extractExternalPermalinkConfig } from "../src/utils/site-source/source.ts";
 
 test("extractExternalPermalinkConfig reads trailingSlash and patterns from loaded YAML config", async (t) => {
 	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-permalink-"));

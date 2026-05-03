@@ -5,9 +5,9 @@ import { i18n } from "../i18n/translation";
 import {
 	type ArchivePostGroup,
 	buildArchivePostGroups,
-} from "../utils/archive-post-groups";
-import type { PostForList } from "../utils/content-utils";
-import { getPostUrlByEntry } from "../utils/url-utils";
+} from "../utils/content/archive-groups";
+import type { PostForList } from "../utils/content/posts";
+import { getPostUrlByEntry } from "../utils/permalink/urls";
 
 export let tags: string[] = [];
 export let categories: string[] = [];

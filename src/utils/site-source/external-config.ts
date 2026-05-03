@@ -12,7 +12,7 @@ import type {
 	PageMetricsConfig,
 	ProfileConfig,
 	SiteConfig,
-} from "../types/config";
+} from "../../types/config";
 
 export type ExternalSiteConfigYaml = {
 	fangyuanConfigVersion?: number;

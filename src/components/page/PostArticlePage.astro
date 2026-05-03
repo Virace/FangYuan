@@ -8,12 +8,12 @@ import PageViewCounter from "@components/page-metrics/PageViewCounter.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { shouldEnablePhotoSwipe } from "@utils/browser/photoswipe";
 import { getPostKeyFromEntry } from "@utils/comments/post-key";
-import type { PostEntry } from "@utils/content-utils";
+import type { PostEntry } from "@utils/content/posts";
 import { resolveContentImage } from "@utils/image-source";
-import { shouldEnablePhotoSwipe } from "@utils/photoswipe-utils";
+import { url } from "@utils/permalink/urls";
 import { resolveTocConfig } from "@utils/toc-config";
-import { url } from "@utils/url-utils";
 import type { ImageMetadata, MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import {
@@ -25,7 +25,7 @@ import {
 	profileConfig,
 	siteConfig,
 } from "../../config";
-import { formatDateToYYYYMMDD } from "../../utils/date-utils";
+import { formatDateToYYYYMMDD } from "../../utils/content/date";
 import { resolveConfigAssetUrl } from "../../utils/image-source";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 import PostMetadata from "../PostMeta.astro";

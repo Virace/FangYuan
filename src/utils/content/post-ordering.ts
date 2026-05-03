@@ -1,5 +1,4 @@
-import path from "node:path";
-import type { PostSortConfig, PostSortKey } from "../types/config";
+import type { PostSortConfig, PostSortKey } from "../../types/config";
 
 type SortablePostRoute = {
 	entryId: string;
@@ -32,12 +31,11 @@ export function isPinnedPost(data: StickyData): boolean {
 }
 
 function getFileStem(route: SortablePostRoute): string {
-	const filePath = route.entry.filePath?.replace(/\\/g, "/") ?? "";
-	if (filePath) {
-		return path.posix.parse(filePath).name;
-	}
-
-	return route.entryId.split("/").at(-1) ?? route.entryId;
+	const source =
+		route.entry.filePath?.replace(/\\/g, "/").replace(/\/+$/g, "") ||
+		route.entryId;
+	const fileName = source.split("/").at(-1) ?? source;
+	return fileName.replace(/\.[^.]*$/, "") || fileName;
 }
 
 function getAliasFallback(route: SortablePostRoute): string {

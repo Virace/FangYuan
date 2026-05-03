@@ -1,5 +1,5 @@
-import type { PostForList } from "./content-utils";
 import { isPinnedPost } from "./post-ordering.ts";
+import type { PostForList } from "./posts";
 
 export type ArchivePostGroup = {
 	year: number;

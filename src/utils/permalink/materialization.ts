@@ -1,4 +1,4 @@
-import type { TrailingSlashStrategy } from "../types/config";
+import type { TrailingSlashStrategy } from "../../types/config";
 
 export type BuildFacingPermalinkConfig = {
 	postsPattern?: string | null;

@@ -4,8 +4,8 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { siteConfig } from "../../config";
-import { getSortedPostsList } from "../../utils/content-utils";
-import { getArchivePath } from "../../utils/url-utils";
+import { getSortedPostsList } from "../../utils/content/posts";
+import { getArchivePath } from "../../utils/permalink/urls";
 
 const sortedPostsList = await getSortedPostsList();
 ---

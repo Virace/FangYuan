@@ -64,6 +64,16 @@ export function installConsoleErrorCollector(page: Page): string[] {
 
 	page.on("console", (message) => {
 		if (message.type() === "error") {
+			if (
+				message
+					.text()
+					.includes(
+						"@bilibili/bili-user-fingerprint(report): report is not found",
+					)
+			) {
+				return;
+			}
+
 			errors.push(message.text());
 		}
 	});

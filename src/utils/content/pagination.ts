@@ -1,5 +1,5 @@
-import { siteConfig } from "../config";
-import { MIN_POSTS_PER_PAGE, PAGE_SIZE } from "../constants/constants";
+import { siteConfig } from "../../config";
+import { MIN_POSTS_PER_PAGE, PAGE_SIZE } from "../../constants/constants";
 
 export function getPostsPerPage(): number {
 	const configuredPostsPerPage = siteConfig.postsPerPage;

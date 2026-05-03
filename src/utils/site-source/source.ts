@@ -3,16 +3,16 @@ import type {
 	TrailingSlashStrategy,
 	UpdatedDateFallback,
 	UpdatedDateMode,
-} from "../types/config";
+} from "../../types/config";
+import { resolveSiteSourceContext } from "./context.ts";
 import {
 	type ExternalSiteConfigYaml,
 	loadExternalSiteConfigYaml,
-} from "./external-site-config.ts";
+} from "./external-config.ts";
 import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
-} from "./site-runtime-config.ts";
-import { resolveSiteSourceContext } from "./site-source-context.ts";
+} from "./runtime-config.ts";
 
 type ContentRoot = "./src/content" | string;
 

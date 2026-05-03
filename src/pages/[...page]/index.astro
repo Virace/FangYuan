@@ -7,11 +7,11 @@ import PostPage from "../../components/PostPage.astro";
 import PostArticlePage from "../../components/page/PostArticlePage.astro";
 import SpecContentPage from "../../components/page/SpecContentPage.astro";
 import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import type { PostEntry } from "../../utils/content/posts";
 import {
 	buildRootPageStaticPaths,
 	type RootPageRoute,
 } from "../../utils/content-routes";
-import type { PostEntry } from "../../utils/content-utils";
 
 export const getStaticPaths = (async ({ paginate }) => {
 	return buildRootPageStaticPaths({ paginate });

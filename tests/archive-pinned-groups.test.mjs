@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildArchivePostGroups } from "../src/utils/archive-post-groups.ts";
+import { buildArchivePostGroups } from "../src/utils/content/archive-groups.ts";
 
 function makePost({
 	slug,

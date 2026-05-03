@@ -4,11 +4,11 @@ import type {
 	PageMetricsConfig,
 	QingYanClientConfig,
 	SiteConfig,
-} from "../types/config";
+} from "../../types/config";
 import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
-} from "./site-runtime-config.ts";
+} from "./runtime-config.ts";
 
 type PublicDeployEnv = Record<string, string | boolean | undefined>;
 

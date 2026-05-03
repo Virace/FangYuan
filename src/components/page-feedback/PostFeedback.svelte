@@ -2,12 +2,12 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
+import { type AutoDismissTone, getAutoDismissMs } from "@utils/browser/notice";
 import {
 	CommentCaptchaRequiredError,
 	type CommentCaptchaState,
 	type CommentCaptchaWriteInput,
 } from "@utils/comments/provider";
-import { type AutoDismissTone, getAutoDismissMs } from "@utils/notice";
 import type {
 	PageFeedbackCapability,
 	RewardOption,

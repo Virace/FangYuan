@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { renderFeedHtml } from "../src/utils/rss-content.ts";
+import { renderFeedHtml } from "../src/utils/content/rss.ts";
 
 test("renderFeedHtml converts hl aside and fold directives into feed-safe html", () => {
 	const html = renderFeedHtml(`

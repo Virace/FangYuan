@@ -34,7 +34,7 @@ import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkExpressiveMarkdown } from "./src/plugins/remark-expressive-markdown.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 import { resolveSiteBuildPaths } from "./scripts/site/build-paths.mjs";
-import { resolveAstroBuildConfig } from "./src/utils/permalink-materialization.ts";
+import { resolveAstroBuildConfig } from "./src/utils/permalink/materialization.ts";
 import { clearContentRouteManifestCache } from "./src/utils/content-routes.ts";
 import {
 	normalizeQingYanDevProxyPath,
@@ -47,10 +47,10 @@ import {
 import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
-} from "./src/utils/site-runtime-config.ts";
+} from "./src/utils/site-source/runtime-config.ts";
 import {
 	loadExternalSiteConfigYaml,
-} from "./src/utils/external-site-config.ts";
+} from "./src/utils/site-source/external-config.ts";
 import { resolveFangYuanRoot } from "./src/utils/project-root.ts";
 import {
 	loadExternalAstroSiteConfig,
@@ -58,21 +58,22 @@ import {
 	loadExternalPermalinkConfig,
 	loadExternalQingYanDevProxyTarget,
 	resolveAstroBasePath,
-} from "./src/utils/site-source.ts";
-import { resolveSiteSourceContext } from "./src/utils/site-source-context.ts";
-import { externalSiteAssetDevPrefix } from "./src/utils/external-site-assets.ts";
+} from "./src/utils/site-source/source.ts";
+import { resolveSiteSourceContext } from "./src/utils/site-source/context.ts";
+import { externalSiteAssetDevPrefix } from "./src/utils/site-source/assets.ts";
 import {
 	registerExternalSiteConfigWatch,
 	registerExternalSiteDevWatch,
-} from "./src/utils/external-site-dev-watch.mjs";
-import { createDevStaticAssetMiddleware } from "./src/utils/dev-static-assets.mjs";
-import { resolveDevWatchIgnoredPatterns } from "./src/utils/dev-watch-ignore.mjs";
+} from "./src/utils/site-source/dev-watch.mjs";
+import { createDevStaticAssetMiddleware } from "./src/utils/site-source/dev-static-assets.mjs";
+import { resolveDevWatchIgnoredPatterns } from "./src/utils/site-source/dev-watch-ignore.mjs";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
 const fangyuanRoot = resolveFangYuanRoot();
+process.env.FANGYUAN_ROOT = fangyuanRoot;
 const siteSourceContext = resolveSiteSourceContext({ fangyuanRoot });
 const externalSiteConfig =
 	siteSourceContext.useExternalConfig &&

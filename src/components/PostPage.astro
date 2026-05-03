@@ -1,6 +1,6 @@
 ---
-import type { PostEntry } from "@utils/content-utils";
-import { getPostUrlByEntry } from "@utils/url-utils";
+import type { PostEntry } from "@utils/content/posts";
+import { getPostUrlByEntry } from "@utils/permalink/urls";
 import PostCard from "./PostCard.astro";
 
 const page = Astro.props.page as { data: PostEntry[] };

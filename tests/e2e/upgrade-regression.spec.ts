@@ -27,10 +27,10 @@ test("cross-template swup route flow stays stable", async ({ page }) => {
 	await page.locator(`a[href="${SITE_ROUTES.postBasic}"]`).first().click();
 	await page.waitForURL((url) => url.pathname === SITE_ROUTES.postBasic);
 	await expect(page.locator("#swup-container")).toBeVisible();
-	await expect(page).toHaveTitle(/Markdown Example - FangYuan/);
+	await expect(page).toHaveTitle(/Markdown 示例 - FangYuan/);
 	await expect(page.locator("[data-swup-announcement]")).toHaveAttribute(
 		"data-swup-announcement",
-		"Markdown Example",
+		"Markdown 示例",
 	);
 
 	expect(consoleErrors).toEqual([]);

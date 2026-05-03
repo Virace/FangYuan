@@ -1,7 +1,10 @@
 import type { PermalinkConfig, PostSortConfig } from "../types/config";
-import { resolvePermalinkForEntry } from "./permalink.ts";
-import { materializePublicPath } from "./permalink-materialization.ts";
-import { attachAdjacentPostLinks, sortPostRoutes } from "./post-ordering.ts";
+import {
+	attachAdjacentPostLinks,
+	sortPostRoutes,
+} from "./content/post-ordering.ts";
+import { materializePublicPath } from "./permalink/materialization.ts";
+import { resolvePermalinkForEntry } from "./permalink/resolver.ts";
 
 type BaseContentEntry<TData extends Record<string, unknown>> = {
 	id: string;
@@ -325,7 +328,6 @@ export async function applyEffectiveUpdatedDates(
 				gitProvider: providers.gitProvider,
 				filesystemProvider: providers.filesystemProvider,
 			});
-
 			return {
 				...route,
 				entry: {
@@ -466,7 +468,7 @@ export async function buildRootPageStaticPaths({
 > {
 	const [manifest, { getPostsPerPage }] = await Promise.all([
 		getContentRouteManifest(),
-		import("./pagination-utils"),
+		import("./content/pagination"),
 	]);
 	const paginationPaths = paginate(
 		manifest.posts.map((route) => route.entry),
@@ -528,7 +530,7 @@ export async function buildHomePaginationStaticPaths({
 > {
 	const [manifest, { getPostsPerPage }] = await Promise.all([
 		getContentRouteManifest(),
-		import("./pagination-utils"),
+		import("./content/pagination"),
 	]);
 
 	return paginate(

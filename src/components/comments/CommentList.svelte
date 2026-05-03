@@ -1,6 +1,6 @@
 <script lang="ts">
+import type { AutoDismissTone } from "@utils/browser/notice";
 import type { CommentCaptchaState } from "@utils/comments/provider";
-import type { AutoDismissTone } from "@utils/notice";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
 import CommentItem from "./CommentItem.svelte";
 

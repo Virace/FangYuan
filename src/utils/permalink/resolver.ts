@@ -2,8 +2,8 @@ import type {
 	AliasValidationMode,
 	PostPatternRule,
 	TrailingSlashStrategy,
-} from "../types/config";
-import { applyTrailingSlash } from "./permalink-materialization.ts";
+} from "../../types/config";
+import { applyTrailingSlash } from "./materialization.ts";
 
 type PermalinkRenderInput = {
 	slug: string;

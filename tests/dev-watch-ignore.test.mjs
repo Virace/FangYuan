@@ -5,7 +5,7 @@ import test from "node:test";
 import {
 	devWatchIgnoredDirs,
 	resolveDevWatchIgnoredPatterns,
-} from "../src/utils/dev-watch-ignore.mjs";
+} from "../src/utils/site-source/dev-watch-ignore.mjs";
 
 test("dev watch ignores non-runtime project directories", () => {
 	assert.deepEqual(devWatchIgnoredDirs, [

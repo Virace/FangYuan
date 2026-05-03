@@ -7,7 +7,7 @@ import {
 	applyThemeToDocument,
 	getStoredTheme,
 	setTheme,
-} from "@utils/setting-utils.ts";
+} from "@utils/browser/theme-settings.ts";
 import { onMount } from "svelte";
 import type { LIGHT_DARK_MODE } from "@/types/config.ts";
 

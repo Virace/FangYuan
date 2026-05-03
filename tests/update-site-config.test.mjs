@@ -14,7 +14,7 @@ import {
 	currentSiteConfigVersion,
 	migrateSiteConfigObject,
 } from "../scripts/site/update-site-config-migrations.js";
-import { loadExternalSiteConfigYaml } from "../src/utils/external-site-config.ts";
+import { loadExternalSiteConfigYaml } from "../src/utils/site-source/external-config.ts";
 
 test("migrateSiteConfigObject treats missing version as version 0", () => {
 	const result = migrateSiteConfigObject({

@@ -2,8 +2,8 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import externalImageModules from "virtual:fangyuan-site-assets";
 import type { ImageMetadata } from "astro";
-import { getExternalSiteAssetDevUrl } from "./external-site-assets";
 import { fangyuanRoot } from "./project-root.ts";
+import { getExternalSiteAssetDevUrl } from "./site-source/assets";
 
 export type ImageBaseRoot = "src" | "site";
 export type ResolvedImageSource = ImageMetadata | string | undefined;

@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { loadExternalSiteConfigYaml } from "../src/utils/external-site-config.ts";
+import { loadExternalSiteConfigYaml } from "../src/utils/site-source/external-config.ts";
 
 test("loadExternalSiteConfigYaml parses a valid site.config.yaml", async (t) => {
 	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-yaml-"));

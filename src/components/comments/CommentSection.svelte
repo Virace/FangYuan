@@ -2,6 +2,7 @@
 import type { I18nKey as I18nKeyType } from "@i18n/i18nKey";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
+import { type AutoDismissTone, getAutoDismissMs } from "@utils/browser/notice";
 import {
 	DEFAULT_COMMENT_SORT_BY,
 	normalizeCommentOffset,
@@ -26,7 +27,6 @@ import {
 	applyPersistedViewerVotes,
 	persistViewerVote,
 } from "@utils/comments/vote-state";
-import { type AutoDismissTone, getAutoDismissMs } from "@utils/notice";
 import { getQingYanClient, QingYanApiError } from "@utils/qingyan/client";
 import { onDestroy, onMount, tick } from "svelte";
 import { fade, slide } from "svelte/transition";

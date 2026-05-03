@@ -8,7 +8,7 @@ import test from "node:test";
 import {
 	createDevStaticAssetMiddleware,
 	resolveAstroDevToolbarSourcemapPath,
-} from "../src/utils/dev-static-assets.mjs";
+} from "../src/utils/site-source/dev-static-assets.mjs";
 
 class MockResponse extends Writable {
 	constructor() {

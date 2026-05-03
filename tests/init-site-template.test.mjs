@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { loadExternalSiteConfigYaml } from "../src/utils/external-site-config.ts";
+import { loadExternalSiteConfigYaml } from "../src/utils/site-source/external-config.ts";
 import {
 	buildWelcomePostTemplate,
 	renderSiteConfigTemplate,

@@ -1,7 +1,7 @@
 import rss from "@astrojs/rss";
-import { getSortedPosts } from "@utils/content-utils";
-import { renderFeedHtml } from "@utils/rss-content";
-import { url } from "@utils/url-utils";
+import { getSortedPosts } from "@utils/content/posts";
+import { renderFeedHtml } from "@utils/content/rss";
+import { url } from "@utils/permalink/urls";
 import type { APIContext } from "astro";
 import { siteConfig } from "@/config";
 

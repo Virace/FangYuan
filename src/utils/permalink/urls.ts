@@ -1,11 +1,11 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { siteConfig } from "../config";
-import { resolvePermalinkForEntry } from "./permalink.ts";
+import { siteConfig } from "../../config";
 import {
 	getPaginationPublicPath,
 	resolveAstroBuildConfig,
-} from "./permalink-materialization";
+} from "./materialization";
+import { resolvePermalinkForEntry } from "./resolver.ts";
 
 const builtInRoutePublished = new Date("1970-01-01T00:00:00.000Z");
 

@@ -2,6 +2,7 @@
 import type { I18nKey as I18nKeyType } from "@i18n/i18nKey";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
+import type { AutoDismissTone } from "@utils/browser/notice";
 import type {
 	CommentAuthorField,
 	CommentCaptchaState,
@@ -10,7 +11,6 @@ import {
 	type CommentFormValidationField,
 	collectCommentFormInvalidFields,
 } from "@utils/comments/validation";
-import type { AutoDismissTone } from "@utils/notice";
 import { tick } from "svelte";
 import { fade, scale, slide } from "svelte/transition";
 import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";

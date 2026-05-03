@@ -6,7 +6,7 @@ import {
 	registerExternalSiteConfigWatch,
 	registerExternalSiteDevWatch,
 	resolveExternalSiteWatchPaths,
-} from "../src/utils/external-site-dev-watch.mjs";
+} from "../src/utils/site-source/dev-watch.mjs";
 
 function fixtureSiteRoot() {
 	return path.resolve("..", "fixture-sites", "x-item.com");

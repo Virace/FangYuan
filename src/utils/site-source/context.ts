@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { fangyuanRoot as defaultFangYuanRoot } from "./project-root.ts";
+import { fangyuanRoot as defaultFangYuanRoot } from "../project-root.ts";
 
 export type SiteSourceMode = "auto" | "internal" | "external";
 

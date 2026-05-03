@@ -20,7 +20,7 @@ const smokeCases = [
 	{
 		name: "archive page shell",
 		path: SITE_ROUTES.archive,
-		assertReady: (page) => page.getByText(/Markdown Example/i).first(),
+		assertReady: (page) => page.getByText("Markdown 示例").first(),
 	},
 	{
 		name: "basic article shell",

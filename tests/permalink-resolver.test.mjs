@@ -5,7 +5,7 @@ import {
 	buildPublicSlug,
 	compilePattern,
 	resolvePermalinkForEntry,
-} from "../src/utils/permalink.ts";
+} from "../src/utils/permalink/resolver.ts";
 
 test("buildPublicSlug prefers alias over file stem", () => {
 	assert.equal(

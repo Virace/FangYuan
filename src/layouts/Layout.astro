@@ -20,7 +20,7 @@ import {
 import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
 import { resolveConfigAssetUrl } from "../utils/image-source";
-import { pathsEqual, url } from "../utils/url-utils";
+import { pathsEqual, url } from "../utils/permalink/urls";
 import "katex/dist/katex.css";
 
 interface Props {
@@ -281,9 +281,9 @@ import {
 	// SizeObserverPlugin,
 	// ClickScrollPlugin
 } from 'overlayscrollbars';
-import { resolveSwupAnnouncementText } from "../utils/swup-a11y";
-import {getHue, getStoredTheme, setHue, setTheme} from "../utils/setting-utils";
-import {pathsEqual, url} from "../utils/url-utils";
+import { resolveSwupAnnouncementText } from "../utils/browser/swup-a11y";
+import {getHue, getStoredTheme, setHue, setTheme} from "../utils/browser/theme-settings";
+import {pathsEqual, url} from "../utils/permalink/urls";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_HOME,

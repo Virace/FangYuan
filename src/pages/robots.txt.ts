@@ -1,4 +1,4 @@
-import { url } from "@utils/url-utils";
+import { url } from "@utils/permalink/urls";
 import type { APIRoute } from "astro";
 
 function buildRobotsTxt(): string {

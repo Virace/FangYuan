@@ -3,7 +3,7 @@ import test from "node:test";
 
 const loadModule = async () => {
 	try {
-		return await import(new URL("../src/utils/swup-a11y.ts", import.meta.url));
+		return await import(new URL("../src/utils/browser/swup-a11y.ts", import.meta.url));
 	} catch {
 		return null;
 	}

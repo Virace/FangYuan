@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { resolveSiteSourceContext } from "../src/utils/site-source-context.ts";
+import { resolveSiteSourceContext } from "../src/utils/site-source/context.ts";
 
 test("internal mode ignores external site root", () => {
 	const context = resolveSiteSourceContext({

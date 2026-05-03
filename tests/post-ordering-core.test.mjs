@@ -4,7 +4,7 @@ import test from "node:test";
 import {
 	attachAdjacentPostLinks,
 	sortPostRoutes,
-} from "../src/utils/post-ordering.ts";
+} from "../src/utils/content/post-ordering.ts";
 
 function makeRoute({
 	entryId,

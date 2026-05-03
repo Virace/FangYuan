@@ -7,7 +7,7 @@ import {
 	getStandaloneRoutePublicPath,
 	materializePublicPath,
 	resolveAstroBuildConfig,
-} from "../src/utils/permalink-materialization.ts";
+} from "../src/utils/permalink/materialization.ts";
 
 test("applyTrailingSlash keeps html path plus always as a trailing-slash public path", () => {
 	assert.equal(applyTrailingSlash("/hello.html", "always"), "/hello.html/");

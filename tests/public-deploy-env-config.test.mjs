@@ -7,7 +7,7 @@ import {
 	applyPublicQingYanPageMetricsConfig,
 	resolvePublicQingYanConfig,
 	resolvePublicSiteConfigOverride,
-} from "../src/utils/public-deploy-env-config.ts";
+} from "../src/utils/site-source/public-deploy-env.ts";
 
 test("public deploy env resolves root-domain site and base overrides", () => {
 	assert.deepEqual(
