@@ -8,6 +8,10 @@ import {
 	resolveExternalSiteWatchPaths,
 } from "../src/utils/external-site-dev-watch.mjs";
 
+function fixtureSiteRoot() {
+	return path.resolve("..", "fixture-sites", "x-item.com");
+}
+
 function createMockServer({ requireRefreshBeforeReload = false } = {}) {
 	const handlers = new Map();
 	const watchedPaths = [];
@@ -94,7 +98,7 @@ function createMockServer({ requireRefreshBeforeReload = false } = {}) {
 }
 
 test("external site dev watcher subscribes config, content, and assets", () => {
-	const siteRoot = path.resolve("E:/Project/Activate/x-item.com");
+	const siteRoot = fixtureSiteRoot();
 
 	assert.deepEqual(resolveExternalSiteWatchPaths(siteRoot), [
 		path.join(siteRoot, "site.config.yaml"),
@@ -104,7 +108,7 @@ test("external site dev watcher subscribes config, content, and assets", () => {
 });
 
 test("external site dev watcher refreshes content before reloading", async () => {
-	const siteRoot = path.resolve("E:/Project/Activate/x-item.com");
+	const siteRoot = fixtureSiteRoot();
 	const mock = createMockServer({ requireRefreshBeforeReload: true });
 
 	registerExternalSiteDevWatch({
@@ -126,7 +130,7 @@ test("external site dev watcher refreshes content before reloading", async () =>
 	);
 	await changeHandler(
 		"change",
-		path.resolve("E:/Project/Activate/other/content/post.md"),
+		path.resolve("..", "fixture-sites", "other", "content", "post.md"),
 	);
 
 	assert.deepEqual(mock.refreshes, [null]);
@@ -142,7 +146,7 @@ test("external site dev watcher refreshes content before reloading", async () =>
 });
 
 test("external site dev watcher leaves site config restart to Astro", () => {
-	const siteRoot = path.resolve("E:/Project/Activate/x-item.com");
+	const siteRoot = fixtureSiteRoot();
 	const mock = createMockServer();
 
 	registerExternalSiteDevWatch({
@@ -162,7 +166,7 @@ test("external site dev watcher leaves site config restart to Astro", () => {
 });
 
 test("external site config watch registers config as Astro watch file", () => {
-	const siteRoot = path.resolve("E:/Project/Activate/x-item.com");
+	const siteRoot = fixtureSiteRoot();
 	const watchedFiles = [];
 
 	registerExternalSiteConfigWatch({
@@ -181,7 +185,7 @@ test("external site dev watcher does nothing when disabled", () => {
 
 	registerExternalSiteDevWatch({
 		server: mock.server,
-		siteRoot: path.resolve("E:/Project/Activate/x-item.com"),
+		siteRoot: fixtureSiteRoot(),
 		enabled: false,
 	});
 

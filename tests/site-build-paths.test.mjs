@@ -4,33 +4,31 @@ import test from "node:test";
 
 import { resolveSiteBuildPaths } from "../scripts/site/build-paths.mjs";
 
+const repoRoot = path.resolve("fixtures", "fangyuan-root");
+const externalSiteRoot = path.resolve("..", "fixture-sites", "x-item.com");
+
 test("resolveSiteBuildPaths keeps default build output in repo dist", () => {
 	const paths = resolveSiteBuildPaths({
-		cwd: "H:/Programming/Web/FangYuan",
+		cwd: repoRoot,
 		env: {},
 	});
 
 	assert.equal(paths.outDir, null);
 	assert.equal(paths.cacheDir, null);
 	assert.equal(paths.shouldCopyOutDir, false);
-	assert.equal(
-		paths.pagefindSite,
-		path.resolve("H:/Programming/Web/FangYuan", "dist"),
-	);
+	assert.equal(paths.pagefindSite, path.join(repoRoot, "dist"));
 });
 
 test("resolveSiteBuildPaths uses direct output for custom directories inside the repo", () => {
+	const customOutDir = path.join(repoRoot, ".temp", "custom-dist");
 	const paths = resolveSiteBuildPaths({
-		cwd: "H:/Programming/Web/FangYuan",
+		cwd: repoRoot,
 		env: {
-			FANGYUAN_BUILD_OUT_DIR: "H:/Programming/Web/FangYuan/.temp/custom-dist",
+			FANGYUAN_BUILD_OUT_DIR: customOutDir,
 		},
 	});
 
-	assert.equal(
-		paths.outDir,
-		path.resolve("H:/Programming/Web/FangYuan/.temp/custom-dist"),
-	);
+	assert.equal(paths.outDir, customOutDir);
 	assert.equal(paths.finalOutDir, paths.outDir);
 	assert.equal(paths.cacheDir, null);
 	assert.equal(paths.shouldCopyOutDir, false);
@@ -38,17 +36,15 @@ test("resolveSiteBuildPaths uses direct output for custom directories inside the
 });
 
 test("resolveSiteBuildPaths stages out-of-repo output inside the repo before copy", () => {
+	const externalDist = path.join(externalSiteRoot, "dist");
 	const paths = resolveSiteBuildPaths({
-		cwd: "H:/Programming/Web/FangYuan",
+		cwd: repoRoot,
 		env: {
-			FANGYUAN_BUILD_OUT_DIR: "E:/Project/Activate/x-item.com/dist",
+			FANGYUAN_BUILD_OUT_DIR: externalDist,
 		},
 	});
 
-	assert.equal(
-		paths.finalOutDir,
-		path.resolve("E:/Project/Activate/x-item.com/dist"),
-	);
+	assert.equal(paths.finalOutDir, externalDist);
 	assert.match(
 		paths.outDir,
 		/\.temp[\\/]external-build[\\/][a-f0-9]{12}[\\/]dist$/,
@@ -62,16 +58,14 @@ test("resolveSiteBuildPaths stages out-of-repo output inside the repo before cop
 });
 
 test("resolveSiteBuildPaths allows an explicit custom cache directory", () => {
+	const externalCacheDir = path.join(externalSiteRoot, ".cache", "astro");
 	const paths = resolveSiteBuildPaths({
-		cwd: "H:/Programming/Web/FangYuan",
+		cwd: repoRoot,
 		env: {
-			FANGYUAN_BUILD_OUT_DIR: "E:/Project/Activate/x-item.com/dist",
-			FANGYUAN_BUILD_CACHE_DIR: "E:/Project/Activate/x-item.com/.cache/astro",
+			FANGYUAN_BUILD_OUT_DIR: path.join(externalSiteRoot, "dist"),
+			FANGYUAN_BUILD_CACHE_DIR: externalCacheDir,
 		},
 	});
 
-	assert.equal(
-		paths.cacheDir,
-		path.resolve("E:/Project/Activate/x-item.com/.cache/astro"),
-	);
+	assert.equal(paths.cacheDir, externalCacheDir);
 });

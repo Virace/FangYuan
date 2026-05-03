@@ -199,8 +199,8 @@ console.log("yes 和 yep 这两个单词都会被标记。")
 
 #### 转义正斜杠
 
-```sh /\/ho.*\//
-echo "测试" > /home/test.txt
+```sh /logs\/.*\.txt/
+echo "测试" > logs/output.txt
 ```
 
 #### 选择行内标记类型（mark、ins、del）

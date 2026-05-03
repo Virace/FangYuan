@@ -8,10 +8,10 @@ import { resolveSiteSourceContext } from "../src/utils/site-source-context.ts";
 
 test("internal mode ignores external site root", () => {
 	const context = resolveSiteSourceContext({
-		cwd: "H:/repo",
+		cwd: path.resolve("fixtures", "repo"),
 		env: {
 			FANGYUAN_SITE_MODE: "internal",
-			FANGYUAN_SITE_ROOT: "D:/custom-site",
+			FANGYUAN_SITE_ROOT: path.resolve("..", "fixture-sites", "custom-site"),
 		},
 	});
 
@@ -35,7 +35,7 @@ test("auto mode uses external site only when content exists", async (t) => {
 	);
 
 	const context = resolveSiteSourceContext({
-		cwd: "H:/repo",
+		cwd: path.resolve("fixtures", "repo"),
 		env: {
 			FANGYUAN_SITE_MODE: "auto",
 			FANGYUAN_SITE_ROOT: tempRoot,
@@ -51,10 +51,13 @@ test("external mode fails fast when site root is missing", () => {
 	assert.throws(
 		() =>
 			resolveSiteSourceContext({
-				cwd: "H:/repo",
+				cwd: path.resolve("fixtures", "repo"),
 				env: {
 					FANGYUAN_SITE_MODE: "external",
-					FANGYUAN_SITE_ROOT: "Z:/missing-site-root",
+					FANGYUAN_SITE_ROOT: path.join(
+						os.tmpdir(),
+						"fangyuan-missing-site-root",
+					),
 				},
 			}),
 		/external site root/i,
@@ -88,5 +91,8 @@ test("relative external site roots resolve from FangYuan root", async (t) => {
 
 	assert.equal(context.siteRoot, siteRoot);
 	assert.equal(context.contentRoot, path.join(siteRoot, "content"));
-	assert.equal(context.externalConfigPath, path.join(siteRoot, "site.config.yaml"));
+	assert.equal(
+		context.externalConfigPath,
+		path.join(siteRoot, "site.config.yaml"),
+	);
 });
