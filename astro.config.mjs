@@ -51,6 +51,7 @@ import {
 import {
 	loadExternalSiteConfigYaml,
 } from "./src/utils/external-site-config.ts";
+import { resolveFangYuanRoot } from "./src/utils/project-root.ts";
 import {
 	loadExternalAstroSiteConfig,
 	loadExternalExpressiveCodeConfig,
@@ -60,7 +61,10 @@ import {
 } from "./src/utils/site-source.ts";
 import { resolveSiteSourceContext } from "./src/utils/site-source-context.ts";
 import { externalSiteAssetDevPrefix } from "./src/utils/external-site-assets.ts";
-import { registerExternalSiteDevWatch } from "./src/utils/external-site-dev-watch.mjs";
+import {
+	registerExternalSiteConfigWatch,
+	registerExternalSiteDevWatch,
+} from "./src/utils/external-site-dev-watch.mjs";
 import { createDevStaticAssetMiddleware } from "./src/utils/dev-static-assets.mjs";
 import { resolveDevWatchIgnoredPatterns } from "./src/utils/dev-watch-ignore.mjs";
 
@@ -68,7 +72,8 @@ const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
-const siteSourceContext = resolveSiteSourceContext();
+const fangyuanRoot = resolveFangYuanRoot();
+const siteSourceContext = resolveSiteSourceContext({ fangyuanRoot });
 const externalSiteConfig =
 	siteSourceContext.useExternalConfig &&
 	siteSourceContext.externalConfigPath !== null
@@ -76,12 +81,12 @@ const externalSiteConfig =
 		: null;
 const externalAstroSiteConfig = loadExternalAstroSiteConfig();
 const externalPermalinkConfig = loadExternalPermalinkConfig();
-const siteBuildPaths = resolveSiteBuildPaths();
+const siteBuildPaths = resolveSiteBuildPaths({ cwd: fangyuanRoot });
 const externalSiteRoot =
-	siteSourceContext.siteRoot ?? path.join(process.cwd(), "site");
-const devWatchIgnoredPatterns = resolveDevWatchIgnoredPatterns(process.cwd());
+	siteSourceContext.siteRoot ?? path.join(fangyuanRoot, "site");
+const devWatchIgnoredPatterns = resolveDevWatchIgnoredPatterns(fangyuanRoot);
 const emptyPublicDir = ".temp/empty-public";
-fs.mkdirSync(path.join(process.cwd(), emptyPublicDir), { recursive: true });
+fs.mkdirSync(path.join(fangyuanRoot, emptyPublicDir), { recursive: true });
 const envSiteUrl = normalizeConfiguredSite(process.env.FANGYUAN_SITE);
 const envBasePath =
 	process.env.FANGYUAN_BASE === undefined
@@ -353,6 +358,13 @@ function externalSiteDevWatchIntegration() {
 	return {
 		name: "fangyuan-external-site-dev-watch",
 		hooks: {
+			"astro:config:setup"({ addWatchFile }) {
+				registerExternalSiteConfigWatch({
+					addWatchFile,
+					siteRoot: externalSiteRoot,
+					enabled: siteSourceContext.useExternalConfig,
+				});
+			},
 			"astro:server:setup"({ server, refreshContent }) {
 				registerExternalSiteDevWatch({
 					server,
@@ -381,7 +393,7 @@ function getMimeType(filePath) {
 
 function externalSiteAssetDevServerPlugin() {
 	const devStaticAssetMiddleware = createDevStaticAssetMiddleware({
-		cwd: process.cwd(),
+		cwd: fangyuanRoot,
 		externalSiteRoot,
 		externalSiteAssetDevPrefix,
 		getMimeType,
@@ -584,7 +596,7 @@ export default defineConfig({
 			? {
 					server: {
 						fs: {
-							allow: [process.cwd(), externalSiteRoot],
+							allow: [fangyuanRoot, externalSiteRoot],
 						},
 						watch: {
 							ignored: devWatchIgnoredPatterns,
@@ -598,7 +610,7 @@ export default defineConfig({
 			: {
 					server: {
 						fs: {
-							allow: [process.cwd(), externalSiteRoot],
+							allow: [fangyuanRoot, externalSiteRoot],
 						},
 						watch: {
 							ignored: devWatchIgnoredPatterns,

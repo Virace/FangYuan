@@ -3,6 +3,7 @@ import { stat } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import type { UpdatedDateFallback, UpdatedDateMode } from "../types/config";
+import { fangyuanRoot } from "./project-root.ts";
 
 type UpdatedDateProvider = (filePath?: string) => Promise<Date | null>;
 
@@ -16,7 +17,7 @@ type ResolveUpdatedDateInput = {
 };
 
 const execFileAsync = promisify(execFile);
-const repoRoot = process.cwd();
+const repoRoot = fangyuanRoot;
 
 function normalizeDate(
 	value: Date | string | number | null | undefined,

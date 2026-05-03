@@ -60,3 +60,33 @@ test("external mode fails fast when site root is missing", () => {
 		/external site root/i,
 	);
 });
+
+test("relative external site roots resolve from FangYuan root", async (t) => {
+	const fangyuanRoot = await mkdtemp(
+		path.join(os.tmpdir(), "fangyuan-root-context-"),
+	);
+	t.after(async () => {
+		await rm(fangyuanRoot, { recursive: true, force: true });
+	});
+
+	const siteRoot = path.join(fangyuanRoot, "site");
+	await mkdir(path.join(siteRoot, "content", "posts"), { recursive: true });
+	await writeFile(
+		path.join(siteRoot, "content", "posts", "hello.md"),
+		"# hello\n",
+		"utf8",
+	);
+	await writeFile(path.join(siteRoot, "site.config.yaml"), "siteConfig: {}\n");
+
+	const context = resolveSiteSourceContext({
+		fangyuanRoot,
+		env: {
+			FANGYUAN_SITE_MODE: "external",
+			FANGYUAN_SITE_ROOT: "site",
+		},
+	});
+
+	assert.equal(context.siteRoot, siteRoot);
+	assert.equal(context.contentRoot, path.join(siteRoot, "content"));
+	assert.equal(context.externalConfigPath, path.join(siteRoot, "site.config.yaml"));
+});

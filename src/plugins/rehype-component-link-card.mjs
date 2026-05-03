@@ -2,6 +2,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { h } from "hastscript";
+import { fangyuanRoot } from "../utils/project-root.ts";
 
 const localImageExtensionPattern = /\.(?:avif|gif|jpeg|jpg|png|svg|webp)$/i;
 
@@ -83,12 +84,15 @@ function isPathInside(targetPath, rootPath) {
 }
 
 function getAliasBaseRoot(entryFilePath) {
-	const siteRoot = path.resolve(process.env.FANGYUAN_SITE_ROOT ?? "site");
+	const siteRoot = path.resolve(
+		fangyuanRoot,
+		process.env.FANGYUAN_SITE_ROOT ?? "site",
+	);
 	if (isPathInside(entryFilePath, path.join(siteRoot, "content"))) {
 		return siteRoot;
 	}
 
-	return path.join(process.cwd(), "src");
+	return path.join(fangyuanRoot, "src");
 }
 
 function makeEntryRelativePath(entryFilePath, targetPath) {

@@ -3,6 +3,7 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+	registerExternalSiteConfigWatch,
 	registerExternalSiteDevWatch,
 	resolveExternalSiteWatchPaths,
 } from "../src/utils/external-site-dev-watch.mjs";
@@ -92,7 +93,7 @@ function createMockServer({ requireRefreshBeforeReload = false } = {}) {
 	};
 }
 
-test("external site dev watcher only watches config, content, and assets", () => {
+test("external site dev watcher subscribes config, content, and assets", () => {
 	const siteRoot = path.resolve("E:/Project/Activate/x-item.com");
 
 	assert.deepEqual(resolveExternalSiteWatchPaths(siteRoot), [
@@ -140,7 +141,7 @@ test("external site dev watcher refreshes content before reloading", async () =>
 	assert.deepEqual(mock.restarts, []);
 });
 
-test("external site dev watcher restarts when site config changes", () => {
+test("external site dev watcher leaves site config restart to Astro", () => {
 	const siteRoot = path.resolve("E:/Project/Activate/x-item.com");
 	const mock = createMockServer();
 
@@ -157,7 +158,22 @@ test("external site dev watcher restarts when site config changes", () => {
 
 	assert.deepEqual(mock.invalidatedEnvironments, []);
 	assert.deepEqual(mock.messages, []);
-	assert.deepEqual(mock.restarts, [true]);
+	assert.deepEqual(mock.restarts, []);
+});
+
+test("external site config watch registers config as Astro watch file", () => {
+	const siteRoot = path.resolve("E:/Project/Activate/x-item.com");
+	const watchedFiles = [];
+
+	registerExternalSiteConfigWatch({
+		addWatchFile(filePath) {
+			watchedFiles.push(filePath);
+		},
+		enabled: true,
+		siteRoot,
+	});
+
+	assert.deepEqual(watchedFiles, [path.join(siteRoot, "site.config.yaml")]);
 });
 
 test("external site dev watcher does nothing when disabled", () => {

@@ -1,5 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
+import { fangyuanRoot as defaultFangYuanRoot } from "./project-root.ts";
 
 export type SiteSourceMode = "auto" | "internal" | "external";
 
@@ -39,14 +40,16 @@ function parseMode(value: string | undefined): SiteSourceMode {
 }
 
 export function resolveSiteSourceContext({
-	cwd = process.cwd(),
+	cwd,
+	fangyuanRoot = cwd ?? defaultFangYuanRoot,
 	env = process.env,
 }: {
 	cwd?: string;
+	fangyuanRoot?: string;
 	env?: NodeJS.ProcessEnv;
 } = {}): SiteSourceContext {
 	const mode = parseMode(env.FANGYUAN_SITE_MODE);
-	const siteRoot = path.resolve(cwd, env.FANGYUAN_SITE_ROOT ?? "site");
+	const siteRoot = path.resolve(fangyuanRoot, env.FANGYUAN_SITE_ROOT ?? "site");
 	const externalContentRoot = path.join(siteRoot, "content");
 	const externalConfigPath = path.join(siteRoot, "site.config.yaml");
 	const hasExternalContent = directoryHasFiles(externalContentRoot);

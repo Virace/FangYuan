@@ -54,8 +54,7 @@ export function registerExternalSiteDevWatch({
 			return;
 		}
 
-		if (isExternalSiteConfig(siteRoot, changedPath) && server.restart) {
-			server.restart();
+		if (isExternalSiteConfig(siteRoot, changedPath)) {
 			return;
 		}
 
@@ -64,4 +63,16 @@ export function registerExternalSiteDevWatch({
 		notifyContentChanged(server);
 		reloadServer(server);
 	});
+}
+
+export function registerExternalSiteConfigWatch({
+	addWatchFile,
+	siteRoot,
+	enabled,
+}) {
+	if (!enabled) {
+		return;
+	}
+
+	addWatchFile(path.join(siteRoot, "site.config.yaml"));
 }

@@ -3,14 +3,18 @@ import path from "node:path";
 import externalImageModules from "virtual:fangyuan-site-assets";
 import type { ImageMetadata } from "astro";
 import { getExternalSiteAssetDevUrl } from "./external-site-assets";
+import { fangyuanRoot } from "./project-root.ts";
 
 export type ImageBaseRoot = "src" | "site";
 export type ResolvedImageSource = ImageMetadata | string | undefined;
 type ImageImporter = () => Promise<{ default: ImageMetadata }>;
 
-const repoRoot = process.cwd();
+const repoRoot = fangyuanRoot;
 const publicRoot = path.join(repoRoot, ".temp", "empty-public");
-const siteRoot = path.resolve(process.env.FANGYUAN_SITE_ROOT ?? "site");
+const siteRoot = path.resolve(
+	fangyuanRoot,
+	process.env.FANGYUAN_SITE_ROOT ?? "site",
+);
 
 const localImageModules = import.meta.glob<ImageMetadata>(
 	[
