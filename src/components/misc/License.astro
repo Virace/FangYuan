@@ -7,16 +7,15 @@ import { formatDateToYYYYMMDD } from "../../utils/content/date";
 
 interface Props {
 	title: string;
-	slug: string;
+	url: string;
 	pubDate: Date;
 	class: string;
 }
 
-const { title, pubDate } = Astro.props;
+const { title, pubDate, url: postUrl } = Astro.props;
 const className = Astro.props.class;
 const profileConf = profileConfig;
 const licenseConf = licenseConfig;
-const postUrl = decodeURIComponent(Astro.url.toString());
 ---
 <div class={`relative transition overflow-hidden bg-license-block-bg py-5 px-6 ${className}`}>
     <div class="transition font-bold text-75">

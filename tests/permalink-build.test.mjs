@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdir, readFile, utimes, writeFile } from "node:fs/promises";
+import {
+	mkdir,
+	readFile,
+	readdir,
+	utimes,
+	writeFile,
+} from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -7,6 +13,33 @@ import {
 	runBuild,
 	withMutableSiteFixture,
 } from "./test-helpers/site-fixture.mjs";
+
+async function findHtmlFiles(root, current = root) {
+	const entries = await readdir(current, { withFileTypes: true });
+	const files = [];
+	for (const entry of entries) {
+		const entryPath = path.join(current, entry.name);
+		if (entry.isDirectory()) {
+			files.push(...(await findHtmlFiles(root, entryPath)));
+			continue;
+		}
+		if (entry.isFile() && entry.name.endsWith(".html")) {
+			files.push(path.relative(root, entryPath).replaceAll("\\", "/"));
+		}
+	}
+	return files;
+}
+
+async function readHtmlContaining(root, text) {
+	for (const htmlFile of await findHtmlFiles(root)) {
+		const html = await readFile(path.join(root, htmlFile), "utf8");
+		if (html.includes(text)) {
+			return html;
+		}
+	}
+
+	throw new Error(`Unable to find generated HTML containing "${text}".`);
+}
 
 test(
 	"html pattern plus always materializes to html directory output",
@@ -142,6 +175,75 @@ Hello world
 				assert.match(sitemapXml, /https:\/\/fangyuan\.example\/about\//);
 				assert.match(articleHtml, /Hello world/);
 				assert.match(aboutHtml, /About/);
+			},
+		);
+	},
+);
+
+test(
+	"license article link uses resolved post permalink",
+	{ concurrency: false },
+	async (t) => {
+		await withMutableSiteFixture(
+			t,
+			async ({
+				siteConfigPath,
+				postDir,
+				siteAboutPath,
+				distRoot,
+				markCreated,
+			}) => {
+				await writeFile(
+					siteConfigPath,
+					`siteConfig:
+  title: License Permalink Demo
+  subtitle: demo
+  site: https://fangyuan.example
+  permalink:
+    postsPattern: /posts/%slug%
+    pagesPattern: /%slug%
+    trailingSlash: auto
+    postPatternRules: []
+    aliasValidation: error
+    updatedDateMode: manual
+    updatedDateFallback: none
+`,
+					"utf8",
+				);
+
+				const postPath = markCreated(path.join(postDir, "source-slug.md"));
+				await writeFile(
+					postPath,
+					`---
+title: License Link Demo
+published: 2026-04-21
+permalink: /custom-license-link.html
+description: demo
+tags: [Demo]
+category: Demo
+draft: false
+---
+License link demo
+`,
+					"utf8",
+				);
+				await writeFile(siteAboutPath, "# About\n", "utf8");
+
+				runBuild();
+
+				const articleHtml = await readHtmlContaining(
+					distRoot,
+					"License link demo",
+				);
+
+				assert.match(
+					articleHtml,
+					/href="https:\/\/fangyuan\.example\/custom-license-link\.html"/,
+				);
+				assert.doesNotMatch(
+					articleHtml,
+					/href="https:\/\/fangyuan\.example\/source-slug"/,
+				);
 			},
 		);
 	},
