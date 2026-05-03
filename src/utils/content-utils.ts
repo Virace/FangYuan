@@ -22,7 +22,7 @@ export type PostData = {
 	tags: string[];
 	category: string | null;
 	lang: string;
-	sticky: number;
+	sticky?: number;
 	prevTitle: string;
 	prevSlug: string;
 	nextTitle: string;

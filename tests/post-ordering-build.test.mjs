@@ -87,13 +87,30 @@ Sticky Beta
 					`---
 title: Regular Gamma
 published: 2024-01-01
-updated: 2024-02-02
+updated: 2024-03-01
 description: demo
 tags: [Demo]
 category: Demo
 draft: false
 ---
 Regular Gamma
+`,
+				);
+				await writePost(
+					postDir,
+					markCreated,
+					"sticky-zero.md",
+					`---
+title: Sticky Zero
+published: 2024-01-01
+updated: 2024-02-02
+sticky: 0
+description: demo
+tags: [Demo]
+category: Demo
+draft: false
+---
+Sticky Zero
 `,
 				);
 
@@ -112,15 +129,19 @@ Regular Gamma
 
 				assert.match(
 					homeHtml,
-					/Sticky Alpha[\s\S]*Sticky Beta[\s\S]*Regular Gamma/,
+					/Sticky Alpha[\s\S]*Sticky Beta[\s\S]*Sticky Zero[\s\S]*Regular Gamma/,
+				);
+				assert.match(
+					homeHtml,
+					/href="\/sticky-zero\/"[\s\S]{0,1000}(置顶|TOP)[\s\S]{0,300}Sticky Zero/,
 				);
 				assert.match(
 					archiveHtml,
-					/Sticky Alpha[\s\S]*Sticky Beta[\s\S]*Regular Gamma/,
+					/Sticky Alpha[\s\S]*Sticky Beta[\s\S]*Sticky Zero[\s\S]*Regular Gamma/,
 				);
 				assert.match(
 					rssXml,
-					/Sticky Alpha[\s\S]*Sticky Beta[\s\S]*Regular Gamma/,
+					/Sticky Alpha[\s\S]*Sticky Beta[\s\S]*Sticky Zero[\s\S]*Regular Gamma/,
 				);
 				assert.match(stickyAlphaHtml, /href="\/sticky-beta\/"/);
 			},

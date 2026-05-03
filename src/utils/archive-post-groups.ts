@@ -1,4 +1,5 @@
 import type { PostForList } from "./content-utils";
+import { isPinnedPost } from "./post-ordering.ts";
 
 export type ArchivePostGroup = {
 	year: number;
@@ -16,10 +17,10 @@ export function buildArchivePostGroups(
 	pinnedPosts: PostForList[];
 	yearGroups: ArchivePostGroup[];
 } {
-	const pinnedPosts = posts.filter((post) => (post.data.sticky ?? 0) > 0);
+	const pinnedPosts = posts.filter((post) => isPinnedPost(post.data));
 	const timelinePosts = showPinnedInTimeline
 		? posts
-		: posts.filter((post) => (post.data.sticky ?? 0) <= 0);
+		: posts.filter((post) => !isPinnedPost(post.data));
 
 	const groupedPosts = timelinePosts.reduce(
 		(accumulator, post) => {

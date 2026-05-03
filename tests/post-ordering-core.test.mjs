@@ -12,27 +12,32 @@ function makeRoute({
 	published,
 	updated,
 	alias = "",
-	sticky = 0,
+	sticky,
 	filePath,
 	publicPath,
 }) {
+	const data = {
+		title,
+		published: new Date(published),
+		updated: updated ? new Date(updated) : undefined,
+		alias,
+		prevTitle: "",
+		prevSlug: "",
+		nextTitle: "",
+		nextSlug: "",
+	};
+
+	if (sticky !== undefined) {
+		data.sticky = sticky;
+	}
+
 	return {
 		entryId,
 		publicPath,
 		entry: {
 			id: entryId,
 			filePath,
-			data: {
-				title,
-				published: new Date(published),
-				updated: updated ? new Date(updated) : undefined,
-				alias,
-				sticky,
-				prevTitle: "",
-				prevSlug: "",
-				nextTitle: "",
-				nextSlug: "",
-			},
+			data,
 		},
 	};
 }
@@ -74,6 +79,36 @@ test("sortPostRoutes puts higher sticky first and then applies updated desc", ()
 		"sticky-one-new",
 		"sticky-one-old",
 		"regular-old",
+	]);
+});
+
+test("sortPostRoutes treats explicit sticky zero as pinned before omitted sticky", () => {
+	const routes = sortPostRoutes(
+		[
+			makeRoute({
+				entryId: "regular-newer",
+				title: "Regular Newer",
+				published: "2024-01-01T00:00:00.000Z",
+				updated: "2024-03-01T00:00:00.000Z",
+				publicPath: "/regular-newer/",
+				filePath: "site/content/posts/regular-newer.md",
+			}),
+			makeRoute({
+				entryId: "sticky-zero",
+				title: "Sticky Zero",
+				published: "2024-01-01T00:00:00.000Z",
+				updated: "2024-02-01T00:00:00.000Z",
+				sticky: 0,
+				publicPath: "/sticky-zero/",
+				filePath: "site/content/posts/sticky-zero.md",
+			}),
+		],
+		{ key: "updated", order: "desc" },
+	);
+
+	assert.deepEqual(routes.map((route) => route.entryId), [
+		"sticky-zero",
+		"regular-newer",
 	]);
 });
 

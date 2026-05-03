@@ -23,6 +23,14 @@ type SortablePostRoute = {
 	};
 };
 
+type StickyData = {
+	sticky?: number;
+};
+
+export function isPinnedPost(data: StickyData): boolean {
+	return typeof data.sticky === "number";
+}
+
 function getFileStem(route: SortablePostRoute): string {
 	const filePath = route.entry.filePath?.replace(/\\/g, "/") ?? "";
 	if (filePath) {
@@ -80,6 +88,13 @@ export function sortPostRoutes<T extends SortablePostRoute>(
 	postSort: PostSortConfig,
 ): T[] {
 	return [...routes].sort((left, right) => {
+		const pinnedDiff =
+			Number(isPinnedPost(right.entry.data)) -
+			Number(isPinnedPost(left.entry.data));
+		if (pinnedDiff !== 0) {
+			return pinnedDiff;
+		}
+
 		const stickyDiff =
 			(right.entry.data.sticky ?? 0) - (left.entry.data.sticky ?? 0);
 		if (stickyDiff !== 0) {

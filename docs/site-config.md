@@ -275,6 +275,7 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 
 - 作用：同一置顶层内的文章排序字段。
 - 支持值：`title`、`published`、`updated`、`alias`、`filename`
+- 置顶规则：文章 frontmatter 中显式写入 `sticky` 即视为置顶；`sticky: 0` 是最低置顶层，未写 `sticky` 才是不置顶。
 
 #### `siteConfig.postSort.order`
 

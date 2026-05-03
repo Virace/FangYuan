@@ -94,7 +94,7 @@ const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 			tags: z.array(z.string()).optional().default([]),
 			category: z.string().optional().nullable().default(""),
 			lang: z.string().optional().default(""),
-			sticky: z.number().int().min(0).optional().default(0),
+			sticky: z.number().int().min(0).optional(),
 
 			/* For internal use */
 			prevTitle: z.string().default(""),
