@@ -52,6 +52,7 @@ import {
 	loadExternalExpressiveCodeConfig,
 	loadExternalPermalinkConfig,
 	loadExternalQingYanDevProxyTarget,
+	resolveAstroBasePath,
 } from "./src/utils/site-source.ts";
 import { resolveSiteSourceContext } from "./src/utils/site-source-context.ts";
 import { externalSiteAssetDevPrefix } from "./src/utils/external-site-assets.ts";
@@ -84,9 +85,12 @@ const siteUrl =
 	envSiteUrl ??
 	normalizeConfiguredSite(defaultSiteConfig.site);
 const basePath =
-	externalAstroSiteConfig?.base ??
-	envBasePath ??
-	normalizeConfiguredBase(defaultSiteConfig.base);
+	resolveAstroBasePath(
+		externalAstroSiteConfig?.base ??
+			envBasePath ??
+			normalizeConfiguredBase(defaultSiteConfig.base),
+		process.env.FANGYUAN_DEV_BASE,
+	);
 const permalinkBuildMode = resolveAstroBuildConfig({
 	postsPattern:
 		externalPermalinkConfig?.postsPattern ??

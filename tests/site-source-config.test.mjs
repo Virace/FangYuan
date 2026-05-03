@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { extractExternalAstroSiteConfig } from "../src/utils/site-source.ts";
+import {
+	extractExternalAstroSiteConfig,
+	resolveAstroBasePath,
+} from "../src/utils/site-source.ts";
 import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
@@ -41,4 +44,11 @@ test("extractExternalAstroSiteConfig reads site and base from external site conf
 		site: "https://example.com",
 		base: "/blog/",
 	});
+});
+
+test("resolveAstroBasePath accepts an explicit dev-only base override", () => {
+	assert.equal(resolveAstroBasePath("/test/", "/"), "/");
+	assert.equal(resolveAstroBasePath("/test/", undefined), "/test/");
+	assert.equal(resolveAstroBasePath("/test/", ""), "/test/");
+	assert.equal(resolveAstroBasePath("/", "/dev"), "/dev/");
 });

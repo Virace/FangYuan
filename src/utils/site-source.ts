@@ -85,6 +85,14 @@ export function extractExternalAstroSiteConfig(
 	};
 }
 
+export function resolveAstroBasePath(
+	configuredBase: string,
+	devBaseOverride: string | null | undefined,
+): string {
+	const devBase = devBaseOverride?.trim();
+	return devBase ? normalizeConfiguredBase(devBase) : configuredBase;
+}
+
 export function loadExternalPermalinkConfig(): ExternalPermalinkConfig | null {
 	return extractExternalPermalinkConfig(loadResolvedExternalSiteConfig());
 }
