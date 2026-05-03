@@ -56,6 +56,7 @@ import {
 } from "./src/utils/site-source.ts";
 import { resolveSiteSourceContext } from "./src/utils/site-source-context.ts";
 import { externalSiteAssetDevPrefix } from "./src/utils/external-site-assets.ts";
+import { registerExternalSiteDevWatch } from "./src/utils/external-site-dev-watch.mjs";
 import { createDevStaticAssetMiddleware } from "./src/utils/dev-static-assets.mjs";
 
 const expressiveCodeConfig = {
@@ -307,7 +308,6 @@ function collectExternalSiteAssetReferences() {
 }
 
 function externalSiteAssetModulePlugin() {
-	const assetReferences = collectExternalSiteAssetReferences();
 	const virtualModuleId = "virtual:fangyuan-site-assets";
 	const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
@@ -324,6 +324,7 @@ function externalSiteAssetModulePlugin() {
 				return null;
 			}
 
+			const assetReferences = collectExternalSiteAssetReferences();
 			const entries = assetReferences
 				.map((reference) => {
 					const importPath = `@fangyuan-site/${reference}`;
@@ -341,6 +342,21 @@ function externalSiteAssetPlugin() {
 		enforce: "pre",
 		resolveId(id) {
 			return resolveExternalSiteAssetImport(id);
+		},
+	};
+}
+
+function externalSiteDevWatchPlugin() {
+	return {
+		name: "fangyuan-external-site-dev-watch",
+		configureServer(server) {
+			registerExternalSiteDevWatch({
+				server,
+				siteRoot: externalSiteRoot,
+				enabled:
+					siteSourceContext.useExternalContent ||
+					siteSourceContext.useExternalConfig,
+			});
 		},
 	};
 }
@@ -546,6 +562,7 @@ export default defineConfig({
 		plugins: [
 			externalSiteAssetModulePlugin(),
 			externalSiteAssetPlugin(),
+			externalSiteDevWatchPlugin(),
 			externalSiteAssetDevServerPlugin(),
 			tailwindcss(),
 			...(qingyanDevProxyMiddlewarePlugin
