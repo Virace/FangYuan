@@ -58,6 +58,7 @@ node scripts/site/init-site.js
 - `docs/site-config.md`
 - `docs/init-site.md`
 - `docs/scripts.md`
+- `docs/markdown-extensions.md`
 
 说明：
 
