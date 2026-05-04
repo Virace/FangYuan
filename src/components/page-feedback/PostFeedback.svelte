@@ -13,6 +13,7 @@ import type {
 	RewardOption,
 } from "@utils/page-feedback/provider";
 import { getQingYanClient } from "@utils/qingyan/client";
+import type { QingYanClientConfig } from "@utils/qingyan/contracts";
 import { onDestroy, onMount } from "svelte";
 import { fade, scale } from "svelte/transition";
 import InlineCommentCaptcha from "../comments/InlineCommentCaptcha.svelte";
@@ -24,8 +25,9 @@ export let postTitle = "";
 export let postUrl = "";
 export let enableLike = true;
 export let rewardItems: RewardOption[] = [];
+export let qingyan: QingYanClientConfig | null = null;
 
-const qingyanClient = getQingYanClient();
+const qingyanClient = getQingYanClient(qingyan);
 
 type FangYuanDebugWindow = Window & {
 	__FANGYUAN_QINGYAN_DEBUG__?: Record<string, unknown>;

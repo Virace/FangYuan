@@ -6,8 +6,8 @@ import {
 	applyPublicQingYanPageFeedbackConfig,
 	applyPublicQingYanPageMetricsConfig,
 	resolvePublicQingYanConfig,
-	resolvePublicSiteConfigOverride,
-} from "../src/utils/site-source/public-deploy-env.ts";
+} from "../src/utils/site-source/demo-qingyan-env.ts";
+import { resolvePublicSiteConfigOverride } from "../src/utils/site-source/public-deploy-env.ts";
 
 test("public deploy env resolves root-domain site and base overrides", () => {
 	assert.deepEqual(
@@ -24,13 +24,27 @@ test("public deploy env resolves root-domain site and base overrides", () => {
 
 test("public deploy env enables QingYan with default same-origin API", () => {
 	assert.deepEqual(
-		resolvePublicQingYanConfig({
-			PUBLIC_FANGYUAN_DEMO_QINGYAN: "true",
-		}),
+		resolvePublicQingYanConfig(
+			{
+				PUBLIC_FANGYUAN_DEMO_QINGYAN: "true",
+			},
+			{
+				allowDemoQingYan: true,
+			},
+		),
 		{
 			siteKey: "default",
 			apiBase: "/api",
 		},
+	);
+});
+
+test("public deploy env ignores demo QingYan unless explicitly allowed", () => {
+	assert.equal(
+		resolvePublicQingYanConfig({
+			PUBLIC_FANGYUAN_DEMO_QINGYAN: "true",
+		}),
+		null,
 	);
 });
 

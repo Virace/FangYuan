@@ -1,10 +1,10 @@
+import fs from "node:fs";
+import path from "node:path";
 import svelte from "@astrojs/svelte";
 import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-sections";
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import swup from "@swup/astro";
 import tailwindcss from "@tailwindcss/vite";
-import fs from "node:fs";
-import path from "node:path";
 import { defineConfig, fontProviders } from "astro/config";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
@@ -18,6 +18,7 @@ import remarkGithubAdmonitionsToDirectives from "remark-github-admonitions-to-di
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
 import { parse as parseYaml } from "yaml";
+import { resolveSiteBuildPaths } from "./scripts/site/build-paths.mjs";
 import {
 	defaultExpressiveCodeConfig,
 	defaultPageFeedbackConfig,
@@ -33,9 +34,9 @@ import { LinkGridComponent } from "./src/plugins/rehype-component-link-grid.mjs"
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkExpressiveMarkdown } from "./src/plugins/remark-expressive-markdown.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
-import { resolveSiteBuildPaths } from "./scripts/site/build-paths.mjs";
-import { resolveAstroBuildConfig } from "./src/utils/permalink/materialization.ts";
 import { clearContentRouteManifestCache } from "./src/utils/content-routes.ts";
+import { resolveAstroBuildConfig } from "./src/utils/permalink/materialization.ts";
+import { resolveFangYuanRoot } from "./src/utils/project-root.ts";
 import {
 	normalizeQingYanDevProxyPath,
 	normalizeQingYanDevProxyRequestPath,
@@ -44,14 +45,20 @@ import {
 	createQingYanMockPlugin,
 	isQingYanMockTarget,
 } from "./src/utils/qingyan/mock-api.mjs";
+import { externalSiteAssetDevPrefix } from "./src/utils/site-source/assets.ts";
+import { resolveSiteSourceContext } from "./src/utils/site-source/context.ts";
+import { createDevStaticAssetMiddleware } from "./src/utils/site-source/dev-static-assets.mjs";
+import {
+	createDevWatcherListenerLimitPlugin,
+	registerExternalSiteConfigWatch,
+	registerExternalSiteDevWatch,
+} from "./src/utils/site-source/dev-watch.mjs";
+import { resolveDevWatchIgnoredPatterns } from "./src/utils/site-source/dev-watch-ignore.mjs";
+import { loadExternalSiteConfigYaml } from "./src/utils/site-source/external-config.ts";
 import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
 } from "./src/utils/site-source/runtime-config.ts";
-import {
-	loadExternalSiteConfigYaml,
-} from "./src/utils/site-source/external-config.ts";
-import { resolveFangYuanRoot } from "./src/utils/project-root.ts";
 import {
 	loadExternalAstroSiteConfig,
 	loadExternalExpressiveCodeConfig,
@@ -59,15 +66,6 @@ import {
 	loadExternalQingYanDevProxyTarget,
 	resolveAstroBasePath,
 } from "./src/utils/site-source/source.ts";
-import { resolveSiteSourceContext } from "./src/utils/site-source/context.ts";
-import { externalSiteAssetDevPrefix } from "./src/utils/site-source/assets.ts";
-import {
-	createDevWatcherListenerLimitPlugin,
-	registerExternalSiteConfigWatch,
-	registerExternalSiteDevWatch,
-} from "./src/utils/site-source/dev-watch.mjs";
-import { createDevStaticAssetMiddleware } from "./src/utils/site-source/dev-static-assets.mjs";
-import { resolveDevWatchIgnoredPatterns } from "./src/utils/site-source/dev-watch-ignore.mjs";
 
 const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
@@ -89,6 +87,11 @@ const externalSiteRoot =
 const devWatchIgnoredPatterns = resolveDevWatchIgnoredPatterns(fangyuanRoot);
 const emptyPublicDir = ".temp/empty-public";
 fs.mkdirSync(path.join(fangyuanRoot, emptyPublicDir), { recursive: true });
+const astroCommand = process.argv.includes("dev")
+	? "dev"
+	: process.argv.includes("preview")
+		? "preview"
+		: "build";
 const envSiteUrl = normalizeConfiguredSite(process.env.FANGYUAN_SITE);
 const envBasePath =
 	process.env.FANGYUAN_BASE === undefined
@@ -98,13 +101,14 @@ const siteUrl =
 	externalAstroSiteConfig?.site ??
 	envSiteUrl ??
 	normalizeConfiguredSite(defaultSiteConfig.site);
-const basePath =
-	resolveAstroBasePath(
-		externalAstroSiteConfig?.base ??
-			envBasePath ??
-			normalizeConfiguredBase(defaultSiteConfig.base),
-		process.env.FANGYUAN_DEV_BASE,
-	);
+const configuredBasePath =
+	externalAstroSiteConfig?.base ??
+	envBasePath ??
+	normalizeConfiguredBase(defaultSiteConfig.base);
+const basePath = resolveAstroBasePath(
+	configuredBasePath,
+	astroCommand === "dev" ? process.env.FANGYUAN_DEV_BASE : null,
+);
 const permalinkBuildMode = resolveAstroBuildConfig({
 	postsPattern:
 		externalPermalinkConfig?.postsPattern ??
@@ -119,9 +123,6 @@ const permalinkBuildMode = resolveAstroBuildConfig({
 		externalPermalinkConfig?.postPatternRulePatterns ??
 		defaultSiteConfig.permalink.postPatternRules.map((rule) => rule.pattern),
 });
-const qingyanDevProxyTarget =
-	process.env.QINGYAN_DEV_PROXY_TARGET ?? loadExternalQingYanDevProxyTarget();
-const useQingYanMock = isQingYanMockTarget(qingyanDevProxyTarget);
 const enableGlobalImageCodecDefaults = false;
 const globalImageServiceConfig = {
 	jpeg: { mozjpeg: true },
@@ -129,18 +130,25 @@ const globalImageServiceConfig = {
 	avif: { effort: 4, chromaSubsampling: "4:2:0" },
 	png: { compressionLevel: 7 },
 };
-const qingyanDevProxy =
-	qingyanDevProxyTarget && !useQingYanMock
+function resolveQingYanDevProxyTarget(command) {
+	return command === "dev" || command === "preview"
+		? (process.env.QINGYAN_DEV_PROXY_TARGET ??
+				loadExternalQingYanDevProxyTarget())
+		: null;
+}
+function createQingYanDevProxy(target) {
+	return target
 		? {
 				"/api": {
-					target: qingyanDevProxyTarget,
+					target,
 					changeOrigin: true,
 					rewrite: normalizeQingYanDevProxyPath,
 				},
 			}
 		: undefined;
-const qingyanDevProxyMiddlewarePlugin =
-	qingyanDevProxyTarget && !useQingYanMock
+}
+function createQingYanDevProxyMiddlewarePlugin(target) {
+	return target
 		? {
 				name: "fangyuan-qingyan-dev-proxy-normalizer",
 				configureServer(server) {
@@ -173,7 +181,7 @@ const qingyanDevProxyMiddlewarePlugin =
 				},
 			}
 		: null;
-const qingyanMockPlugin = useQingYanMock ? createQingYanMockPlugin() : null;
+}
 const localImageExtensionPattern = /\.(?:avif|gif|jpeg|jpg|png|svg|webp)$/i;
 const windowsAbsolutePathPattern = /([A-Za-z]:\/.*)$/;
 const normalizedExternalSiteRoot = path
@@ -288,7 +296,10 @@ function collectExternalContentAssetReferences(references) {
 
 function collectExternalSiteAssetReferences() {
 	const references = new Set();
-	if (!siteSourceContext.useExternalConfig && !siteSourceContext.useExternalContent) {
+	if (
+		!siteSourceContext.useExternalConfig &&
+		!siteSourceContext.useExternalContent
+	) {
 		return [];
 	}
 
@@ -409,6 +420,19 @@ function externalSiteAssetDevServerPlugin() {
 		},
 	};
 }
+
+const qingyanDevProxyTarget = resolveQingYanDevProxyTarget(astroCommand);
+const useQingYanMock = isQingYanMockTarget(qingyanDevProxyTarget);
+const qingyanDevProxy =
+	qingyanDevProxyTarget && !useQingYanMock
+		? createQingYanDevProxy(qingyanDevProxyTarget)
+		: undefined;
+const qingyanDevProxyMiddlewarePlugin =
+	qingyanDevProxyTarget && !useQingYanMock
+		? createQingYanDevProxyMiddlewarePlugin(qingyanDevProxyTarget)
+		: null;
+const qingyanMockPlugin =
+	astroCommand === "dev" && useQingYanMock ? createQingYanMockPlugin() : null;
 
 // https://astro.build/config
 export default defineConfig({

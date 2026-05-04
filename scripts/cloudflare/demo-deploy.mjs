@@ -68,6 +68,7 @@ function buildEnv(options) {
 		FANGYUAN_BASE: options.base,
 		FANGYUAN_SITE: options.site,
 		PUBLIC_FANGYUAN_BASE: options.base,
+		PUBLIC_FANGYUAN_ALLOW_DEMO_QINGYAN: "true",
 		PUBLIC_FANGYUAN_DEMO_QINGYAN: "true",
 		PUBLIC_FANGYUAN_QINGYAN_API_BASE: "/api",
 		PUBLIC_FANGYUAN_QINGYAN_SITE_KEY: "default",

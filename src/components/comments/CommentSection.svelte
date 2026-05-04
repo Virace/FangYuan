@@ -28,6 +28,7 @@ import {
 	persistViewerVote,
 } from "@utils/comments/vote-state";
 import { getQingYanClient, QingYanApiError } from "@utils/qingyan/client";
+import type { QingYanClientConfig } from "@utils/qingyan/contracts";
 import { onDestroy, onMount, tick } from "svelte";
 import { fade, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
@@ -81,13 +82,14 @@ type FangYuanDebugWindow = Window & {
 	__FANGYUAN_QINGYAN_DEBUG__?: Record<string, unknown>;
 };
 
-const qingyanClient = getQingYanClient();
-
 export let postKey: string;
 export let postTitle = "";
 export let postUrl = "";
 export let rootLimit = 5;
 export let maxDepth = 3;
+export let qingyan: QingYanClientConfig | null = null;
+
+const qingyanClient = getQingYanClient(qingyan);
 
 let capability: CommentCapability | null = null;
 let commentForm: CommentForm | null = null;

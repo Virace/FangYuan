@@ -27,13 +27,7 @@ import type {
 import { normalizeCommentConfig } from "./utils/comments/options";
 import { mergeNavBarLinks } from "./utils/navbar-links";
 import type { ExternalSiteConfigYaml } from "./utils/site-source/external-config";
-import {
-	applyPublicQingYanCommentConfig,
-	applyPublicQingYanPageFeedbackConfig,
-	applyPublicQingYanPageMetricsConfig,
-	resolvePublicQingYanConfig,
-	resolvePublicSiteConfigOverride,
-} from "./utils/site-source/public-deploy-env";
+import { resolvePublicSiteConfigOverride } from "./utils/site-source/public-deploy-env";
 import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
@@ -44,13 +38,18 @@ type ExternalNavBarConfig = ExternalSiteConfigYaml["navBarConfig"];
 type ExternalProfileConfig = ExternalSiteConfigYaml["profileConfig"];
 type ExternalPageFeedbackConfig = ExternalSiteConfigYaml["pageFeedbackConfig"];
 let externalSiteConfig: ExternalSiteConfigYaml | null = null;
+let publicQingYanConfig: QingYanClientConfig | null = null;
 
 if (import.meta.env.SSR) {
-	const [{ loadExternalSiteConfigYaml }, { resolveSiteSourceContext }] =
-		await Promise.all([
-			import("./utils/site-source/external-config.ts"),
-			import("./utils/site-source/context.ts"),
-		]);
+	const [
+		{ loadExternalSiteConfigYaml },
+		{ resolveSiteSourceContext },
+		{ resolvePublicQingYanConfig },
+	] = await Promise.all([
+		import("./utils/site-source/external-config.ts"),
+		import("./utils/site-source/context.ts"),
+		import("./utils/site-source/demo-qingyan-env.ts"),
+	]);
 	const siteSourceContext = resolveSiteSourceContext();
 
 	externalSiteConfig =
@@ -58,11 +57,14 @@ if (import.meta.env.SSR) {
 		siteSourceContext.externalConfigPath !== null
 			? loadExternalSiteConfigYaml(siteSourceContext.externalConfigPath)
 			: null;
+	publicQingYanConfig = resolvePublicQingYanConfig(import.meta.env, {
+		allowDemoQingYan:
+			import.meta.env.PUBLIC_FANGYUAN_ALLOW_DEMO_QINGYAN === "true",
+	});
 }
 const publicSiteConfigOverride = resolvePublicSiteConfigOverride(
 	import.meta.env,
 );
-const publicQingYanConfig = resolvePublicQingYanConfig(import.meta.env);
 
 function mergeSiteConfig(
 	defaultConfig: SiteConfig,
@@ -191,6 +193,36 @@ function mergePageFeedbackConfig(
 	};
 }
 
+function applyQingYanCommentConfig(
+	config: CommentConfig,
+	qingyan: QingYanClientConfig | null,
+): CommentConfig {
+	return qingyan ? { ...config, enable: true } : config;
+}
+
+function applyQingYanPageMetricsConfig(
+	config: PageMetricsConfig,
+	qingyan: QingYanClientConfig | null,
+): PageMetricsConfig {
+	return qingyan ? { ...config, enable: true } : config;
+}
+
+function applyQingYanPageFeedbackConfig(
+	config: PageFeedbackConfig,
+	qingyan: QingYanClientConfig | null,
+): PageFeedbackConfig {
+	return qingyan
+		? {
+				...config,
+				enable: true,
+				like: {
+					...config.like,
+					enable: true,
+				},
+			}
+		: config;
+}
+
 export const siteConfig: SiteConfig = mergeSiteConfig(defaultSiteConfig, {
 	...externalSiteConfig?.siteConfig,
 	...publicSiteConfigOverride,
@@ -229,13 +261,13 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 export const qingyanConfig: QingYanClientConfig | null =
 	publicQingYanConfig ?? externalSiteConfig?.qingyanConfig ?? null;
 
-export const commentConfig: CommentConfig = applyPublicQingYanCommentConfig(
+export const commentConfig: CommentConfig = applyQingYanCommentConfig(
 	mergeCommentConfig(defaultCommentConfig, externalSiteConfig?.commentConfig),
 	publicQingYanConfig,
 );
 
 export const pageMetricsConfig: PageMetricsConfig =
-	applyPublicQingYanPageMetricsConfig(
+	applyQingYanPageMetricsConfig(
 		mergePageMetricsConfig(
 			defaultPageMetricsConfig,
 			externalSiteConfig?.pageMetricsConfig,
@@ -244,7 +276,7 @@ export const pageMetricsConfig: PageMetricsConfig =
 	);
 
 export const pageFeedbackConfig: PageFeedbackConfig =
-	applyPublicQingYanPageFeedbackConfig(
+	applyQingYanPageFeedbackConfig(
 		mergePageFeedbackConfig(
 			defaultPageFeedbackConfig,
 			externalSiteConfig?.pageFeedbackConfig,

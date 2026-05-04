@@ -134,7 +134,7 @@ const jsonLd = {
                 ></PostMetadata>
                 {pageMetricsConfig.enable && qingyanConfig && (
                     <div class="mb-5">
-                        <PageViewCounter client:only="svelte" postKey={postKey} postTitle={entry.data.title} postUrl={postUrl} />
+                        <PageViewCounter client:only="svelte" postKey={postKey} postTitle={entry.data.title} postUrl={postUrl} qingyan={qingyanConfig} />
                     </div>
                 )}
                 {!entry.data.image && <div class="border-line-divider border-dashed border-b mb-5"></div>}
@@ -156,6 +156,7 @@ const jsonLd = {
                     postUrl={postUrl}
                     enableLike={pageFeedbackConfig.like.enable}
                     rewardItems={feedbackRewardOptions}
+                    qingyan={qingyanConfig}
                 />
             )}
 
@@ -196,6 +197,7 @@ const jsonLd = {
             postUrl={postUrl}
             rootLimit={commentConfig.rootLimit}
             maxDepth={commentConfig.maxDepth}
+            qingyan={qingyanConfig}
         />
     )}
 

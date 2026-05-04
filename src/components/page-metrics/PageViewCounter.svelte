@@ -2,16 +2,18 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getQingYanClient } from "@utils/qingyan/client";
+import type { QingYanClientConfig } from "@utils/qingyan/contracts";
 import { onMount } from "svelte";
 
 export let postKey: string;
 export let postTitle = "";
 export let postUrl = "";
+export let qingyan: QingYanClientConfig | null = null;
 
 let pageViewCount: number | null = null;
 
 onMount(() => {
-	const client = getQingYanClient();
+	const client = getQingYanClient(qingyan);
 	if (!client) {
 		return;
 	}

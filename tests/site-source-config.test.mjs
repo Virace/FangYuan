@@ -1,18 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-
-import {
-	extractExternalAstroSiteConfig,
-	resolveAstroBasePath,
-} from "../src/utils/site-source/source.ts";
 import {
 	normalizeConfiguredBase,
 	normalizeConfiguredSite,
 } from "../src/utils/site-source/runtime-config.ts";
+import {
+	extractExternalAstroSiteConfig,
+	resolveAstroBasePath,
+} from "../src/utils/site-source/source.ts";
 
 test("normalizeConfiguredSite keeps origin-only site URLs", () => {
-	assert.equal(normalizeConfiguredSite("https://example.com/"), "https://example.com");
-	assert.equal(normalizeConfiguredSite(" https://example.com "), "https://example.com");
+	assert.equal(
+		normalizeConfiguredSite("https://example.com/"),
+		"https://example.com",
+	);
+	assert.equal(
+		normalizeConfiguredSite(" https://example.com "),
+		"https://example.com",
+	);
 	assert.equal(normalizeConfiguredSite(null), null);
 });
 

@@ -3,7 +3,10 @@ import type {
 	CommentStatus,
 	CommentVoteChoice,
 } from "@/types/comment";
-import { commentConfig, qingyanConfig } from "../../config";
+import {
+	commentConfig,
+	qingyanConfig as globalQingYanConfig,
+} from "../../config";
 import {
 	type CommentAuthorField,
 	CommentCaptchaRequiredError,
@@ -428,7 +431,7 @@ function buildQueryString(input: Record<string, string | number | undefined>) {
 }
 
 function resolveQingYanConfig(): QingYanClientConfig | null {
-	return qingyanConfig;
+	return globalQingYanConfig;
 }
 
 export function createQingYanClient(
@@ -765,8 +768,9 @@ export function createQingYanClient(
 
 const qingyanClientCache = new Map<string, QingYanClient>();
 
-export function getQingYanClient(): QingYanClient | null {
-	const config = resolveQingYanConfig();
+export function getQingYanClient(
+	config: QingYanClientConfig | null = resolveQingYanConfig(),
+): QingYanClient | null {
 	if (!config) {
 		return null;
 	}
