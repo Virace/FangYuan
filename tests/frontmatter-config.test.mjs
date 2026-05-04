@@ -59,6 +59,7 @@ test("frontmatter.json mirrors current FangYuan content frontmatter fields", asy
 		"lang",
 		"sticky",
 		"draft",
+		"comment",
 	]);
 	assert.deepEqual(getFieldNames(specType), [
 		"alias",
@@ -66,6 +67,7 @@ test("frontmatter.json mirrors current FangYuan content frontmatter fields", asy
 		"toc",
 		"published",
 		"updated",
+		"comment",
 	]);
 	assert.equal(
 		getFieldNames(postType).includes("language"),

@@ -109,6 +109,11 @@
           "title": "draft",
           "name": "draft",
           "type": "boolean"
+        },
+        {
+          "title": "comment",
+          "name": "comment",
+          "type": "boolean"
         }
       ]
     },
@@ -157,8 +162,14 @@
           "name": "updated",
           "type": "datetime",
           "isModifiedDate": true
+        },
+        {
+          "title": "comment",
+          "name": "comment",
+          "type": "boolean"
         }
       ]
     }
-  ]
+  ],
+  "frontMatter.dashboard.openOnStart": false
 }

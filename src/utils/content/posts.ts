@@ -23,6 +23,7 @@ export type PostData = {
 	category: string | null;
 	lang: string;
 	sticky?: number;
+	comment: boolean;
 	prevTitle: string;
 	prevSlug: string;
 	nextTitle: string;

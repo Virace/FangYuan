@@ -145,7 +145,7 @@ test("transformWxrToPreview renders first-batch semantics into markdown placehol
 			`updated: ${new Date("2024-04-22T09:30:00").toISOString().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
 		),
 	);
-	assert.match(entry.markdown, /commentStatus: "closed"/);
+	assert.match(entry.markdown, /^comment: false$/m);
 	assert.match(entry.markdown, /password: "secret"/);
 	assert.equal(entry.notes[0].kind, "music-shortcode-removed");
 	assert.equal(entry.notes[1].kind, "image-alignment-dropped");
@@ -206,7 +206,7 @@ test("transformEntryToPreview omits empty frontmatter values by default and uses
 		},
 	);
 
-	assert.doesNotMatch(result.markdown, /^commentStatus:/m);
+	assert.doesNotMatch(result.markdown, /^comment:/m);
 	assert.doesNotMatch(result.markdown, /^password:/m);
 	assert.doesNotMatch(result.markdown, /^description:/m);
 	assert.doesNotMatch(result.markdown, /^tags:/m);
@@ -239,7 +239,7 @@ test("transformEntryToPreview can keep empty frontmatter values when requested",
 		},
 	);
 
-	assert.match(result.markdown, /^commentStatus: ""$/m);
+	assert.match(result.markdown, /^comment: ""$/m);
 	assert.match(result.markdown, /^password: ""$/m);
 	assert.match(result.markdown, /^description: ""$/m);
 	assert.match(result.markdown, /^tags: \[\]$/m);
@@ -386,6 +386,7 @@ test("transformEntryToPreview decodes percent-encoded alias and file name", () =
 	assert.equal(entry.alias, "izotope-rx-8问题记录");
 	assert.equal(entry.candidateRelativePath, "posts/izotope-rx-8问题记录.md");
 	assert.match(entry.markdown, /alias: "izotope-rx-8问题记录"/);
+	assert.match(entry.markdown, /^comment: true$/m);
 });
 
 test("runWordpressTransformCli writes preview markdown files and summary", async (t) => {

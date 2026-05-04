@@ -14,6 +14,16 @@ async function writePost(postDir, markCreated, relativePath, source) {
 	await writeFile(absolutePath, source, "utf8");
 }
 
+async function writeSpec(specDir, markCreated, relativePath, source) {
+	const absolutePath = markCreated(path.join(specDir, relativePath));
+	await mkdir(path.dirname(absolutePath), { recursive: true });
+	await writeFile(absolutePath, source, "utf8");
+}
+
+async function readBuiltPage(distRoot, ...segments) {
+	return readFile(path.join(distRoot, ...segments, "index.html"), "utf8");
+}
+
 test("build keeps PostFeedback mounted by default for reward-only pages without qingyan backend", {
 	concurrency: false,
 }, async (t) => {
@@ -223,6 +233,195 @@ QingYan client demo.
 			assert.match(articleHtml, /fangyuan-client-test/);
 			assert.match(articleHtml, /&quot;qingyan&quot;:/);
 			assert.match(articleHtml, /&quot;apiBase&quot;:\[0,&quot;\/api&quot;\]/);
+		},
+	);
+});
+
+test("build applies entry comment frontmatter defaults and overrides", {
+	concurrency: false,
+}, async (t) => {
+	await withMutableSiteFixture(
+		t,
+		async ({
+			siteConfigPath,
+			postDir,
+			specDir,
+			siteAboutPath,
+			distRoot,
+			markCreated,
+		}) => {
+			await writeFile(
+				siteConfigPath,
+				`qingyanConfig:
+  siteKey: fangyuan-comment-frontmatter-test
+  apiBase: /api
+commentConfig:
+  enable: true
+pageFeedbackConfig:
+  enable: false
+`,
+				"utf8",
+			);
+			await writeFile(siteAboutPath, "# About\n", "utf8");
+			await writePost(
+				postDir,
+				markCreated,
+				"__comment-default-post/index.md",
+				`---
+title: Comment Default Post
+published: 2026-05-04
+description: post defaults to comments enabled
+tags: [Demo]
+category: Demo
+draft: false
+---
+Post defaults to comments enabled.
+`,
+			);
+			await writePost(
+				postDir,
+				markCreated,
+				"__comment-disabled-post/index.md",
+				`---
+title: Comment Disabled Post
+published: 2026-05-04
+description: post can disable comments
+tags: [Demo]
+category: Demo
+draft: false
+comment: false
+---
+Post disables comments.
+`,
+			);
+			await writeSpec(
+				specDir,
+				markCreated,
+				"__comment-default-spec.md",
+				"# Spec defaults to comments disabled\n",
+			);
+			await writeSpec(
+				specDir,
+				markCreated,
+				"__comment-enabled-spec.md",
+				`---
+comment: true
+---
+# Spec enables comments
+`,
+			);
+
+			runBuild();
+
+			const defaultPostHtml = await readBuiltPage(
+				distRoot,
+				"__comment-default-post",
+			);
+			const disabledPostHtml = await readBuiltPage(
+				distRoot,
+				"__comment-disabled-post",
+			);
+			const defaultSpecHtml = await readBuiltPage(
+				distRoot,
+				"__comment-default-spec",
+			);
+			const enabledSpecHtml = await readBuiltPage(
+				distRoot,
+				"__comment-enabled-spec",
+			);
+
+			assert.match(defaultPostHtml, /CommentSection/);
+			assert.doesNotMatch(disabledPostHtml, /CommentSection/);
+			assert.doesNotMatch(defaultSpecHtml, /CommentSection/);
+			assert.match(enabledSpecHtml, /CommentSection/);
+			assert.match(enabledSpecHtml, /spec:__comment-enabled-spec/);
+		},
+	);
+});
+
+test("build treats global comments and QingYan config as hard gates", {
+	concurrency: false,
+}, async (t) => {
+	await withMutableSiteFixture(
+		t,
+		async ({
+			siteConfigPath,
+			postDir,
+			specDir,
+			siteAboutPath,
+			distRoot,
+			markCreated,
+		}) => {
+			await writeFile(
+				siteConfigPath,
+				`qingyanConfig:
+  siteKey: fangyuan-comment-gate-test
+  apiBase: /api
+commentConfig:
+  enable: false
+pageFeedbackConfig:
+  enable: false
+`,
+				"utf8",
+			);
+			await writeFile(siteAboutPath, "# About\n", "utf8");
+			await writePost(
+				postDir,
+				markCreated,
+				"__comment-global-disabled-post/index.md",
+				`---
+title: Comment Global Disabled Post
+published: 2026-05-04
+description: global comments disabled
+tags: [Demo]
+category: Demo
+draft: false
+---
+Global comments disable this post.
+`,
+			);
+			await writeSpec(
+				specDir,
+				markCreated,
+				"__comment-global-disabled-spec.md",
+				`---
+comment: true
+---
+# Global comments disable this spec
+`,
+			);
+
+			runBuild();
+
+			assert.doesNotMatch(
+				await readBuiltPage(distRoot, "__comment-global-disabled-post"),
+				/CommentSection/,
+			);
+			assert.doesNotMatch(
+				await readBuiltPage(distRoot, "__comment-global-disabled-spec"),
+				/CommentSection/,
+			);
+
+			await writeFile(
+				siteConfigPath,
+				`commentConfig:
+  enable: true
+pageFeedbackConfig:
+  enable: false
+`,
+				"utf8",
+			);
+
+			runBuild();
+
+			assert.doesNotMatch(
+				await readBuiltPage(distRoot, "__comment-global-disabled-post"),
+				/CommentSection/,
+			);
+			assert.doesNotMatch(
+				await readBuiltPage(distRoot, "__comment-global-disabled-spec"),
+				/CommentSection/,
+			);
 		},
 	);
 });

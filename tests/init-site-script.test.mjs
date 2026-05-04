@@ -180,6 +180,21 @@ test("ensureExternalSiteScaffold creates the external site skeleton and a demo p
 		"assets",
 		"external Front Matter CMS media root should point at the external asset directory",
 	);
+	const contentTypes = frontmatterConfig["frontMatter.taxonomy.contentTypes"];
+	assert.equal(
+		contentTypes
+			.find((contentType) => contentType.name === "default")
+			.fields.some((field) => field.name === "comment" && field.type === "boolean"),
+		true,
+		"external posts content type should expose comment boolean editing",
+	);
+	assert.equal(
+		contentTypes
+			.find((contentType) => contentType.name === "spec")
+			.fields.some((field) => field.name === "comment" && field.type === "boolean"),
+		true,
+		"external spec content type should expose comment boolean editing",
+	);
 
 	const vscodeExtensions = JSON.parse(
 		await readFile(

@@ -16,6 +16,29 @@ function pushOptionalScalarFrontmatter(lines, key, value, options = {}) {
 	lines.push(`${key}: ${yamlString(value ?? "")}`);
 }
 
+function pushOptionalBooleanFrontmatter(lines, key, value, options = {}) {
+	const includeEmptyValues = options.includeEmptyValues === true;
+	if (typeof value !== "boolean") {
+		if (includeEmptyValues) {
+			lines.push(`${key}: ""`);
+		}
+		return;
+	}
+
+	lines.push(`${key}: ${value ? "true" : "false"}`);
+}
+
+function resolveCommentFrontmatterValue(commentStatus) {
+	const normalizedStatus = trimString(commentStatus ?? "").toLowerCase();
+	if (normalizedStatus === "open") {
+		return true;
+	}
+	if (normalizedStatus === "closed") {
+		return false;
+	}
+	return undefined;
+}
+
 function pushOptionalListFrontmatter(lines, key, values, options = {}) {
 	const includeEmptyValues = options.includeEmptyValues === true;
 	if (!Array.isArray(values) || values.length === 0) {
@@ -562,7 +585,12 @@ function buildFrontmatterLines(entry, candidatePlan, permalinkAudit, options = {
 		`draft: ${entry.sourceStatus === "draft" ? "true" : "false"}`,
 	];
 
-	pushOptionalScalarFrontmatter(lines, "commentStatus", entry.commentStatus ?? "", options);
+	pushOptionalBooleanFrontmatter(
+		lines,
+		"comment",
+		resolveCommentFrontmatterValue(entry.commentStatus),
+		options,
+	);
 	pushOptionalScalarFrontmatter(lines, "password", entry.postPassword ?? "", options);
 	pushOptionalScalarFrontmatter(lines, "alias", candidatePlan.candidateAlias ?? "", options);
 	pushOptionalScalarFrontmatter(lines, "description", entry.excerpt ?? "", options);

@@ -95,6 +95,7 @@ const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 			category: z.string().optional().nullable().default(""),
 			lang: z.string().optional().default(""),
 			sticky: z.number().int().min(0).optional(),
+			comment: z.boolean().optional().default(true),
 
 			/* For internal use */
 			prevTitle: z.string().default(""),
@@ -116,6 +117,7 @@ const specCollection: ReturnType<typeof defineCollection> = defineCollection({
 		toc: tocFrontmatterSchema,
 		published: z.date().optional(),
 		updated: z.date().optional(),
+		comment: z.boolean().optional().default(false),
 	}),
 });
 

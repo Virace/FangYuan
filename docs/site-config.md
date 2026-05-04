@@ -55,6 +55,7 @@
 - `ref` 链接不能再写 `external`。
 - 导航项的稳定标识取 `id`，没有 `id` 时退回 `name`。最终标识必须唯一，重复会报错。
 - `qingyanConfig` 是评论、页面统计和点赞共用的 QingYan 后端连接配置；各功能是否真正启用，还要结合各自的 `enable` 字段一起看。
+- `commentConfig.enable` 是评论功能的全局硬开关；内容页 frontmatter 的 `comment` 只能在它为 `true` 且 `qingyanConfig` 非空时生效。
 - `pageFeedbackConfig` 的文章页区块采用“点赞或打赏”的或运算：
   规则：`pageFeedbackConfig.enable=true`，并且 `like` 或 `reward` 至少一项实际可显示时，才渲染“支持这篇文章”区块。
 - `commentConfig.rootLimit` 和 `commentConfig.maxDepth` 会在运行时做归一化：
@@ -425,7 +426,9 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 #### `commentConfig.enable`
 
 - 作用：评论功能总开关。
+- 规则：设为 `false` 时，所有内容页都不挂载评论区。
 - 规则：即使为 `true`，如果 `qingyanConfig` 仍是 `null`，评论后端也不会真正启用。
+- 内容页规则：`posts` 默认开启评论，可在文章 frontmatter 写 `comment: false` 关闭；`spec` 默认关闭评论，可写 `comment: true` 开启。首页、归档、标签、分类、分页、404 等内置页面不参与这个 frontmatter 语义。
 
 #### `commentConfig.rootLimit`
 

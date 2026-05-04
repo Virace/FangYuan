@@ -30,7 +30,122 @@ function toPrettyJson(value) {
 	return `${JSON.stringify(value, null, 2)}\n`;
 }
 
-async function renderExternalFrontmatterConfig() {
+function valuesEqual(left, right) {
+	return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function getContentTypes(config) {
+	return Array.isArray(config?.["frontMatter.taxonomy.contentTypes"])
+		? config["frontMatter.taxonomy.contentTypes"]
+		: [];
+}
+
+function mergeFields(existingFields, managedFields, notes, contentTypeName) {
+	const fields = Array.isArray(existingFields) ? [...existingFields] : [];
+	const indexByName = new Map(
+		fields
+			.map((field, index) =>
+				typeof field?.name === "string" ? [field.name, index] : null,
+			)
+			.filter(Boolean),
+	);
+
+	for (const managedField of managedFields) {
+		const fieldName = managedField?.name;
+		if (typeof fieldName !== "string") {
+			continue;
+		}
+
+		const existingIndex = indexByName.get(fieldName);
+		if (existingIndex === undefined) {
+			fields.push(managedField);
+			indexByName.set(fieldName, fields.length - 1);
+			notes.push(
+				`frontMatter.taxonomy.contentTypes.${contentTypeName}.fields.${fieldName}`,
+			);
+			continue;
+		}
+
+		fields[existingIndex] = {
+			...fields[existingIndex],
+			...managedField,
+		};
+	}
+
+	return fields;
+}
+
+export function mergeFrontmatterConfig(existing, managed) {
+	const config =
+		existing && typeof existing === "object" && !Array.isArray(existing)
+			? { ...existing }
+			: {};
+	const notes = [];
+
+	for (const key of [
+		"frontMatter.content.publicFolder",
+		"frontMatter.content.pageFolders",
+	]) {
+		if (!valuesEqual(config[key], managed[key])) {
+			config[key] = managed[key];
+			notes.push(key);
+		}
+	}
+
+	const existingTypes = getContentTypes(config);
+	const managedTypes = getContentTypes(managed);
+	const mergedTypes = [...existingTypes];
+	const typeIndexByName = new Map(
+		mergedTypes
+			.map((contentType, index) =>
+				typeof contentType?.name === "string"
+					? [contentType.name, index]
+					: null,
+			)
+			.filter(Boolean),
+	);
+
+	for (const managedType of managedTypes) {
+		const typeName = managedType?.name;
+		if (typeof typeName !== "string") {
+			continue;
+		}
+
+		const existingIndex = typeIndexByName.get(typeName);
+		if (existingIndex === undefined) {
+			mergedTypes.push(managedType);
+			typeIndexByName.set(typeName, mergedTypes.length - 1);
+			notes.push(`frontMatter.taxonomy.contentTypes.${typeName}`);
+			continue;
+		}
+
+		const existingType = mergedTypes[existingIndex];
+		const nextType = {
+			...existingType,
+			...managedType,
+			fields: mergeFields(
+				existingType.fields,
+				managedType.fields,
+				notes,
+				typeName,
+			),
+		};
+		if (!valuesEqual(existingType, nextType)) {
+			mergedTypes[existingIndex] = nextType;
+		}
+	}
+
+	if (!valuesEqual(config["frontMatter.taxonomy.contentTypes"], mergedTypes)) {
+		config["frontMatter.taxonomy.contentTypes"] = mergedTypes;
+	}
+
+	return {
+		config,
+		notes,
+	};
+}
+
+async function loadManagedExternalFrontmatterConfig() {
 	const config = await readJsonFile(frontmatterTemplatePath, {});
 
 	config["frontMatter.content.publicFolder"] = "assets";
@@ -47,7 +162,7 @@ async function renderExternalFrontmatterConfig() {
 		},
 	];
 
-	return toPrettyJson(config);
+	return config;
 }
 
 function getRecommendations(value) {
@@ -89,11 +204,21 @@ export async function planEditorUpdates(siteRoot, options = {}) {
 	const includeVSCode = options.vscode !== false;
 
 	if (includeFrontmatter) {
+		const targetFrontmatterPath = path.join(siteRoot, "frontmatter.json");
+		const existingConfig = await readJsonFile(targetFrontmatterPath, {});
+		const managedConfig = await loadManagedExternalFrontmatterConfig();
+		const { config, notes } = mergeFrontmatterConfig(
+			existingConfig,
+			managedConfig,
+		);
+		const content = toPrettyJson(config);
+		const existingContent = toPrettyJson(existingConfig);
 		actions.push({
 			file: "frontmatter.json",
-			action: "overwrite",
-			status: "planned",
-			content: await renderExternalFrontmatterConfig(),
+			action: "merge",
+			status: content === existingContent ? "unchanged" : "planned",
+			...(notes.length > 0 ? { path: notes.join(", ") } : {}),
+			content,
 		});
 	}
 
@@ -155,6 +280,11 @@ export async function applyEditorUpdates(plan, options = {}) {
 	const timestamp = options.timestamp ?? formatUpdateTimestamp(options.now);
 
 	for (const action of plan.actions) {
+		if (action.status === "unchanged") {
+			actions.push(action);
+			continue;
+		}
+
 		const targetPath = path.join(plan.siteRoot, action.file);
 		const backupPath = await backupExistingFile(plan.siteRoot, action.file, {
 			timestamp,

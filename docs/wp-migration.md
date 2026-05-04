@@ -110,6 +110,43 @@ node scripts/wp-migration/wordpress-wxr-transform.js `
 
 确认无误后，再把需要的内容并入正式目录。
 
+### 4. 迁移旧评论字段
+
+WordPress WXR 的原始输入字段仍是 `wp:comment_status`。FangYuan 转换预览会把它映射为统一布尔 frontmatter：
+
+```yaml
+comment: true
+comment: false
+```
+
+映射规则：
+
+- `open` -> `comment: true`
+- `closed` -> `comment: false`
+- 缺失、空值或未知值 -> 不写 `comment`
+
+旧版预览或外部站点内容里如果已经存在 `commentStatus`，不要手工全文替换，先使用显式迁移脚本 dry-run：
+
+```powershell
+node scripts/site/migrate-content-frontmatter.js `
+  --site-root "../my-site" `
+  --from commentStatus `
+  --to comment `
+  --dry-run
+```
+
+确认报告后再应用：
+
+```powershell
+node scripts/site/migrate-content-frontmatter.js `
+  --site-root "../my-site" `
+  --from commentStatus `
+  --to comment `
+  --apply
+```
+
+脚本只扫描 `<siteRoot>/content/posts/**/*.md` 和 `<siteRoot>/content/spec/**/*.md`。如果同一文件里 `commentStatus` 与 `comment` 语义一致，会删除 `commentStatus` 并保留 `comment`；如果二者冲突，会报告 manual action 并跳过该文件。
+
 ## 审计脚本用法
 
 入口文件：`scripts/wp-migration/wordpress-wxr-audit.js`
@@ -191,6 +228,7 @@ node scripts/wp-migration/wordpress-wxr-transform.js `
 - 文章会写到 `posts/`
 - 页面会写到 `spec/`
 - 每篇内容都会保留必需 frontmatter；空值默认不写，除非显式打开 `--include-empty-values`
+- WordPress `comment_status` 会转换为 FangYuan `comment` 布尔字段；`commentStatus` 不再作为正式输出字段。
 - `transform-summary.json` 用于快速回看总条数和 note 数量
 
 ## 自定义规则怎么加

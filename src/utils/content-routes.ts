@@ -32,6 +32,7 @@ type PostRouteData = {
 	category?: string | null;
 	lang?: string;
 	sticky?: number;
+	comment?: boolean;
 	prevTitle?: string;
 	prevSlug?: string;
 	nextTitle?: string;
@@ -47,6 +48,8 @@ type SpecRouteData = {
 	toc?: TocFrontmatter;
 	published?: Date;
 	updated?: Date;
+	comment?: boolean;
+	publicPath?: string;
 	[key: string]: unknown;
 };
 

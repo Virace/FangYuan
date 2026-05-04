@@ -31,7 +31,7 @@ node scripts/site/init-site.js --site-root ../my-site --site-title "My Site" --d
 - `<siteRoot>/.vscode/extensions.json`
 - `<siteRoot>/.vscode/settings.json`
 
-`frontmatter.json` 和 `.vscode/` 用于外部站点内容编辑体验。生成后可直接用 VS Code 打开 `<siteRoot>`，并按推荐安装 Front Matter CMS 扩展。
+`frontmatter.json` 和 `.vscode/` 用于外部站点内容编辑体验。生成后可直接用 VS Code 打开 `<siteRoot>`，并按推荐安装 Front Matter CMS 扩展。生成的 `frontmatter.json` 会包含 `comment` 布尔字段，方便编辑文章和展示页的单页评论开关。
 
 ## 占位符替换
 
@@ -105,6 +105,8 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 - `frontmatter.json`
 - `.vscode/extensions.json`
 - `.vscode/settings.json`
+
+`frontmatter.json` 只做合并，不整文件覆盖：`update-site` 会合并 FangYuan 管理的 content folders、content types 和字段，例如新增缺失的 `comment` 字段，同时保留外部站点已有未知字段和暂存的 legacy 字段。合并后内容没有变化时，不会写入文件，也不会创建备份。
 
 `site.config.yaml` 不会被模板覆盖，只走版本化 migration。`--apply` 写入任何已有文件前，都会在同一次时间戳目录下创建备份：
 

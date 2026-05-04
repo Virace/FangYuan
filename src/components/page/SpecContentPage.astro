@@ -1,13 +1,16 @@
 ---
 import { render } from "astro:content";
+import CommentSection from "@components/comments/CommentSection.svelte";
 import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { shouldEnablePhotoSwipe } from "@utils/browser/photoswipe";
+import { getContentCommentKey } from "@utils/comments/post-key";
 import type { SpecContentEntry } from "@utils/content-routes";
+import { url } from "@utils/permalink/urls";
 import { resolveTocConfig } from "@utils/toc-config";
-import { siteConfig } from "../../config";
+import { commentConfig, qingyanConfig, siteConfig } from "../../config";
 
 const { entry } = Astro.props as {
 	entry: SpecContentEntry;
@@ -21,6 +24,13 @@ const resolvedToc = resolveTocConfig({
 	headingsCount: headings.length,
 	frontmatterToc: entry.data.toc,
 });
+const postKey = getContentCommentKey("spec", entry.id);
+const postUrl =
+	Astro.site && entry.data.publicPath
+		? new URL(url(entry.data.publicPath), Astro.site).toString()
+		: Astro.url.toString();
+const shouldRenderComments =
+	commentConfig.enable && entry.data.comment === true && qingyanConfig;
 ---
 <MainGridLayout title={pageTitle} description={pageTitle} canonicalPath={entry.data.publicPath as string | undefined} headings={headings} resolvedToc={resolvedToc} enablePhotoSwipe={enablePhotoSwipe}>
     <div class="flex w-full rounded-panel overflow-hidden relative min-h-32">
@@ -30,4 +40,15 @@ const resolvedToc = resolveTocConfig({
             </Markdown>
         </div>
     </div>
+    {shouldRenderComments && (
+        <CommentSection
+            client:only="svelte"
+            postKey={postKey}
+            postTitle={pageTitle}
+            postUrl={postUrl}
+            rootLimit={commentConfig.rootLimit}
+            maxDepth={commentConfig.maxDepth}
+            qingyan={qingyanConfig}
+        />
+    )}
 </MainGridLayout>

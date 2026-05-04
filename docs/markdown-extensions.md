@@ -47,11 +47,14 @@ image: ./cover.webp
 tags: [Markdown, FangYuan]
 category: 示例
 draft: false
+comment: false
 toc:
   enable: true
   depth: 2
 ---
 ```
+
+`comment` 是文章级评论开关。文章页默认等价于 `comment: true`；只有需要关闭单篇文章评论时才需要显式写 `comment: false`。
 
 最终页面大致结构是：
 
@@ -71,7 +74,7 @@ toc:
 
 ### 展示页
 
-展示页用于 About 这类独立内容页。它同样使用 Markdown 渲染链，因此正文扩展都可用，但页面壳层更轻，不展示文章元信息、字数、阅读时间、封面、上下篇导航、许可证、反馈或评论。
+展示页用于 About 这类独立内容页。它同样使用 Markdown 渲染链，因此正文扩展都可用，但页面壳层更轻，不展示文章元信息、字数、阅读时间、封面、上下篇导航、许可证或反馈。展示页默认不显示评论，但可以通过 frontmatter 显式开启。
 
 展示页的 frontmatter 更少，常用字段包括：
 
@@ -82,8 +85,11 @@ updated: 2026-05-04
 toc:
   enable: true
   depth: 2
+comment: true
 ---
 ```
+
+`comment` 在展示页默认等价于 `false`；只有 `comment: true`、全局 `commentConfig.enable=true` 且 `qingyanConfig` 已配置时才会挂载评论区。
 
 最终页面大致结构是：
 
@@ -110,9 +116,10 @@ toc:
 - 从第一段正文生成 `excerpt`，当 frontmatter `description` 为空时给列表卡片使用。
 - 解析 `image` 作为文章封面，参与列表卡片、文章页封面和 Open Graph。
 - 根据封面或正文图片启用 PhotoSwipe。
-- 渲染文章专属的反馈、许可证、上下篇和评论能力。
+- 渲染文章专属的反馈、许可证和上下篇能力。
+- 默认显示评论；可通过 `comment: false` 关闭。
 
-展示页只渲染正文内容本身，更适合 About、说明页、固定页面。
+展示页默认只渲染正文内容本身，更适合 About、说明页、固定页面；如果某个展示页需要留言能力，可以显式写 `comment: true`。
 
 ## 标准 Markdown
 

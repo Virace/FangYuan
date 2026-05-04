@@ -7,10 +7,23 @@ import test from "node:test";
 
 import {
 	applyEditorUpdates,
+	mergeFrontmatterConfig,
 	mergeRecommendations,
 	mergeVSCodeSettings,
 	planEditorUpdates,
 } from "../scripts/site/update-site-editors.js";
+
+function getContentType(config, name) {
+	return config["frontMatter.taxonomy.contentTypes"].find(
+		(contentType) => contentType.name === name,
+	);
+}
+
+function hasField(config, contentTypeName, fieldName) {
+	return getContentType(config, contentTypeName).fields.some(
+		(field) => field.name === fieldName,
+	);
+}
 
 test("planEditorUpdates plans missing external editor files", async (t) => {
 	const siteRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-update-"));
@@ -22,7 +35,7 @@ test("planEditorUpdates plans missing external editor files", async (t) => {
 	const byFile = new Map(plan.actions.map((action) => [action.file, action]));
 
 	assert.equal(plan.manualActions.length, 0);
-	assert.equal(byFile.get("frontmatter.json")?.action, "overwrite");
+	assert.equal(byFile.get("frontmatter.json")?.action, "merge");
 	assert.equal(byFile.get("frontmatter.json")?.status, "planned");
 	assert.equal(byFile.get(".vscode/extensions.json")?.action, "merge");
 	assert.equal(byFile.get(".vscode/settings.json")?.action, "merge");
@@ -41,6 +54,65 @@ test("planEditorUpdates plans missing external editor files", async (t) => {
 		},
 	]);
 	assert.equal(frontmatterConfig["frontMatter.content.publicFolder"], "assets");
+	assert.equal(hasField(frontmatterConfig, "default", "comment"), true);
+	assert.equal(hasField(frontmatterConfig, "spec", "comment"), true);
+});
+
+test("mergeFrontmatterConfig preserves external fields and adds managed comment fields", () => {
+	const existing = {
+		"frontMatter.content.publicFolder": "old-assets",
+		"frontMatter.taxonomy.contentTypes": [
+			{
+				name: "default",
+				fields: [
+					{ title: "title", name: "title", type: "string" },
+					{ title: "legacy", name: "commentStatus", type: "string" },
+					{ title: "custom", name: "customField", type: "string" },
+				],
+			},
+			{
+				name: "custom",
+				fields: [{ title: "custom", name: "customOnly", type: "string" }],
+			},
+		],
+		"frontMatter.custom": true,
+	};
+	const managed = {
+		"frontMatter.content.publicFolder": "assets",
+		"frontMatter.content.pageFolders": [
+			{ title: "posts", path: "[[workspace]]/content/posts", contentTypes: ["default"] },
+		],
+		"frontMatter.taxonomy.contentTypes": [
+			{
+				name: "default",
+				pageBundle: true,
+				fields: [
+					{ title: "title", name: "title", type: "string", single: true },
+					{ title: "comment", name: "comment", type: "boolean" },
+				],
+			},
+			{
+				name: "spec",
+				fields: [{ title: "comment", name: "comment", type: "boolean" }],
+			},
+		],
+	};
+
+	const { config, notes } = mergeFrontmatterConfig(existing, managed);
+
+	assert.equal(config["frontMatter.custom"], true);
+	assert.equal(config["frontMatter.content.publicFolder"], "assets");
+	assert.equal(hasField(config, "default", "commentStatus"), true);
+	assert.equal(hasField(config, "default", "customField"), true);
+	assert.equal(hasField(config, "default", "comment"), true);
+	assert.equal(hasField(config, "spec", "comment"), true);
+	assert.equal(hasField(config, "custom", "customOnly"), true);
+	assert.deepEqual(notes, [
+		"frontMatter.content.publicFolder",
+		"frontMatter.content.pageFolders",
+		"frontMatter.taxonomy.contentTypes.default.fields.comment",
+		"frontMatter.taxonomy.contentTypes.spec",
+	]);
 });
 
 test("mergeRecommendations preserves existing entries and skips case-insensitive duplicates", () => {
@@ -102,6 +174,28 @@ test("planEditorUpdates preserves external extension recommendations", async (t)
 	);
 });
 
+test("planEditorUpdates leaves canonical frontmatter unchanged without formatting churn", async (t) => {
+	const siteRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-update-"));
+	t.after(async () => {
+		await rm(siteRoot, { recursive: true, force: true });
+	});
+
+	const initialPlan = await planEditorUpdates(siteRoot, {
+		vscode: false,
+	});
+	await applyEditorUpdates(initialPlan);
+
+	const secondPlan = await planEditorUpdates(siteRoot, {
+		vscode: false,
+	});
+	const frontmatter = secondPlan.actions.find(
+		(action) => action.file === "frontmatter.json",
+	);
+
+	assert.equal(frontmatter.status, "unchanged");
+	assert.equal(frontmatter.action, "merge");
+});
+
 test("mergeVSCodeSettings preserves unrelated settings and updates managed keys", () => {
 	assert.deepEqual(
 		mergeVSCodeSettings(
@@ -149,6 +243,32 @@ test("applyEditorUpdates writes exactly the planned editor files", async (t) => 
 	}
 });
 
+test("applyEditorUpdates skips unchanged editor actions without backups", async (t) => {
+	const siteRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-update-"));
+	t.after(async () => {
+		await rm(siteRoot, { recursive: true, force: true });
+	});
+
+	const initialPlan = await planEditorUpdates(siteRoot, { vscode: false });
+	await applyEditorUpdates(initialPlan, {
+		now: new Date("2026-05-03T04:05:06"),
+	});
+
+	const secondPlan = await planEditorUpdates(siteRoot, { vscode: false });
+	const result = await applyEditorUpdates(secondPlan, {
+		now: new Date("2026-05-03T04:05:07"),
+	});
+
+	assert.deepEqual(
+		result.actions.map((action) => action.status),
+		["unchanged"],
+	);
+	assert.equal(
+		existsSync(path.join(siteRoot, ".backup", "20260503-040507")),
+		false,
+	);
+});
+
 test("applyEditorUpdates backs up existing editor files under .backup", async (t) => {
 	const siteRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-update-"));
 	t.after(async () => {
@@ -180,6 +300,12 @@ test("applyEditorUpdates backs up existing editor files under .backup", async (t
 		),
 		"{\"old\":true}\n",
 	);
+	const frontmatterConfig = JSON.parse(
+		await readFile(path.join(siteRoot, "frontmatter.json"), "utf8"),
+	);
+	assert.equal(frontmatterConfig.old, true);
+	assert.equal(hasField(frontmatterConfig, "default", "comment"), true);
+	assert.equal(hasField(frontmatterConfig, "spec", "comment"), true);
 	assert.equal(
 		await readFile(
 			path.join(
