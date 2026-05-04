@@ -29,11 +29,11 @@ profileConfig:
   bio: Personal notes
 expressiveCodeConfig:
   theme: github-light
+qingyanConfig:
+  siteKey: virace-notes
+  apiBase: /api
 commentConfig:
   enable: true
-  qingyan:
-    siteKey: virace-notes
-    apiBase: /api
 qingyanDevProxyTarget: http://localhost:4401
 `,
 		"utf8",
@@ -46,7 +46,7 @@ qingyanDevProxyTarget: http://localhost:4401
 	assert.equal(loaded?.siteConfig?.toc?.depth, 2);
 	assert.equal(loaded?.profileConfig?.name, "Virace");
 	assert.equal(loaded?.expressiveCodeConfig?.theme, "github-light");
-	assert.equal(loaded?.commentConfig?.qingyan?.siteKey, "virace-notes");
+	assert.equal(loaded?.qingyanConfig?.siteKey, "virace-notes");
 	assert.equal(loaded?.qingyanDevProxyTarget, "http://localhost:4401");
 });
 
@@ -126,9 +126,6 @@ test("loadExternalSiteConfigYaml accepts page feedback like and reward switches"
 		`
 pageFeedbackConfig:
   enable: true
-  qingyan:
-    siteKey: virace-notes
-    apiBase: /api
   like:
     enable: false
   reward:
@@ -153,6 +150,28 @@ pageFeedbackConfig:
 			alt: "Coffee reward QR code",
 		},
 	]);
+});
+
+test("loadExternalSiteConfigYaml rejects legacy nested QingYan configs", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-config-"));
+	const configPath = path.join(tempRoot, "site.config.yaml");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await writeFile(
+		configPath,
+		`
+commentConfig:
+  enable: true
+  qingyan:
+    siteKey: legacy
+    apiBase: /api
+`,
+		"utf8",
+	);
+
+	assert.throws(() => loadExternalSiteConfigYaml(configPath), /qingyan/i);
 });
 
 test("loadExternalSiteConfigYaml accepts the full rendered template", async (t) => {

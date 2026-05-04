@@ -70,6 +70,50 @@ test("migrateSiteConfigObject migrates legacy rewardOptions when unambiguous", (
 	);
 });
 
+test("migrateSiteConfigObject moves matching legacy QingYan configs to shared qingyanConfig", () => {
+	const result = migrateSiteConfigObject({
+		commentConfig: {
+			enable: true,
+			qingyan: {
+				siteKey: "virace-notes",
+				apiBase: "/api",
+			},
+		},
+		pageMetricsConfig: {
+			enable: true,
+			qingyan: {
+				siteKey: "virace-notes",
+				apiBase: "/api",
+			},
+		},
+		pageFeedbackConfig: {
+			enable: true,
+			qingyan: {
+				siteKey: "virace-notes",
+				apiBase: "/api",
+			},
+		},
+	});
+
+	assert.equal(result.changed, true);
+	assert.deepEqual(result.config.qingyanConfig, {
+		siteKey: "virace-notes",
+		apiBase: "/api",
+	});
+	assert.equal("qingyan" in result.config.commentConfig, false);
+	assert.equal("qingyan" in result.config.pageMetricsConfig, false);
+	assert.equal("qingyan" in result.config.pageFeedbackConfig, false);
+	assert.equal(result.config.fangyuanConfigVersion, currentSiteConfigVersion);
+	assert.equal(
+		result.actions.some(
+			(action) =>
+				action.path ===
+				"commentConfig.qingyan/pageMetricsConfig.qingyan/pageFeedbackConfig.qingyan -> qingyanConfig",
+		),
+		true,
+	);
+});
+
 test("migrateSiteConfigObject keeps current version idempotent", () => {
 	const input = {
 		fangyuanConfigVersion: currentSiteConfigVersion,
@@ -147,6 +191,31 @@ test("migrateSiteConfigObject blocks conflicting reward shapes", () => {
 	assert.deepEqual(result.config, input);
 	assert.equal(result.manualActions.length, 1);
 	assert.equal(result.manualActions[0].path, "pageFeedbackConfig.rewardOptions");
+});
+
+test("migrateSiteConfigObject blocks conflicting legacy QingYan configs", () => {
+	const input = {
+		commentConfig: {
+			qingyan: {
+				siteKey: "comments",
+				apiBase: "/api",
+			},
+		},
+		pageMetricsConfig: {
+			qingyan: {
+				siteKey: "metrics",
+				apiBase: "/api",
+			},
+		},
+	};
+
+	const result = migrateSiteConfigObject(input);
+
+	assert.equal(result.changed, false);
+	assert.deepEqual(result.config, input);
+	assert.equal(result.manualActions.length, 1);
+	assert.equal(result.manualActions[0].path, "qingyanConfig");
+	assert.match(result.manualActions[0].reason, /QingYan/i);
 });
 
 test("planSiteConfigUpdate reports missing config file", async (t) => {
@@ -229,7 +298,10 @@ test("applySiteConfigUpdate creates backup before writing migrated config", asyn
 	);
 	assert.equal(await readFile(result.backupPath, "utf8"), original);
 	assert.equal(result.actions[0].backupPath, result.backupPath);
-	assert.equal(parse(await readFile(configPath, "utf8")).fangyuanConfigVersion, 1);
+	assert.equal(
+		parse(await readFile(configPath, "utf8")).fangyuanConfigVersion,
+		currentSiteConfigVersion,
+	);
 	assert.doesNotThrow(() => loadExternalSiteConfigYaml(configPath));
 });
 

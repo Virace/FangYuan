@@ -3,11 +3,7 @@ import type {
 	CommentStatus,
 	CommentVoteChoice,
 } from "@/types/comment";
-import {
-	commentConfig,
-	pageFeedbackConfig,
-	pageMetricsConfig,
-} from "../../config";
+import { commentConfig, qingyanConfig } from "../../config";
 import {
 	type CommentAuthorField,
 	CommentCaptchaRequiredError,
@@ -432,12 +428,7 @@ function buildQueryString(input: Record<string, string | number | undefined>) {
 }
 
 function resolveQingYanConfig(): QingYanClientConfig | null {
-	return (
-		commentConfig.qingyan ??
-		pageMetricsConfig.qingyan ??
-		pageFeedbackConfig.qingyan ??
-		null
-	);
+	return qingyanConfig;
 }
 
 export function createQingYanClient(

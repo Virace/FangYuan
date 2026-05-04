@@ -55,14 +55,14 @@ export function applyPublicQingYanCommentConfig(
 	config: CommentConfig,
 	qingyan: QingYanClientConfig | null,
 ): CommentConfig {
-	return qingyan ? { ...config, enable: true, qingyan } : config;
+	return qingyan ? { ...config, enable: true } : config;
 }
 
 export function applyPublicQingYanPageMetricsConfig(
 	config: PageMetricsConfig,
 	qingyan: QingYanClientConfig | null,
 ): PageMetricsConfig {
-	return qingyan ? { ...config, enable: true, qingyan } : config;
+	return qingyan ? { ...config, enable: true } : config;
 }
 
 export function applyPublicQingYanPageFeedbackConfig(
@@ -73,7 +73,6 @@ export function applyPublicQingYanPageFeedbackConfig(
 		? {
 				...config,
 				enable: true,
-				qingyan,
 				like: {
 					...config.like,
 					enable: true,

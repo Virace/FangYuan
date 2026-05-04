@@ -23,6 +23,7 @@ import {
 	pageFeedbackConfig,
 	pageMetricsConfig,
 	profileConfig,
+	qingyanConfig,
 	siteConfig,
 } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/content/date";
@@ -67,7 +68,7 @@ const feedbackRewardOptions = pageFeedbackConfig.reward.enable
 	: [];
 const shouldRenderPageFeedback =
 	pageFeedbackConfig.enable &&
-	((pageFeedbackConfig.like.enable && pageFeedbackConfig.qingyan) ||
+	((pageFeedbackConfig.like.enable && qingyanConfig) ||
 		feedbackRewardOptions.length > 0);
 
 const jsonLd = {
@@ -131,7 +132,7 @@ const jsonLd = {
                         tags={entry.data.tags}
                         category={entry.data.category}
                 ></PostMetadata>
-                {pageMetricsConfig.enable && pageMetricsConfig.qingyan && (
+                {pageMetricsConfig.enable && qingyanConfig && (
                     <div class="mb-5">
                         <PageViewCounter client:only="svelte" postKey={postKey} postTitle={entry.data.title} postUrl={postUrl} />
                     </div>
@@ -187,7 +188,7 @@ const jsonLd = {
         </div>
     </div>
 
-    {commentConfig.enable && commentConfig.qingyan && (
+    {commentConfig.enable && qingyanConfig && (
         <CommentSection
             client:only="svelte"
             postKey={postKey}

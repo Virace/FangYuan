@@ -11,6 +11,7 @@ import type {
 	PageFeedbackConfig,
 	PageMetricsConfig,
 	ProfileConfig,
+	QingYanClientConfig,
 	SiteConfig,
 } from "../../types/config";
 
@@ -40,6 +41,7 @@ export type ExternalSiteConfigYaml = {
 	footerConfig?: Partial<FooterConfig>;
 	licenseConfig?: Partial<LicenseConfig>;
 	expressiveCodeConfig?: Partial<ExpressiveCodeConfig>;
+	qingyanConfig?: QingYanClientConfig | null;
 	commentConfig?: Partial<CommentConfig>;
 	pageMetricsConfig?: Partial<PageMetricsConfig>;
 	pageFeedbackConfig?: Partial<Omit<PageFeedbackConfig, "like" | "reward">> & {
@@ -257,10 +259,10 @@ const externalSiteConfigSchema: z.ZodTypeAny = z
 			})
 			.strict()
 			.optional(),
+		qingyanConfig: qingyanSchema,
 		commentConfig: z
 			.object({
 				enable: z.boolean().optional(),
-				qingyan: qingyanSchema,
 				rootLimit: z.number().int().nonnegative().optional(),
 				maxDepth: z.number().int().nonnegative().optional(),
 			})
@@ -269,14 +271,12 @@ const externalSiteConfigSchema: z.ZodTypeAny = z
 		pageMetricsConfig: z
 			.object({
 				enable: z.boolean().optional(),
-				qingyan: qingyanSchema,
 			})
 			.strict()
 			.optional(),
 		pageFeedbackConfig: z
 			.object({
 				enable: z.boolean().optional(),
-				qingyan: qingyanSchema,
 				like: z
 					.object({
 						enable: z.boolean().optional(),

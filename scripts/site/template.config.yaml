@@ -223,18 +223,20 @@ expressiveCodeConfig:
   # 注意：部分视觉细节仍可能被 astro.config.mjs 里的集成层继续覆写。
   theme: github-dark
 
+qingyanConfig:
+  # QingYan 后端连接配置。
+  # 评论、页面统计和点赞共用这一组后端参数；各功能是否显示由下方 feature config 的 enable 字段决定。
+  # 如果不接 QingYan，可以把整个 qingyanConfig 设为 null。
+  siteKey: {{QINGYAN_SITE_KEY}}
+
+  # QingYan API 基础路径。
+  # 同站代理联调时通常写 /api；也可以写完整 http(s) 地址，但需要自行处理 CORS 与 Cookie 行为。
+  apiBase: /api
+
 commentConfig:
   # 评论功能总开关。
-  # 即使这里为 true，只要 qingyan 仍是 null，评论后端也不会真正启用。
+  # 即使这里为 true，只要 qingyanConfig 仍是 null，评论后端也不会真正启用。
   enable: true
-
-  qingyan:
-    # QingYan 站点标识。
-    siteKey: {{QINGYAN_SITE_KEY}}
-
-    # QingYan API 基础路径。
-    # 同站代理联调时通常写 /api；也可以写完整 http(s) 地址。
-    apiBase: /api
 
   # 一级评论每页数量。
   # 运行时会向下取整，并强制最小值为 1；未填写时使用默认 5。
@@ -248,25 +250,15 @@ pageMetricsConfig:
   # 页面统计功能总开关。
   enable: false
 
-  # 设为 null 表示不接 QingYan 后端。
-  # 只有 enable=true 且 qingyan 非空时，页面统计才会真正启用。
-  qingyan: null
-  # qingyan:
-  #   siteKey: {{QINGYAN_SITE_KEY}}
-  #   apiBase: /api
+  # 只有 enable=true 且 qingyanConfig 非空时，页面统计才会真正启用。
 
 pageFeedbackConfig:
   # 页面反馈面板总开关。
   # 只有总开关开启，并且点赞或打赏至少一项开启时，文章页才会渲染“支持这篇文章”区块。
   enable: true
 
-  # 设为 null 时不会走 QingYan 反馈后端。
-  # 只有 like.enable=true 且 qingyan 非空时，点赞按钮才会显示。
+  # 只有 like.enable=true 且 qingyanConfig 非空时，点赞按钮才会显示。
   # 打赏可以不依赖 QingYan，只要 reward.enable=true 且 reward.options 非空即可显示。
-  qingyan: null
-  # qingyan:
-  #   siteKey: {{QINGYAN_SITE_KEY}}
-  #   apiBase: /api
 
   like:
     # 页面点赞开关。

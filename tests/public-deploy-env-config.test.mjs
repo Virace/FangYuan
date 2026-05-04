@@ -44,33 +44,28 @@ test("public deploy env applies QingYan to all frontend integration surfaces", (
 		applyPublicQingYanCommentConfig(
 			{
 				enable: false,
-				qingyan: null,
 			},
 			qingyan,
 		),
 		{
 			enable: true,
-			qingyan,
 		},
 	);
 	assert.deepEqual(
 		applyPublicQingYanPageMetricsConfig(
 			{
 				enable: false,
-				qingyan: null,
 			},
 			qingyan,
 		),
 		{
 			enable: true,
-			qingyan,
 		},
 	);
 	assert.deepEqual(
 		applyPublicQingYanPageFeedbackConfig(
 			{
 				enable: false,
-				qingyan: null,
 				like: {
 					enable: false,
 				},
@@ -83,7 +78,6 @@ test("public deploy env applies QingYan to all frontend integration surfaces", (
 		),
 		{
 			enable: true,
-			qingyan,
 			like: {
 				enable: true,
 			},

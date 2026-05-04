@@ -114,11 +114,11 @@ test(
 				);
 				await writeFile(
 					siteConfigPath,
-					`pageFeedbackConfig:
+					`qingyanConfig:
+  siteKey: fangyuan-test
+  apiBase: /api
+pageFeedbackConfig:
   enable: true
-  qingyan:
-    siteKey: fangyuan-test
-    apiBase: /api
   like:
     enable: false
   reward:

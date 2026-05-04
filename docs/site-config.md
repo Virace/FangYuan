@@ -54,7 +54,7 @@
   规则：`url` 和 `ref` 只能出现一个，不能同时出现，也不能同时缺失。
 - `ref` 链接不能再写 `external`。
 - 导航项的稳定标识取 `id`，没有 `id` 时退回 `name`。最终标识必须唯一，重复会报错。
-- `pageMetricsConfig.qingyan`、`pageFeedbackConfig.qingyan`、`commentConfig.qingyan` 都是可选的，但是否真正启用前端功能，还要结合各自的 `enable` 字段一起看。
+- `qingyanConfig` 是评论、页面统计和点赞共用的 QingYan 后端连接配置；各功能是否真正启用，还要结合各自的 `enable` 字段一起看。
 - `pageFeedbackConfig` 的文章页区块采用“点赞或打赏”的或运算：
   规则：`pageFeedbackConfig.enable=true`，并且 `like` 或 `reward` 至少一项实际可显示时，才渲染“支持这篇文章”区块。
 - `commentConfig.rootLimit` 和 `commentConfig.maxDepth` 会在运行时做归一化：
@@ -83,9 +83,9 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 <siteRoot>/.backup/YYYYMMDD-HHMMSS/site.config.yaml
 ```
 
-第一版迁移使用 YAML 解析后再写回；注释和原始格式可能被规范化。正式应用前先看 dry-run 报告，并确认备份路径符合预期。
+配置迁移使用 YAML 解析后再写回；注释和原始格式可能被规范化。正式应用前先看 dry-run 报告，并确认备份路径符合预期。
 
-当旧字段和新字段同时存在且值不一致时，`update-site` 会要求人工处理。例如旧版 `pageFeedbackConfig.rewardOptions` 和新版 `pageFeedbackConfig.reward.options` 冲突时，不会自动猜测保留哪一份。
+当旧字段和新字段同时存在且值不一致时，`update-site` 会要求人工处理。例如旧版 `pageFeedbackConfig.rewardOptions` 和新版 `pageFeedbackConfig.reward.options` 冲突时，不会自动猜测保留哪一份；旧版三处 QingYan 配置不一致时，也会要求先人工收敛成一组 `qingyanConfig`。
 
 ## 配置分区
 
@@ -403,21 +403,29 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 - 作用：代码块主题名。
 - 冲突提醒：部分样式仍可能被 `astro.config.mjs` 里的集成层继续覆写，因此这里控制的是主题基线，不一定覆盖所有视觉细节。
 
+### `qingyanConfig`
+
+#### `qingyanConfig`
+
+- 作用：QingYan 后端连接配置。
+- 规则：评论、页面统计和点赞共用这一组后端参数；设为 `null` 或不填写时，所有依赖 QingYan 的前端能力都会关闭。
+
+#### `qingyanConfig.siteKey`
+
+- 作用：QingYan 站点标识。
+
+#### `qingyanConfig.apiBase`
+
+- 作用：QingYan API 基础路径。
+- 默认：未填时前端运行时使用 `/api`。
+- 建议：同站代理场景优先使用 `/api`；如果写完整 `http(s)` 地址，需要自行确认 CORS、Cookie 和验证码状态连续性。
+
 ### `commentConfig`
 
 #### `commentConfig.enable`
 
 - 作用：评论功能总开关。
-- 规则：即使为 `true`，如果 `qingyan` 仍是 `null`，评论后端也不会真正启用。
-
-#### `commentConfig.qingyan.siteKey`
-
-- 作用：QingYan 站点标识。
-
-#### `commentConfig.qingyan.apiBase`
-
-- 作用：QingYan API 基础路径。
-- 建议：同站代理场景优先使用 `/api`。
+- 规则：即使为 `true`，如果 `qingyanConfig` 仍是 `null`，评论后端也不会真正启用。
 
 #### `commentConfig.rootLimit`
 
@@ -435,15 +443,7 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 
 - 作用：页面统计功能开关。
 
-#### `pageMetricsConfig.qingyan.siteKey`
-
-- 作用：页面统计使用的 QingYan 站点标识。
-
-#### `pageMetricsConfig.qingyan.apiBase`
-
-- 作用：页面统计使用的 QingYan API 基础路径。
-
-- 冲突提醒：只有 `enable=true` 且 `qingyan` 非空时，页面统计才会真正启用。
+- 冲突提醒：只有 `enable=true` 且 `qingyanConfig` 非空时，页面统计才会真正启用。
 
 ### `pageFeedbackConfig`
 
@@ -453,18 +453,10 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 - 规则：这是总开关；单独开启它不会强制渲染区块，还需要点赞或打赏至少一项实际可显示。
 - 关闭行为：设为 `false` 时，无论点赞和打赏子配置如何，文章页都不会渲染“支持这篇文章”区块。
 
-#### `pageFeedbackConfig.qingyan.siteKey`
-
-- 作用：页面反馈使用的 QingYan 站点标识。
-
-#### `pageFeedbackConfig.qingyan.apiBase`
-
-- 作用：页面反馈使用的 QingYan API 基础路径。
-
 #### `pageFeedbackConfig.like.enable`
 
 - 作用：控制“支持这篇文章”区块里的点赞按钮。
-- 规则：只有 `pageFeedbackConfig.enable=true`、`like.enable=true` 且 `qingyan` 非空时，点赞按钮才会实际显示。
+- 规则：只有 `pageFeedbackConfig.enable=true`、`like.enable=true` 且 `qingyanConfig` 非空时，点赞按钮才会实际显示。
 - 注意：这里不控制评论区的评论点赞；评论区点赞由评论后端能力和评论组件控制。
 
 #### `pageFeedbackConfig.reward.enable`
@@ -477,7 +469,7 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 
 - 作用：打赏选项列表。
 - 合并规则：一旦显式填写，会整体替换默认数组。
-- 冲突提醒：即使 `qingyan` 为 `null`，只要 `enable=true`、`reward.enable=true` 且 `reward.options` 非空，仍然可以走纯打赏展示模式。
+- 冲突提醒：即使 `qingyanConfig` 为 `null`，只要 `enable=true`、`reward.enable=true` 且 `reward.options` 非空，仍然可以走纯打赏展示模式。
 
 #### `pageFeedbackConfig.reward.options[].id`
 
@@ -505,5 +497,5 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 ## 推荐做法
 
 - 先只写确实需要覆盖默认值的字段，不要把模板全部复制后机械改一遍。
-- `commentConfig.qingyan`、`pageMetricsConfig.qingyan`、`pageFeedbackConfig.qingyan` 如果本质上指向同一个后端，推荐保持同一组参数，避免联调时行为不一致。
+- QingYan 后端连接参数统一写在 `qingyanConfig`；`commentConfig`、`pageMetricsConfig`、`pageFeedbackConfig` 只负责对应功能开关和展示参数。
 - 想做复杂 permalink 规则时，先确认公开 URL 语义，再决定 `postsPattern`、`pagesPattern` 和 `postPatternRules`，不要把 Astro 内部构建输出语义和公开路径语义混在一起。

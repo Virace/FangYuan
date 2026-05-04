@@ -1,4 +1,4 @@
-export const currentSiteConfigVersion = 1;
+export const currentSiteConfigVersion = 2;
 
 function cloneConfig(config) {
 	return structuredClone(config ?? {});
@@ -97,6 +97,49 @@ function findRewardConflict(config) {
 	return null;
 }
 
+function getLegacyQingYanEntries(config) {
+	return [
+		["commentConfig.qingyan", config.commentConfig],
+		["pageMetricsConfig.qingyan", config.pageMetricsConfig],
+		["pageFeedbackConfig.qingyan", config.pageFeedbackConfig],
+	]
+		.filter(([, featureConfig]) => featureConfig && hasOwn(featureConfig, "qingyan"))
+		.map(([path, featureConfig]) => ({
+			path,
+			value: featureConfig.qingyan,
+		}));
+}
+
+function findQingYanConflict(config) {
+	const entries = getLegacyQingYanEntries(config).filter(
+		(entry) => entry.value !== null && entry.value !== undefined,
+	);
+	if (entries.length === 0) {
+		return null;
+	}
+
+	const first = entries[0].value;
+	if (entries.some((entry) => !valuesEqual(entry.value, first))) {
+		return createManualAction(
+			"qingyanConfig",
+			"legacy QingYan configs differ; choose one shared qingyanConfig before migration",
+		);
+	}
+
+	if (
+		hasOwn(config, "qingyanConfig") &&
+		config.qingyanConfig !== null &&
+		!valuesEqual(config.qingyanConfig, first)
+	) {
+		return createManualAction(
+			"qingyanConfig",
+			"legacy QingYan config and qingyanConfig differ; choose one before migration",
+		);
+	}
+
+	return null;
+}
+
 function migrateRewardOptions(config, actions) {
 	const pageFeedbackConfig = config.pageFeedbackConfig;
 	if (!pageFeedbackConfig || !hasOwn(pageFeedbackConfig, "rewardOptions")) {
@@ -118,6 +161,29 @@ function migrateRewardOptions(config, actions) {
 	actions.push(createAction("pageFeedbackConfig.rewardOptions", "remove"));
 }
 
+function migrateQingYanConfig(config, actions) {
+	const entries = getLegacyQingYanEntries(config);
+	const shared = entries.find(
+		(entry) => entry.value !== null && entry.value !== undefined,
+	)?.value;
+
+	if (shared && !hasOwn(config, "qingyanConfig")) {
+		config.qingyanConfig = shared;
+		actions.push(
+			createAction(
+				"commentConfig.qingyan/pageMetricsConfig.qingyan/pageFeedbackConfig.qingyan -> qingyanConfig",
+				"move",
+			),
+		);
+	}
+
+	for (const entry of entries) {
+		const [sectionName] = entry.path.split(".");
+		delete config[sectionName].qingyan;
+		actions.push(createAction(entry.path, "remove"));
+	}
+}
+
 function migrateFromZero(config) {
 	const conflict = findRewardConflict(config);
 	if (conflict) {
@@ -133,10 +199,46 @@ function migrateFromZero(config) {
 	const actions = [];
 
 	migrateRewardOptions(nextConfig, actions);
+	const qingyanConflict = findQingYanConflict(nextConfig);
+	if (qingyanConflict) {
+		return {
+			config,
+			changed: false,
+			actions: [],
+			manualActions: [qingyanConflict],
+		};
+	}
+	migrateQingYanConfig(nextConfig, actions);
 	ensureCurrentDefaults(nextConfig, actions);
 
 	nextConfig.fangyuanConfigVersion = currentSiteConfigVersion;
 	actions.push(createAction("fangyuanConfigVersion", "add"));
+
+	return {
+		config: nextConfig,
+		changed: true,
+		actions,
+		manualActions: [],
+	};
+}
+
+function migrateFromOne(config) {
+	const conflict = findQingYanConflict(config);
+	if (conflict) {
+		return {
+			config,
+			changed: false,
+			actions: [],
+			manualActions: [conflict],
+		};
+	}
+
+	const nextConfig = cloneConfig(config);
+	const actions = [];
+
+	migrateQingYanConfig(nextConfig, actions);
+	nextConfig.fangyuanConfigVersion = currentSiteConfigVersion;
+	actions.push(createAction("fangyuanConfigVersion", "update"));
 
 	return {
 		config: nextConfig,
@@ -176,7 +278,10 @@ export function migrateSiteConfigObject(config, options = {}) {
 		};
 	}
 
-	const migration = migrateFromZero(cloneConfig(config));
+	const migration =
+		fromVersion === 0
+			? migrateFromZero(cloneConfig(config))
+			: migrateFromOne(cloneConfig(config));
 	return {
 		...migration,
 		fromVersion,

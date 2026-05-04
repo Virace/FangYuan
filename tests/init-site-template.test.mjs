@@ -23,6 +23,7 @@ test("template.config.yaml contains the full commented config surface", async ()
 	assert.match(source, /footerConfig:/);
 	assert.match(source, /licenseConfig:/);
 	assert.match(source, /expressiveCodeConfig:/);
+	assert.match(source, /qingyanConfig:/);
 	assert.match(source, /commentConfig:/);
 	assert.match(source, /pageMetricsConfig:/);
 	assert.match(source, /pageFeedbackConfig:/);
@@ -45,6 +46,7 @@ test("renderSiteConfigTemplate replaces placeholders without dropping comments",
 
 	assert.match(rendered, /title: "?Virace Notes"?/);
 	assert.match(rendered, /profileConfig:[\s\S]*name: "?Virace"?/);
+	assert.match(rendered, /qingyanConfig:[\s\S]*siteKey: "?virace-notes"?/);
 	assert.match(rendered, /qingyanDevProxyTarget: "?http:\/\/localhost:4401"?/);
 	assert.match(rendered, /永久链接规则/);
 	assert.match(rendered, /替换位置：assets\/images\/banner\.svg/);
@@ -85,6 +87,7 @@ test("rendered template is accepted by the strict YAML schema", async (t) => {
 	assert.equal(loaded?.profileConfig?.name, "Virace");
 	assert.equal(loaded?.siteConfig?.banner?.src, "assets/images/banner.svg");
 	assert.equal(loaded?.profileConfig?.avatar, "assets/images/avatar.svg");
+	assert.equal(loaded?.qingyanConfig?.siteKey, "virace-notes");
 	assert.equal(loaded?.pageFeedbackConfig?.reward?.enable, false);
 	assert.equal(loaded?.qingyanDevProxyTarget, null);
 });

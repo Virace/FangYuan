@@ -21,6 +21,7 @@ import type {
 	PageFeedbackConfig,
 	PageMetricsConfig,
 	ProfileConfig,
+	QingYanClientConfig,
 	SiteConfig,
 } from "./types/config";
 import { normalizeCommentConfig } from "./utils/comments/options";
@@ -150,7 +151,6 @@ function mergeCommentConfig(
 	return normalizeCommentConfig({
 		...defaultConfig,
 		...override,
-		qingyan: override.qingyan ?? defaultConfig.qingyan,
 	});
 }
 
@@ -165,7 +165,6 @@ function mergePageMetricsConfig(
 	return {
 		...defaultConfig,
 		...override,
-		qingyan: override.qingyan ?? defaultConfig.qingyan,
 	};
 }
 
@@ -180,7 +179,6 @@ function mergePageFeedbackConfig(
 	return {
 		...defaultConfig,
 		...override,
-		qingyan: override.qingyan ?? defaultConfig.qingyan,
 		like: {
 			...defaultConfig.like,
 			...override.like,
@@ -227,6 +225,9 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...externalSiteConfig?.expressiveCodeConfig,
 };
+
+export const qingyanConfig: QingYanClientConfig | null =
+	publicQingYanConfig ?? externalSiteConfig?.qingyanConfig ?? null;
 
 export const commentConfig: CommentConfig = applyPublicQingYanCommentConfig(
 	mergeCommentConfig(defaultCommentConfig, externalSiteConfig?.commentConfig),

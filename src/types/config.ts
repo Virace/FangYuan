@@ -180,19 +180,16 @@ export type QingYanClientConfig = {
 
 export type CommentConfig = {
 	enable: boolean;
-	qingyan?: QingYanClientConfig | null;
 	rootLimit?: number;
 	maxDepth?: number;
 };
 
 export type PageMetricsConfig = {
 	enable: boolean;
-	qingyan?: QingYanClientConfig | null;
 };
 
 export type PageFeedbackConfig = {
 	enable: boolean;
-	qingyan?: QingYanClientConfig | null;
 	like: {
 		enable: boolean;
 	};

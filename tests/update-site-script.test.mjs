@@ -10,6 +10,7 @@ import {
 	main,
 	parseUpdateSiteArgs,
 } from "../scripts/site/update-site.js";
+import { currentSiteConfigVersion } from "../scripts/site/update-site-config-migrations.js";
 
 function createIo() {
 	const output = [];
@@ -145,7 +146,7 @@ test("main apply writes editor files and migrates config with backup", async (t)
 	assert.equal(
 		parse(await readFile(path.join(siteRoot, "site.config.yaml"), "utf8"))
 			.fangyuanConfigVersion,
-		1,
+		currentSiteConfigVersion,
 	);
 	assert.equal(
 		existsSync(

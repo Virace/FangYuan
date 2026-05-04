@@ -170,19 +170,16 @@ export const defaultExpressiveCodeConfig: ExpressiveCodeConfig = {
 
 export const defaultCommentConfig: CommentConfig = {
 	enable: true,
-	qingyan: null,
 	rootLimit: DEFAULT_COMMENT_ROOT_LIMIT,
 	maxDepth: DEFAULT_COMMENT_MAX_DEPTH,
 };
 
 export const defaultPageMetricsConfig: PageMetricsConfig = {
 	enable: false,
-	qingyan: null,
 };
 
 export const defaultPageFeedbackConfig: PageFeedbackConfig = {
 	enable: true,
-	qingyan: null,
 	like: {
 		enable: true,
 	},
