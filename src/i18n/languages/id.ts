@@ -58,6 +58,7 @@ export const id: Translation = {
 	[Key.commentsFormEmail]: "Surel",
 	[Key.commentsFormWebsite]: "Situs web",
 	[Key.commentsFormOptionalSuffix]: " (opsional)",
+	[Key.commentsRememberProfile]: "Ingat saya",
 	[Key.commentsFormContent]: "Komentar",
 	[Key.commentCountSingular]: "komentar",
 	[Key.commentCountPlural]: "komentar",

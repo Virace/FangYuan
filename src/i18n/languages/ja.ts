@@ -59,6 +59,7 @@ export const ja: Translation = {
 	[Key.commentsFormEmail]: "メールアドレス",
 	[Key.commentsFormWebsite]: "ウェブサイト",
 	[Key.commentsFormOptionalSuffix]: "（任意）",
+	[Key.commentsRememberProfile]: "保存する",
 	[Key.commentsFormContent]: "コメント",
 	[Key.commentCountSingular]: "件のコメント",
 	[Key.commentCountPlural]: "件のコメント",

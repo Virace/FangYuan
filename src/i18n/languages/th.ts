@@ -53,6 +53,7 @@ export const th: Translation = {
 	[Key.commentsFormEmail]: "อีเมล",
 	[Key.commentsFormWebsite]: "เว็บไซต์",
 	[Key.commentsFormOptionalSuffix]: " (ไม่บังคับ)",
+	[Key.commentsRememberProfile]: "จดจำฉัน",
 	[Key.commentsFormContent]: "ความคิดเห็น",
 	[Key.commentCountSingular]: "ความคิดเห็น",
 	[Key.commentCountPlural]: "ความคิดเห็น",

@@ -70,11 +70,11 @@ $: showCommentCaptchaDown =
 	class:comment-nested={depth > 1}
 >
 	<div class="flex items-start gap-3">
-		{#if comment.author.avatarUrl}
+		{#if comment.author.gravatarUrl}
 			<img
 				alt={comment.author.name}
 				class="h-10 w-10 rounded-full object-cover"
-				src={comment.author.avatarUrl}
+				src={comment.author.gravatarUrl}
 			/>
 		{:else}
 			<div class="flex h-10 w-10 items-center justify-center rounded-full bg-btn-plain-bg-hover text-sm font-semibold text-primary">

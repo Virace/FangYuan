@@ -10,7 +10,7 @@ export type CommentAuthor = {
 	email?: string;
 	emailHash?: string;
 	website?: string | null;
-	avatarUrl?: string | null;
+	gravatarUrl?: string | null;
 };
 
 export type CommentVoteChoice = "up" | "down";

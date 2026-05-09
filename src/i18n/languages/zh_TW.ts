@@ -51,6 +51,7 @@ export const zh_TW: Translation = {
 	[Key.commentsFormEmail]: "電子郵件",
 	[Key.commentsFormWebsite]: "網站",
 	[Key.commentsFormOptionalSuffix]: "（可選）",
+	[Key.commentsRememberProfile]: "記住我",
 	[Key.commentsFormContent]: "留言內容",
 	[Key.commentCountSingular]: "則留言",
 	[Key.commentCountPlural]: "則留言",

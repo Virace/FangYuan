@@ -3,6 +3,7 @@ import type { I18nKey as I18nKeyType } from "@i18n/i18nKey";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import type { AutoDismissTone } from "@utils/browser/notice";
+import type { CommenterProfile } from "@utils/comments/commenter-profile";
 import type {
 	CommentAuthorField,
 	CommentCaptchaState,
@@ -22,6 +23,7 @@ type CommentComposerSubmitDetail = {
 	authorEmail: string;
 	authorWebsite: string;
 	content: string;
+	rememberProfile: boolean;
 };
 
 export let submitting = false;
@@ -33,6 +35,11 @@ export let allowedFields: CommentAuthorField[] = [
 	"website",
 ];
 export let requiredFields: CommentAuthorField[] = ["nickname", "email"];
+export let verifiedAuthor: {
+	displayName: string;
+	badgeLabel: string;
+} | null = null;
+export let initialProfile: CommenterProfile | null = null;
 export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
 export let captchaValue = "";
@@ -53,6 +60,8 @@ let authorName = "";
 let authorEmail = "";
 let authorWebsite = "";
 let content = "";
+let rememberProfile = true;
+let appliedProfileSignature = "";
 let showEmojiPicker = false;
 let emojiTriggerWrap: HTMLDivElement | null = null;
 let authorNameInput: HTMLInputElement | null = null;
@@ -68,9 +77,28 @@ let invalidFieldState: Record<CommentFormValidationField, boolean> = {
 	content: false,
 };
 
-$: showNameField = allowedFields.includes("nickname");
-$: showEmailField = allowedFields.includes("email");
-$: showWebsiteField = allowedFields.includes("website");
+$: useVerifiedAuthor = Boolean(verifiedAuthor);
+$: showNameField = !useVerifiedAuthor && allowedFields.includes("nickname");
+$: showEmailField = !useVerifiedAuthor && allowedFields.includes("email");
+$: showWebsiteField = !useVerifiedAuthor && allowedFields.includes("website");
+$: if (useVerifiedAuthor) {
+	appliedProfileSignature = "";
+} else if (initialProfile) {
+	const nextProfileSignature = JSON.stringify(initialProfile);
+	if (nextProfileSignature !== appliedProfileSignature) {
+		appliedProfileSignature = nextProfileSignature;
+		if (showNameField) {
+			authorName = initialProfile.authorName;
+		}
+		if (showEmailField) {
+			authorEmail = initialProfile.authorEmail;
+		}
+		if (showWebsiteField) {
+			authorWebsite = initialProfile.authorWebsite;
+		}
+		rememberProfile = true;
+	}
+}
 $: submitButtonLabel = submitting
 	? i18n(I18nKey.commentsSubmitting)
 	: showCaptcha
@@ -145,6 +173,7 @@ async function handleSubmit() {
 		authorEmail: authorEmail.trim(),
 		authorWebsite: authorWebsite.trim(),
 		content: content.trim(),
+		rememberProfile: !useVerifiedAuthor && rememberProfile,
 	});
 	if (submitSucceeded) {
 		content = "";
@@ -333,41 +362,54 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 			</div>
 		</div>
 
-		<div
-			bind:this={emojiTriggerWrap}
-			role="group"
-			class="comment-emoji-trigger-wrap mr-auto"
-			on:focusout={handleEmojiFocusOut}
-		>
-			<button
-				type="button"
-				class="comment-emoji-trigger comment-action"
-				class:comment-action-active={showEmojiPicker}
-				aria-label={i18n(I18nKey.commentsEmoji)}
-				aria-controls="comment-emojis-panel"
-				aria-expanded={showEmojiPicker}
-				title={i18n(I18nKey.commentsEmoji)}
-				on:click={() => (showEmojiPicker = !showEmojiPicker)}
-			>
-				<span aria-hidden="true" class="comment-emoji-trigger-icon">{emojiTriggerIcon}</span>
-			</button>
-
-			{#if showEmojiPicker}
-				<div
-					id="comment-emojis-panel"
-					class="comment-emoji-popover-wrap"
-					in:fade={{ duration: emojiPopoverDuration }}
-					out:fade={{ duration: emojiPopoverDuration }}
-				>
-					<div
-						class="comment-emoji-popover"
-						in:scale={{ duration: emojiPopoverDuration, start: 0.92, opacity: 0.5 }}
-						out:scale={{ duration: 150, start: 1, opacity: 0.4 }}
-					>
-						<EmojiPicker onSelect={insertEmoji} />
-					</div>
-				</div>
+		<div class="mr-auto flex flex-wrap items-center gap-x-4 gap-y-2">
+			{#if !useVerifiedAuthor}
+				<label class="comment-action inline-flex items-center gap-2">
+					<input
+						bind:checked={rememberProfile}
+						class="size-4 accent-[var(--primary)]"
+						type="checkbox"
+					/>
+					<span>{i18n(I18nKey.commentsRememberProfile)}</span>
+				</label>
 			{/if}
+
+			<div
+				bind:this={emojiTriggerWrap}
+				role="group"
+				class="comment-emoji-trigger-wrap"
+				on:focusout={handleEmojiFocusOut}
+			>
+				<button
+					type="button"
+					class="comment-emoji-trigger comment-action"
+					class:comment-action-active={showEmojiPicker}
+					aria-label={i18n(I18nKey.commentsEmoji)}
+					aria-controls="comment-emojis-panel"
+					aria-expanded={showEmojiPicker}
+					title={i18n(I18nKey.commentsEmoji)}
+					on:click={() => (showEmojiPicker = !showEmojiPicker)}
+				>
+					<span aria-hidden="true" class="comment-emoji-trigger-icon">{emojiTriggerIcon}</span>
+				</button>
+
+				{#if showEmojiPicker}
+					<div
+						id="comment-emojis-panel"
+						class="comment-emoji-popover-wrap"
+						in:fade={{ duration: emojiPopoverDuration }}
+						out:fade={{ duration: emojiPopoverDuration }}
+					>
+						<div
+							class="comment-emoji-popover"
+							in:scale={{ duration: emojiPopoverDuration, start: 0.92, opacity: 0.5 }}
+							out:scale={{ duration: 150, start: 1, opacity: 0.4 }}
+						>
+							<EmojiPicker onSelect={insertEmoji} />
+						</div>
+					</div>
+				{/if}
+			</div>
 		</div>
 	</div>
 </form>

@@ -59,6 +59,7 @@ export const tr: Translation = {
 	[Key.commentsFormEmail]: "E-posta",
 	[Key.commentsFormWebsite]: "Web sitesi",
 	[Key.commentsFormOptionalSuffix]: " (isteğe bağlı)",
+	[Key.commentsRememberProfile]: "Beni hatırla",
 	[Key.commentsFormContent]: "Yorum",
 	[Key.commentCountSingular]: "yorum",
 	[Key.commentCountPlural]: "yorum",

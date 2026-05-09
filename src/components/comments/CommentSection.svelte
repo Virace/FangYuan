@@ -4,6 +4,12 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { type AutoDismissTone, getAutoDismissMs } from "@utils/browser/notice";
 import {
+	type CommenterProfile,
+	clearCommenterProfile,
+	loadCommenterProfile,
+	saveCommenterProfile,
+} from "@utils/comments/commenter-profile";
+import {
 	DEFAULT_COMMENT_SORT_BY,
 	normalizeCommentOffset,
 } from "@utils/comments/options";
@@ -28,7 +34,10 @@ import {
 	persistViewerVote,
 } from "@utils/comments/vote-state";
 import { getQingYanClient, QingYanApiError } from "@utils/qingyan/client";
-import type { QingYanClientConfig } from "@utils/qingyan/contracts";
+import type {
+	QingYanBootstrapViewer,
+	QingYanClientConfig,
+} from "@utils/qingyan/contracts";
 import { onDestroy, onMount, tick } from "svelte";
 import { fade, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
@@ -43,6 +52,7 @@ type CommentComposerSubmitDetail = {
 	authorEmail: string;
 	authorWebsite: string;
 	content: string;
+	rememberProfile: boolean;
 };
 
 type CaptchaTarget =
@@ -93,6 +103,8 @@ const qingyanClient = getQingYanClient(qingyan);
 
 let capability: CommentCapability | null = null;
 let commentForm: CommentForm | null = null;
+let viewer: QingYanBootstrapViewer = {};
+let commenterProfile: CommenterProfile | null = null;
 let comments: CanonicalComment[] = [];
 let loading = true;
 let submitting = false;
@@ -146,8 +158,12 @@ $: commentNoticeTone = commentNotice?.tone ?? "info";
 $: pendingVoteChoice = pendingVoteTarget?.choice ?? null;
 $: supportsVote = capability?.supportsVote ?? false;
 $: supportsCaptcha = capability?.supportsCaptcha ?? false;
+$: verifiedAuthor = viewer.verifiedAuthor ?? null;
+$: usingVerifiedAuthor = Boolean(verifiedAuthor);
 $: allowedFields = commentForm?.allow ?? defaultAllowedFields;
-$: requiredFields = commentForm?.require ?? defaultRequiredFields;
+$: requiredFields = usingVerifiedAuthor
+	? []
+	: (commentForm?.require ?? defaultRequiredFields);
 $: showComposerCaptcha =
 	supportsCaptcha &&
 	activeCaptchaTarget?.kind === "composer" &&
@@ -289,6 +305,7 @@ function updateCommentDebugHook() {
 			captchaError,
 			composerNotice,
 			commentNotice,
+			viewer,
 			retryPendingAction: () => void handleSubmitCaptchaAction(),
 			refreshCaptcha: () => void handleRefreshCaptcha(),
 		},
@@ -377,6 +394,11 @@ function applyBootstrap(
 ) {
 	capability = payload.capability;
 	commentForm = payload.commentForm;
+	viewer = payload.viewer;
+	commenterProfile =
+		qingyan && !payload.viewer.verifiedAuthor
+			? loadCommenterProfile(qingyan.siteKey, payload.commentForm.allow)
+			: null;
 	comments = applyPersistedViewerVotes(postKey, payload.comments);
 	currentSortBy = payload.pagination.sortBy;
 	currentOffset = payload.pagination.offset;
@@ -423,6 +445,8 @@ async function loadInitialState() {
 		if (!qingyanClient) {
 			capability = null;
 			commentForm = null;
+			viewer = {};
+			commenterProfile = null;
 			comments = [];
 			captchaState = null;
 			return;
@@ -460,6 +484,8 @@ async function loadComments(nextOptions?: {
 		if (!qingyanClient) {
 			capability = null;
 			commentForm = null;
+			viewer = {};
+			commenterProfile = null;
 			comments = [];
 			captchaState = null;
 			return;
@@ -608,7 +634,7 @@ async function handleSubmit(
 			pageUrl: postUrl,
 			parentId: activeReplyParentId,
 			author: {
-				name: detail.authorName,
+				name: verifiedAuthor?.displayName ?? detail.authorName,
 				email: detail.authorEmail,
 				website: detail.authorWebsite || null,
 			},
@@ -617,6 +643,23 @@ async function handleSubmit(
 		});
 
 		comments = insertPendingComment(comments, result.createdComment);
+		if (!verifiedAuthor && qingyan) {
+			if (detail.rememberProfile) {
+				saveCommenterProfile(
+					qingyan.siteKey,
+					{
+						authorName: detail.authorName,
+						authorEmail: detail.authorEmail,
+						authorWebsite: detail.authorWebsite,
+					},
+					allowedFields,
+				);
+				commenterProfile = loadCommenterProfile(qingyan.siteKey, allowedFields);
+			} else {
+				clearCommenterProfile(qingyan.siteKey);
+				commenterProfile = null;
+			}
+		}
 		totalRootCount = result.thread.rootCommentCount;
 		activeReplyParentId = null;
 		qingyanClient.invalidateBootstrap(postKey);
@@ -904,6 +947,8 @@ onDestroy(() => {
 				showCaptcha={showComposerCaptcha}
 				allowedFields={allowedFields}
 				requiredFields={requiredFields}
+				verifiedAuthor={verifiedAuthor}
+				initialProfile={commenterProfile}
 				captchaState={captchaState}
 				captchaBusy={captchaBusy}
 				bind:captchaValue

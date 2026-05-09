@@ -58,6 +58,7 @@ export const vi: Translation = {
 	[Key.commentsFormEmail]: "Địa chỉ email",
 	[Key.commentsFormWebsite]: "Trang web",
 	[Key.commentsFormOptionalSuffix]: " (tùy chọn)",
+	[Key.commentsRememberProfile]: "Ghi nhớ tôi",
 	[Key.commentsFormContent]: "Bình luận",
 	[Key.commentCountSingular]: "bình luận",
 	[Key.commentCountPlural]: "bình luận",

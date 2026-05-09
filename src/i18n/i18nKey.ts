@@ -48,6 +48,7 @@ const I18nKey = {
 	commentsFormEmail: "commentsFormEmail",
 	commentsFormWebsite: "commentsFormWebsite",
 	commentsFormOptionalSuffix: "commentsFormOptionalSuffix",
+	commentsRememberProfile: "commentsRememberProfile",
 	commentsFormContent: "commentsFormContent",
 	commentCountSingular: "commentCountSingular",
 	commentCountPlural: "commentCountPlural",

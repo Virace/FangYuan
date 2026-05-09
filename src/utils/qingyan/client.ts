@@ -36,6 +36,7 @@ type RawQingYanComment = {
 	author: {
 		name: string;
 		website?: string | null;
+		gravatarUrl?: string | null;
 	};
 	content: {
 		raw: string;
@@ -81,6 +82,12 @@ type RawQingYanCaptchaState = {
 type RawQingYanBootstrapResponse = {
 	capability: RawQingYanCapability;
 	commentForm: RawQingYanCommentForm;
+	viewer?: {
+		verifiedAuthor?: {
+			displayName: string;
+			badgeLabel: string;
+		};
+	};
 	thread: {
 		siteKey: string;
 		pageKey: string;
@@ -236,6 +243,7 @@ function normalizeComment(
 		author: {
 			name: comment.author.name,
 			website: comment.author.website ?? null,
+			gravatarUrl: comment.author.gravatarUrl ?? null,
 		},
 		content: {
 			raw: comment.content.raw,
@@ -329,6 +337,7 @@ function normalizeBootstrap(
 		...threadPage,
 		capability: normalizeCapability(response.capability),
 		commentForm: normalizeCommentForm(response.commentForm),
+		viewer: response.viewer ?? {},
 		pageMetrics: response.pageMetrics,
 		pageFeedback: response.pageFeedback,
 		captcha: normalizeCaptchaState(response.captcha),

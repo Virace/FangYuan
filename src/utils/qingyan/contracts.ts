@@ -36,6 +36,13 @@ export type QingYanPageMetrics = {
 	pageViewCount: number;
 };
 
+export type QingYanBootstrapViewer = {
+	verifiedAuthor?: {
+		displayName: string;
+		badgeLabel: string;
+	};
+};
+
 export type QingYanThreadPage = {
 	thread: {
 		siteKey: string;
@@ -55,6 +62,7 @@ export type QingYanThreadPage = {
 export type QingYanBootstrapPayload = QingYanThreadPage & {
 	capability: CommentCapability;
 	commentForm: CommentForm;
+	viewer: QingYanBootstrapViewer;
 	pageMetrics: QingYanPageMetrics;
 	pageFeedback: QingYanPageFeedbackState;
 	captcha: CommentCaptchaState | null;

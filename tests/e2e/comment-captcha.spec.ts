@@ -1,10 +1,8 @@
-import { expect, test, type Page } from "@playwright/test";
-import {
-	VIEWPORTS,
-	prepareStablePage,
-} from "./support/site-fixtures";
+import { expect, type Page, test } from "@playwright/test";
+import { prepareStablePage, VIEWPORTS } from "./support/site-fixtures";
 
-const COMMENT_TEST_ROUTE = "/posts/welcome/";
+const COMMENT_TEST_ROUTE = "/extra/";
+const COMMENTER_PROFILE_STORAGE_KEY = "qingyan:commenter-profile:v1:default";
 
 type RawComment = {
 	id: string;
@@ -12,6 +10,7 @@ type RawComment = {
 	author: {
 		name: string;
 		website?: string | null;
+		gravatarUrl?: string | null;
 	};
 	content: {
 		raw: string;
@@ -51,6 +50,12 @@ function buildBootstrapResponse(input?: {
 	comments?: RawComment[];
 	likeCount?: number;
 	liked?: boolean;
+	viewer?: {
+		verifiedAuthor?: {
+			displayName: string;
+			badgeLabel: string;
+		};
+	};
 }) {
 	return {
 		capability: {
@@ -64,6 +69,7 @@ function buildBootstrapResponse(input?: {
 			allow: ["nickname", "email", "website"],
 			require: ["nickname", "email"],
 		},
+		viewer: input?.viewer ?? {},
 		thread: {
 			siteKey: "default",
 			pageKey: "welcome",
@@ -137,33 +143,36 @@ function createCommentFixture(): RawComment {
 	};
 }
 
-async function installFetchMock(page: Page, input: {
-	bootstrap: ReturnType<typeof buildBootstrapResponse>;
-	thread?: ReturnType<typeof buildThreadResponse>;
-	captchaState?: ReturnType<typeof buildCaptchaState>;
-	refreshedCaptchaState?: ReturnType<typeof buildCaptchaState>;
-	commentCreate?:
-		| {
-				firstErrorCode: string;
-				firstErrorMessage: string;
-				successBody: unknown;
-		  }
-		| undefined;
-	pageLike?:
-		| {
-				firstErrorCode: string;
-				firstErrorMessage: string;
-				successBody: unknown;
-		  }
-		| undefined;
-	commentVote?:
-		| {
-				firstErrorCode: string;
-				firstErrorMessage: string;
-				successBody: unknown;
-		  }
-		| undefined;
-}) {
+async function installFetchMock(
+	page: Page,
+	input: {
+		bootstrap: ReturnType<typeof buildBootstrapResponse>;
+		thread?: ReturnType<typeof buildThreadResponse>;
+		captchaState?: ReturnType<typeof buildCaptchaState>;
+		refreshedCaptchaState?: ReturnType<typeof buildCaptchaState>;
+		commentCreate?:
+			| {
+					firstErrorCode?: string;
+					firstErrorMessage?: string;
+					successBody: unknown;
+			  }
+			| undefined;
+		pageLike?:
+			| {
+					firstErrorCode: string;
+					firstErrorMessage: string;
+					successBody: unknown;
+			  }
+			| undefined;
+		commentVote?:
+			| {
+					firstErrorCode: string;
+					firstErrorMessage: string;
+					successBody: unknown;
+			  }
+			| undefined;
+	},
+) {
 	await page.addInitScript((config) => {
 		const originalFetch = window.fetch.bind(window);
 		const jsonResponse = (body: unknown, status = 200) =>
@@ -174,9 +183,11 @@ async function installFetchMock(page: Page, input: {
 				},
 			});
 
-		(window as typeof window & {
-			__commentTestState: Record<string, unknown>;
-		}).__commentTestState = {
+		(
+			window as typeof window & {
+				__commentTestState: Record<string, unknown>;
+			}
+		).__commentTestState = {
 			commentSubmitCount: 0,
 			commentRetryBody: null,
 			likeCount: 0,
@@ -196,8 +207,7 @@ async function installFetchMock(page: Page, input: {
 						: String(inputArg);
 			const url = new URL(requestUrl, window.location.origin);
 			const method = (
-				init?.method ??
-				(inputArg instanceof Request ? inputArg.method : "GET")
+				init?.method ?? (inputArg instanceof Request ? inputArg.method : "GET")
 			).toUpperCase();
 
 			if (!url.pathname.startsWith("/api/")) {
@@ -230,18 +240,23 @@ async function installFetchMock(page: Page, input: {
 				method === "POST"
 			) {
 				testState.refreshCount = Number(testState.refreshCount ?? 0) + 1;
-				return jsonResponse(config.refreshedCaptchaState ?? config.captchaState);
+				return jsonResponse(
+					config.refreshedCaptchaState ?? config.captchaState,
+				);
 			}
 
 			if (url.pathname === "/api/comments/" && method === "POST") {
 				testState.commentSubmitCount =
 					Number(testState.commentSubmitCount ?? 0) + 1;
-				if (Number(testState.commentSubmitCount) === 1 && config.commentCreate) {
+				if (
+					Number(testState.commentSubmitCount) === 1 &&
+					config.commentCreate?.firstErrorCode
+				) {
 					return jsonResponse(
 						{
 							error: {
 								code: config.commentCreate.firstErrorCode,
-								message: config.commentCreate.firstErrorMessage,
+								message: config.commentCreate.firstErrorMessage ?? "",
 							},
 						},
 						400,
@@ -314,6 +329,20 @@ async function readTestState(page: Page) {
 	});
 }
 
+function buildSuccessfulCommentResponse(commentId: string) {
+	return {
+		comment: {
+			id: commentId,
+			status: "approved",
+			message: "评论已发布。",
+		},
+		thread: {
+			commentCount: 1,
+			rootCommentCount: 1,
+		},
+	};
+}
+
 test("comment submit should keep captcha attached to the original action", async ({
 	page,
 }) => {
@@ -336,23 +365,13 @@ test("comment submit should keep captcha attached to the original action", async
 		commentCreate: {
 			firstErrorCode: "COMMENT_CAPTCHA_REQUIRED",
 			firstErrorMessage: "请输入验证码。",
-			successBody: {
-				comment: {
-					id: "created-comment",
-					status: "approved",
-					message: "评论已发布。",
-				},
-				thread: {
-					commentCount: 1,
-					rootCommentCount: 1,
-				},
-			},
+			successBody: buildSuccessfulCommentResponse("created-comment"),
 		},
 	});
 
 	await prepareStablePage(page, COMMENT_TEST_ROUTE);
 
-	const composer = page.locator('section[data-post-title] form');
+	const composer = page.locator("section[data-post-title] form");
 	await composer.locator('input[type="text"]').first().fill("Smoke Tester");
 	await composer.locator('input[type="email"]').fill("smoke@example.com");
 	await composer.locator("textarea").fill("验证码弹层 smoke test");
@@ -382,7 +401,10 @@ test("comment submit should keep captcha attached to the original action", async
 	await expect(composer).toContainText("请输入验证码。");
 
 	const captchaImage = composerCaptcha.locator("img");
-	await expect(captchaImage).toHaveAttribute("src", initialCaptcha.challenge.imageData);
+	await expect(captchaImage).toHaveAttribute(
+		"src",
+		initialCaptcha.challenge.imageData,
+	);
 
 	await composerCaptcha.getByRole("button", { name: "刷新验证码" }).click();
 	await expect
@@ -411,7 +433,160 @@ test("comment submit should keep captcha attached to the original action", async
 	});
 });
 
-test("page like should retry with captcha on the same button", async ({ page }) => {
+test("admin bootstrap should submit without nickname and email fields", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			viewer: {
+				verifiedAuthor: {
+					displayName: "站点管理员",
+					badgeLabel: "管理员",
+				},
+			},
+		}),
+		thread: buildThreadResponse(),
+		commentCreate: {
+			successBody: buildSuccessfulCommentResponse("created-admin-comment"),
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await expect(composer.locator('input[type="text"]')).toHaveCount(0);
+	await expect(composer.locator('input[type="email"]')).toHaveCount(0);
+	await composer.locator("textarea").fill("管理员直接回复 smoke test");
+	await composer.getByRole("button", { name: "发表评论" }).click();
+
+	await expect
+		.poll(async () => Number((await readTestState(page)).commentSubmitCount))
+		.toBe(1);
+	await expect(page.getByText("管理员直接回复 smoke test")).toBeVisible();
+
+	const testState = await readTestState(page);
+	expect(testState.commentRetryBody).toMatchObject({
+		author: {
+			name: "站点管理员",
+		},
+		content: {
+			raw: "管理员直接回复 smoke test",
+		},
+	});
+	expect(
+		(testState.commentRetryBody as { author?: { email?: string } }).author
+			?.email,
+	).toBeUndefined();
+});
+
+test("comment composer should remember ordinary author profile by default", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse(),
+		thread: buildThreadResponse(),
+		commentCreate: {
+			successBody: buildSuccessfulCommentResponse("created-profile-comment"),
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await expect(composer.getByLabel("记住我")).toBeChecked();
+	await composer.locator('input[type="text"]').first().fill("记忆访客");
+	await composer.locator('input[type="email"]').fill("memory@example.com");
+	await composer.locator('input[type="url"]').fill("https://example.com");
+	await composer.locator("textarea").fill("记住评论资料 smoke test");
+	await composer.getByRole("button", { name: "发表评论" }).click();
+
+	await expect
+		.poll(async () => Number((await readTestState(page)).commentSubmitCount))
+		.toBe(1);
+	await expect(page.getByText("记住评论资料 smoke test")).toBeVisible();
+
+	const storedProfile = await page.evaluate((key) => {
+		const raw = window.localStorage.getItem(key);
+		return raw ? JSON.parse(raw) : null;
+	}, COMMENTER_PROFILE_STORAGE_KEY);
+	expect(storedProfile).toMatchObject({
+		authorName: "记忆访客",
+		authorEmail: "memory@example.com",
+		authorWebsite: "https://example.com",
+	});
+	expect(Date.parse(storedProfile.expiresAt)).toBeGreaterThan(Date.now());
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+	const reloadedComposer = page.locator("section[data-post-title] form");
+	await expect(reloadedComposer.locator('input[type="text"]').first()).toHaveValue(
+		"记忆访客",
+	);
+	await expect(reloadedComposer.locator('input[type="email"]')).toHaveValue(
+		"memory@example.com",
+	);
+	await expect(reloadedComposer.locator('input[type="url"]')).toHaveValue(
+		"https://example.com",
+	);
+	await expect(reloadedComposer.getByLabel("记住我")).toBeChecked();
+});
+
+test("comment composer should clear remembered profile when opt out is submitted", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await page.addInitScript((key) => {
+		window.localStorage.setItem(
+			key,
+			JSON.stringify({
+				authorName: "旧访客",
+				authorEmail: "old@example.com",
+				authorWebsite: "https://old.example.com",
+				expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+			}),
+		);
+	}, COMMENTER_PROFILE_STORAGE_KEY);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse(),
+		thread: buildThreadResponse(),
+		commentCreate: {
+			successBody: buildSuccessfulCommentResponse("created-opt-out-comment"),
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await expect(composer.locator('input[type="text"]').first()).toHaveValue(
+		"旧访客",
+	);
+	await composer.getByLabel("记住我").uncheck();
+	await composer.locator('input[type="text"]').first().fill("不记住访客");
+	await composer.locator('input[type="email"]').fill("forget@example.com");
+	await composer.locator('input[type="url"]').fill("https://forget.example.com");
+	await composer.locator("textarea").fill("取消记住评论资料 smoke test");
+	await composer.getByRole("button", { name: "发表评论" }).click();
+
+	await expect
+		.poll(async () => Number((await readTestState(page)).commentSubmitCount))
+		.toBe(1);
+	await expect(page.getByText("取消记住评论资料 smoke test")).toBeVisible();
+	await expect
+		.poll(() =>
+			page.evaluate((storageKey) => {
+				return window.localStorage.getItem(storageKey);
+			}, COMMENTER_PROFILE_STORAGE_KEY),
+		)
+		.toBeNull();
+});
+
+test("page like should retry with captcha on the same button", async ({
+	page,
+}) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
 
 	const likeCaptcha = buildCaptchaState(
@@ -440,7 +615,10 @@ test("page like should retry with captcha on the same button", async ({ page }) 
 
 	await prepareStablePage(page, COMMENT_TEST_ROUTE);
 
-	const feedbackCard = page.locator("section").filter({ hasText: "支持这篇文章" }).first();
+	const feedbackCard = page
+		.locator("section")
+		.filter({ hasText: "支持这篇文章" })
+		.first();
 	const likeButton = feedbackCard.getByRole("button", { name: /点赞/ }).first();
 
 	await likeButton.click();
@@ -457,7 +635,9 @@ test("page like should retry with captcha on the same button", async ({ page }) 
 		expect(box?.width ?? 0).toBeLessThan(340);
 	}).toPass();
 	const likeCaptchaImage = likeCaptchaPopover.locator("img");
-	const likeCaptchaInput = likeCaptchaPopover.locator('input[inputmode="numeric"]');
+	const likeCaptchaInput = likeCaptchaPopover.locator(
+		'input[inputmode="numeric"]',
+	);
 	await expect(likeCaptchaInput).toBeFocused();
 	await expect(async () => {
 		const imageBox = await likeCaptchaImage.boundingBox();
@@ -470,7 +650,9 @@ test("page like should retry with captcha on the same button", async ({ page }) 
 			.boundingBox();
 		expect((inputBox?.y ?? 0) - (imageBox?.y ?? 0)).toBeGreaterThan(30);
 		expect((inputBox?.x ?? 0) - (imageBox?.x ?? 0)).toBeLessThan(8);
-		expect((imageBox?.y ?? 0) - ((promptBox?.y ?? 0) + (promptBox?.height ?? 0))).toBeGreaterThan(8);
+		expect(
+			(imageBox?.y ?? 0) - ((promptBox?.y ?? 0) + (promptBox?.height ?? 0)),
+		).toBeGreaterThan(8);
 	}).toPass();
 	await expect(
 		likeCaptchaPopover.getByRole("button", { name: "验证验证码" }),
@@ -542,11 +724,17 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 		const primaryBox = await buttons.nth(0).boundingBox();
 		const secondaryBox = await buttons.nth(1).boundingBox();
 		expect(box?.width ?? 0).toBeLessThan(300);
-		expect(Math.abs((primaryBox?.width ?? 0) - (secondaryBox?.width ?? 0))).toBeLessThan(3);
+		expect(
+			Math.abs((primaryBox?.width ?? 0) - (secondaryBox?.width ?? 0)),
+		).toBeLessThan(3);
 		expect((secondaryBox?.x ?? 0) - (primaryBox?.x ?? 0)).toBeGreaterThan(
 			(primaryBox?.width ?? 0) - 4,
 		);
-		expect(((secondaryBox?.x ?? 0) + (secondaryBox?.width ?? 0)) - ((box?.x ?? 0) + (box?.width ?? 0))).toBeGreaterThan(-24);
+		expect(
+			(secondaryBox?.x ?? 0) +
+				(secondaryBox?.width ?? 0) -
+				((box?.x ?? 0) + (box?.width ?? 0)),
+		).toBeGreaterThan(-24);
 	}).toPass();
 
 	await confirmPopover.locator("button").first().click();
@@ -569,7 +757,9 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 		.toBe(1);
 	await expect(page.getByText("请输入验证码。")).toBeVisible();
 
-	const voteCaptchaInput = voteCaptchaPopover.locator('input[inputmode="numeric"]');
+	const voteCaptchaInput = voteCaptchaPopover.locator(
+		'input[inputmode="numeric"]',
+	);
 	await voteCaptchaInput.fill("2468");
 	await voteCaptchaInput.press("Enter");
 
@@ -585,4 +775,47 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 			value: "2468",
 		},
 	});
+});
+
+test("comment list should render QingYan gravatarUrl and keep initials fallback", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	const gravatarUrl = "https://gravatar.com/avatar/fangyuan-test?s=80&d=mp&r=g";
+	const commentWithGravatar = {
+		...createCommentFixture(),
+		id: "comment-with-gravatar",
+		author: {
+			name: "青砚有图",
+			website: null,
+			gravatarUrl,
+		},
+	};
+	const commentWithoutGravatar = {
+		...createCommentFixture(),
+		id: "comment-without-gravatar",
+		author: {
+			name: "青砚无图",
+			website: null,
+		},
+	};
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			comments: [commentWithGravatar, commentWithoutGravatar],
+		}),
+		thread: buildThreadResponse([commentWithGravatar, commentWithoutGravatar]),
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	await expect(page.getByRole("img", { name: "青砚有图" })).toHaveAttribute(
+		"src",
+		gravatarUrl,
+	);
+	await expect(page.getByRole("img", { name: "青砚无图" })).toHaveCount(0);
+	await expect(
+		page.locator(".comment-item").filter({ hasText: "青砚无图" }),
+	).toContainText("青");
 });
