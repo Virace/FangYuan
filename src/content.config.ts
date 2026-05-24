@@ -7,6 +7,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { externalContentLoader } from "./utils/site-source/content-loader";
 import { resolveContentRoot } from "./utils/site-source/source";
 
 function generateMarkdownId(entry: string): string {
@@ -64,11 +65,13 @@ const tocFrontmatterSchema = z
 	.optional();
 
 const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
-	loader: glob({
-		base: `${loaderContentRoot}/posts`,
-		pattern: "**/*.md",
-		generateId: ({ entry }) => generateMarkdownId(entry),
-	}),
+	loader: externalContentLoader(
+		glob({
+			base: `${loaderContentRoot}/posts`,
+			pattern: "**/*.md",
+			generateId: ({ entry }) => generateMarkdownId(entry),
+		}),
+	),
 	schema: ({ image }: SchemaContext) =>
 		z.object({
 			title: z.string(),
@@ -106,11 +109,13 @@ const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 });
 
 const specCollection: ReturnType<typeof defineCollection> = defineCollection({
-	loader: glob({
-		base: `${loaderContentRoot}/spec`,
-		pattern: "**/*.md",
-		generateId: ({ entry }) => generateMarkdownId(entry),
-	}),
+	loader: externalContentLoader(
+		glob({
+			base: `${loaderContentRoot}/spec`,
+			pattern: "**/*.md",
+			generateId: ({ entry }) => generateMarkdownId(entry),
+		}),
+	),
 	schema: z.object({
 		alias: z.string().optional().default(""),
 		permalink: z.string().optional().default(""),

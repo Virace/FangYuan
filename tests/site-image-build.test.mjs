@@ -298,6 +298,70 @@ profileConfig:
 );
 
 test(
+	"external site asset aliases in markdown body images are optimized",
+	{ concurrency: false },
+	async (t) => {
+		await withMutableSiteFixture(
+			t,
+			async ({ distRoot, fixtureRoot, postDir, siteAboutPath, siteConfigPath, markCreated }) => {
+				const articleDir = markCreated(path.join(postDir, "__body-asset-alias"));
+				const uploadDir = path.join(
+					fixtureRoot,
+					"assets",
+					"wp-content",
+					"uploads",
+					"2026",
+					"05",
+				);
+
+				await mkdir(articleDir, { recursive: true });
+				await mkdir(uploadDir, { recursive: true });
+				await writeFile(
+					path.join(articleDir, "index.md"),
+					`---
+title: Body Asset Alias
+published: 2026-05-25
+description: External body asset alias probe.
+tags: [Demo]
+category: Demo
+draft: false
+---
+
+![Inline migrated asset](assets/wp-content/uploads/2026/05/正文图片.png)
+`,
+					"utf8",
+				);
+				await writeFile(path.join(uploadDir, "正文图片.png"), tinyPng);
+				await writeFile(siteAboutPath, "# About\n", "utf8");
+				await writeFile(
+					siteConfigPath,
+					`siteConfig:
+  title: Body Asset Alias
+  subtitle: Probe
+  banner:
+    enable: false
+`,
+					"utf8",
+				);
+
+				runBuild();
+
+				const articleHtml = await readFile(
+					path.join(distRoot, "__body-asset-alias", "index.html"),
+					"utf8",
+				);
+
+				assert.match(articleHtml, optimizedAssetPattern);
+				assert.doesNotMatch(
+					articleHtml,
+					/assets\/wp-content\/uploads\/2026\/05\/正文图片\.png/,
+				);
+			},
+		);
+	},
+);
+
+test(
 	"external site assets only emit referenced files from a custom external site root",
 	{ concurrency: false },
 	async (t) => {

@@ -190,16 +190,21 @@ const normalizedExternalSiteRoot = path
 	.toLowerCase();
 
 function resolveExternalSiteAssetImport(id) {
-	if (!localImageExtensionPattern.test(id)) {
+	const queryIndex = id.indexOf("?");
+	const importPath = queryIndex >= 0 ? id.slice(0, queryIndex) : id;
+
+	if (!localImageExtensionPattern.test(importPath)) {
 		return null;
 	}
 
-	const normalizedId = id.replace(/\\/g, "/");
+	const normalizedId = importPath.replace(/\\/g, "/");
 	const match = normalizedId.match(windowsAbsolutePathPattern);
 	const absoluteImportPath = match
 		? match[1]
 		: normalizedId.startsWith("/")
 			? normalizedId
+			: isExternalSiteAsset(normalizedId)
+				? path.resolve(externalSiteRoot, normalizedId)
 			: null;
 	if (!absoluteImportPath) {
 		return null;
@@ -241,6 +246,17 @@ function isExternalSiteAsset(value) {
 function addExternalSiteAssetReference(references, value) {
 	if (isExternalSiteAsset(value)) {
 		references.add(value.replace(/\\/g, "/").replace(/^\/+/, ""));
+	}
+}
+
+function addExternalSiteAssetReferencesFromHtml(references, value) {
+	if (typeof value !== "string" || value.trim() === "") {
+		return;
+	}
+
+	const attributePattern = /\s(?:src|href)=["'](assets\/[^"']+)["']/gi;
+	for (const match of value.matchAll(attributePattern)) {
+		addExternalSiteAssetReference(references, match[1]);
 	}
 }
 
@@ -305,6 +321,7 @@ function collectExternalSiteAssetReferences() {
 
 	const siteConfig = externalSiteConfig?.siteConfig;
 	const profileConfig = externalSiteConfig?.profileConfig;
+	const footerConfig = externalSiteConfig?.footerConfig;
 	const pageFeedbackConfig = externalSiteConfig?.pageFeedbackConfig;
 
 	addExternalSiteAssetReference(references, siteConfig?.banner?.src);
@@ -312,6 +329,7 @@ function collectExternalSiteAssetReferences() {
 		addExternalSiteAssetReference(references, favicon.src);
 	}
 	addExternalSiteAssetReference(references, profileConfig?.avatar);
+	addExternalSiteAssetReferencesFromHtml(references, footerConfig?.customHtml);
 	if (
 		pageFeedbackConfig?.reward?.enable ??
 		defaultPageFeedbackConfig.reward.enable

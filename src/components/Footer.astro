@@ -3,16 +3,16 @@ import { profileConfig, siteConfig } from "../config";
 import policeEmblem from "../theme-assets/icons/police-emblem.png";
 import {
 	footerCustomHtmlLooksLikeMarkup,
-	getFooterCustomHtml,
 	getFooterIcpRecord,
 	getFooterIcpUrl,
 	getFooterPoliceRecord,
 	getFooterPoliceRecordUrl,
+	getResolvedFooterCustomHtml,
 } from "../utils/footer-utils";
 import { url } from "../utils/permalink/urls";
 
 const currentYear = new Date().getFullYear();
-const customHtml = getFooterCustomHtml();
+const customHtml = await getResolvedFooterCustomHtml();
 const hasCustomHtml = customHtml !== "";
 const customHtmlIsMarkup = footerCustomHtmlLooksLikeMarkup();
 const icpRecord = getFooterIcpRecord();

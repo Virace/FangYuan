@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import externalImageModules from "virtual:fangyuan-site-assets";
 import type { ImageMetadata } from "astro";
 import { fangyuanRoot } from "./project-root.ts";
@@ -26,6 +27,10 @@ const localImageModules = import.meta.glob<ImageMetadata>(
 
 function normalizeSlashes(value: string): string {
 	return value.replace(/\\/g, "/");
+}
+
+function toFileSystemPath(value: string): string {
+	return value.startsWith("file://") ? fileURLToPath(value) : value;
 }
 
 function normalizeRootRelativePath(value: string): string {
@@ -140,7 +145,7 @@ function inferEntryBaseRoot(entryFilePath: string | undefined): ImageBaseRoot {
 		return "src";
 	}
 
-	const normalizedEntryPath = path.resolve(entryFilePath);
+	const normalizedEntryPath = path.resolve(toFileSystemPath(entryFilePath));
 	const normalizedSiteRoot = path.resolve(siteRoot);
 	const relativeToSiteRoot = path.relative(
 		normalizedSiteRoot,
@@ -213,9 +218,10 @@ export async function resolveContentImage(
 			);
 		}
 
+		const entryFileSystemPath = toFileSystemPath(entryFilePath);
 		const entryDirectory = path.posix.dirname(
 			normalizeRootRelativePath(
-				`/${normalizeSlashes(entryFilePath).replace(/^\/+/, "")}`,
+				`/${normalizeSlashes(entryFileSystemPath).replace(/^\/+/, "")}`,
 			),
 		);
 		const candidate = assertAllowedRoot(

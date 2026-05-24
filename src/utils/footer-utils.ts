@@ -1,4 +1,5 @@
 import { footerConfig } from "../config";
+import { resolveConfigAssetUrl } from "./image-source";
 
 const HTML_TAG_PATTERN = /<\/?[a-z][\s\S]*>/i;
 const POLICE_RECORD_CODE_PATTERN = /\d+/g;
@@ -9,6 +10,34 @@ function normalizeFooterValue(value?: string | null): string {
 
 export function getFooterCustomHtml(): string {
 	return normalizeFooterValue(footerConfig.customHtml);
+}
+
+export async function getResolvedFooterCustomHtml(): Promise<string> {
+	const customHtml = getFooterCustomHtml();
+	const attributePattern =
+		/(?<name>\s(?:src|href)=["'])(?<value>assets\/[^"']+)(?<quote>["'])/gi;
+	const matches = [...customHtml.matchAll(attributePattern)];
+	if (matches.length === 0) {
+		return customHtml;
+	}
+
+	const replacements = await Promise.all(
+		matches.map(async (match) => ({
+			raw: match[0],
+			resolved: `${match.groups?.name ?? ""}${
+				(await resolveConfigAssetUrl(match.groups?.value, "site")) ??
+				match.groups?.value ??
+				""
+			}${match.groups?.quote ?? ""}`,
+		})),
+	);
+
+	let resolvedHtml = customHtml;
+	for (const { raw, resolved } of replacements) {
+		resolvedHtml = resolvedHtml.replace(raw, resolved);
+	}
+
+	return resolvedHtml;
 }
 
 export function footerCustomHtmlLooksLikeMarkup(): boolean {

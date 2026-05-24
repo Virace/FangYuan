@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { stat } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import type { UpdatedDateFallback, UpdatedDateMode } from "../types/config";
 import { fangyuanRoot } from "./project-root.ts";
@@ -35,9 +36,13 @@ function resolveAbsoluteFilePath(filePath?: string): string | null {
 		return null;
 	}
 
-	return path.isAbsolute(filePath)
-		? filePath
-		: path.resolve(repoRoot, filePath);
+	const fileSystemPath = filePath.startsWith("file://")
+		? fileURLToPath(filePath)
+		: filePath;
+
+	return path.isAbsolute(fileSystemPath)
+		? fileSystemPath
+		: path.resolve(repoRoot, fileSystemPath);
 }
 
 function resolveGitFilePath(filePath?: string): string | null {
