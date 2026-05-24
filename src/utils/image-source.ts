@@ -16,10 +16,10 @@ const siteRoot = path.resolve(
 	fangyuanRoot,
 	process.env.FANGYUAN_SITE_ROOT ?? "site",
 );
-
 const localImageModules = import.meta.glob<ImageMetadata>(
 	[
-		"/src/**/*.{avif,gif,jpeg,jpg,png,svg,webp}",
+		"/src/assets/**/*.{avif,gif,jpeg,jpg,png,svg,webp}",
+		"/src/theme-assets/**/*.{avif,gif,jpeg,jpg,png,svg,webp}",
 		"/site/content/**/*.{avif,gif,jpeg,jpg,png,svg,webp}",
 	],
 	{ import: "default" },

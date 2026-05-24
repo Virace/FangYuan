@@ -423,6 +423,96 @@ profileConfig:
 );
 
 test(
+	"external site builds do not emit internal demo article covers",
+	{ concurrency: false },
+	async (t) => {
+		await withMutableSiteFixture(
+			t,
+			async ({ distRoot, postDir, siteAboutPath, siteConfigPath, markCreated }) => {
+				const articleDir = markCreated(path.join(postDir, "__external-only"));
+
+				await mkdir(articleDir, { recursive: true });
+				await writeFile(
+					path.join(articleDir, "index.md"),
+					`---
+title: External Only
+published: 2026-05-25
+description: External build should not include internal demo covers.
+tags: [Demo]
+category: Demo
+draft: false
+---
+
+External-only content.
+`,
+					"utf8",
+				);
+				await writeFile(siteAboutPath, "# About\n", "utf8");
+				await writeFile(
+					siteConfigPath,
+					`siteConfig:
+  title: External Only
+  subtitle: Probe
+  banner:
+    enable: false
+`,
+					"utf8",
+				);
+
+				runBuild();
+
+				const staticFiles = await readdir(path.join(distRoot, "static"));
+				assert.equal(
+					staticFiles.some((file) => file.startsWith("cover.")),
+					false,
+					"internal FangYuan demo article cover should not be emitted by external builds",
+				);
+			},
+		);
+	},
+);
+
+test(
+	"internal demo build keeps the guide article cover image",
+	{ concurrency: false },
+	async (t) => {
+		const previousMode = process.env.FANGYUAN_SITE_MODE;
+		const previousRoot = process.env.FANGYUAN_SITE_ROOT;
+
+		process.env.FANGYUAN_SITE_MODE = "internal";
+		delete process.env.FANGYUAN_SITE_ROOT;
+
+		t.after(async () => {
+			if (previousMode === undefined) {
+				delete process.env.FANGYUAN_SITE_MODE;
+			} else {
+				process.env.FANGYUAN_SITE_MODE = previousMode;
+			}
+
+			if (previousRoot === undefined) {
+				delete process.env.FANGYUAN_SITE_ROOT;
+			} else {
+				process.env.FANGYUAN_SITE_ROOT = previousRoot;
+			}
+
+			await rm(path.join(repoRoot, "dist"), { recursive: true, force: true });
+		});
+
+		runBuild();
+
+		const guideHtml = await readFile(
+			path.join(repoRoot, "dist", "guide", "index.html"),
+			"utf8",
+		);
+		const staticFiles = await readdir(path.join(repoRoot, "dist", "static"));
+		const coverFile = staticFiles.find((file) => file.startsWith("cover."));
+
+		assert.ok(coverFile, "internal demo cover asset should be emitted");
+		assert.match(guideHtml, /id="post-cover"/);
+	},
+);
+
+test(
 	"police record uses the theme-owned emblem without requiring an external site asset",
 	{ concurrency: false },
 	async (t) => {
