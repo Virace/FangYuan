@@ -1,7 +1,7 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type { DataStore, Loader } from "astro/loaders";
-import { resolveSiteSourceContext } from "./context";
+import { resolveSiteSourceContext } from "./context.ts";
 
 type DataEntry = Parameters<Parameters<Loader["load"]>[0]["store"]["set"]>[0];
 
@@ -52,6 +52,31 @@ export function normalizeExternalEntryFilePath(
 	return filePathToAstroImporterPath(absoluteFilePath);
 }
 
+function normalizeExternalStoreFilePath(filePath?: string): string | undefined {
+	if (!filePath?.trim()) {
+		return filePath;
+	}
+
+	const siteSourceContext = resolveSiteSourceContext();
+	if (!siteSourceContext.useExternalContent) {
+		return normalizeSlashes(filePath);
+	}
+
+	if (filePath.startsWith("file://")) {
+		return filePath;
+	}
+
+	if (path.isAbsolute(filePath)) {
+		return normalizeSlashes(filePath);
+	}
+
+	if (isWindowsDrivePath(filePath)) {
+		return pathToFileURL(filePath).href;
+	}
+
+	return normalizeSlashes(filePath);
+}
+
 export function externalContentLoader(loader: Loader): Loader {
 	return {
 		...loader,
@@ -81,7 +106,7 @@ export function externalContentLoader(loader: Loader): Loader {
 					set(entry: DataEntry) {
 						return context.store.set({
 							...entry,
-							filePath: normalizeExternalEntryFilePath(entry.filePath),
+							filePath: normalizeExternalStoreFilePath(entry.filePath),
 						});
 					},
 				},
