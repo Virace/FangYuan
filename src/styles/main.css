@@ -116,18 +116,22 @@
 
 .comment-author-badge {
     display: inline-flex;
+    box-sizing: border-box;
+    min-height: 1.5rem;
     max-width: 8rem;
     align-items: center;
+    justify-content: center;
     overflow: hidden;
     border: 1px solid var(--line-divider);
     border-radius: 9999px;
     background-color: var(--btn-plain-bg-hover);
-    padding: 0.0625rem 0.45rem;
+    padding: 0 0.625rem;
     color: var(--primary);
     font-size: 0.75rem;
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1;
     text-overflow: ellipsis;
+    vertical-align: middle;
     white-space: nowrap;
 }
 
