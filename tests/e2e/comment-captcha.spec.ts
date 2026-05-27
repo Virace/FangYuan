@@ -3,6 +3,7 @@ import { prepareStablePage, VIEWPORTS } from "./support/site-fixtures";
 
 const COMMENT_TEST_ROUTE = "/extra/";
 const COMMENTER_PROFILE_STORAGE_KEY = "qingyan:commenter-profile:v1:default";
+const CREATED_COMMENT_TIMESTAMP = "2026-05-28T00:00:00.000Z";
 
 type RawComment = {
 	id: string;
@@ -11,6 +12,9 @@ type RawComment = {
 		name: string;
 		website?: string | null;
 		gravatarUrl?: string | null;
+		badge?: {
+			label: string;
+		} | null;
 	};
 	content: {
 		raw: string;
@@ -368,12 +372,55 @@ function expectNoSerializedPageIdentity(payload: unknown) {
 	expect(payload).not.toHaveProperty("pageUrl");
 }
 
-function buildSuccessfulCommentResponse(commentId: string) {
+type RawCommentOverrides = Partial<
+	Omit<RawComment, "author" | "content" | "children">
+> & {
+	author?: Partial<RawComment["author"]>;
+	content?: Partial<RawComment["content"]>;
+	children?: RawComment[];
+};
+
+function buildSuccessfulCommentResponse(
+	commentId: string,
+	overrides: RawCommentOverrides = {},
+) {
+	const baseComment: RawComment = {
+		...createCommentFixture(),
+		id: commentId,
+		parentId: null,
+		author: {
+			name: "后端返回作者",
+			website: null,
+		},
+		content: {
+			raw: "后端返回内容",
+			html: "<p>后端返回内容</p>",
+		},
+		status: "approved",
+		isPinned: false,
+		isFolded: false,
+		replyCount: 0,
+		voteUp: 0,
+		voteDown: 0,
+		viewerVote: null,
+		createdAt: CREATED_COMMENT_TIMESTAMP,
+		updatedAt: CREATED_COMMENT_TIMESTAMP,
+		children: [],
+	};
+
 	return {
 		comment: {
-			id: commentId,
-			status: "approved",
-			message: "评论已发布。",
+			...baseComment,
+			...overrides,
+			author: {
+				...baseComment.author,
+				...overrides.author,
+			},
+			content: {
+				...baseComment.content,
+				...overrides.content,
+			},
+			children: overrides.children ?? baseComment.children,
 		},
 		thread: {
 			commentCount: 1,
@@ -614,7 +661,12 @@ test("comment submit should keep captcha attached to the original action", async
 		commentCreate: {
 			firstErrorCode: "COMMENT_CAPTCHA_REQUIRED",
 			firstErrorMessage: "请输入验证码。",
-			successBody: buildSuccessfulCommentResponse("created-comment"),
+			successBody: buildSuccessfulCommentResponse("created-comment", {
+				content: {
+					raw: "验证码弹层 smoke test",
+					html: "<p>验证码弹层 smoke test</p>",
+				},
+			}),
 		},
 	});
 
@@ -698,7 +750,15 @@ test("admin bootstrap should submit without nickname and email fields", async ({
 		}),
 		thread: buildThreadResponse(),
 		commentCreate: {
-			successBody: buildSuccessfulCommentResponse("created-admin-comment"),
+			successBody: buildSuccessfulCommentResponse("created-admin-comment", {
+				author: {
+					name: "站点管理员",
+				},
+				content: {
+					raw: "管理员直接回复 smoke test",
+					html: "<p>管理员直接回复 smoke test</p>",
+				},
+			}),
 		},
 	});
 
@@ -739,7 +799,16 @@ test("comment composer should remember ordinary author profile by default", asyn
 		bootstrap: buildBootstrapResponse(),
 		thread: buildThreadResponse(),
 		commentCreate: {
-			successBody: buildSuccessfulCommentResponse("created-profile-comment"),
+			successBody: buildSuccessfulCommentResponse("created-profile-comment", {
+				author: {
+					name: "记忆访客",
+					website: "https://example.com",
+				},
+				content: {
+					raw: "记住评论资料 smoke test",
+					html: "<p>记住评论资料 smoke test</p>",
+				},
+			}),
 		},
 	});
 
@@ -803,7 +872,16 @@ test("comment composer should clear remembered profile when opt out is submitted
 		bootstrap: buildBootstrapResponse(),
 		thread: buildThreadResponse(),
 		commentCreate: {
-			successBody: buildSuccessfulCommentResponse("created-opt-out-comment"),
+			successBody: buildSuccessfulCommentResponse("created-opt-out-comment", {
+				author: {
+					name: "不记住访客",
+					website: "https://forget.example.com",
+				},
+				content: {
+					raw: "取消记住评论资料 smoke test",
+					html: "<p>取消记住评论资料 smoke test</p>",
+				},
+			}),
 		},
 	});
 
@@ -1067,4 +1145,124 @@ test("comment list should render QingYan gravatarUrl and keep initials fallback"
 	await expect(
 		page.locator(".comment-item").filter({ hasText: "青砚无图" }),
 	).toContainText("青");
+});
+
+test("comment list should render QingYan trusted author badge", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	const verifiedComment = {
+		...createCommentFixture(),
+		id: "comment-with-badge",
+		author: {
+			name: "站点作者",
+			website: null,
+			badge: { label: "楼主" },
+		},
+	};
+	const ordinaryComment = {
+		...createCommentFixture(),
+		id: "comment-without-badge",
+		author: {
+			name: "普通访客",
+			website: null,
+		},
+	};
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			comments: [verifiedComment, ordinaryComment],
+		}),
+		thread: buildThreadResponse([verifiedComment, ordinaryComment]),
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	await expect(
+		page.locator(".comment-item").filter({ hasText: "站点作者" }),
+	).toContainText("楼主");
+	await expect(
+		page.locator(".comment-item").filter({ hasText: "普通访客" }),
+	).not.toContainText("楼主");
+});
+
+test("comment create should insert QingYan public comment response", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse(),
+		thread: buildThreadResponse(),
+		commentCreate: {
+			successBody: buildSuccessfulCommentResponse("created-public-comment", {
+				author: {
+					name: "后端规范作者",
+					website: "https://visitor.example.com/",
+				},
+				content: {
+					raw: "frontend raw should not win",
+					html: "<p>后端规范内容</p>",
+				},
+			}),
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await composer.locator('input[type="text"]').fill("前端输入作者");
+	await composer.locator('input[type="email"]').fill("visitor@example.com");
+	await composer.locator("textarea").fill("前端输入内容");
+	await composer.getByRole("button", { name: "发表评论" }).click();
+
+	const created = page.locator(".comment-item").filter({
+		hasText: "后端规范作者",
+	});
+	await expect(created).toContainText("后端规范内容");
+	await expect(created).not.toContainText("前端输入作者");
+});
+
+test("verified author create should render returned badge immediately", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			viewer: {
+				verifiedAuthor: {
+					displayName: "站点管理员",
+					badgeLabel: "管理员",
+				},
+			},
+		}),
+		thread: buildThreadResponse(),
+		commentCreate: {
+			successBody: buildSuccessfulCommentResponse("created-verified-comment", {
+				author: {
+					name: "Virace",
+					website: "https://fangyuan.example.com/about",
+					badge: { label: "楼主" },
+				},
+				content: {
+					raw: "verified response",
+					html: "<p>可信作者后端响应</p>",
+				},
+			}),
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await expect(composer.locator('input[type="text"]')).toHaveCount(0);
+	await expect(composer.locator('input[type="email"]')).toHaveCount(0);
+	await composer.locator("textarea").fill("前端可信作者输入");
+	await composer.getByRole("button", { name: "发表评论" }).click();
+
+	const created = page.locator(".comment-item").filter({ hasText: "Virace" });
+	await expect(created).toContainText("楼主");
+	await expect(created).toContainText("可信作者后端响应");
 });

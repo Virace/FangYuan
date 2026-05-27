@@ -11,6 +11,9 @@ export type CommentAuthor = {
 	emailHash?: string;
 	website?: string | null;
 	gravatarUrl?: string | null;
+	badge?: {
+		label: string;
+	} | null;
 };
 
 export type CommentVoteChoice = "up" | "down";

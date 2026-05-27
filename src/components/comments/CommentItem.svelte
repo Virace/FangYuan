@@ -85,6 +85,9 @@ $: showCommentCaptchaDown =
 		<div class="min-w-0 flex-1">
 			<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 				<span class="font-semibold text-90">{comment.author.name}</span>
+				{#if comment.author.badge?.label}
+					<span class="comment-author-badge">{comment.author.badge.label}</span>
+				{/if}
 				<span class="text-xs text-50">{formatCommentDate(comment.createdAt)}</span>
 				{#if comment.status !== "approved"}
 					<span class="rounded-full bg-soft-contrast px-2 py-0.5 text-xs text-50">

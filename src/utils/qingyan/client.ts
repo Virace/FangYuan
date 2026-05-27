@@ -37,6 +37,9 @@ type RawQingYanComment = {
 		name: string;
 		website?: string | null;
 		gravatarUrl?: string | null;
+		badge?: {
+			label: string;
+		} | null;
 	};
 	content: {
 		raw: string;
@@ -114,12 +117,14 @@ type RawQingYanThreadResponse = {
 	comments: RawQingYanComment[];
 };
 
+type RawQingYanLegacyCreateComment = {
+	id: string;
+	status: "pending" | "approved";
+	message?: string;
+};
+
 type RawQingYanCreateCommentResponse = {
-	comment: {
-		id: string;
-		status: "pending" | "approved";
-		message?: string;
-	};
+	comment: RawQingYanComment | RawQingYanLegacyCreateComment;
 	thread: {
 		commentCount: number;
 		rootCommentCount: number;
@@ -244,6 +249,9 @@ function normalizeComment(
 			name: comment.author.name,
 			website: comment.author.website ?? null,
 			gravatarUrl: comment.author.gravatarUrl ?? null,
+			badge: comment.author.badge?.label
+				? { label: comment.author.badge.label }
+				: null,
 		},
 		content: {
 			raw: comment.content.raw,
@@ -258,6 +266,17 @@ function normalizeComment(
 		viewerVote: comment.viewerVote ?? null,
 		children: comment.children.map((child) => normalizeComment(child, postId)),
 	};
+}
+
+function isRawQingYanComment(
+	comment: RawQingYanCreateCommentResponse["comment"],
+): comment is RawQingYanComment {
+	return (
+		"author" in comment &&
+		"content" in comment &&
+		"createdAt" in comment &&
+		"children" in comment
+	);
 }
 
 function normalizeCapability(
@@ -346,7 +365,7 @@ function normalizeBootstrap(
 
 function buildOptimisticComment(
 	input: CreateCommentInput & { pageUrl?: string },
-	result: RawQingYanCreateCommentResponse["comment"],
+	result: RawQingYanLegacyCreateComment,
 ): CanonicalComment {
 	return {
 		id: result.id,
@@ -646,6 +665,17 @@ export function createQingYanClient(
 					},
 				);
 				invalidateBootstrap(input.postKey);
+				if (isRawQingYanComment(response.comment)) {
+					return {
+						comment: {
+							id: response.comment.id,
+							status: resolveCommentStatus(response.comment.status),
+						},
+						thread: response.thread,
+						createdComment: normalizeComment(response.comment, input.postKey),
+					};
+				}
+
 				return {
 					comment: {
 						id: response.comment.id,

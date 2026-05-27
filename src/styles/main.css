@@ -114,6 +114,23 @@
     font-variant-numeric: tabular-nums;
 }
 
+.comment-author-badge {
+    display: inline-flex;
+    max-width: 8rem;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid var(--line-divider);
+    border-radius: 9999px;
+    background-color: var(--btn-plain-bg-hover);
+    padding: 0.0625rem 0.45rem;
+    color: var(--primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .comment-vote-popover-wrap {
     position: absolute;
     top: calc(100% + 0.75rem);
