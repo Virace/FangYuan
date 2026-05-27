@@ -182,6 +182,23 @@ async function installFetchMock(
 					"Content-Type": "application/json",
 				},
 			});
+		const queryObject = (url: URL) =>
+			Object.fromEntries(Array.from(url.searchParams.entries()));
+		const threadResponse = (comments: unknown[]) => ({
+			thread: {
+				siteKey: "default",
+				pageKey: "welcome",
+				pageTitle: "Welcome",
+			},
+			pagination: {
+				sortBy: "newest",
+				limit: 5,
+				offset: 0,
+				totalCount: comments.length,
+				rootCount: comments.length,
+			},
+			comments,
+		});
 
 		(
 			window as typeof window & {
@@ -196,6 +213,13 @@ async function installFetchMock(
 			voteRetryBody: null,
 			captchaStateCount: 0,
 			refreshCount: 0,
+			bootstrapQuery: null,
+			threadQuery: null,
+			captchaStateQuery: null,
+			captchaRefreshBody: null,
+			commentCreateBodies: [],
+			likeBodies: [],
+			voteBodies: [],
 		};
 
 		window.fetch = async (inputArg, init) => {
@@ -222,16 +246,21 @@ async function installFetchMock(
 			const requestBody = init?.body ? JSON.parse(String(init.body)) : null;
 
 			if (url.pathname === "/api/comments/bootstrap/" && method === "GET") {
+				testState.bootstrapQuery = queryObject(url);
 				return jsonResponse(config.bootstrap);
 			}
 
 			if (url.pathname === "/api/comments/thread/" && method === "GET") {
-				return jsonResponse(config.thread ?? config.bootstrap.comments ?? []);
+				testState.threadQuery = queryObject(url);
+				return jsonResponse(
+					config.thread ?? threadResponse(config.bootstrap.comments ?? []),
+				);
 			}
 
 			if (url.pathname === "/api/comments/captcha/state/" && method === "GET") {
 				testState.captchaStateCount =
 					Number(testState.captchaStateCount ?? 0) + 1;
+				testState.captchaStateQuery = queryObject(url);
 				return jsonResponse(config.captchaState);
 			}
 
@@ -240,6 +269,7 @@ async function installFetchMock(
 				method === "POST"
 			) {
 				testState.refreshCount = Number(testState.refreshCount ?? 0) + 1;
+				testState.captchaRefreshBody = requestBody;
 				return jsonResponse(
 					config.refreshedCaptchaState ?? config.captchaState,
 				);
@@ -248,6 +278,7 @@ async function installFetchMock(
 			if (url.pathname === "/api/comments/" && method === "POST") {
 				testState.commentSubmitCount =
 					Number(testState.commentSubmitCount ?? 0) + 1;
+				(testState.commentCreateBodies as unknown[]).push(requestBody);
 				if (
 					Number(testState.commentSubmitCount) === 1 &&
 					config.commentCreate?.firstErrorCode
@@ -269,6 +300,7 @@ async function installFetchMock(
 
 			if (url.pathname === "/api/page-feedback/like/" && method === "POST") {
 				testState.likeCount = Number(testState.likeCount ?? 0) + 1;
+				(testState.likeBodies as unknown[]).push(requestBody);
 				if (Number(testState.likeCount) === 1 && config.pageLike) {
 					return jsonResponse(
 						{
@@ -290,6 +322,7 @@ async function installFetchMock(
 				method === "POST"
 			) {
 				testState.voteCount = Number(testState.voteCount ?? 0) + 1;
+				(testState.voteBodies as unknown[]).push(requestBody);
 				if (Number(testState.voteCount) === 1 && config.commentVote) {
 					return jsonResponse(
 						{
@@ -329,6 +362,12 @@ async function readTestState(page: Page) {
 	});
 }
 
+function expectNoSerializedPageIdentity(payload: unknown) {
+	expect(payload).toBeTruthy();
+	expect(payload).not.toHaveProperty("pageKey");
+	expect(payload).not.toHaveProperty("pageUrl");
+}
+
 function buildSuccessfulCommentResponse(commentId: string) {
 	return {
 		comment: {
@@ -342,6 +381,216 @@ function buildSuccessfulCommentResponse(commentId: string) {
 		},
 	};
 }
+
+test("QingYan referer page context omits page identity from bootstrap and thread requests", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	const seededComment = createCommentFixture();
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			comments: [seededComment],
+		}),
+		thread: buildThreadResponse([seededComment]),
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	await page.getByRole("button", { name: "最早在前" }).click();
+
+	await expect
+		.poll(async () => (await readTestState(page)).threadQuery)
+		.toBeTruthy();
+
+	const testState = await readTestState(page);
+	expect(testState.bootstrapQuery).toMatchObject({
+		siteKey: "default",
+		pageTitle: "内容与主题分离，以及评论接入",
+		sortBy: "newest",
+		limit: "5",
+		offset: "0",
+	});
+	expectNoSerializedPageIdentity(testState.bootstrapQuery);
+
+	expect(testState.threadQuery).toMatchObject({
+		siteKey: "default",
+		sortBy: "oldest",
+		limit: "5",
+		offset: "0",
+	});
+	expectNoSerializedPageIdentity(testState.threadQuery);
+});
+
+test("QingYan referer page context omits page identity from comment captcha and create requests", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	const initialCaptcha = buildCaptchaState(
+		"challenge-initial",
+		createCaptchaImage("2468"),
+	);
+	const refreshedCaptcha = buildCaptchaState(
+		"challenge-refresh",
+		createCaptchaImage("1357"),
+	);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse(),
+		thread: buildThreadResponse(),
+		captchaState: initialCaptcha,
+		refreshedCaptchaState: refreshedCaptcha,
+		commentCreate: {
+			firstErrorCode: "COMMENT_CAPTCHA_REQUIRED",
+			firstErrorMessage: "请输入验证码。",
+			successBody: buildSuccessfulCommentResponse("created-shape-comment"),
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await composer.locator('input[type="text"]').fill("请求形状测试");
+	await composer.locator('input[type="email"]').fill("shape@example.com");
+	await composer.locator("textarea").fill("Referer page context comment shape");
+	await composer.getByRole("button", { name: "发表评论" }).click();
+
+	const captchaInput = page.locator(
+		'[data-comment-captcha-target="composer"] input[inputmode="numeric"]',
+	);
+	await page
+		.locator('[data-comment-captcha-target="composer"]')
+		.getByRole("button", { name: "刷新验证码" })
+		.click();
+	await expect
+		.poll(async () => Number((await readTestState(page)).refreshCount))
+		.toBe(1);
+	await captchaInput.fill("1357");
+	await composer.getByRole("button", { name: "确认" }).click();
+
+	await expect
+		.poll(async () => Number((await readTestState(page)).commentSubmitCount))
+		.toBe(2);
+
+	const testState = await readTestState(page);
+	expectNoSerializedPageIdentity(testState.captchaStateQuery);
+	expectNoSerializedPageIdentity(testState.captchaRefreshBody);
+
+	const bodies = testState.commentCreateBodies as unknown[];
+	expect(bodies).toHaveLength(2);
+	expectNoSerializedPageIdentity(bodies[0]);
+	expectNoSerializedPageIdentity(bodies[1]);
+	expect(bodies[1]).toMatchObject({
+		siteKey: "default",
+		pageTitle: "内容与主题分离，以及评论接入",
+		captcha: {
+			challengeId: refreshedCaptcha.challenge.challengeId,
+			value: "1357",
+		},
+	});
+});
+
+test("QingYan referer page context omits page identity from like and vote requests", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	const seededComment = createCommentFixture();
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			comments: [seededComment],
+			likeCount: 1,
+		}),
+		thread: buildThreadResponse([seededComment]),
+		captchaState: buildCaptchaState("shape-like", createCaptchaImage("2468")),
+		pageLike: {
+			firstErrorCode: "PAGE_FEEDBACK_CAPTCHA_REQUIRED",
+			firstErrorMessage: "请输入验证码。",
+			successBody: {
+				pageFeedback: {
+					supportsLike: true,
+					likeCount: 2,
+					liked: true,
+				},
+			},
+		},
+		commentVote: {
+			firstErrorCode: "VOTE_CAPTCHA_REQUIRED",
+			firstErrorMessage: "请输入验证码。",
+			successBody: {
+				commentId: "comment-1",
+				voteUp: 4,
+				voteDown: 0,
+				viewerVote: "up",
+			},
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const feedbackCard = page
+		.locator("section")
+		.filter({ hasText: "支持这篇文章" })
+		.first();
+	const likeButton = feedbackCard.getByRole("button", { name: /点赞/ }).first();
+	await likeButton.click();
+	await page
+		.locator(
+			'[data-page-feedback-captcha-target="like"] input[inputmode="numeric"]',
+		)
+		.fill("2468");
+	await page
+		.locator(
+			'[data-page-feedback-captcha-target="like"] input[inputmode="numeric"]',
+		)
+		.press("Enter");
+
+	await expect
+		.poll(async () => Number((await readTestState(page)).likeCount))
+		.toBe(2);
+
+	const voteButton = page.locator('button[aria-label="点赞"]').first();
+	await voteButton.click();
+	await page
+		.locator('[data-comment-vote-confirm-target="comment-1"] button')
+		.first()
+		.click();
+	await page
+		.locator('[data-comment-captcha-target="comment-1"] input[inputmode="numeric"]')
+		.fill("2468");
+	await page
+		.locator('[data-comment-captcha-target="comment-1"] input[inputmode="numeric"]')
+		.press("Enter");
+
+	await expect
+		.poll(async () => Number((await readTestState(page)).voteCount))
+		.toBe(2);
+
+	const testState = await readTestState(page);
+	for (const body of testState.likeBodies as unknown[]) {
+		expectNoSerializedPageIdentity(body);
+	}
+	for (const body of testState.voteBodies as unknown[]) {
+		expectNoSerializedPageIdentity(body);
+	}
+	expect(testState.likeRetryBody).toMatchObject({
+		siteKey: "default",
+		pageTitle: "内容与主题分离，以及评论接入",
+		captcha: {
+			challengeId: "shape-like",
+			value: "2468",
+		},
+	});
+	expect(testState.voteRetryBody).toMatchObject({
+		siteKey: "default",
+		choice: "up",
+		captcha: {
+			challengeId: "shape-like",
+			value: "2468",
+		},
+	});
+});
 
 test("comment submit should keep captcha attached to the original action", async ({
 	page,
