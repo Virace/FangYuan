@@ -36,6 +36,8 @@ export let onReply: ((commentId: string) => void) | null = null;
 export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 export let onSubmitCaptcha: (() => void | Promise<void>) | null = null;
 
+let failedAvatarKey: string | null = null;
+
 function formatCommentDate(value: string): string {
 	const date = new Date(value);
 	if (Number.isNaN(date.getTime())) {
@@ -49,6 +51,10 @@ function triggerReply() {
 	onReply?.(comment.id);
 }
 
+$: avatarKey = comment.author.avatarUrl
+	? `${comment.id}|${comment.author.avatarUrl}`
+	: null;
+$: showAvatarImage = Boolean(avatarKey && failedAvatarKey !== avatarKey);
 $: showVoteConfirm =
 	comment.id === activeVoteConfirmCommentId && pendingVoteChoice !== null;
 $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
@@ -70,11 +76,14 @@ $: showCommentCaptchaDown =
 	class:comment-nested={depth > 1}
 >
 	<div class="flex items-start gap-3">
-		{#if comment.author.gravatarUrl}
+		{#if comment.author.avatarUrl && showAvatarImage}
 			<img
 				alt={comment.author.name}
 				class="h-10 w-10 rounded-full object-cover"
-				src={comment.author.gravatarUrl}
+				src={comment.author.avatarUrl}
+				on:error={() => {
+					failedAvatarKey = avatarKey;
+				}}
 			/>
 		{:else}
 			<div class="flex h-10 w-10 items-center justify-center rounded-full bg-btn-plain-bg-hover text-sm font-semibold text-primary">

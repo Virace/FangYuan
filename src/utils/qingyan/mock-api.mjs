@@ -348,6 +348,10 @@ function buildCommentPayload(pageState, commentId, visitorId) {
 		author: {
 			name: comment.authorName,
 			website: comment.authorWebsite,
+			avatarUrl:
+				comment.authorName === "青砚"
+					? "https://avatar.example.test/qingyan.png"
+					: null,
 		},
 		content: {
 			raw: comment.contentRaw,

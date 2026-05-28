@@ -10,7 +10,7 @@ export type CommentAuthor = {
 	email?: string;
 	emailHash?: string;
 	website?: string | null;
-	gravatarUrl?: string | null;
+	avatarUrl?: string | null;
 	badge?: {
 		label: string;
 	} | null;

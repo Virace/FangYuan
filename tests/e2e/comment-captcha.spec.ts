@@ -11,7 +11,7 @@ type RawComment = {
 	author: {
 		name: string;
 		website?: string | null;
-		gravatarUrl?: string | null;
+		avatarUrl?: string | null;
 		badge?: {
 			label: string;
 		} | null;
@@ -1104,43 +1104,72 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 	});
 });
 
-test("comment list should render QingYan gravatarUrl and keep initials fallback", async ({
+test("comment list should render QingYan avatarUrl and fall back to initials on load failure", async ({
 	page,
 }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
 
-	const gravatarUrl = "https://gravatar.com/avatar/fangyuan-test?s=80&d=mp&r=g";
-	const commentWithGravatar = {
+	const avatarUrl = "https://avatar.example.test/fangyuan-test.png";
+	const missingAvatarUrl = "https://avatar.example.test/missing.png";
+	const commentWithAvatar = {
 		...createCommentFixture(),
-		id: "comment-with-gravatar",
+		id: "comment-with-avatar",
 		author: {
 			name: "青砚有图",
 			website: null,
-			gravatarUrl,
+			avatarUrl,
 		},
 	};
-	const commentWithoutGravatar = {
+	const commentWithMissingAvatar = {
 		...createCommentFixture(),
-		id: "comment-without-gravatar",
+		id: "comment-with-missing-avatar",
+		author: {
+			name: "青砚坏图",
+			website: null,
+			avatarUrl: missingAvatarUrl,
+		},
+	};
+	const commentWithoutAvatar = {
+		...createCommentFixture(),
+		id: "comment-without-avatar",
 		author: {
 			name: "青砚无图",
 			website: null,
 		},
 	};
+	await page.route(avatarUrl, (route) =>
+		route.fulfill({
+			contentType: "image/svg+xml",
+			body: '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#111827"/></svg>',
+		}),
+	);
+	await page.route(missingAvatarUrl, (route) => route.fulfill({ status: 404 }));
 
 	await installFetchMock(page, {
 		bootstrap: buildBootstrapResponse({
-			comments: [commentWithGravatar, commentWithoutGravatar],
+			comments: [
+				commentWithAvatar,
+				commentWithMissingAvatar,
+				commentWithoutAvatar,
+			],
 		}),
-		thread: buildThreadResponse([commentWithGravatar, commentWithoutGravatar]),
+		thread: buildThreadResponse([
+			commentWithAvatar,
+			commentWithMissingAvatar,
+			commentWithoutAvatar,
+		]),
 	});
 
 	await prepareStablePage(page, COMMENT_TEST_ROUTE);
 
 	await expect(page.getByRole("img", { name: "青砚有图" })).toHaveAttribute(
 		"src",
-		gravatarUrl,
+		avatarUrl,
 	);
+	await expect(page.getByRole("img", { name: "青砚坏图" })).toHaveCount(0);
+	await expect(
+		page.locator(".comment-item").filter({ hasText: "青砚坏图" }),
+	).toContainText("青");
 	await expect(page.getByRole("img", { name: "青砚无图" })).toHaveCount(0);
 	await expect(
 		page.locator(".comment-item").filter({ hasText: "青砚无图" }),

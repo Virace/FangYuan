@@ -36,7 +36,7 @@ type RawQingYanComment = {
 	author: {
 		name: string;
 		website?: string | null;
-		gravatarUrl?: string | null;
+		avatarUrl?: string | null;
 		badge?: {
 			label: string;
 		} | null;
@@ -248,7 +248,7 @@ function normalizeComment(
 		author: {
 			name: comment.author.name,
 			website: comment.author.website ?? null,
-			gravatarUrl: comment.author.gravatarUrl ?? null,
+			avatarUrl: comment.author.avatarUrl ?? null,
 			badge: comment.author.badge?.label
 				? { label: comment.author.badge.label }
 				: null,
