@@ -726,6 +726,7 @@ export function createQingYanMockBackend(input = {}) {
 					},
 					...threadPayload,
 					pageMetrics: {
+						enabled: true,
 						pageViewCount: pageState.pageViewCount,
 					},
 					pageFeedback: {

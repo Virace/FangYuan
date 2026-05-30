@@ -105,6 +105,7 @@ type RawQingYanBootstrapResponse = {
 	};
 	comments: RawQingYanComment[];
 	pageMetrics: {
+		enabled?: boolean;
 		pageViewCount: number;
 	};
 	pageFeedback: QingYanPageFeedbackState;
@@ -357,7 +358,10 @@ function normalizeBootstrap(
 		capability: normalizeCapability(response.capability),
 		commentForm: normalizeCommentForm(response.commentForm),
 		viewer: response.viewer ?? {},
-		pageMetrics: response.pageMetrics,
+		pageMetrics: {
+			enabled: response.pageMetrics.enabled ?? true,
+			pageViewCount: response.pageMetrics.pageViewCount,
+		},
 		pageFeedback: response.pageFeedback,
 		captcha: normalizeCaptchaState(response.captcha),
 	};

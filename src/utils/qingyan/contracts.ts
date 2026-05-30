@@ -33,6 +33,7 @@ export type QingYanPageFeedbackState = {
 };
 
 export type QingYanPageMetrics = {
+	enabled: boolean;
 	pageViewCount: number;
 };
 

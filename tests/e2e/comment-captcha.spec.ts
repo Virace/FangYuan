@@ -54,6 +54,9 @@ function buildBootstrapResponse(input?: {
 	comments?: RawComment[];
 	likeCount?: number;
 	liked?: boolean;
+	pageMetricsEnabled?: boolean;
+	supportsLike?: boolean;
+	supportsVote?: boolean;
 	viewer?: {
 		verifiedAuthor?: {
 			displayName: string;
@@ -65,7 +68,7 @@ function buildBootstrapResponse(input?: {
 		capability: {
 			enabled: true,
 			supportsReply: true,
-			supportsVote: true,
+			supportsVote: input?.supportsVote ?? true,
 			supportsCaptcha: true,
 			defaultStatus: "approved",
 		},
@@ -88,10 +91,11 @@ function buildBootstrapResponse(input?: {
 		},
 		comments: input?.comments ?? [],
 		pageMetrics: {
+			enabled: input?.pageMetricsEnabled ?? true,
 			pageViewCount: 12,
 		},
 		pageFeedback: {
-			supportsLike: true,
+			supportsLike: input?.supportsLike ?? true,
 			likeCount: input?.likeCount ?? 0,
 			liked: input?.liked ?? false,
 		},
@@ -1214,6 +1218,33 @@ test("comment list should render QingYan trusted author badge", async ({
 	await expect(
 		page.locator(".comment-item").filter({ hasText: "普通访客" }),
 	).not.toContainText("楼主");
+});
+
+test("disabled QingYan engagement features should hide page views, page like and comment vote controls", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	const seededComment = createCommentFixture();
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			comments: [seededComment],
+			pageMetricsEnabled: false,
+			supportsLike: false,
+			supportsVote: false,
+		}),
+		thread: buildThreadResponse([seededComment]),
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	await expect(page.getByText("浏览量")).toHaveCount(0);
+	await expect(page.getByRole("button", { name: /点赞/ })).toHaveCount(0);
+	await expect(page.locator('button[aria-label="点赞"]')).toHaveCount(0);
+	await expect(page.locator('button[aria-label="点踩"]')).toHaveCount(0);
+	await expect(
+		page.locator(".comment-item").filter({ hasText: "这是一条联调用评论。" }),
+	).toBeVisible();
 });
 
 test("comment create should insert QingYan public comment response", async ({

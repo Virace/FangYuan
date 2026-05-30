@@ -25,7 +25,9 @@ onMount(() => {
 			pageUrl: postUrl,
 		})
 		.then((payload) => {
-			pageViewCount = payload.pageMetrics.pageViewCount;
+			pageViewCount = payload.pageMetrics.enabled
+				? payload.pageMetrics.pageViewCount
+				: null;
 		})
 		.catch(() => {
 			pageViewCount = null;
