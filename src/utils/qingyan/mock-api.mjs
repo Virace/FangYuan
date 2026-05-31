@@ -361,9 +361,15 @@ function buildCommentPayload(pageState, commentId, visitorId) {
 		isPinned: false,
 		isFolded: false,
 		replyCount: countDescendants(pageState, comment.id),
-		voteUp: comment.voteUp,
-		voteDown: comment.voteDown,
-		viewerVote: comment.viewerVotes.get(visitorId) ?? null,
+		vote: {
+			up: comment.voteUp,
+			down: comment.voteDown,
+			...(comment.viewerVotes.has(visitorId)
+				? {
+						viewer: comment.viewerVotes.get(visitorId),
+					}
+				: {}),
+		},
 		createdAt: comment.createdAt,
 		updatedAt: comment.updatedAt,
 		children: comment.children
@@ -616,21 +622,16 @@ export function createQingYanMockBackend(input = {}) {
 		return null;
 	}
 
-	function buildThreadPayload({
-		siteKey,
-		pageState,
-		visitorId,
-		sortBy,
-		limit,
-		offset,
-	}) {
+	function buildThreadPayload({ pageState, visitorId, sortBy, limit, offset }) {
 		const sortedRootIds = sortRootIds(pageState, sortBy);
 		const slice = sortedRootIds.slice(offset, offset + limit);
 		return {
-			thread: {
-				siteKey,
-				pageKey: pageState.pageKey,
-				pageTitle: pageState.pageTitle,
+			display: {
+				avatar: {
+					external: {
+						enabled: true,
+					},
+				},
 			},
 			pagination: {
 				sortBy,
@@ -639,7 +640,7 @@ export function createQingYanMockBackend(input = {}) {
 				totalCount: pageState.comments.size,
 				rootCount: pageState.rootIds.length,
 			},
-			comments: slice
+			items: slice
 				.map((commentId) =>
 					buildCommentPayload(pageState, commentId, visitorId),
 				)
@@ -701,7 +702,6 @@ export function createQingYanMockBackend(input = {}) {
 			const offset =
 				clampPositiveInteger(url.searchParams.get("offset"), 0) - 0;
 			const threadPayload = buildThreadPayload({
-				siteKey,
 				pageState,
 				visitorId,
 				sortBy,
@@ -712,34 +712,74 @@ export function createQingYanMockBackend(input = {}) {
 			return createJsonResponse(
 				200,
 				{
-					capability: {
-						enabled: true,
-						supportsReply: true,
-						supportsVote: true,
-						supportsCaptcha: options.captchaMode !== "never",
-						defaultStatus: options.defaultStatus,
-						message: null,
+					schemaVersion: "2026-05-31",
+					site: {
+						siteKey,
 					},
-					commentForm: {
-						allow: ["nickname", "email", "website"],
-						require: ["nickname", "email"],
+					page: {
+						pageKey: pageState.pageKey,
+						status: "active",
 					},
-					...threadPayload,
-					pageMetrics: {
-						enabled: true,
-						pageViewCount: pageState.pageViewCount,
+					features: {
+						comments: {
+							enabled: true,
+						},
+						commentReplies: {
+							enabled: true,
+							maxDepth: 3,
+						},
+						commentVotes: {
+							enabled: true,
+						},
+						commentCaptcha:
+							options.captchaMode === "never"
+								? {
+										enabled: false,
+										reason: "feature_disabled",
+									}
+								: {
+										enabled: true,
+										mode: options.captchaMode,
+									},
+						pageViews: {
+							enabled: true,
+						},
+						pageLikes: options.allowLike
+							? {
+									enabled: true,
+								}
+							: {
+									enabled: false,
+									reason: "feature_disabled",
+								},
+						visitors: {
+							enabled: true,
+						},
 					},
-					pageFeedback: {
-						supportsLike: options.allowLike,
-						likeCount:
-							pageState.baseLikeCount + pageState.pageLikeVisitorIds.size,
-						liked: pageState.pageLikeVisitorIds.has(visitorId),
+					data: {
+						comments: {
+							form: {
+								allow: ["nickname", "email", "website"],
+								require: ["nickname", "email"],
+							},
+							display: threadPayload.display,
+							pagination: threadPayload.pagination,
+							items: threadPayload.items,
+							captcha: buildCaptchaState(
+								visitorPageState,
+								options,
+								options.captchaMode === "always",
+							),
+						},
+						pageViews: {
+							count: pageState.pageViewCount,
+						},
+						pageLikes: {
+							count:
+								pageState.baseLikeCount + pageState.pageLikeVisitorIds.size,
+							liked: pageState.pageLikeVisitorIds.has(visitorId),
+						},
 					},
-					captcha: buildCaptchaState(
-						visitorPageState,
-						options,
-						options.captchaMode === "always",
-					),
 				},
 				responseHeaders,
 			);
@@ -753,7 +793,6 @@ export function createQingYanMockBackend(input = {}) {
 			return createJsonResponse(
 				200,
 				buildThreadPayload({
-					siteKey,
 					pageState,
 					visitorId,
 					sortBy,
@@ -1036,9 +1075,11 @@ export function createQingYanMockBackend(input = {}) {
 				200,
 				{
 					commentId: comment.id,
-					voteUp: comment.voteUp,
-					voteDown: comment.voteDown,
-					viewerVote: choice,
+					vote: {
+						up: comment.voteUp,
+						down: comment.voteDown,
+						viewer: choice,
+					},
 				},
 				responseHeaders,
 			);
@@ -1093,10 +1134,8 @@ export function createQingYanMockBackend(input = {}) {
 			return createJsonResponse(
 				200,
 				{
-					pageFeedback: {
-						supportsLike: true,
-						likeCount:
-							pageState.baseLikeCount + pageState.pageLikeVisitorIds.size,
+					pageLikes: {
+						count: pageState.baseLikeCount + pageState.pageLikeVisitorIds.size,
 						liked: true,
 					},
 				},

@@ -49,8 +49,9 @@ test("qingyan mock backend should simulate threshold captcha flow for comment cr
 		url: "/api/comments/bootstrap/?siteKey=fangyuan&pageKey=post:mock-comment&pageTitle=Mock+Comment",
 	});
 	assert.equal(bootstrap.status, 200);
-	assert.equal(bootstrap.json.captcha.required, false);
-	assert.equal(bootstrap.json.capability.supportsCaptcha, true);
+	assert.equal(bootstrap.json.schemaVersion, "2026-05-31");
+	assert.equal(bootstrap.json.features.commentCaptcha.enabled, true);
+	assert.equal(bootstrap.json.data.comments.captcha.required, false);
 
 	const blockedCreate = await client.request({
 		method: "POST",
@@ -129,7 +130,7 @@ test("qingyan mock backend should simulate threshold captcha flow for comment cr
 		url: "/api/comments/thread/?siteKey=fangyuan&pageKey=post:mock-comment&sortBy=newest&limit=5&offset=0",
 	});
 	assert.equal(thread.status, 200);
-	assert.ok(thread.json.comments.length >= 1);
+	assert.ok(thread.json.items.length >= 1);
 	assert.equal(thread.json.pagination.rootCount >= 1, true);
 });
 
@@ -219,7 +220,7 @@ test("qingyan mock backend should expose fixed seeded comments for captcha and f
 		url: `/api/comments/bootstrap/?siteKey=fangyuan&pageKey=${encodeURIComponent(pageKey)}&pageTitle=Fixed+Vote&pageUrl=${encodeURIComponent(pageUrl)}`,
 	});
 	assert.equal(bootstrap.status, 200);
-	assert.equal(bootstrap.json.comments.length >= 2, true);
+	assert.equal(bootstrap.json.data.comments.items.length >= 2, true);
 
 	const captchaCommentId = "c_test-pagination/pagination-test-29_root_1";
 	const blacklistCommentId = "c_test-pagination/pagination-test-29_root_2";
@@ -257,7 +258,7 @@ test("qingyan mock backend should expose fixed seeded comments for captcha and f
 	});
 	assert.equal(votedAfterVerify.status, 200);
 	assert.equal(votedAfterVerify.json.commentId, captchaCommentId);
-	assert.equal(votedAfterVerify.json.viewerVote, "up");
+	assert.equal(votedAfterVerify.json.vote.viewer, "up");
 
 	const fakeBlacklistedVote = await client.request({
 		method: "POST",
@@ -294,10 +295,13 @@ test("qingyan mock backend should accept startup defaults for seed richness and 
 	assert.ok(bootstrapResponse);
 	const bootstrap = JSON.parse(bootstrapResponse.body);
 
-	assert.equal(bootstrap.captcha.required, true);
-	assert.equal(bootstrap.captcha.challenge.challengeId.startsWith("cap_"), true);
-	assert.equal(bootstrap.pageMetrics.pageViewCount, 43);
-	assert.equal(bootstrap.pageFeedback.likeCount, 5);
-	assert.equal(bootstrap.comments.length >= 5, true);
-	assert.equal(bootstrap.pagination.rootCount >= 5, true);
+	assert.equal(bootstrap.data.comments.captcha.required, true);
+	assert.equal(
+		bootstrap.data.comments.captcha.challenge.challengeId.startsWith("cap_"),
+		true,
+	);
+	assert.equal(bootstrap.data.pageViews.count, 43);
+	assert.equal(bootstrap.data.pageLikes.count, 5);
+	assert.equal(bootstrap.data.comments.items.length >= 5, true);
+	assert.equal(bootstrap.data.comments.pagination.rootCount >= 5, true);
 });

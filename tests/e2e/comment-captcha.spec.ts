@@ -24,9 +24,11 @@ type RawComment = {
 	isPinned: boolean;
 	isFolded: boolean;
 	replyCount: number;
-	voteUp: number;
-	voteDown: number;
-	viewerVote: "up" | "down" | null;
+	vote?: {
+		up: number;
+		down: number;
+		viewer?: "up" | "down" | null;
+	};
 	createdAt: string;
 	updatedAt: string | null;
 	children: RawComment[];
@@ -64,56 +66,85 @@ function buildBootstrapResponse(input?: {
 		};
 	};
 }) {
+	const comments = input?.comments ?? [];
+	const commentsEnabled = true;
+	const pageViewsEnabled = input?.pageMetricsEnabled ?? true;
+	const pageLikesEnabled = input?.supportsLike ?? true;
+	const commentVotesEnabled = input?.supportsVote ?? true;
 	return {
-		capability: {
-			enabled: true,
-			supportsReply: true,
-			supportsVote: input?.supportsVote ?? true,
-			supportsCaptcha: true,
-			defaultStatus: "approved",
+		schemaVersion: "2026-05-31",
+		site: {
+			siteKey: "default",
 		},
-		commentForm: {
-			allow: ["nickname", "email", "website"],
-			require: ["nickname", "email"],
+		page: {
+			pageKey: "welcome",
+			status: "active",
+		},
+		features: {
+			comments: { enabled: commentsEnabled },
+			commentReplies: { enabled: true, maxDepth: 3 },
+			commentVotes: commentVotesEnabled
+				? { enabled: true }
+				: { enabled: false, reason: "feature_disabled" },
+			commentCaptcha: { enabled: true, mode: "threshold" },
+			pageViews: pageViewsEnabled
+				? { enabled: true }
+				: { enabled: false, reason: "feature_disabled" },
+			pageLikes: pageLikesEnabled
+				? { enabled: true }
+				: { enabled: false, reason: "feature_disabled" },
+			visitors: { enabled: true },
 		},
 		viewer: input?.viewer ?? {},
-		thread: {
-			siteKey: "default",
-			pageKey: "welcome",
-			pageTitle: "Welcome",
-		},
-		pagination: {
-			sortBy: "newest",
-			limit: 5,
-			offset: 0,
-			totalCount: input?.comments?.length ?? 0,
-			rootCount: input?.comments?.length ?? 0,
-		},
-		comments: input?.comments ?? [],
-		pageMetrics: {
-			enabled: input?.pageMetricsEnabled ?? true,
-			pageViewCount: 12,
-		},
-		pageFeedback: {
-			supportsLike: input?.supportsLike ?? true,
-			likeCount: input?.likeCount ?? 0,
-			liked: input?.liked ?? false,
-		},
-		captcha: {
-			required: false,
-			verified: false,
-			mode: null,
-			challenge: null,
+		data: {
+			comments: {
+				form: {
+					allow: ["nickname", "email", "website"],
+					require: ["nickname", "email"],
+				},
+				display: {
+					avatar: {
+						external: {
+							enabled: true,
+						},
+					},
+				},
+				pagination: {
+					sortBy: "newest",
+					limit: 5,
+					offset: 0,
+					totalCount: comments.length,
+					rootCount: comments.length,
+				},
+				items: comments,
+				captcha: {
+					required: false,
+					verified: false,
+					mode: null,
+					challenge: null,
+				},
+			},
+			...(pageViewsEnabled ? { pageViews: { count: 12 } } : {}),
+			...(pageLikesEnabled
+				? {
+						pageLikes: {
+							count: input?.likeCount ?? 0,
+							liked: input?.liked ?? false,
+						},
+					}
+				: {}),
 		},
 	};
 }
 
 function buildThreadResponse(comments: RawComment[] = []) {
 	return {
-		thread: {
-			siteKey: "default",
-			pageKey: "welcome",
-			pageTitle: "Welcome",
+		display: {
+			avatar: {
+				external: {
+					enabled: true,
+				},
+			},
 		},
 		pagination: {
 			sortBy: "newest",
@@ -122,7 +153,7 @@ function buildThreadResponse(comments: RawComment[] = []) {
 			totalCount: comments.length,
 			rootCount: comments.length,
 		},
-		comments,
+		items: comments,
 	};
 }
 
@@ -142,9 +173,10 @@ function createCommentFixture(): RawComment {
 		isPinned: false,
 		isFolded: false,
 		replyCount: 0,
-		voteUp: 3,
-		voteDown: 0,
-		viewerVote: null,
+		vote: {
+			up: 3,
+			down: 0,
+		},
 		createdAt: "2026-04-18T09:00:00.000Z",
 		updatedAt: null,
 		children: [],
@@ -193,10 +225,12 @@ async function installFetchMock(
 		const queryObject = (url: URL) =>
 			Object.fromEntries(Array.from(url.searchParams.entries()));
 		const threadResponse = (comments: unknown[]) => ({
-			thread: {
-				siteKey: "default",
-				pageKey: "welcome",
-				pageTitle: "Welcome",
+			display: {
+				avatar: {
+					external: {
+						enabled: true,
+					},
+				},
 			},
 			pagination: {
 				sortBy: "newest",
@@ -205,7 +239,7 @@ async function installFetchMock(
 				totalCount: comments.length,
 				rootCount: comments.length,
 			},
-			comments,
+			items: comments,
 		});
 
 		(
@@ -261,7 +295,8 @@ async function installFetchMock(
 			if (url.pathname === "/api/comments/thread/" && method === "GET") {
 				testState.threadQuery = queryObject(url);
 				return jsonResponse(
-					config.thread ?? threadResponse(config.bootstrap.comments ?? []),
+					config.thread ??
+						threadResponse(config.bootstrap.data.comments?.items ?? []),
 				);
 			}
 
@@ -370,10 +405,10 @@ async function readTestState(page: Page) {
 	});
 }
 
-function expectNoSerializedPageIdentity(payload: unknown) {
+function expectSerializedPageIdentity(payload: unknown) {
 	expect(payload).toBeTruthy();
-	expect(payload).not.toHaveProperty("pageKey");
-	expect(payload).not.toHaveProperty("pageUrl");
+	expect(payload).toHaveProperty("pageKey", "extra");
+	expect(payload).toHaveProperty("pageUrl", "http://localhost:4321/extra/");
 }
 
 type RawCommentOverrides = Partial<
@@ -404,9 +439,10 @@ function buildSuccessfulCommentResponse(
 		isPinned: false,
 		isFolded: false,
 		replyCount: 0,
-		voteUp: 0,
-		voteDown: 0,
-		viewerVote: null,
+		vote: {
+			up: 0,
+			down: 0,
+		},
 		createdAt: CREATED_COMMENT_TIMESTAMP,
 		updatedAt: CREATED_COMMENT_TIMESTAMP,
 		children: [],
@@ -433,7 +469,7 @@ function buildSuccessfulCommentResponse(
 	};
 }
 
-test("QingYan referer page context omits page identity from bootstrap and thread requests", async ({
+test("QingYan API requests serialize documented page identity", async ({
 	page,
 }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
@@ -457,23 +493,24 @@ test("QingYan referer page context omits page identity from bootstrap and thread
 	const testState = await readTestState(page);
 	expect(testState.bootstrapQuery).toMatchObject({
 		siteKey: "default",
+		pageKey: "extra",
 		pageTitle: "内容与主题分离，以及评论接入",
+		pageUrl: "http://localhost:4321/extra/",
 		sortBy: "newest",
 		limit: "5",
 		offset: "0",
 	});
-	expectNoSerializedPageIdentity(testState.bootstrapQuery);
 
 	expect(testState.threadQuery).toMatchObject({
 		siteKey: "default",
+		pageKey: "extra",
 		sortBy: "oldest",
 		limit: "5",
 		offset: "0",
 	});
-	expectNoSerializedPageIdentity(testState.threadQuery);
 });
 
-test("QingYan referer page context omits page identity from comment captcha and create requests", async ({
+test("QingYan comment captcha and create requests serialize page identity", async ({
 	page,
 }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
@@ -525,13 +562,18 @@ test("QingYan referer page context omits page identity from comment captcha and 
 		.toBe(2);
 
 	const testState = await readTestState(page);
-	expectNoSerializedPageIdentity(testState.captchaStateQuery);
-	expectNoSerializedPageIdentity(testState.captchaRefreshBody);
+	expect(testState.captchaStateQuery).toMatchObject({
+		siteKey: "default",
+		pageKey: "extra",
+		pageTitle: "内容与主题分离，以及评论接入",
+		pageUrl: "http://localhost:4321/extra/",
+	});
+	expectSerializedPageIdentity(testState.captchaRefreshBody);
 
 	const bodies = testState.commentCreateBodies as unknown[];
 	expect(bodies).toHaveLength(2);
-	expectNoSerializedPageIdentity(bodies[0]);
-	expectNoSerializedPageIdentity(bodies[1]);
+	expectSerializedPageIdentity(bodies[0]);
+	expectSerializedPageIdentity(bodies[1]);
 	expect(bodies[1]).toMatchObject({
 		siteKey: "default",
 		pageTitle: "内容与主题分离，以及评论接入",
@@ -542,7 +584,7 @@ test("QingYan referer page context omits page identity from comment captcha and 
 	});
 });
 
-test("QingYan referer page context omits page identity from like and vote requests", async ({
+test("QingYan like and vote requests serialize page identity", async ({
 	page,
 }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
@@ -559,9 +601,8 @@ test("QingYan referer page context omits page identity from like and vote reques
 			firstErrorCode: "PAGE_FEEDBACK_CAPTCHA_REQUIRED",
 			firstErrorMessage: "请输入验证码。",
 			successBody: {
-				pageFeedback: {
-					supportsLike: true,
-					likeCount: 2,
+				pageLikes: {
+					count: 2,
 					liked: true,
 				},
 			},
@@ -571,9 +612,11 @@ test("QingYan referer page context omits page identity from like and vote reques
 			firstErrorMessage: "请输入验证码。",
 			successBody: {
 				commentId: "comment-1",
-				voteUp: 4,
-				voteDown: 0,
-				viewerVote: "up",
+				vote: {
+					up: 4,
+					down: 0,
+					viewer: "up",
+				},
 			},
 		},
 	});
@@ -620,14 +663,19 @@ test("QingYan referer page context omits page identity from like and vote reques
 
 	const testState = await readTestState(page);
 	for (const body of testState.likeBodies as unknown[]) {
-		expectNoSerializedPageIdentity(body);
+		expectSerializedPageIdentity(body);
 	}
 	for (const body of testState.voteBodies as unknown[]) {
-		expectNoSerializedPageIdentity(body);
+		expect(body).toMatchObject({
+			siteKey: "default",
+			pageKey: "extra",
+		});
 	}
 	expect(testState.likeRetryBody).toMatchObject({
 		siteKey: "default",
+		pageKey: "extra",
 		pageTitle: "内容与主题分离，以及评论接入",
+		pageUrl: "http://localhost:4321/extra/",
 		captcha: {
 			challengeId: "shape-like",
 			value: "2468",
@@ -635,6 +683,7 @@ test("QingYan referer page context omits page identity from like and vote reques
 	});
 	expect(testState.voteRetryBody).toMatchObject({
 		siteKey: "default",
+		pageKey: "extra",
 		choice: "up",
 		captcha: {
 			challengeId: "shape-like",
@@ -935,9 +984,8 @@ test("page like should retry with captcha on the same button", async ({
 			firstErrorCode: "PAGE_FEEDBACK_CAPTCHA_REQUIRED",
 			firstErrorMessage: "请输入验证码。",
 			successBody: {
-				pageFeedback: {
-					supportsLike: true,
-					likeCount: 2,
+				pageLikes: {
+					count: 2,
 					liked: true,
 				},
 			},
@@ -1033,9 +1081,11 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 			firstErrorMessage: "请输入验证码。",
 			successBody: {
 				commentId: "comment-1",
-				voteUp: 4,
-				voteDown: 0,
-				viewerVote: "up",
+				vote: {
+					up: 4,
+					down: 0,
+					viewer: "up",
+				},
 			},
 		},
 	});

@@ -49,21 +49,40 @@ type RawQingYanComment = {
 	isPinned: boolean;
 	isFolded: boolean;
 	replyCount: number;
-	voteUp: number;
-	voteDown: number;
-	viewerVote: CommentVoteChoice | null;
-	createdAt: string;
+	vote?: {
+		up: number;
+		down: number;
+		viewer?: CommentVoteChoice | null;
+	};
+	createdAt: string | null;
 	updatedAt: string | null;
-	children: RawQingYanComment[];
+	children?: RawQingYanComment[];
 };
 
-type RawQingYanCapability = {
+type RawQingYanFeatureDisabledReason =
+	| "site_disabled"
+	| "page_inactive"
+	| "comments_disabled"
+	| "feature_disabled"
+	| "unsupported";
+
+type RawQingYanFeatureFlag = {
 	enabled: boolean;
-	supportsReply: boolean;
-	supportsVote: boolean;
-	supportsCaptcha: boolean;
-	defaultStatus: "pending" | "approved";
-	message?: string | null;
+	reason?: RawQingYanFeatureDisabledReason;
+};
+
+type RawQingYanFeatures = {
+	comments: RawQingYanFeatureFlag;
+	commentReplies: RawQingYanFeatureFlag & {
+		maxDepth?: number;
+	};
+	commentVotes: RawQingYanFeatureFlag;
+	commentCaptcha: RawQingYanFeatureFlag & {
+		mode?: "never" | "always" | "threshold";
+	};
+	pageViews: RawQingYanFeatureFlag;
+	pageLikes: RawQingYanFeatureFlag;
+	visitors: RawQingYanFeatureFlag;
 };
 
 type RawQingYanCommentForm = {
@@ -82,20 +101,54 @@ type RawQingYanCaptchaState = {
 	} | null;
 };
 
+type RawQingYanCommentDisplay = {
+	avatar: {
+		external: {
+			enabled: boolean;
+		};
+		display?: {
+			shape: "circle" | "rounded" | "square";
+			sizePx: number;
+		};
+	};
+};
+
 type RawQingYanBootstrapResponse = {
-	capability: RawQingYanCapability;
-	commentForm: RawQingYanCommentForm;
+	schemaVersion: string;
+	site: {
+		siteKey: string;
+	};
+	page: {
+		pageKey: string;
+		status: string;
+	};
+	features: RawQingYanFeatures;
+	data: {
+		comments?: {
+			form: RawQingYanCommentForm;
+			display: RawQingYanCommentDisplay;
+			pagination: RawQingYanThreadResponse["pagination"];
+			items: RawQingYanComment[];
+			captcha?: RawQingYanCaptchaState | null;
+		};
+		pageViews?: {
+			count: number;
+		};
+		pageLikes?: {
+			count: number;
+			liked: boolean;
+		};
+	};
 	viewer?: {
 		verifiedAuthor?: {
 			displayName: string;
 			badgeLabel: string;
 		};
 	};
-	thread: {
-		siteKey: string;
-		pageKey: string;
-		pageTitle?: string | null;
-	};
+};
+
+type RawQingYanThreadResponse = {
+	display: RawQingYanCommentDisplay;
 	pagination: {
 		sortBy: BackendSortBy;
 		limit: number;
@@ -103,19 +156,7 @@ type RawQingYanBootstrapResponse = {
 		totalCount: number;
 		rootCount: number;
 	};
-	comments: RawQingYanComment[];
-	pageMetrics: {
-		enabled?: boolean;
-		pageViewCount: number;
-	};
-	pageFeedback: QingYanPageFeedbackState;
-	captcha?: RawQingYanCaptchaState | null;
-};
-
-type RawQingYanThreadResponse = {
-	thread: RawQingYanBootstrapResponse["thread"];
-	pagination: RawQingYanBootstrapResponse["pagination"];
-	comments: RawQingYanComment[];
+	items: RawQingYanComment[];
 };
 
 type RawQingYanLegacyCreateComment = {
@@ -134,13 +175,18 @@ type RawQingYanCreateCommentResponse = {
 
 type RawQingYanVoteResponse = {
 	commentId: string;
-	voteUp: number;
-	voteDown: number;
-	viewerVote: CommentVoteChoice | null;
+	vote: {
+		up: number;
+		down: number;
+		viewer?: CommentVoteChoice | null;
+	};
 };
 
 type RawQingYanLikeResponse = {
-	pageFeedback: QingYanPageFeedbackState;
+	pageLikes: {
+		count: number;
+		liked: boolean;
+	};
 };
 
 type RawQingYanErrorResponse = {
@@ -259,39 +305,36 @@ function normalizeComment(
 			html: comment.content.html,
 		},
 		status: resolveCommentStatus(comment.status),
-		createdAt: comment.createdAt,
+		createdAt: comment.createdAt ?? "",
 		updatedAt: comment.updatedAt ?? null,
 		replyCount: comment.replyCount,
-		voteUp: comment.voteUp,
-		voteDown: comment.voteDown,
-		viewerVote: comment.viewerVote ?? null,
-		children: comment.children.map((child) => normalizeComment(child, postId)),
+		voteUp: comment.vote?.up ?? 0,
+		voteDown: comment.vote?.down ?? 0,
+		viewerVote: comment.vote?.viewer ?? null,
+		children: (comment.children ?? []).map((child) =>
+			normalizeComment(child, postId),
+		),
 	};
 }
 
 function isRawQingYanComment(
 	comment: RawQingYanCreateCommentResponse["comment"],
 ): comment is RawQingYanComment {
-	return (
-		"author" in comment &&
-		"content" in comment &&
-		"createdAt" in comment &&
-		"children" in comment
-	);
+	return "author" in comment && "content" in comment && "createdAt" in comment;
 }
 
 function normalizeCapability(
-	capability: RawQingYanCapability,
+	features: RawQingYanFeatures,
 ): QingYanBootstrapPayload["capability"] {
 	return {
-		enabled: capability.enabled,
+		enabled: features.comments.enabled,
 		provider: "qingyan",
-		supportsReply: capability.supportsReply,
-		supportsVote: capability.supportsVote,
-		supportsCaptcha: capability.supportsCaptcha,
+		supportsReply: features.commentReplies.enabled,
+		supportsVote: features.commentVotes.enabled,
+		supportsCaptcha: features.commentCaptcha.enabled,
 		persistenceMode: "persistent",
 		identityModel: "page_key",
-		message: capability.message ?? undefined,
+		message: features.comments.reason ?? undefined,
 	};
 }
 
@@ -332,9 +375,10 @@ function normalizeCaptchaState(
 function normalizeThreadPage(
 	response: RawQingYanThreadResponse,
 	postId: string,
+	thread: QingYanThreadPage["thread"],
 ): QingYanThreadPage {
 	return {
-		thread: response.thread,
+		thread,
 		pagination: {
 			sortBy: fromBackendSortBy(response.pagination.sortBy),
 			limit: response.pagination.limit,
@@ -342,7 +386,7 @@ function normalizeThreadPage(
 			totalCount: response.pagination.totalCount,
 			rootCount: response.pagination.rootCount,
 		},
-		comments: response.comments.map((comment) =>
+		comments: response.items.map((comment) =>
 			normalizeComment(comment, postId),
 		),
 	};
@@ -351,19 +395,47 @@ function normalizeThreadPage(
 function normalizeBootstrap(
 	response: RawQingYanBootstrapResponse,
 	postId: string,
+	pageTitle?: string,
 ): QingYanBootstrapPayload {
-	const threadPage = normalizeThreadPage(response, postId);
+	const commentsData = response.data.comments;
+	const threadPage = normalizeThreadPage(
+		{
+			display: commentsData?.display ?? {
+				avatar: { external: { enabled: false } },
+			},
+			pagination: commentsData?.pagination ?? {
+				sortBy: "newest",
+				limit: 0,
+				offset: 0,
+				totalCount: 0,
+				rootCount: 0,
+			},
+			items: commentsData?.items ?? [],
+		},
+		postId,
+		{
+			siteKey: response.site.siteKey,
+			pageKey: response.page.pageKey,
+			pageTitle: pageTitle ?? null,
+		},
+	);
 	return {
 		...threadPage,
-		capability: normalizeCapability(response.capability),
-		commentForm: normalizeCommentForm(response.commentForm),
+		capability: normalizeCapability(response.features),
+		commentForm: normalizeCommentForm(
+			commentsData?.form ?? { allow: [], require: [] },
+		),
 		viewer: response.viewer ?? {},
 		pageMetrics: {
-			enabled: response.pageMetrics.enabled ?? true,
-			pageViewCount: response.pageMetrics.pageViewCount,
+			enabled: response.features.pageViews.enabled,
+			pageViewCount: response.data.pageViews?.count ?? 0,
 		},
-		pageFeedback: response.pageFeedback,
-		captcha: normalizeCaptchaState(response.captcha),
+		pageFeedback: {
+			supportsLike: response.features.pageLikes.enabled,
+			likeCount: response.data.pageLikes?.count ?? 0,
+			liked: response.data.pageLikes?.liked ?? false,
+		},
+		captcha: normalizeCaptchaState(commentsData?.captcha),
 	};
 }
 
@@ -518,7 +590,9 @@ export function createQingYanClient(
 		const state = await fetchJson<RawQingYanCaptchaState>(
 			`/comments/captcha/state/?${buildQueryString({
 				siteKey: resolvedConfig.siteKey,
+				pageKey: input.pageKey,
 				pageTitle: input.pageTitle,
+				pageUrl: input.pageUrl,
 			})}`,
 		);
 		return new CommentCaptchaRequiredError(
@@ -553,14 +627,20 @@ export function createQingYanClient(
 			const request = fetchJson<RawQingYanBootstrapResponse>(
 				`/comments/bootstrap/?${buildQueryString({
 					siteKey: resolvedConfig.siteKey,
+					pageKey: normalizedInput.pageKey,
 					pageTitle: normalizedInput.pageTitle || undefined,
+					pageUrl: normalizedInput.pageUrl || undefined,
 					sortBy: toBackendSortBy(normalizedInput.sortBy),
 					limit: normalizedInput.limit,
 					offset: normalizedInput.offset,
 				})}`,
 			)
 				.then((response) =>
-					normalizeBootstrap(response, normalizedInput.pageKey),
+					normalizeBootstrap(
+						response,
+						normalizedInput.pageKey,
+						normalizedInput.pageTitle || undefined,
+					),
 				)
 				.then((payload) => {
 					bootstrapCache.set(cacheKey, payload);
@@ -580,12 +660,17 @@ export function createQingYanClient(
 			const response = await fetchJson<RawQingYanThreadResponse>(
 				`/comments/thread/?${buildQueryString({
 					siteKey: resolvedConfig.siteKey,
+					pageKey: input.pageKey,
 					sortBy: toBackendSortBy(input.sortBy),
 					limit: input.limit ?? commentConfig.rootLimit ?? 5,
 					offset: input.offset ?? 0,
 				})}`,
 			);
-			return normalizeThreadPage(response, input.pageKey);
+			return normalizeThreadPage(response, input.pageKey, {
+				siteKey: resolvedConfig.siteKey,
+				pageKey: input.pageKey,
+				pageTitle: input.pageTitle ?? null,
+			});
 		},
 
 		async getCaptchaState(input: {
@@ -596,7 +681,9 @@ export function createQingYanClient(
 			const response = await fetchJson<RawQingYanCaptchaState>(
 				`/comments/captcha/state/?${buildQueryString({
 					siteKey: resolvedConfig.siteKey,
+					pageKey: input.pageKey,
 					pageTitle: input.pageTitle,
+					pageUrl: input.pageUrl,
 				})}`,
 			);
 			return normalizeCaptchaState(response);
@@ -613,9 +700,15 @@ export function createQingYanClient(
 					method: "POST",
 					body: JSON.stringify({
 						siteKey: resolvedConfig.siteKey,
+						pageKey: input.pageKey,
 						...(input.pageTitle
 							? {
 									pageTitle: input.pageTitle,
+								}
+							: {}),
+						...(input.pageUrl
+							? {
+									pageUrl: input.pageUrl,
 								}
 							: {}),
 					}),
@@ -636,7 +729,9 @@ export function createQingYanClient(
 						method: "POST",
 						body: JSON.stringify({
 							siteKey: resolvedConfig.siteKey,
+							pageKey: input.postKey,
 							pageTitle: input.postTitle ?? input.postKey,
+							pageUrl: resolvePageUrl(input.pageUrl),
 							parentCommentId: input.parentId ?? null,
 							author: {
 								name: input.author.name,
@@ -719,6 +814,7 @@ export function createQingYanClient(
 						method: "POST",
 						body: JSON.stringify({
 							siteKey: resolvedConfig.siteKey,
+							pageKey: input.pageKey,
 							choice: input.choice,
 							...(input.captcha
 								? {
@@ -729,7 +825,12 @@ export function createQingYanClient(
 					},
 				);
 				invalidateBootstrap(input.pageKey);
-				return response;
+				return {
+					commentId: response.commentId,
+					voteUp: response.vote.up,
+					voteDown: response.vote.down,
+					viewerVote: response.vote.viewer ?? null,
+				};
 			} catch (error) {
 				if (
 					error instanceof QingYanApiError &&
@@ -758,7 +859,9 @@ export function createQingYanClient(
 						method: "POST",
 						body: JSON.stringify({
 							siteKey: resolvedConfig.siteKey,
+							pageKey: input.pageKey,
 							pageTitle: input.pageTitle ?? input.pageKey,
+							pageUrl: resolvePageUrl(input.pageUrl),
 							...(input.captcha
 								? {
 										captcha: input.captcha,
@@ -768,7 +871,11 @@ export function createQingYanClient(
 					},
 				);
 				invalidateBootstrap(input.pageKey);
-				return response.pageFeedback;
+				return {
+					supportsLike: true,
+					likeCount: response.pageLikes.count,
+					liked: response.pageLikes.liked,
+				};
 			} catch (error) {
 				if (
 					error instanceof QingYanApiError &&
