@@ -24,6 +24,7 @@ export const vi: Translation = {
 	[Key.commentsSubmitSuccess]: "Đã gửi bình luận thành công.",
 	[Key.commentsReply]: "Trả lời",
 	[Key.commentsReplying]: "Đang trả lời bình luận này.",
+	[Key.commentsReplyingTo]: "Đang trả lời bình luận của {author}",
 	[Key.commentsCancelReply]: "Hủy trả lời",
 	[Key.commentsEmoji]: "Biểu tượng cảm xúc",
 	[Key.commentsCaptcha]: "Mã xác minh",

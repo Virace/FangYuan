@@ -25,6 +25,7 @@ export const ko: Translation = {
 	[Key.commentsSubmitSuccess]: "댓글이 등록되었습니다.",
 	[Key.commentsReply]: "답글",
 	[Key.commentsReplying]: "이 댓글에 답글을 작성하는 중입니다.",
+	[Key.commentsReplyingTo]: "{author}님의 댓글에 답글을 작성하는 중입니다",
 	[Key.commentsCancelReply]: "답글 취소",
 	[Key.commentsEmoji]: "이모지",
 	[Key.commentsCaptcha]: "인증 코드",

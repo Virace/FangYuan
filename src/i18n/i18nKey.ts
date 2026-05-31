@@ -21,6 +21,7 @@ const I18nKey = {
 	commentsSubmitSuccess: "commentsSubmitSuccess",
 	commentsReply: "commentsReply",
 	commentsReplying: "commentsReplying",
+	commentsReplyingTo: "commentsReplyingTo",
 	commentsCancelReply: "commentsCancelReply",
 	commentsEmoji: "commentsEmoji",
 	commentsCaptcha: "commentsCaptcha",

@@ -25,6 +25,7 @@ export const ja: Translation = {
 	[Key.commentsSubmitSuccess]: "コメントを送信しました。",
 	[Key.commentsReply]: "返信",
 	[Key.commentsReplying]: "このコメントに返信しています。",
+	[Key.commentsReplyingTo]: "{author} のコメントに返信しています",
 	[Key.commentsCancelReply]: "返信をキャンセル",
 	[Key.commentsEmoji]: "絵文字",
 	[Key.commentsCaptcha]: "認証コード",

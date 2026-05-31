@@ -82,6 +82,11 @@ type ComposerNotice = {
 	tone: AutoDismissTone;
 } | null;
 
+type ReplyTarget = {
+	authorName: string;
+	avatarUrl?: string | null;
+} | null;
+
 type CommentNotice = {
 	commentId: string;
 	message: string;
@@ -117,6 +122,7 @@ let activeCaptchaTarget: CaptchaTarget = null;
 let currentSortBy: CommentSortBy = DEFAULT_COMMENT_SORT_BY;
 let currentOffset = 0;
 let totalRootCount = 0;
+let activeReplyTarget: ReplyTarget = null;
 let composerNotice: ComposerNotice = null;
 let commentNotice: CommentNotice = null;
 let composerNoticeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -174,6 +180,9 @@ $: showCommentEmptyState = comments.length === 0 && capability?.enabled;
 $: showCommentSection = loading || capability?.enabled === true;
 $: submitBlockedByCaptcha =
 	pendingAction?.kind === "comment_submit" && showComposerCaptcha;
+$: activeReplyTarget = activeReplyParentId
+	? getReplyTarget(comments, activeReplyParentId)
+	: null;
 
 function logCommentError(context: string, error: unknown) {
 	console.error(`[comments] ${context}`, error);
@@ -253,6 +262,27 @@ function setCaptchaError(message: string) {
 		},
 		getAutoDismissMs(message, "error"),
 	);
+}
+
+function getReplyTarget(
+	commentList: CanonicalComment[],
+	commentId: string,
+): ReplyTarget {
+	for (const comment of commentList) {
+		if (comment.id === commentId) {
+			return {
+				authorName: comment.author.name,
+				avatarUrl: comment.author.avatarUrl,
+			};
+		}
+
+		const childTarget = getReplyTarget(comment.children, commentId);
+		if (childTarget) {
+			return childTarget;
+		}
+	}
+
+	return null;
 }
 
 function clearActionNotices() {
@@ -957,6 +987,7 @@ onDestroy(() => {
 				noticeMessage={composerNoticeMessage}
 				noticeTone={composerNoticeTone}
 				replyParentId={activeReplyParentId}
+				replyTarget={activeReplyTarget}
 				submitting={submitting}
 				onSubmit={handleSubmit}
 				onCancelReply={handleCancelReply}

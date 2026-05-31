@@ -26,8 +26,14 @@ type CommentComposerSubmitDetail = {
 	rememberProfile: boolean;
 };
 
+type ReplyTarget = {
+	authorName: string;
+	avatarUrl?: string | null;
+} | null;
+
 export let submitting = false;
 export let replyParentId: string | null = null;
+export let replyTarget: ReplyTarget = null;
 export let showCaptcha = false;
 export let allowedFields: CommentAuthorField[] = [
 	"nickname",
@@ -68,6 +74,7 @@ let authorNameInput: HTMLInputElement | null = null;
 let authorEmailInput: HTMLInputElement | null = null;
 let authorWebsiteInput: HTMLInputElement | null = null;
 let contentInput: HTMLTextAreaElement | null = null;
+let failedReplyAvatarUrl: string | null = null;
 let hasTriedSubmit = false;
 let currentInvalidFields: CommentFormValidationField[] = [];
 let invalidFieldState: Record<CommentFormValidationField, boolean> = {
@@ -76,6 +83,7 @@ let invalidFieldState: Record<CommentFormValidationField, boolean> = {
 	website: false,
 	content: false,
 };
+let previousReplyParentId: string | null = null;
 
 $: useVerifiedAuthor = Boolean(verifiedAuthor);
 $: showNameField = !useVerifiedAuthor && allowedFields.includes("nickname");
@@ -104,6 +112,19 @@ $: submitButtonLabel = submitting
 	: showCaptcha
 		? i18n(I18nKey.commentsVoteConfirmProceed)
 		: i18n(I18nKey.commentsSubmit);
+$: replyTargetName = replyTarget?.authorName ?? "";
+$: replyAvatarUrl = replyTarget?.avatarUrl ?? null;
+$: showReplyAvatarImage =
+	Boolean(replyAvatarUrl) && failedReplyAvatarUrl !== replyAvatarUrl;
+$: replyingMessage = replyTargetName
+	? i18n(I18nKey.commentsReplyingTo).replace("{author}", replyTargetName)
+	: i18n(I18nKey.commentsReplying);
+$: if (replyParentId !== previousReplyParentId) {
+	previousReplyParentId = replyParentId;
+	if (replyParentId) {
+		focusComposerContent();
+	}
+}
 $: currentInvalidFields = hasTriedSubmit
 	? collectCommentFormInvalidFields(
 			{
@@ -210,6 +231,11 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 
 	showEmojiPicker = false;
 }
+
+async function focusComposerContent() {
+	await tick();
+	contentInput?.focus();
+}
 </script>
 
 <svelte:window on:keydown={handleEmojiKeydown} />
@@ -225,9 +251,6 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 	<div class="flex items-start justify-between gap-3 mb-4">
 		<div>
 			<h3 class="font-semibold text-90">{i18n(I18nKey.commentsSubmit)}</h3>
-			{#if replyParentId}
-				<p class="text-sm text-50">{i18n(I18nKey.commentsReplying)}</p>
-			{/if}
 		</div>
 		{#if replyParentId}
 			<button
@@ -239,6 +262,31 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 			</button>
 		{/if}
 	</div>
+
+	{#if replyParentId}
+		<div
+			class="mb-4 flex items-center gap-3 rounded-xl border border-[var(--line-divider)] bg-soft-contrast px-3 py-2"
+			data-comment-replying="true"
+		>
+			{#if replyAvatarUrl && showReplyAvatarImage}
+				<img
+					alt={replyTargetName}
+					class="h-9 w-9 rounded-full object-cover"
+					src={replyAvatarUrl}
+					on:error={() => {
+						failedReplyAvatarUrl = replyAvatarUrl;
+					}}
+				/>
+			{:else}
+				<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-btn-plain-bg-hover text-sm font-semibold text-primary">
+					{(replyTargetName || "?").slice(0, 1).toUpperCase()}
+				</div>
+			{/if}
+			<p class="min-w-0 text-sm text-60">
+				{replyingMessage}
+			</p>
+		</div>
+	{/if}
 
 	<div class="grid gap-3 md:grid-cols-2">
 		{#if showNameField}

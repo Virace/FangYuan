@@ -24,6 +24,7 @@ export const th: Translation = {
 	[Key.commentsSubmitSuccess]: "ส่งความคิดเห็นเรียบร้อยแล้ว",
 	[Key.commentsReply]: "ตอบกลับ",
 	[Key.commentsReplying]: "กำลังตอบกลับความคิดเห็นนี้",
+	[Key.commentsReplyingTo]: "กำลังตอบกลับความคิดเห็นของ {author}",
 	[Key.commentsCancelReply]: "ยกเลิกการตอบกลับ",
 	[Key.commentsEmoji]: "อีโมจิ",
 	[Key.commentsCaptcha]: "รหัสยืนยัน",

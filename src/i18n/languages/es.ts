@@ -26,6 +26,7 @@ export const es: Translation = {
 	[Key.commentsSubmitSuccess]: "Comentario enviado correctamente.",
 	[Key.commentsReply]: "Responder",
 	[Key.commentsReplying]: "Respondiendo a este comentario.",
+	[Key.commentsReplyingTo]: "Respondiendo al comentario de {author}",
 	[Key.commentsCancelReply]: "Cancelar respuesta",
 	[Key.commentsEmoji]: "Emojis",
 	[Key.commentsCaptcha]: "Código de verificación",

@@ -24,6 +24,7 @@ export const zh_CN: Translation = {
 	[Key.commentsSubmitSuccess]: "评论提交成功。",
 	[Key.commentsReply]: "回复",
 	[Key.commentsReplying]: "正在回复这条评论。",
+	[Key.commentsReplyingTo]: "正在回复 {author} 的评论",
 	[Key.commentsCancelReply]: "取消回复",
 	[Key.commentsEmoji]: "表情",
 	[Key.commentsCaptcha]: "验证码",

@@ -25,6 +25,7 @@ export const tr: Translation = {
 	[Key.commentsSubmitSuccess]: "Yorum başarıyla gönderildi.",
 	[Key.commentsReply]: "Yanıtla",
 	[Key.commentsReplying]: "Bu yoruma yanıt yazılıyor.",
+	[Key.commentsReplyingTo]: "{author} yorumuna yanıt yazılıyor",
 	[Key.commentsCancelReply]: "Yanıtı iptal et",
 	[Key.commentsEmoji]: "İfade",
 	[Key.commentsCaptcha]: "Doğrulama kodu",

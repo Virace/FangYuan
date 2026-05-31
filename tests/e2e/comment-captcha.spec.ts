@@ -1230,6 +1230,70 @@ test("comment list should render QingYan avatarUrl and fall back to initials on 
 	).toContainText("青");
 });
 
+test("comment reply composer should show target author with avatar above the fields", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	const avatarUrl = "https://avatar.example.test/reply-target.png";
+	const commentWithAvatar = {
+		...createCommentFixture(),
+		id: "reply-target-with-avatar",
+		author: {
+			name: "青砚有图",
+			website: null,
+			avatarUrl,
+		},
+	};
+	const commentWithoutAvatar = {
+		...createCommentFixture(),
+		id: "reply-target-without-avatar",
+		author: {
+			name: "青砚无图",
+			website: null,
+		},
+	};
+	await page.route(avatarUrl, (route) =>
+		route.fulfill({
+			contentType: "image/svg+xml",
+			body: '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#111827"/></svg>',
+		}),
+	);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			comments: [commentWithAvatar, commentWithoutAvatar],
+		}),
+		thread: buildThreadResponse([commentWithAvatar, commentWithoutAvatar]),
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await page
+		.locator(".comment-item")
+		.filter({ hasText: "青砚有图" })
+		.getByRole("button", { name: "回复" })
+		.click();
+
+	const replyBanner = composer.locator('[data-comment-replying="true"]');
+	await expect(replyBanner).toContainText("正在回复 青砚有图 的评论");
+	await expect(
+		replyBanner.getByRole("img", { name: "青砚有图" }),
+	).toHaveAttribute("src", avatarUrl);
+	await expect(composer.locator("textarea")).toBeFocused();
+
+	await page
+		.locator(".comment-item")
+		.filter({ hasText: "青砚无图" })
+		.getByRole("button", { name: "回复" })
+		.click();
+
+	await expect(replyBanner).toContainText("正在回复 青砚无图 的评论");
+	await expect(replyBanner.getByRole("img")).toHaveCount(0);
+	await expect(replyBanner).toContainText("青");
+});
+
 test("comment list should render QingYan trusted author badge", async ({
 	page,
 }) => {

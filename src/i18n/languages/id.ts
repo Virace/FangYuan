@@ -25,6 +25,7 @@ export const id: Translation = {
 	[Key.commentsSubmitSuccess]: "Komentar berhasil dikirim.",
 	[Key.commentsReply]: "Balas",
 	[Key.commentsReplying]: "Sedang membalas komentar ini.",
+	[Key.commentsReplyingTo]: "Sedang membalas komentar {author}",
 	[Key.commentsCancelReply]: "Batalkan balasan",
 	[Key.commentsEmoji]: "Emotikon",
 	[Key.commentsCaptcha]: "Kode verifikasi",
