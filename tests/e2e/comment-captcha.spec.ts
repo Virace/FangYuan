@@ -1270,6 +1270,42 @@ test("comment reply composer should show target author with avatar above the fie
 	await prepareStablePage(page, COMMENT_TEST_ROUTE);
 
 	const composer = page.locator("section[data-post-title] form");
+	await expect(async () => {
+		const composerTop = (await composer.boundingBox())?.y ?? Number.POSITIVE_INFINITY;
+		const firstCommentTop =
+			(await page.locator(".comment-item").first().boundingBox())?.y ??
+			Number.NEGATIVE_INFINITY;
+		expect(composerTop).toBeLessThan(firstCommentTop);
+	}).toPass();
+
+	await page.evaluate(() => {
+		window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" });
+	});
+	await page.evaluate(() => {
+		const scrollCalls: ScrollIntoViewOptions[] = [];
+		const originalScrollIntoView = Element.prototype.scrollIntoView;
+		Element.prototype.scrollIntoView = function (
+			this: Element,
+			arg?: boolean | ScrollIntoViewOptions,
+		) {
+			if (this.matches("form")) {
+				scrollCalls.push(arg === undefined || typeof arg === "boolean" ? {} : arg);
+			}
+		};
+		(
+			window as typeof window & {
+				__commentReplyScrollCalls?: ScrollIntoViewOptions[];
+				__restoreCommentReplyScrollIntoView?: () => void;
+			}
+		).__commentReplyScrollCalls = scrollCalls;
+		(
+			window as typeof window & {
+				__restoreCommentReplyScrollIntoView?: () => void;
+			}
+		).__restoreCommentReplyScrollIntoView = () => {
+			Element.prototype.scrollIntoView = originalScrollIntoView;
+		};
+	});
 	await page
 		.locator(".comment-item")
 		.filter({ hasText: "青砚有图" })
@@ -1282,6 +1318,27 @@ test("comment reply composer should show target author with avatar above the fie
 		replyBanner.getByRole("img", { name: "青砚有图" }),
 	).toHaveAttribute("src", avatarUrl);
 	await expect(composer.locator("textarea")).toBeFocused();
+	await expect
+		.poll(() =>
+			page.evaluate(() => {
+				return (
+					window as typeof window & {
+						__commentReplyScrollCalls?: ScrollIntoViewOptions[];
+					}
+				).__commentReplyScrollCalls?.[0];
+			}),
+		)
+		.toMatchObject({
+			behavior: "smooth",
+			block: "start",
+		});
+	await page.evaluate(() => {
+		(
+			window as typeof window & {
+				__restoreCommentReplyScrollIntoView?: () => void;
+			}
+		).__restoreCommentReplyScrollIntoView?.();
+	});
 
 	await page
 		.locator(".comment-item")

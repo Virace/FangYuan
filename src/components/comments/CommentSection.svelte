@@ -910,9 +910,30 @@ onDestroy(() => {
 		{/if}
 
 		<div
-			class="comments-content-shell mt-5"
+			class="comments-content-shell mt-5 space-y-5"
 			aria-busy={loading}
 		>
+			<CommentComposer
+				showCaptcha={showComposerCaptcha}
+				allowedFields={allowedFields}
+				requiredFields={requiredFields}
+				verifiedAuthor={verifiedAuthor}
+				initialProfile={commenterProfile}
+				captchaState={captchaState}
+				captchaBusy={captchaBusy}
+				bind:captchaValue
+				captchaError={captchaError}
+				captchaPrompt={captchaPrompt}
+				noticeMessage={composerNoticeMessage}
+				noticeTone={composerNoticeTone}
+				replyParentId={activeReplyParentId}
+				replyTarget={activeReplyTarget}
+				submitting={submitting}
+				onSubmit={handleSubmit}
+				onCancelReply={handleCancelReply}
+				onRefreshCaptcha={handleRefreshCaptcha}
+			/>
+
 			{#if showCommentInitialSkeleton}
 				<div
 					class="comment-thread-skeleton"
@@ -970,29 +991,6 @@ onDestroy(() => {
 					<p class="text-sm text-50">{i18n(I18nKey.commentsEmpty)}</p>
 				</div>
 			{/if}
-		</div>
-
-		<div class="mt-6">
-			<CommentComposer
-				showCaptcha={showComposerCaptcha}
-				allowedFields={allowedFields}
-				requiredFields={requiredFields}
-				verifiedAuthor={verifiedAuthor}
-				initialProfile={commenterProfile}
-				captchaState={captchaState}
-				captchaBusy={captchaBusy}
-				bind:captchaValue
-				captchaError={captchaError}
-				captchaPrompt={captchaPrompt}
-				noticeMessage={composerNoticeMessage}
-				noticeTone={composerNoticeTone}
-				replyParentId={activeReplyParentId}
-				replyTarget={activeReplyTarget}
-				submitting={submitting}
-				onSubmit={handleSubmit}
-				onCancelReply={handleCancelReply}
-				onRefreshCaptcha={handleRefreshCaptcha}
-			/>
 		</div>
 	</section>
 {/if}

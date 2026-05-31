@@ -69,6 +69,7 @@ let content = "";
 let rememberProfile = true;
 let appliedProfileSignature = "";
 let showEmojiPicker = false;
+let composerForm: HTMLFormElement | null = null;
 let emojiTriggerWrap: HTMLDivElement | null = null;
 let authorNameInput: HTMLInputElement | null = null;
 let authorEmailInput: HTMLInputElement | null = null;
@@ -234,13 +235,22 @@ function handleEmojiKeydown(event: KeyboardEvent) {
 
 async function focusComposerContent() {
 	await tick();
+	composerForm?.scrollIntoView({
+		behavior: "smooth",
+		block: "start",
+	});
 	contentInput?.focus();
 }
 </script>
 
 <svelte:window on:keydown={handleEmojiKeydown} />
 
-<form class="card-base rounded-panel p-5" novalidate on:submit|preventDefault={handleSubmit}>
+<form
+	bind:this={composerForm}
+	class="card-base rounded-panel p-5"
+	novalidate
+	on:submit|preventDefault={handleSubmit}
+>
 	<InlineFeedbackNotice
 		message={noticeMessage}
 		tone={noticeTone}
