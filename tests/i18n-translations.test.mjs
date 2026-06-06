@@ -8,9 +8,7 @@ const i18nKeyPath = path.join(repoRoot, "src", "i18n", "i18nKey.ts");
 const languagesDir = path.join(repoRoot, "src", "i18n", "languages");
 
 function extractKeyObject(source) {
-	const keyMatches = [
-		...source.matchAll(/^\s*([A-Za-z0-9_]+):\s*"[^"]+"/gm),
-	];
+	const keyMatches = [...source.matchAll(/^\s*([A-Za-z0-9_]+):\s*"[^"]+"/gm)];
 	return Object.fromEntries(keyMatches.map((match) => [match[1], match[1]]));
 }
 
@@ -40,6 +38,7 @@ const keysThatMustNotFallbackToEnglish = [
 	"commentsVoteConfirmProceed",
 	"commentsVoteConfirmCancel",
 	"commentsFormEmail",
+	"commentsNotifyOnReply",
 	"pageFeedbackLike",
 	"pageFeedbackLiked",
 	"pageFeedbackLikeFailed",

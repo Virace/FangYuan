@@ -62,6 +62,7 @@ export const es: Translation = {
 	[Key.commentsFormWebsite]: "Sitio web",
 	[Key.commentsFormOptionalSuffix]: " (opcional)",
 	[Key.commentsRememberProfile]: "Recordarme",
+	[Key.commentsNotifyOnReply]: "Avisos de respuesta",
 	[Key.commentsFormContent]: "Comentario",
 	[Key.commentCountSingular]: "comentario",
 	[Key.commentCountPlural]: "comentarios",

@@ -83,6 +83,7 @@ type RawQingYanFeatures = {
 	pageViews: RawQingYanFeatureFlag;
 	pageLikes: RawQingYanFeatureFlag;
 	visitors: RawQingYanFeatureFlag;
+	replyEmailNotification: RawQingYanFeatureFlag;
 };
 
 type RawQingYanCommentForm = {
@@ -332,6 +333,8 @@ function normalizeCapability(
 		supportsReply: features.commentReplies.enabled,
 		supportsVote: features.commentVotes.enabled,
 		supportsCaptcha: features.commentCaptcha.enabled,
+		supportsReplyEmailNotification:
+			features.replyEmailNotification.enabled === true,
 		persistenceMode: "persistent",
 		identityModel: "page_key",
 		message: features.comments.reason ?? undefined,
@@ -758,7 +761,7 @@ export function createQingYanClient(
 									}
 								: {}),
 							options: {
-								notifyOnReply: false,
+								notifyOnReply: input.notifyOnReply ?? false,
 							},
 						}),
 					},

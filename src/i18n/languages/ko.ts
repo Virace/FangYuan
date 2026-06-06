@@ -61,6 +61,7 @@ export const ko: Translation = {
 	[Key.commentsFormWebsite]: "웹사이트",
 	[Key.commentsFormOptionalSuffix]: " (선택)",
 	[Key.commentsRememberProfile]: "저장하기",
+	[Key.commentsNotifyOnReply]: "답글 알림",
 	[Key.commentsFormContent]: "댓글",
 	[Key.commentCountSingular]: "댓글",
 	[Key.commentCountPlural]: "댓글",

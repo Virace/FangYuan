@@ -53,6 +53,7 @@ type CommentComposerSubmitDetail = {
 	authorWebsite: string;
 	content: string;
 	rememberProfile: boolean;
+	notifyOnReply: boolean;
 };
 
 type CaptchaTarget =
@@ -164,6 +165,8 @@ $: commentNoticeTone = commentNotice?.tone ?? "info";
 $: pendingVoteChoice = pendingVoteTarget?.choice ?? null;
 $: supportsVote = capability?.supportsVote ?? false;
 $: supportsCaptcha = capability?.supportsCaptcha ?? false;
+$: supportsReplyEmailNotification =
+	capability?.supportsReplyEmailNotification ?? false;
 $: verifiedAuthor = viewer.verifiedAuthor ?? null;
 $: usingVerifiedAuthor = Boolean(verifiedAuthor);
 $: allowedFields = commentForm?.allow ?? defaultAllowedFields;
@@ -670,6 +673,7 @@ async function handleSubmit(
 			},
 			content: detail.content,
 			captcha: submitBlockedByCaptcha ? buildCaptchaWriteInput() : null,
+			notifyOnReply: detail.notifyOnReply,
 		});
 
 		comments = insertPendingComment(comments, result.createdComment);
@@ -918,6 +922,7 @@ onDestroy(() => {
 				allowedFields={allowedFields}
 				requiredFields={requiredFields}
 				verifiedAuthor={verifiedAuthor}
+				supportsReplyEmailNotification={supportsReplyEmailNotification}
 				initialProfile={commenterProfile}
 				captchaState={captchaState}
 				captchaBusy={captchaBusy}

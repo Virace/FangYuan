@@ -55,6 +55,7 @@ export const th: Translation = {
 	[Key.commentsFormWebsite]: "เว็บไซต์",
 	[Key.commentsFormOptionalSuffix]: " (ไม่บังคับ)",
 	[Key.commentsRememberProfile]: "จดจำฉัน",
+	[Key.commentsNotifyOnReply]: "แจ้งเตือนตอบกลับ",
 	[Key.commentsFormContent]: "ความคิดเห็น",
 	[Key.commentCountSingular]: "ความคิดเห็น",
 	[Key.commentCountPlural]: "ความคิดเห็น",

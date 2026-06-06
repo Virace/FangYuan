@@ -32,6 +32,10 @@ function normalizeMockDefaults(input = {}) {
 		blacklistTtlSec: clampPositiveInteger(input.blacklistTtlSec, 300),
 		defaultStatus: input.defaultStatus === "pending" ? "pending" : "approved",
 		allowLike: normalizeBooleanFlag(input.allowLike, true),
+		replyEmailNotification: normalizeBooleanFlag(
+			input.replyEmailNotification,
+			true,
+		),
 		seedMode: normalizeSeedMode(input.seedMode, "default"),
 		answer: input.answer || DEFAULT_CAPTCHA_ANSWER,
 		commentCount: clampPositiveInteger(input.commentCount, 4),
@@ -49,6 +53,7 @@ export function resolveQingYanMockStartupDefaults(env = process.env) {
 		blacklistTtlSec: env.QINGYAN_MOCK_BAN_TTL,
 		defaultStatus: env.QINGYAN_MOCK_STATUS,
 		allowLike: env.QINGYAN_MOCK_ALLOW_LIKE,
+		replyEmailNotification: env.QINGYAN_MOCK_REPLY_EMAIL_NOTIFICATION,
 		seedMode: env.QINGYAN_MOCK_SEED,
 		answer: env.QINGYAN_MOCK_ANSWER,
 		commentCount: env.QINGYAN_MOCK_COMMENT_COUNT,
@@ -755,6 +760,14 @@ export function createQingYanMockBackend(input = {}) {
 						visitors: {
 							enabled: true,
 						},
+						replyEmailNotification: options.replyEmailNotification
+							? {
+									enabled: true,
+								}
+							: {
+									enabled: false,
+									reason: "feature_disabled",
+								},
 					},
 					data: {
 						comments: {
@@ -969,17 +982,15 @@ export function createQingYanMockBackend(input = {}) {
 			}
 
 			visitorPageState.writeTimestamps.push(Date.now());
+			const createdComment = buildCommentPayload(
+				pageState,
+				commentId,
+				visitorId,
+			);
 			return createJsonResponse(
 				200,
 				{
-					comment: {
-						id: commentId,
-						status: options.defaultStatus,
-						message:
-							options.defaultStatus === "approved"
-								? "评论已发布。"
-								: "评论已提交，等待审核。",
-					},
+					comment: createdComment,
 					thread: {
 						commentCount: pageState.comments.size,
 						rootCommentCount: pageState.rootIds.length,

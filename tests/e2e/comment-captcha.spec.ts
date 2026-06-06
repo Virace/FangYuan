@@ -57,6 +57,7 @@ function buildBootstrapResponse(input?: {
 	likeCount?: number;
 	liked?: boolean;
 	pageMetricsEnabled?: boolean;
+	supportsReplyEmailNotification?: boolean;
 	supportsLike?: boolean;
 	supportsVote?: boolean;
 	viewer?: {
@@ -71,6 +72,8 @@ function buildBootstrapResponse(input?: {
 	const pageViewsEnabled = input?.pageMetricsEnabled ?? true;
 	const pageLikesEnabled = input?.supportsLike ?? true;
 	const commentVotesEnabled = input?.supportsVote ?? true;
+	const replyEmailNotificationEnabled =
+		input?.supportsReplyEmailNotification ?? true;
 	return {
 		schemaVersion: "2026-05-31",
 		site: {
@@ -94,6 +97,9 @@ function buildBootstrapResponse(input?: {
 				? { enabled: true }
 				: { enabled: false, reason: "feature_disabled" },
 			visitors: { enabled: true },
+			replyEmailNotification: replyEmailNotificationEnabled
+				? { enabled: true }
+				: { enabled: false, reason: "feature_disabled" },
 		},
 		viewer: input?.viewer ?? {},
 		data: {
@@ -841,6 +847,92 @@ test("admin bootstrap should submit without nickname and email fields", async ({
 		(testState.commentRetryBody as { author?: { email?: string } }).author
 			?.email,
 	).toBeUndefined();
+	expect(
+		(testState.commentRetryBody as { options?: { notifyOnReply?: boolean } })
+			.options?.notifyOnReply,
+	).toBe(false);
+});
+
+test("reply email notification disabled by QingYan should hide checkbox and submit false", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			supportsReplyEmailNotification: false,
+		}),
+		thread: buildThreadResponse(),
+		commentCreate: {
+			successBody: buildSuccessfulCommentResponse(
+				"created-reply-email-disabled-comment",
+			),
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await composer.locator('input[type="text"]').fill("回复提醒关闭访客");
+	await composer.locator('input[type="email"]').fill("reply-off@example.com");
+	await composer.locator("textarea").fill("后端关闭回复邮件通知时不显示 checkbox");
+
+	await expect(page.getByLabel("回复提醒")).toHaveCount(0);
+
+	await composer.getByRole("button", { name: "发表评论" }).click();
+
+	await expect
+		.poll(async () => (await readTestState(page)).commentRetryBody)
+		.toBeTruthy();
+
+	const testState = await readTestState(page);
+	expect(testState.commentRetryBody).toMatchObject({
+		options: {
+			notifyOnReply: false,
+		},
+	});
+});
+
+test("reply email notification enabled by QingYan should submit user opt in", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			supportsReplyEmailNotification: true,
+		}),
+		thread: buildThreadResponse(),
+		commentCreate: {
+			successBody: buildSuccessfulCommentResponse(
+				"created-reply-email-enabled-comment",
+			),
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await composer.locator('input[type="text"]').fill("回复提醒开启访客");
+	await composer.locator('input[type="email"]').fill("reply-on@example.com");
+	await composer.locator("textarea").fill("后端开启回复邮件通知时允许 opt in");
+
+	const notifyCheckbox = page.getByLabel("回复提醒");
+	await expect(notifyCheckbox).toBeVisible();
+	await notifyCheckbox.check();
+
+	await composer.getByRole("button", { name: "发表评论" }).click();
+
+	await expect
+		.poll(async () => (await readTestState(page)).commentRetryBody)
+		.toBeTruthy();
+
+	const testState = await readTestState(page);
+	expect(testState.commentRetryBody).toMatchObject({
+		options: {
+			notifyOnReply: true,
+		},
+	});
 });
 
 test("comment composer should remember ordinary author profile by default", async ({
@@ -868,7 +960,7 @@ test("comment composer should remember ordinary author profile by default", asyn
 	await prepareStablePage(page, COMMENT_TEST_ROUTE);
 
 	const composer = page.locator("section[data-post-title] form");
-	await expect(composer.getByLabel("记住我")).toBeChecked();
+	await expect(composer.getByLabel("保存资料")).toBeChecked();
 	await composer.locator('input[type="text"]').first().fill("记忆访客");
 	await composer.locator('input[type="email"]').fill("memory@example.com");
 	await composer.locator('input[type="url"]').fill("https://example.com");
@@ -902,7 +994,7 @@ test("comment composer should remember ordinary author profile by default", asyn
 	await expect(reloadedComposer.locator('input[type="url"]')).toHaveValue(
 		"https://example.com",
 	);
-	await expect(reloadedComposer.getByLabel("记住我")).toBeChecked();
+	await expect(reloadedComposer.getByLabel("保存资料")).toBeChecked();
 });
 
 test("comment composer should clear remembered profile when opt out is submitted", async ({
@@ -944,7 +1036,7 @@ test("comment composer should clear remembered profile when opt out is submitted
 	await expect(composer.locator('input[type="text"]').first()).toHaveValue(
 		"旧访客",
 	);
-	await composer.getByLabel("记住我").uncheck();
+	await composer.getByLabel("保存资料").uncheck();
 	await composer.locator('input[type="text"]').first().fill("不记住访客");
 	await composer.locator('input[type="email"]').fill("forget@example.com");
 	await composer.locator('input[type="url"]').fill("https://forget.example.com");

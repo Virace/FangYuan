@@ -15,6 +15,7 @@ export type CommentCapability = {
 	supportsReply: boolean;
 	supportsVote: boolean;
 	supportsCaptcha: boolean;
+	supportsReplyEmailNotification: boolean;
 	persistenceMode: CommentPersistenceMode;
 	identityModel: CommentIdentityModel;
 	message?: string;
@@ -91,6 +92,7 @@ export type CreateCommentInput = {
 	};
 	content: string;
 	captcha?: CommentCaptchaWriteInput | null;
+	notifyOnReply?: boolean;
 };
 
 export type VoteCommentInput = {

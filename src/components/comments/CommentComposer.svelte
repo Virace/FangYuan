@@ -24,6 +24,7 @@ type CommentComposerSubmitDetail = {
 	authorWebsite: string;
 	content: string;
 	rememberProfile: boolean;
+	notifyOnReply: boolean;
 };
 
 type ReplyTarget = {
@@ -45,6 +46,7 @@ export let verifiedAuthor: {
 	displayName: string;
 	badgeLabel: string;
 } | null = null;
+export let supportsReplyEmailNotification = false;
 export let initialProfile: CommenterProfile | null = null;
 export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
@@ -67,6 +69,7 @@ let authorEmail = "";
 let authorWebsite = "";
 let content = "";
 let rememberProfile = true;
+let notifyOnReply = false;
 let appliedProfileSignature = "";
 let showEmojiPicker = false;
 let composerForm: HTMLFormElement | null = null;
@@ -90,6 +93,11 @@ $: useVerifiedAuthor = Boolean(verifiedAuthor);
 $: showNameField = !useVerifiedAuthor && allowedFields.includes("nickname");
 $: showEmailField = !useVerifiedAuthor && allowedFields.includes("email");
 $: showWebsiteField = !useVerifiedAuthor && allowedFields.includes("website");
+$: canNotifyOnReply =
+	supportsReplyEmailNotification && !useVerifiedAuthor && showEmailField;
+$: if (!canNotifyOnReply && notifyOnReply) {
+	notifyOnReply = false;
+}
 $: if (useVerifiedAuthor) {
 	appliedProfileSignature = "";
 } else if (initialProfile) {
@@ -196,6 +204,7 @@ async function handleSubmit() {
 		authorWebsite: authorWebsite.trim(),
 		content: content.trim(),
 		rememberProfile: !useVerifiedAuthor && rememberProfile,
+		notifyOnReply: canNotifyOnReply && notifyOnReply,
 	});
 	if (submitSucceeded) {
 		content = "";
@@ -300,45 +309,72 @@ async function focusComposerContent() {
 
 	<div class="grid gap-3 md:grid-cols-2">
 		{#if showNameField}
-			<label
+			<div
 				class="comment-form-field flex flex-col gap-1 text-sm text-50"
 				class:comment-form-field-invalid={invalidFieldState.nickname}
 				data-validation-state={invalidFieldState.nickname ? "invalid" : "idle"}
 			>
-				<span class="comment-form-field-label">
+				<label class="comment-form-field-label" for="comment-author-name">
 					{formatFieldLabel(I18nKey.commentsFormName, "nickname")}
-				</span>
-				<input
-					bind:this={authorNameInput}
-					bind:value={authorName}
-					aria-invalid={invalidFieldState.nickname}
-					class="comment-form-input text-90"
-					maxlength="80"
-					required={requiredFields.includes("nickname")}
-					type="text"
-				/>
-			</label>
+				</label>
+				<div class="comment-input-shell">
+					<input
+						id="comment-author-name"
+						bind:this={authorNameInput}
+						bind:value={authorName}
+						aria-invalid={invalidFieldState.nickname}
+						autocomplete="name"
+						class="comment-form-input comment-form-input-embedded comment-form-input-with-trailing text-90"
+						maxlength="80"
+						required={requiredFields.includes("nickname")}
+						type="text"
+					/>
+					<label class="comment-input-trailing-toggle">
+						<input
+							bind:checked={rememberProfile}
+							class="size-4 accent-[var(--primary)]"
+							type="checkbox"
+						/>
+						<span>{i18n(I18nKey.commentsRememberProfile)}</span>
+					</label>
+				</div>
+			</div>
 		{/if}
 
 		{#if showEmailField}
-			<label
+			<div
 				class="comment-form-field flex flex-col gap-1 text-sm text-50"
 				class:comment-form-field-invalid={invalidFieldState.email}
 				data-validation-state={invalidFieldState.email ? "invalid" : "idle"}
 			>
-				<span class="comment-form-field-label">
+				<label class="comment-form-field-label" for="comment-author-email">
 					{formatFieldLabel(I18nKey.commentsFormEmail, "email")}
-				</span>
-				<input
-					bind:this={authorEmailInput}
-					bind:value={authorEmail}
-					aria-invalid={invalidFieldState.email}
-					class="comment-form-input text-90"
-					maxlength="120"
-					required={requiredFields.includes("email")}
-					type="email"
-				/>
-			</label>
+				</label>
+				<div class="comment-input-shell">
+					<input
+						id="comment-author-email"
+						bind:this={authorEmailInput}
+						bind:value={authorEmail}
+						aria-invalid={invalidFieldState.email}
+						autocomplete="email"
+						class="comment-form-input comment-form-input-embedded comment-form-input-with-trailing text-90"
+						maxlength="120"
+						required={requiredFields.includes("email")}
+						spellcheck="false"
+						type="email"
+					/>
+					{#if canNotifyOnReply}
+						<label class="comment-input-trailing-toggle">
+							<input
+								bind:checked={notifyOnReply}
+								class="size-4 accent-[var(--primary)]"
+								type="checkbox"
+							/>
+							<span>{i18n(I18nKey.commentsNotifyOnReply)}</span>
+						</label>
+					{/if}
+				</div>
+			</div>
 		{/if}
 
 		{#if showWebsiteField}
@@ -379,12 +415,12 @@ async function focusComposerContent() {
 		</label>
 	</div>
 
-	<div class="comment-composer-actions mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-		<div class="w-full md:order-2 md:flex-1 md:min-w-0">
+	<div class="comment-composer-actions mt-4 flex items-center justify-between gap-3">
+		<div class="order-2 flex shrink-0 justify-end md:flex-1 md:min-w-0">
 			<div class="flex items-center justify-end">
 				<div class="comment-captcha-popover-anchor">
 					<button
-						class="btn-regular rounded-xl px-4 h-10 text-sm font-medium w-full md:w-auto md:shrink-0"
+						class="btn-regular rounded-xl px-4 h-10 text-sm font-medium shrink-0"
 						disabled={submitting}
 						type="submit"
 					>
@@ -420,18 +456,7 @@ async function focusComposerContent() {
 			</div>
 		</div>
 
-		<div class="mr-auto flex flex-wrap items-center gap-x-4 gap-y-2">
-			{#if !useVerifiedAuthor}
-				<label class="comment-action inline-flex items-center gap-2">
-					<input
-						bind:checked={rememberProfile}
-						class="size-4 accent-[var(--primary)]"
-						type="checkbox"
-					/>
-					<span>{i18n(I18nKey.commentsRememberProfile)}</span>
-				</label>
-			{/if}
-
+		<div class="order-1 mr-auto flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
 			<div
 				bind:this={emojiTriggerWrap}
 				role="group"
