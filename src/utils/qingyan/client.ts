@@ -593,9 +593,7 @@ export function createQingYanClient(
 		const state = await fetchJson<RawQingYanCaptchaState>(
 			`/comments/captcha/state/?${buildQueryString({
 				siteKey: resolvedConfig.siteKey,
-				pageKey: input.pageKey,
 				pageTitle: input.pageTitle,
-				pageUrl: input.pageUrl,
 			})}`,
 		);
 		return new CommentCaptchaRequiredError(
@@ -630,9 +628,7 @@ export function createQingYanClient(
 			const request = fetchJson<RawQingYanBootstrapResponse>(
 				`/comments/bootstrap/?${buildQueryString({
 					siteKey: resolvedConfig.siteKey,
-					pageKey: normalizedInput.pageKey,
 					pageTitle: normalizedInput.pageTitle || undefined,
-					pageUrl: normalizedInput.pageUrl || undefined,
 					sortBy: toBackendSortBy(normalizedInput.sortBy),
 					limit: normalizedInput.limit,
 					offset: normalizedInput.offset,
@@ -663,7 +659,6 @@ export function createQingYanClient(
 			const response = await fetchJson<RawQingYanThreadResponse>(
 				`/comments/thread/?${buildQueryString({
 					siteKey: resolvedConfig.siteKey,
-					pageKey: input.pageKey,
 					sortBy: toBackendSortBy(input.sortBy),
 					limit: input.limit ?? commentConfig.rootLimit ?? 5,
 					offset: input.offset ?? 0,
@@ -684,9 +679,7 @@ export function createQingYanClient(
 			const response = await fetchJson<RawQingYanCaptchaState>(
 				`/comments/captcha/state/?${buildQueryString({
 					siteKey: resolvedConfig.siteKey,
-					pageKey: input.pageKey,
 					pageTitle: input.pageTitle,
-					pageUrl: input.pageUrl,
 				})}`,
 			);
 			return normalizeCaptchaState(response);
@@ -703,15 +696,9 @@ export function createQingYanClient(
 					method: "POST",
 					body: JSON.stringify({
 						siteKey: resolvedConfig.siteKey,
-						pageKey: input.pageKey,
 						...(input.pageTitle
 							? {
 									pageTitle: input.pageTitle,
-								}
-							: {}),
-						...(input.pageUrl
-							? {
-									pageUrl: input.pageUrl,
 								}
 							: {}),
 					}),
@@ -732,9 +719,7 @@ export function createQingYanClient(
 						method: "POST",
 						body: JSON.stringify({
 							siteKey: resolvedConfig.siteKey,
-							pageKey: input.postKey,
 							pageTitle: input.postTitle ?? input.postKey,
-							pageUrl: resolvePageUrl(input.pageUrl),
 							parentCommentId: input.parentId ?? null,
 							author: {
 								name: input.author.name,
@@ -817,7 +802,6 @@ export function createQingYanClient(
 						method: "POST",
 						body: JSON.stringify({
 							siteKey: resolvedConfig.siteKey,
-							pageKey: input.pageKey,
 							choice: input.choice,
 							...(input.captcha
 								? {
@@ -862,9 +846,7 @@ export function createQingYanClient(
 						method: "POST",
 						body: JSON.stringify({
 							siteKey: resolvedConfig.siteKey,
-							pageKey: input.pageKey,
 							pageTitle: input.pageTitle ?? input.pageKey,
-							pageUrl: resolvePageUrl(input.pageUrl),
 							...(input.captcha
 								? {
 										captcha: input.captcha,

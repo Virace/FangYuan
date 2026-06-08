@@ -411,10 +411,10 @@ async function readTestState(page: Page) {
 	});
 }
 
-function expectSerializedPageIdentity(payload: unknown) {
+function expectNoSerializedPageIdentity(payload: unknown) {
 	expect(payload).toBeTruthy();
-	expect(payload).toHaveProperty("pageKey", "extra");
-	expect(payload).toHaveProperty("pageUrl", "http://localhost:4321/extra/");
+	expect(payload).not.toHaveProperty("pageKey");
+	expect(payload).not.toHaveProperty("pageUrl");
 }
 
 type RawCommentOverrides = Partial<
@@ -475,7 +475,7 @@ function buildSuccessfulCommentResponse(
 	};
 }
 
-test("QingYan API requests serialize documented page identity", async ({
+test("QingYan API read requests leave page identity to Referer", async ({
 	page,
 }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
@@ -499,24 +499,25 @@ test("QingYan API requests serialize documented page identity", async ({
 	const testState = await readTestState(page);
 	expect(testState.bootstrapQuery).toMatchObject({
 		siteKey: "default",
-		pageKey: "extra",
 		pageTitle: "内容与主题分离，以及评论接入",
-		pageUrl: "http://localhost:4321/extra/",
 		sortBy: "newest",
 		limit: "5",
 		offset: "0",
 	});
+	expect(testState.bootstrapQuery).not.toHaveProperty("pageKey");
+	expect(testState.bootstrapQuery).not.toHaveProperty("pageUrl");
 
 	expect(testState.threadQuery).toMatchObject({
 		siteKey: "default",
-		pageKey: "extra",
 		sortBy: "oldest",
 		limit: "5",
 		offset: "0",
 	});
+	expect(testState.threadQuery).not.toHaveProperty("pageKey");
+	expect(testState.threadQuery).not.toHaveProperty("pageUrl");
 });
 
-test("QingYan comment captcha and create requests serialize page identity", async ({
+test("QingYan comment captcha and create requests leave page identity to Referer", async ({
 	page,
 }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
@@ -570,16 +571,16 @@ test("QingYan comment captcha and create requests serialize page identity", asyn
 	const testState = await readTestState(page);
 	expect(testState.captchaStateQuery).toMatchObject({
 		siteKey: "default",
-		pageKey: "extra",
 		pageTitle: "内容与主题分离，以及评论接入",
-		pageUrl: "http://localhost:4321/extra/",
 	});
-	expectSerializedPageIdentity(testState.captchaRefreshBody);
+	expect(testState.captchaStateQuery).not.toHaveProperty("pageKey");
+	expect(testState.captchaStateQuery).not.toHaveProperty("pageUrl");
+	expectNoSerializedPageIdentity(testState.captchaRefreshBody);
 
 	const bodies = testState.commentCreateBodies as unknown[];
 	expect(bodies).toHaveLength(2);
-	expectSerializedPageIdentity(bodies[0]);
-	expectSerializedPageIdentity(bodies[1]);
+	expectNoSerializedPageIdentity(bodies[0]);
+	expectNoSerializedPageIdentity(bodies[1]);
 	expect(bodies[1]).toMatchObject({
 		siteKey: "default",
 		pageTitle: "内容与主题分离，以及评论接入",
@@ -590,7 +591,7 @@ test("QingYan comment captcha and create requests serialize page identity", asyn
 	});
 });
 
-test("QingYan like and vote requests serialize page identity", async ({
+test("QingYan like and vote requests leave page identity to Referer", async ({
 	page,
 }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
@@ -669,33 +670,35 @@ test("QingYan like and vote requests serialize page identity", async ({
 
 	const testState = await readTestState(page);
 	for (const body of testState.likeBodies as unknown[]) {
-		expectSerializedPageIdentity(body);
+		expectNoSerializedPageIdentity(body);
 	}
 	for (const body of testState.voteBodies as unknown[]) {
 		expect(body).toMatchObject({
 			siteKey: "default",
-			pageKey: "extra",
 		});
+		expect(body).not.toHaveProperty("pageKey");
+		expect(body).not.toHaveProperty("pageUrl");
 	}
 	expect(testState.likeRetryBody).toMatchObject({
 		siteKey: "default",
-		pageKey: "extra",
 		pageTitle: "内容与主题分离，以及评论接入",
-		pageUrl: "http://localhost:4321/extra/",
 		captcha: {
 			challengeId: "shape-like",
 			value: "2468",
 		},
 	});
+	expect(testState.likeRetryBody).not.toHaveProperty("pageKey");
+	expect(testState.likeRetryBody).not.toHaveProperty("pageUrl");
 	expect(testState.voteRetryBody).toMatchObject({
 		siteKey: "default",
-		pageKey: "extra",
 		choice: "up",
 		captcha: {
 			challengeId: "shape-like",
 			value: "2468",
 		},
 	});
+	expect(testState.voteRetryBody).not.toHaveProperty("pageKey");
+	expect(testState.voteRetryBody).not.toHaveProperty("pageUrl");
 });
 
 test("comment submit should keep captcha attached to the original action", async ({
