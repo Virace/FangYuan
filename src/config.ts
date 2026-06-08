@@ -99,6 +99,16 @@ function mergeSiteConfig(
 			...defaultConfig.postSort,
 			...override.postSort,
 		},
+		taxonomySort: {
+			categories: {
+				...defaultConfig.taxonomySort.categories,
+				...override.taxonomySort?.categories,
+			},
+			tags: {
+				...defaultConfig.taxonomySort.tags,
+				...override.taxonomySort?.tags,
+			},
+		},
 		favicon: override.favicon ?? defaultConfig.favicon,
 		permalink: {
 			...defaultConfig.permalink,

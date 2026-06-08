@@ -28,6 +28,7 @@ test("template.config.yaml contains the full commented config surface", async ()
 	assert.match(source, /pageMetricsConfig:/);
 	assert.match(source, /pageFeedbackConfig:/);
 	assert.match(source, /qingyanDevProxyTarget:/);
+	assert.match(source, /taxonomySort:/);
 	assert.match(source, /site:\s+null/);
 	assert.match(source, /base:\s+\//);
 	assert.match(source, /\{\{SITE_TITLE\}\}/);

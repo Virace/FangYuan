@@ -8,6 +8,8 @@ import {
 import { getCategoryUrl } from "@utils/permalink/urls.ts";
 import type { TocFrontmatterOverride } from "@utils/toc-config";
 import type { ImageMetadata } from "astro";
+import { siteConfig } from "../../config";
+import { sortCategoryItems, sortTaxonomyItems } from "./taxonomy-ordering";
 
 export type PostData = {
 	title: string;
@@ -79,12 +81,12 @@ export async function getTagList(): Promise<Tag[]> {
 		});
 	});
 
-	// sort tags
-	const keys: string[] = Object.keys(countMap).sort((a, b) => {
-		return a.toLowerCase().localeCompare(b.toLowerCase());
-	});
+	const tags = Object.keys(countMap).map((key) => ({
+		name: key,
+		count: countMap[key],
+	}));
 
-	return keys.map((key) => ({ name: key, count: countMap[key] }));
+	return sortTaxonomyItems(tags, siteConfig.taxonomySort.tags);
 }
 
 export type Category = {
@@ -114,17 +116,15 @@ export async function getCategoryList(): Promise<Category[]> {
 		count[categoryName] = count[categoryName] ? count[categoryName] + 1 : 1;
 	});
 
-	const lst = Object.keys(count).sort((a, b) => {
-		return a.toLowerCase().localeCompare(b.toLowerCase());
-	});
+	const categories: Category[] = Object.keys(count).map((categoryName) => ({
+		name: categoryName,
+		count: count[categoryName],
+		url: getCategoryUrl(categoryName),
+	}));
 
-	const ret: Category[] = [];
-	for (const c of lst) {
-		ret.push({
-			name: c,
-			count: count[c],
-			url: getCategoryUrl(c),
-		});
-	}
-	return ret;
+	return sortCategoryItems(
+		categories,
+		siteConfig.taxonomySort.categories,
+		i18n(I18nKey.uncategorized),
+	);
 }

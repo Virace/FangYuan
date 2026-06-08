@@ -26,6 +26,17 @@ export const defaultSiteConfig: SiteConfig = {
 		key: "published", // 文章默认排序字段；支持 title / published / updated / alias / filename
 		order: "desc", // 同一 sticky 层内的排序方向；写 sticky 即置顶，数值越大越靠前
 	},
+	taxonomySort: {
+		categories: {
+			key: "name", // 分类默认按名称排序；也支持 count
+			order: "asc",
+			uncategorizedPosition: "sorted", // sorted 表示“未分类”参与排序；last 表示固定最后
+		},
+		tags: {
+			key: "name", // 标签默认按名称排序；也支持 count
+			order: "asc",
+		},
+	},
 	showPinnedInArchiveTimeline: true, // true 时归档页顶部展示置顶分组后，年份时间轴中仍保留这些置顶文章
 	lang: "zh_CN", // 站点语言代码，例如 "en"、"zh_CN"、"zh_TW"、"ja"
 	themeColor: {

@@ -1,4 +1,4 @@
-export const currentSiteConfigVersion = 2;
+export const currentSiteConfigVersion = 3;
 
 function cloneConfig(config) {
 	return structuredClone(config ?? {});
@@ -61,7 +61,6 @@ function ensureCurrentDefaults(config, actions) {
 				"add current default without changing runtime behavior",
 			),
 		);
-		return;
 	}
 
 	if (!hasOwn(config.siteConfig.postSort, "key")) {
@@ -72,6 +71,47 @@ function ensureCurrentDefaults(config, actions) {
 	if (!hasOwn(config.siteConfig.postSort, "order")) {
 		config.siteConfig.postSort.order = "desc";
 		actions.push(createAction("siteConfig.postSort.order", "add"));
+	}
+
+	const defaultTaxonomySort = {
+		categories: {
+			key: "name",
+			order: "asc",
+			uncategorizedPosition: "sorted",
+		},
+		tags: {
+			key: "name",
+			order: "asc",
+		},
+	};
+
+	if (!hasOwn(config.siteConfig, "taxonomySort")) {
+		config.siteConfig.taxonomySort = defaultTaxonomySort;
+		actions.push(
+			createAction(
+				"siteConfig.taxonomySort",
+				"add",
+				"add current default without changing runtime behavior",
+			),
+		);
+		return;
+	}
+
+	config.siteConfig.taxonomySort.categories ??= {};
+	config.siteConfig.taxonomySort.tags ??= {};
+
+	for (const [key, value] of Object.entries(defaultTaxonomySort.categories)) {
+		if (!hasOwn(config.siteConfig.taxonomySort.categories, key)) {
+			config.siteConfig.taxonomySort.categories[key] = value;
+			actions.push(createAction(`siteConfig.taxonomySort.categories.${key}`, "add"));
+		}
+	}
+
+	for (const [key, value] of Object.entries(defaultTaxonomySort.tags)) {
+		if (!hasOwn(config.siteConfig.taxonomySort.tags, key)) {
+			config.siteConfig.taxonomySort.tags[key] = value;
+			actions.push(createAction(`siteConfig.taxonomySort.tags.${key}`, "add"));
+		}
 	}
 }
 
@@ -237,6 +277,7 @@ function migrateFromOne(config) {
 	const actions = [];
 
 	migrateQingYanConfig(nextConfig, actions);
+	ensureCurrentDefaults(nextConfig, actions);
 	nextConfig.fangyuanConfigVersion = currentSiteConfigVersion;
 	actions.push(createAction("fangyuanConfigVersion", "update"));
 

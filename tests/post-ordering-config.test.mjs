@@ -9,3 +9,17 @@ test("defaultSiteConfig exposes published desc as the default postSort", () => {
 		order: "desc",
 	});
 });
+
+test("defaultSiteConfig exposes name asc taxonomy sorting by default", () => {
+	assert.deepEqual(defaultSiteConfig.taxonomySort, {
+		categories: {
+			key: "name",
+			order: "asc",
+			uncategorizedPosition: "sorted",
+		},
+		tags: {
+			key: "name",
+			order: "asc",
+		},
+	});
+});
