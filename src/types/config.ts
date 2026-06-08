@@ -26,6 +26,23 @@ export type PostSortConfig = {
 	order: SortOrder;
 };
 
+export type TaxonomySortKey = "name" | "count";
+export type UncategorizedPosition = "sorted" | "last";
+
+export type TaxonomySortConfig = {
+	key: TaxonomySortKey;
+	order: SortOrder;
+};
+
+export type CategorySortConfig = TaxonomySortConfig & {
+	uncategorizedPosition: UncategorizedPosition;
+};
+
+export type SiteTaxonomySortConfig = {
+	categories: CategorySortConfig;
+	tags: TaxonomySortConfig;
+};
+
 export type PermalinkConfig = {
 	postsPattern: string;
 	pagesPattern: string;
@@ -43,6 +60,7 @@ export type SiteConfig = {
 	base: string;
 	postsPerPage?: number | null;
 	postSort: PostSortConfig;
+	taxonomySort: SiteTaxonomySortConfig;
 	showPinnedInArchiveTimeline: boolean;
 
 	lang:

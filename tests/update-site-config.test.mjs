@@ -163,6 +163,56 @@ test("migrateSiteConfigObject preserves unknown user fields", () => {
 	});
 });
 
+test("migrateSiteConfigObject adds taxonomySort defaults", () => {
+	const result = migrateSiteConfigObject({
+		siteConfig: {
+			title: "Demo",
+		},
+	});
+
+	assert.equal(result.changed, true);
+	assert.deepEqual(result.config.siteConfig.taxonomySort, {
+		categories: {
+			key: "name",
+			order: "asc",
+			uncategorizedPosition: "sorted",
+		},
+		tags: {
+			key: "name",
+			order: "asc",
+		},
+	});
+	assert.equal(
+		result.actions.some((action) => action.path === "siteConfig.taxonomySort"),
+		true,
+	);
+});
+
+test("migrateSiteConfigObject fills partial taxonomySort defaults", () => {
+	const result = migrateSiteConfigObject({
+		siteConfig: {
+			taxonomySort: {
+				categories: {
+					key: "count",
+				},
+			},
+		},
+	});
+
+	assert.equal(result.changed, true);
+	assert.deepEqual(result.config.siteConfig.taxonomySort, {
+		categories: {
+			key: "count",
+			order: "asc",
+			uncategorizedPosition: "sorted",
+		},
+		tags: {
+			key: "name",
+			order: "asc",
+		},
+	});
+});
+
 test("migrateSiteConfigObject blocks conflicting reward shapes", () => {
 	const input = {
 		pageFeedbackConfig: {

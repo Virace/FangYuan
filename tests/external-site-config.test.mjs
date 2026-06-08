@@ -152,6 +152,65 @@ pageFeedbackConfig:
 	]);
 });
 
+test("loadExternalSiteConfigYaml accepts taxonomy sort config", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-yaml-"));
+	const configPath = path.join(tempRoot, "site.config.yaml");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await writeFile(
+		configPath,
+		`
+siteConfig:
+  taxonomySort:
+    categories:
+      key: count
+      order: desc
+      uncategorizedPosition: last
+    tags:
+      key: count
+      order: desc
+`,
+		"utf8",
+	);
+
+	const loaded = loadExternalSiteConfigYaml(configPath);
+	assert.deepEqual(loaded?.siteConfig?.taxonomySort, {
+		categories: {
+			key: "count",
+			order: "desc",
+			uncategorizedPosition: "last",
+		},
+		tags: {
+			key: "count",
+			order: "desc",
+		},
+	});
+});
+
+test("loadExternalSiteConfigYaml rejects invalid taxonomy sort config", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-yaml-"));
+	const configPath = path.join(tempRoot, "site.config.yaml");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await writeFile(
+		configPath,
+		`
+siteConfig:
+  taxonomySort:
+    categories:
+      key: updated
+      uncategorizedPosition: top
+`,
+		"utf8",
+	);
+
+	assert.throws(() => loadExternalSiteConfigYaml(configPath), /taxonomySort/i);
+});
+
 test("loadExternalSiteConfigYaml rejects legacy nested QingYan configs", async (t) => {
 	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-config-"));
 	const configPath = path.join(tempRoot, "site.config.yaml");

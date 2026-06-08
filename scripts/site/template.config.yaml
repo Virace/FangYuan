@@ -141,6 +141,24 @@ siteConfig:
     # 实际排序仍会先比较 sticky，再应用这里的字段和方向。
     order: desc
 
+  taxonomySort:
+    categories:
+      # 分类排序字段：name 表示分类名，count 表示文章数量。
+      key: name
+
+      # 分类排序方向：asc 正序，desc 倒序。
+      order: asc
+
+      # 未分类位置：sorted 表示参与排序，last 表示固定在分类列表最后。
+      uncategorizedPosition: sorted
+
+    tags:
+      # 标签排序字段：name 表示标签名，count 表示文章数量。
+      key: name
+
+      # 标签排序方向：asc 正序，desc 倒序。
+      order: asc
+
 navBarI18n:
   # 导航文案映射表。
   # 键名通常与 navBarConfig.links 里的 name 或 id 对应。

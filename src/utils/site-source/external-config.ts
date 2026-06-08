@@ -19,7 +19,7 @@ export type ExternalSiteConfigYaml = {
 	fangyuanConfigVersion?: number;
 	siteConfig?: Omit<
 		Partial<SiteConfig>,
-		"themeColor" | "banner" | "toc" | "permalink" | "postSort"
+		"themeColor" | "banner" | "toc" | "permalink" | "postSort" | "taxonomySort"
 	> & {
 		themeColor?: Partial<SiteConfig["themeColor"]>;
 		banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
@@ -30,6 +30,10 @@ export type ExternalSiteConfigYaml = {
 			postPatternRules?: SiteConfig["permalink"]["postPatternRules"];
 		};
 		postSort?: Partial<SiteConfig["postSort"]>;
+		taxonomySort?: {
+			categories?: Partial<SiteConfig["taxonomySort"]["categories"]>;
+			tags?: Partial<SiteConfig["taxonomySort"]["tags"]>;
+		};
 	};
 	navBarConfig?: {
 		links?: NavBarConfig["links"];
@@ -62,7 +66,15 @@ const postSortKeySchema = z.enum([
 	"alias",
 	"filename",
 ]);
+const taxonomySortKeySchema = z.enum(["name", "count"]);
+const uncategorizedPositionSchema = z.enum(["sorted", "last"]);
 const sortOrderSchema = z.enum(["asc", "desc"]);
+const taxonomySortSchema = z
+	.object({
+		key: taxonomySortKeySchema.optional(),
+		order: sortOrderSchema.optional(),
+	})
+	.strict();
 const tocDepthSchema = z.union([z.literal(1), z.literal(2), z.literal(3)]);
 const siteUrlSchema = z.string().refine((value) => {
 	try {
@@ -203,6 +215,17 @@ const externalSiteConfigSchema: z.ZodTypeAny = z
 					.object({
 						key: postSortKeySchema.optional(),
 						order: sortOrderSchema.optional(),
+					})
+					.strict()
+					.optional(),
+				taxonomySort: z
+					.object({
+						categories: taxonomySortSchema
+							.extend({
+								uncategorizedPosition: uncategorizedPositionSchema.optional(),
+							})
+							.optional(),
+						tags: taxonomySortSchema.optional(),
 					})
 					.strict()
 					.optional(),
