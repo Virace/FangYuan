@@ -55,6 +55,7 @@ test("planEditorUpdates plans missing external editor files", async (t) => {
 	]);
 	assert.equal(frontmatterConfig["frontMatter.content.publicFolder"], "assets");
 	assert.equal(hasField(frontmatterConfig, "default", "comment"), true);
+	assert.equal(hasField(frontmatterConfig, "spec", "title"), true);
 	assert.equal(hasField(frontmatterConfig, "spec", "comment"), true);
 });
 
@@ -93,7 +94,10 @@ test("mergeFrontmatterConfig preserves external fields and adds managed comment 
 			},
 			{
 				name: "spec",
-				fields: [{ title: "comment", name: "comment", type: "boolean" }],
+				fields: [
+					{ title: "title", name: "title", type: "string", single: true },
+					{ title: "comment", name: "comment", type: "boolean" },
+				],
 			},
 		],
 	};
@@ -105,6 +109,7 @@ test("mergeFrontmatterConfig preserves external fields and adds managed comment 
 	assert.equal(hasField(config, "default", "commentStatus"), true);
 	assert.equal(hasField(config, "default", "customField"), true);
 	assert.equal(hasField(config, "default", "comment"), true);
+	assert.equal(hasField(config, "spec", "title"), true);
 	assert.equal(hasField(config, "spec", "comment"), true);
 	assert.equal(hasField(config, "custom", "customOnly"), true);
 	assert.deepEqual(notes, [

@@ -62,6 +62,7 @@ test("frontmatter.json mirrors current FangYuan content frontmatter fields", asy
 		"comment",
 	]);
 	assert.deepEqual(getFieldNames(specType), [
+		"title",
 		"alias",
 		"permalink",
 		"toc",

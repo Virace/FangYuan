@@ -125,6 +125,12 @@
       "clearEmpty": true,
       "fields": [
         {
+          "title": "title",
+          "name": "title",
+          "type": "string",
+          "single": true
+        },
+        {
           "title": "alias",
           "name": "alias",
           "type": "string"

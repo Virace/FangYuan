@@ -43,6 +43,7 @@ type PostRouteData = {
 };
 
 type SpecRouteData = {
+	title?: string;
 	alias?: string;
 	permalink?: string;
 	toc?: TocFrontmatter;

@@ -117,6 +117,7 @@ const specCollection: ReturnType<typeof defineCollection> = defineCollection({
 		}),
 	),
 	schema: z.object({
+		title: z.string().optional().default(""),
 		alias: z.string().optional().default(""),
 		permalink: z.string().optional().default(""),
 		toc: tocFrontmatterSchema,

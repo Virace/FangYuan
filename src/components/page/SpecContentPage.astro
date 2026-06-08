@@ -15,7 +15,9 @@ import { commentConfig, qingyanConfig, siteConfig } from "../../config";
 const { entry } = Astro.props as {
 	entry: SpecContentEntry;
 };
-const pageTitle = entry.id === "about" ? i18n(I18nKey.about) : entry.id;
+const frontmatterTitle = entry.data.title?.trim();
+const pageTitle =
+	frontmatterTitle || (entry.id === "about" ? i18n(I18nKey.about) : entry.id);
 const { Content, headings } = await render(entry as never);
 const enablePhotoSwipe = shouldEnablePhotoSwipe(entry.body);
 const resolvedToc = resolveTocConfig({

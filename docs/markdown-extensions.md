@@ -80,6 +80,7 @@ toc:
 
 ```yaml
 ---
+title: 关于本站
 published: 2026-05-04
 updated: 2026-05-04
 toc:
