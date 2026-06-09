@@ -54,6 +54,7 @@ import {
 	registerExternalSiteDevWatch,
 } from "./src/utils/site-source/dev-watch.mjs";
 import { resolveDevWatchIgnoredPatterns } from "./src/utils/site-source/dev-watch-ignore.mjs";
+import { normalizeAstroContentImageImporterQuery } from "./src/utils/site-source/content-image-importer.ts";
 import { loadExternalSiteConfigYaml } from "./src/utils/site-source/external-config.ts";
 import {
 	normalizeConfiguredBase,
@@ -385,6 +386,29 @@ function externalSiteAssetPlugin() {
 	};
 }
 
+function externalContentImageImporterPlugin() {
+	return {
+		name: "fangyuan-external-content-image-importers",
+		enforce: "pre",
+		transform(code, id) {
+			const modulePath = id.split("?")[0].replace(/\\/g, "/");
+			if (!modulePath.endsWith("/.astro/content-assets.mjs")) {
+				return null;
+			}
+
+			const normalizedCode = normalizeAstroContentImageImporterQuery(code);
+			if (normalizedCode === code) {
+				return null;
+			}
+
+			return {
+				code: normalizedCode,
+				map: null,
+			};
+		},
+	};
+}
+
 function externalSiteDevWatchIntegration() {
 	return {
 		name: "fangyuan-external-site-dev-watch",
@@ -629,6 +653,7 @@ export default defineConfig({
 		plugins: [
 			createDevWatcherListenerLimitPlugin(),
 			externalSiteAssetModulePlugin(),
+			externalContentImageImporterPlugin(),
 			externalSiteAssetPlugin(),
 			externalSiteAssetDevServerPlugin(),
 			tailwindcss(),
