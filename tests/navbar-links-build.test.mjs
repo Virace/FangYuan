@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -91,12 +91,12 @@ AAA content
 );
 
 test(
-	"build falls back to default about route when external about content is missing",
+	"build fails clearly when external about content is missing",
 	{ concurrency: false },
 	async (t) => {
 		await withMutableSiteFixture(
 			t,
-			async ({ distRoot, siteAboutPath, siteConfigPath, postDir, markCreated }) => {
+			async ({ siteConfigPath, postDir, markCreated }) => {
 				await writeFile(
 					siteConfigPath,
 					`siteConfig:
@@ -133,18 +133,10 @@ Probe
 `,
 					"utf8",
 				);
-				await rm(siteAboutPath, { force: true });
 
-				runBuild();
+				const result = runBuild(1);
 
-				const homeHtml = await readFile(path.join(distRoot, "index.html"), "utf8");
-				const aboutHtml = await readFile(
-					path.join(distRoot, "about.html"),
-					"utf8",
-				);
-
-				assert.match(homeHtml, /href="\/about\.html"/);
-				assert.match(aboutHtml, /About/i);
+				assert.match(result.stdout + result.stderr, /About page content not found/);
 			},
 		);
 	},
