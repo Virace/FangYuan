@@ -11,6 +11,9 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.9
         version: 0.9.9(prettier@3.7.4)(typescript@5.9.3)
+      '@astrojs/markdown-remark':
+        specifier: 7.2.0
+        version: 7.2.0
       '@astrojs/rss':
         specifier: ^4.0.18
         version: 4.0.18
