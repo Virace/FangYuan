@@ -1,0 +1,192 @@
+- main:
+  - heading "主页" [level=1]
+  - link "内容与主题分离，以及评论接入":
+    - /url: /extra/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the 指南 category":
+    - /url: /archive/?category=%E6%8C%87%E5%8D%97
+    - text: ""
+  - img
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /
+  - link "View all posts with the 架构 tag":
+    - /url: /archive/?tag=%E6%9E%B6%E6%9E%84
+    - text: ""
+  - text: /
+  - link "View all posts with the 评论 tag":
+    - /url: /archive/?tag=%E8%AF%84%E8%AE%BA
+    - text: ""
+  - text: /
+  - link "View all posts with the QingYan tag":
+    - /url: /archive/?tag=QingYan
+    - text: ""
+  - text: /说明 FangYuan 如何把主题仓库、站点内容和评论能力拆开维护。 \d+ 字 \| 3 分钟/
+  - link "内容与主题分离，以及评论接入":
+    - /url: /extra/
+    - img
+  - link "Expressive Code 示例":
+    - /url: /expressive-code/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the 示例 category":
+    - /url: /archive/?category=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - img
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the 写作 tag":
+    - /url: /archive/?tag=%E5%86%99%E4%BD%9C
+    - text: ""
+  - text: /
+  - link "View all posts with the 示例 tag":
+    - /url: /archive/?tag=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - text: /使用 Expressive Code 展示 Markdown 代码块效果。 \d+ 字 \| 5 分钟/
+  - link "Expressive Code 示例":
+    - /url: /expressive-code/
+    - img
+  - link "内容指令扩展示例":
+    - /url: /content-directives/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the 示例 category":
+    - /url: /archive/?category=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - img
+  - link "View all posts with the 示例 tag":
+    - /url: /archive/?tag=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - text: /
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /
+  - link "View all posts with the 指令 tag":
+    - /url: /archive/?tag=%E6%8C%87%E4%BB%A4
+    - text: ""
+  - text: /
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /集中展示 FangYuan 后续补充的内容指令组件。 \d+ 字 \| 2 分钟/
+  - link "内容指令扩展示例":
+    - /url: /content-directives/
+    - img
+  - link "Markdown 扩展功能":
+    - /url: /markdown-extended/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the 示例 category":
+    - /url: /archive/?category=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - img
+  - link "View all posts with the 示例 tag":
+    - /url: /archive/?tag=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - text: /
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /了解 FangYuan 中支持的 Markdown 扩展能力。 \d+ 字 \| 3 分钟/
+  - link "Markdown 扩展功能":
+    - /url: /markdown-extended/
+    - img
+  - link "在文章中嵌入视频":
+    - /url: /video/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the 示例 category":
+    - /url: /archive/?category=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - img
+  - link "View all posts with the 示例 tag":
+    - /url: /archive/?tag=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - text: /
+  - link "View all posts with the 视频 tag":
+    - /url: /archive/?tag=%E8%A7%86%E9%A2%91
+    - text: ""
+  - text: /这篇文章演示如何在博客文章中嵌入视频。 \d+ 字 \| 1 分钟/
+  - link "在文章中嵌入视频":
+    - /url: /video/
+    - img
+  - link "FangYuan 简明指南":
+    - /url: /guide/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the 指南 category":
+    - /url: /archive/?category=%E6%8C%87%E5%8D%97
+    - text: ""
+  - img
+  - link "View all posts with the FangYuan tag":
+    - /url: /archive/?tag=FangYuan
+    - text: ""
+  - text: /
+  - link "View all posts with the 写作 tag":
+    - /url: /archive/?tag=%E5%86%99%E4%BD%9C
+    - text: ""
+  - text: /
+  - link "View all posts with the 自定义 tag":
+    - /url: /archive/?tag=%E8%87%AA%E5%AE%9A%E4%B9%89
+    - text: ""
+  - text: /说明如何使用这个博客模板。 \d+ 字 \| 1 分钟/
+  - link "FangYuan 简明指南":
+    - /url: /guide/
+    - img
+    - img "Cover Image of the Post"
+  - link "Markdown 示例":
+    - /url: /markdown/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the 示例 category":
+    - /url: /archive/?category=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - img
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the 写作 tag":
+    - /url: /archive/?tag=%E5%86%99%E4%BD%9C
+    - text: ""
+  - text: /
+  - link "View all posts with the 示例 tag":
+    - /url: /archive/?tag=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - text: /一篇用于展示 Markdown 基础语法的简单示例文章。 \d+ 字 \| 4 分钟/
+  - link "Markdown 示例":
+    - /url: /markdown/
+    - img
+  - img
+  - text: "1"
+  - img

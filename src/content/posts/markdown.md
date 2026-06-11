@@ -1,54 +1,162 @@
 ---
-title: Markdown Baseline Sample
-published: 2024-04-01
-description: 用于校验 FangYuan 默认 Markdown 渲染效果的基础示例。
-tags: [Markdown, FangYuan, Example]
-category: Notes
+title: Markdown 示例
+published: 2026-01-12
+updated: 2026-04-24
+description: 一篇用于展示 Markdown 基础语法的简单示例文章。
+tags: [Markdown, 写作, 示例]
+category: 示例
 draft: false
 ---
 
-# Markdown Baseline Sample
+# 一级标题
 
-This note keeps a compact but practical Markdown sample for FangYuan, so later theme changes can quickly verify typography, spacing, lists, tables, quotes, and code blocks.
+段落之间使用空行分隔。
 
-## Text
+第二段。_斜体_、**粗体**，以及 `等宽文本`。无序列表看起来像这样：
 
-Paragraphs are separated by a blank line.
+- 第一项
+- 第二项
+- 第三项
 
-You can mix _italic_, **bold**, `inline code`, and [links](https://astro.build) in the same paragraph without any special handling.
+请注意，正文内容会从缩进 4 个空格之后开始。
 
-> A short quote block is useful for callouts, excerpts, or migration notes.
+> 引用块
+> 可以这样写。
+>
+> 如果需要，
+> 也可以跨越多个段落。
 
-## Lists
+用 3 个连字符表示破折号。用 2 个连字符表示范围（例如“第 12--14 章”）。三个点 ... 会被转换为省略号。
+支持 Unicode。☺
 
-1. Prepare a topic
-2. Write the frontmatter
-3. Publish when the note is ready
+## 二级标题
 
-- unordered items also work well
-- especially for small checklists
-- or short content summaries
+下面是一个有序列表：
 
-## Code
+1. 第一项
+2. 第二项
+3. 第三项
 
-```ts
-export function siteName(): string {
-	return "FangYuan";
+再次注意，正文会从左侧第 4 列开始，也就是缩进 4 个字符。下面是一个代码示例：
+
+    # 再强调一次……
+    for i in 1 .. 10 { do-something(i) }
+
+如你所见，这里用了 4 个空格缩进。除此之外，你也可以不用缩进，而是改用围栏代码块：
+
+```
+define foobar() {
+    print "欢迎来到示例世界！";
 }
 ```
 
-## Table
+这样复制和粘贴会更方便。你也可以额外给围栏代码块标记语言，让 Pandoc 执行语法高亮：
 
-| Item | Purpose |
-| :-- | :-- |
-| `title` | Display name of the post |
-| `description` | Summary shown in listings |
-| `draft` | Keeps the post hidden until ready |
+```python
+import time
+# 快一点，开始数到十！
+for i in range(10):
+    # （不过别太快）
+    time.sleep(0.5)
+    print(i)
+```
 
-## Math
+### 三级标题
 
-Inline math looks like $\omega = d\phi / dt$.
+下面是一个嵌套列表示例：
 
-Display math can also be used:
+1. 先准备这些食材：
+
+    - 胡萝卜
+    - 芹菜
+    - 扁豆
+
+2. 烧一锅水。
+
+3. 把所有东西都倒进锅里，然后按下面这个流程操作：
+
+        找到木勺
+        打开锅盖
+        搅拌
+        盖上锅盖
+        小心地把木勺架在锅柄上
+        等 10 分钟
+        回到第一步（或者煮好后关火）
+
+    不要碰到木勺，否则它会掉下来。
+
+再看一次，正文总是会和 4 空格缩进对齐，包括上面接在第 3 项后面的那一行。
+
+这里有一个指向[某个网站](http://foo.bar)的链接、一个指向[本地文档](local-doc.html)的链接，以及一个指向[当前文档章节标题](#二级标题)的链接。这里还有一个脚注 [^1]。
+
+[^1]: 这里是脚注内容。
+
+表格可以这样写：
+
+尺码 材质 颜色
+
+---
+
+9 皮革 棕色
+10 麻布 原色
+11 玻璃 透明
+
+表：鞋子、尺码以及材质
+
+上面这一行就是表格标题。Pandoc 还支持多行表格：
+
+---
+
+关键词 文本
+
+---
+
+红色 日落、苹果，以及
+其他偏红的
+东西。
+
+绿色 树叶、草地、青蛙，
+还有那些当绿色
+并不轻松的东西。
+
+---
+
+接下来是一条分隔线。
+
+---
+
+下面是一个定义列表：
+
+苹果
+: 适合拿来做苹果酱。
+橙子
+: 典型的柑橘类水果。
+番茄
+: 英文 tomato 里没有多余的 `e`。
+
+这里的正文同样缩进 4 个空格。（如果你想让版面更松一些，可以在每组术语和定义之间加一个空行。）
+
+下面是一个“行块”：
+
+| 第一行
+| 第二行
+| 第三行
+
+图片也可以这样写：
+
+[//]: # (![示例图片]&#40;./demo-banner.png "一张示例图片"&#41;)
+
+行内数学公式可以这样写：$\omega = d\phi / dt$。独立成块的数学公式通常单独占一行，并放在双美元符号之间：
 
 $$I = \int \rho R^{2} dV$$
+
+$$
+\begin{equation*}
+\pi
+=3.1415926535
+ \;8979323846\;2643383279\;5028841971\;6939937510\;5820974944
+ \;5923078164\;0628620899\;8628034825\;3421170679\;\ldots
+\end{equation*}
+$$
+
+另外，如果你希望某些标点按字面显示，可以用反斜杠进行转义，例如：\`foo\`、\*bar\* 等。

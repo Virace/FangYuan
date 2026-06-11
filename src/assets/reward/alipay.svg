@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" fill="none">
+  <rect width="640" height="640" rx="40" fill="#F8FAFC"/>
+  <rect x="80" y="80" width="480" height="480" rx="24" fill="white" stroke="#DBEAFE" stroke-width="16"/>
+  <circle cx="172" cy="172" r="48" fill="#2563EB"/>
+  <circle cx="320" cy="172" r="48" fill="#111827"/>
+  <circle cx="468" cy="172" r="48" fill="#2563EB"/>
+  <circle cx="172" cy="320" r="48" fill="#111827"/>
+  <circle cx="320" cy="320" r="48" fill="#2563EB"/>
+  <circle cx="468" cy="320" r="48" fill="#111827"/>
+  <circle cx="172" cy="468" r="48" fill="#2563EB"/>
+  <circle cx="320" cy="468" r="48" fill="#111827"/>
+  <circle cx="468" cy="468" r="48" fill="#2563EB"/>
+  <text x="320" y="592" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="#1D4ED8">Alipay Placeholder</text>
+</svg>

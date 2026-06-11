@@ -10,8 +10,70 @@ export const tr: Translation = {
 	[Key.tags]: "Taglar",
 	[Key.categories]: "Katagoriler",
 	[Key.recentPosts]: "Son Paylaşımlar",
+	[Key.pinned]: "Sabit",
+	[Key.pinnedPosts]: "Sabitlenenler",
 
 	[Key.comments]: "Yorumlar",
+	[Key.commentsLoading]: "Yorumlar yükleniyor...",
+	[Key.commentsEmpty]: "Henüz yorum yok. İlk yorumu sen yap.",
+	[Key.commentsDisabled]: "Yorumlar şu anda kullanılamıyor.",
+	[Key.commentsLoadFailed]: "Yorumlar yüklenemedi.",
+	[Key.commentsSubmit]: "Yorum gönder",
+	[Key.commentsSubmitting]: "Gönderiliyor...",
+	[Key.commentsSubmitFailed]:
+		"Yorum gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+	[Key.commentsSubmitSuccess]: "Yorum başarıyla gönderildi.",
+	[Key.commentsReply]: "Yanıtla",
+	[Key.commentsReplying]: "Bu yoruma yanıt yazılıyor.",
+	[Key.commentsReplyingTo]: "{author} yorumuna yanıt yazılıyor",
+	[Key.commentsCancelReply]: "Yanıtı iptal et",
+	[Key.commentsEmoji]: "İfade",
+	[Key.commentsCaptcha]: "Doğrulama kodu",
+	[Key.commentsCaptchaRefresh]: "Doğrulama kodunu yenile",
+	[Key.commentsCaptchaVerify]: "Doğrula",
+	[Key.commentsCaptchaCancel]: "Doğrulamayı iptal et",
+	[Key.commentsCaptchaVerified]:
+		"Doğrulama tamamlandı. Yorum yapmaya veya oy vermeye devam edebilirsiniz.",
+	[Key.commentsCaptchaRequiredTip]:
+		"Devam etmeden önce gerekli doğrulamayı burada tamamlayın.",
+	[Key.commentsCaptchaUnsupported]:
+		"Mevcut captcha türü bu arayüzde henüz desteklenmiyor.",
+	[Key.commentsCaptchaVerifyFailed]:
+		"Captcha doğrulaması başarısız oldu. Lütfen tekrar deneyin.",
+	[Key.commentsVoteUp]: "Olumlu oy",
+	[Key.commentsVoteDown]: "Olumsuz oy",
+	[Key.commentsVoteFailed]:
+		"Oy gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+	[Key.commentsVoteConfirmTipUp]:
+		"Bu olumlu oyu onaylıyor musun? Daha sonra değiştiremezsin.",
+	[Key.commentsVoteConfirmTipDown]:
+		"Bu olumsuz oyu onaylıyor musun? Daha sonra değiştiremezsin.",
+	[Key.commentsVoteConfirmProceed]: "Onayla",
+	[Key.commentsVoteConfirmCancel]: "Vazgeç",
+	[Key.commentsSortNewest]: "En yeni önce",
+	[Key.commentsSortOldest]: "En eski önce",
+	[Key.commentsPaginationPrevious]: "Önceki",
+	[Key.commentsPaginationNext]: "Sonraki",
+	[Key.commentsPaginationStatus]: "Sayfa",
+	[Key.commentsModerationNotice]: "Onay bekliyor",
+	[Key.commentsFormName]: "Ad",
+	[Key.commentsFormEmail]: "E-posta",
+	[Key.commentsFormWebsite]: "Web sitesi",
+	[Key.commentsFormOptionalSuffix]: " (isteğe bağlı)",
+	[Key.commentsRememberProfile]: "Beni hatırla",
+	[Key.commentsNotifyOnReply]: "Yanıt bildirimi",
+	[Key.commentsFormContent]: "Yorum",
+	[Key.commentCountSingular]: "yorum",
+	[Key.commentCountPlural]: "yorum",
+	[Key.commentsValidationNameRequired]: "Lütfen bir ad girin.",
+	[Key.commentsValidationEmailInvalid]:
+		"Lütfen geçerli bir e-posta adresi girin.",
+	[Key.commentsValidationContentRequired]: "Yorum içeriği boş olamaz.",
+	[Key.commentsValidationCaptchaRequired]: "Lütfen captcha kodunu girin.",
+	[Key.commentsValidationContentUnsafe]:
+		"Yorum şüpheli içerik içeriyor. Lütfen düzenleyip tekrar deneyin.",
+	[Key.commentsValidationWebsiteInvalid]:
+		"Lütfen geçerli bir web sitesi URL’si girin.",
 
 	[Key.untitled]: "Başlıksız",
 	[Key.uncategorized]: "Katagorisiz",
@@ -34,5 +96,15 @@ export const tr: Translation = {
 
 	[Key.author]: "Yazar",
 	[Key.publishedAt]: "Yayınlanma:",
+	[Key.pageViews]: "Görüntülenme",
+	[Key.pageFeedbackLike]: "Beğen",
+	[Key.pageFeedbackLiked]: "Beğenildi",
+	[Key.pageFeedbackLikeFailed]:
+		"Beğeni gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+	[Key.pageFeedbackReward]: "Yazara bir kahve ısmarla",
+	[Key.pageFeedbackRewardTitle]: "Bu yazıyı destekle",
+	[Key.pageFeedbackRewardDescription]:
+		"Bu yazı işine yaradıysa aşağıdaki kanallar üzerinden yazarı destekleyebilirsin.",
+	[Key.pageFeedbackClose]: "Kapat",
 	[Key.license]: "Lisans",
 };

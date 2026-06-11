@@ -10,8 +10,72 @@ export const es: Translation = {
 	[Key.tags]: "Etiquetas",
 	[Key.categories]: "Categorías",
 	[Key.recentPosts]: "Publicaciones recientes",
+	[Key.pinned]: "Destacado",
+	[Key.pinnedPosts]: "Fijados",
 
 	[Key.comments]: "Comentarios",
+	[Key.commentsLoading]: "Cargando comentarios...",
+	[Key.commentsEmpty]: "Aún no hay comentarios. Sé el primero en participar.",
+	[Key.commentsDisabled]:
+		"Los comentarios no están disponibles en este momento.",
+	[Key.commentsLoadFailed]: "No se pudieron cargar los comentarios.",
+	[Key.commentsSubmit]: "Publicar comentario",
+	[Key.commentsSubmitting]: "Publicando...",
+	[Key.commentsSubmitFailed]:
+		"No se pudo enviar el comentario. Inténtalo de nuevo más tarde.",
+	[Key.commentsSubmitSuccess]: "Comentario enviado correctamente.",
+	[Key.commentsReply]: "Responder",
+	[Key.commentsReplying]: "Respondiendo a este comentario.",
+	[Key.commentsReplyingTo]: "Respondiendo al comentario de {author}",
+	[Key.commentsCancelReply]: "Cancelar respuesta",
+	[Key.commentsEmoji]: "Emojis",
+	[Key.commentsCaptcha]: "Código de verificación",
+	[Key.commentsCaptchaRefresh]: "Actualizar captcha",
+	[Key.commentsCaptchaVerify]: "Verificar captcha",
+	[Key.commentsCaptchaCancel]: "Cancelar verificación",
+	[Key.commentsCaptchaVerified]:
+		"Captcha verificado. Ya puedes comentar o votar.",
+	[Key.commentsCaptchaRequiredTip]:
+		"Completa aquí la verificación requerida antes de continuar.",
+	[Key.commentsCaptchaUnsupported]:
+		"Este frontend todavía no admite el tipo de captcha actual.",
+	[Key.commentsCaptchaVerifyFailed]:
+		"La verificación del captcha falló. Inténtalo de nuevo.",
+	[Key.commentsVoteUp]: "Voto positivo",
+	[Key.commentsVoteDown]: "Voto negativo",
+	[Key.commentsVoteFailed]:
+		"No se pudo enviar el voto. Inténtalo de nuevo más tarde.",
+	[Key.commentsVoteConfirmTipUp]:
+		"¿Confirmas este voto positivo? No podrás cambiarlo después.",
+	[Key.commentsVoteConfirmTipDown]:
+		"¿Confirmas este voto negativo? No podrás cambiarlo después.",
+	[Key.commentsVoteConfirmProceed]: "Confirmar",
+	[Key.commentsVoteConfirmCancel]: "Cancelar",
+	[Key.commentsSortNewest]: "Más recientes primero",
+	[Key.commentsSortOldest]: "Más antiguos primero",
+	[Key.commentsPaginationPrevious]: "Anterior",
+	[Key.commentsPaginationNext]: "Siguiente",
+	[Key.commentsPaginationStatus]: "Página",
+	[Key.commentsModerationNotice]: "Pendiente de moderación",
+	[Key.commentsFormName]: "Nombre",
+	[Key.commentsFormEmail]: "Correo electrónico",
+	[Key.commentsFormWebsite]: "Sitio web",
+	[Key.commentsFormOptionalSuffix]: " (opcional)",
+	[Key.commentsRememberProfile]: "Recordarme",
+	[Key.commentsNotifyOnReply]: "Avisos de respuesta",
+	[Key.commentsFormContent]: "Comentario",
+	[Key.commentCountSingular]: "comentario",
+	[Key.commentCountPlural]: "comentarios",
+	[Key.commentsValidationNameRequired]: "Introduce un nombre.",
+	[Key.commentsValidationEmailInvalid]:
+		"Introduce una dirección de correo válida.",
+	[Key.commentsValidationContentRequired]:
+		"El contenido del comentario no puede estar vacío.",
+	[Key.commentsValidationCaptchaRequired]: "Introduce el código del captcha.",
+	[Key.commentsValidationContentUnsafe]:
+		"El comentario contiene contenido sospechoso. Revísalo antes de enviarlo.",
+	[Key.commentsValidationWebsiteInvalid]:
+		"Introduce una URL de sitio web válida.",
 
 	[Key.untitled]: "Sin título",
 	[Key.uncategorized]: "Sin categoría",
@@ -34,5 +98,15 @@ export const es: Translation = {
 
 	[Key.author]: "Autor",
 	[Key.publishedAt]: "Publicado el",
+	[Key.pageViews]: "Vistas",
+	[Key.pageFeedbackLike]: "Me gusta",
+	[Key.pageFeedbackLiked]: "Te gusta",
+	[Key.pageFeedbackLikeFailed]:
+		"No se pudo enviar el me gusta. Inténtalo de nuevo más tarde.",
+	[Key.pageFeedbackReward]: "Invita al autor a un café",
+	[Key.pageFeedbackRewardTitle]: "Apoya esta publicación",
+	[Key.pageFeedbackRewardDescription]:
+		"Si esta publicación te ayudó, puedes apoyar al autor a través de los canales de abajo.",
+	[Key.pageFeedbackClose]: "Cerrar",
 	[Key.license]: "Licencia",
 };

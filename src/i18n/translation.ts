@@ -1,5 +1,5 @@
 import { siteConfig } from "../config";
-import type I18nKey from "./i18nKey";
+import type { I18nKey } from "./i18nKey";
 import { en } from "./languages/en";
 import { es } from "./languages/es";
 import { id } from "./languages/id";
@@ -38,6 +38,12 @@ const map: { [key: string]: Translation } = {
 	tr_tr: tr,
 };
 
+const builtInNavKeyAliases: Record<string, I18nKey> = {
+	"nav.home": "home",
+	"nav.archive": "archive",
+	"nav.about": "about",
+};
+
 export function getTranslation(lang: string): Translation {
 	return map[lang.toLowerCase()] || defaultTranslation;
 }
@@ -45,4 +51,18 @@ export function getTranslation(lang: string): Translation {
 export function i18n(key: I18nKey): string {
 	const lang = siteConfig.lang || "en";
 	return getTranslation(lang)[key];
+}
+
+export function resolveI18nKey(
+	key: string,
+	overrides: Record<string, string> = {},
+): string {
+	if (Object.hasOwn(overrides, key)) {
+		return overrides[key];
+	}
+
+	const lang = siteConfig.lang || "en";
+	const translation = getTranslation(lang) as Record<string, string>;
+	const translationKey = builtInNavKeyAliases[key] ?? key;
+	return translation[translationKey] ?? key;
 }

@@ -8,7 +8,7 @@
 ## Checklist
 
 - [ ] I have read the [**CONTRIBUTING**](https://github.com/Virace/FangYuan/blob/main/CONTRIBUTING.md) document.
-- [ ] I have checked to ensure that this Pull Request is not for personal changes.
+- [ ] This Pull Request is focused on one clear change.
 - [ ] I have performed a self-review of my own code.
 - [ ] My changes generate no new warnings.
 

@@ -1,0 +1,16 @@
+- link "主页":
+  - /url: /
+  - text: ""
+  - img
+- link "归档":
+  - /url: /archive/
+  - text: ""
+  - img
+- link "关于":
+  - /url: /about/
+  - text: ""
+  - img
+- link "GitHub":
+  - /url: https://github.com/Virace/FangYuan
+  - text: ""
+  - img

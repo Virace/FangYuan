@@ -1,0 +1,171 @@
+- main:
+  - img
+  - text: /\d+ 字/
+  - img
+  - text: 4 分钟 Markdown 示例
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the 示例 category":
+    - /url: /archive/?category=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - img
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the 写作 tag":
+    - /url: /archive/?tag=%E5%86%99%E4%BD%9C
+    - text: ""
+  - text: /
+  - link "View all posts with the 示例 tag":
+    - /url: /archive/?tag=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - 'heading "一级标题 #" [level=1]':
+    - text: ""
+    - link "#":
+      - /url: "#一级标题"
+  - paragraph: 段落之间使用空行分隔。
+  - paragraph:
+    - text: 第二段。
+    - emphasis: 斜体
+    - text: 、
+    - strong: 粗体
+    - text: ，以及
+    - code: 等宽文本
+    - text: 。无序列表看起来像这样：
+  - list:
+    - listitem: 第一项
+    - listitem: 第二项
+    - listitem: 第三项
+  - paragraph: 请注意，正文内容会从缩进 4 个空格之后开始。
+  - blockquote:
+    - paragraph: 引用块 可以这样写。
+    - paragraph: 如果需要， 也可以跨越多个段落。
+  - paragraph: /用 3 个连字符表示破折号。用 2 个连字符表示范围（例如“第 \d+—\d+ 章”）。三个点 … 会被转换为省略号。 支持 Unicode。☺/
+  - 'heading "二级标题 #" [level=2]':
+    - text: ""
+    - link "#":
+      - /url: "#二级标题"
+  - paragraph: 下面是一个有序列表：
+  - list:
+    - listitem: 第一项
+    - listitem: 第二项
+    - listitem: 第三项
+  - paragraph: 再次注意，正文会从左侧第 4 列开始，也就是缩进 4 个字符。下面是一个代码示例：
+  - figure:
+    - text: plaintext
+    - code: "/# 再强调一次…… for i in 1 \\.\\. \\d+ \\{ do-something\\(i\\) \\}/"
+    - button "Copy code":
+      - img
+      - img
+  - paragraph: 如你所见，这里用了 4 个空格缩进。除此之外，你也可以不用缩进，而是改用围栏代码块：
+  - figure:
+    - text: plaintext
+    - code: "define foobar() { print \"欢迎来到示例世界！\"; }"
+    - button "Copy code":
+      - img
+      - img
+  - paragraph: 这样复制和粘贴会更方便。你也可以额外给围栏代码块标记语言，让 Pandoc 执行语法高亮：
+  - figure:
+    - text: python
+    - code: "/import time # 快一点，开始数到十！ for i in range\\(\\d+\\): # （不过别太快） time\\.sleep\\(0\\.5\\) print\\(i\\)/"
+    - button "Copy code":
+      - img
+      - img
+  - 'heading "三级标题 #" [level=3]':
+    - text: ""
+    - link "#":
+      - /url: "#三级标题"
+  - paragraph: 下面是一个嵌套列表示例：
+  - list:
+    - listitem:
+      - paragraph: 先准备这些食材：
+      - list:
+        - listitem: 胡萝卜
+        - listitem: 芹菜
+        - listitem: 扁豆
+    - listitem:
+      - paragraph: 烧一锅水。
+    - listitem:
+      - paragraph: 把所有东西都倒进锅里，然后按下面这个流程操作：
+      - figure:
+        - text: plaintext
+        - code: /找到木勺 打开锅盖 搅拌 盖上锅盖 小心地把木勺架在锅柄上 等 \d+ 分钟 回到第一步（或者煮好后关火）/
+        - button "Copy code":
+          - img
+          - img
+      - paragraph: 不要碰到木勺，否则它会掉下来。
+  - paragraph: 再看一次，正文总是会和 4 空格缩进对齐，包括上面接在第 3 项后面的那一行。
+  - paragraph:
+    - text: 这里有一个指向
+    - link "某个网站":
+      - /url: http://foo.bar
+    - text: 的链接、一个指向
+    - link "本地文档":
+      - /url: local-doc.html
+    - text: 的链接，以及一个指向
+    - link "当前文档章节标题":
+      - /url: "#%E4%BA%8C%E7%BA%A7%E6%A0%87%E9%A2%98"
+    - text: 的链接。这里还有一个脚注
+    - superscript:
+      - link "1":
+        - /url: "#user-content-fn-1"
+    - text: 。
+  - paragraph: 表格可以这样写：
+  - paragraph: 尺码 材质 颜色
+  - separator
+  - paragraph: /9 皮革 棕色 \d+ 麻布 原色 \d+ 玻璃 透明/
+  - paragraph: 表：鞋子、尺码以及材质
+  - paragraph: 上面这一行就是表格标题。Pandoc 还支持多行表格：
+  - separator
+  - paragraph: 关键词 文本
+  - separator
+  - paragraph: 红色 日落、苹果，以及 其他偏红的 东西。
+  - paragraph: 绿色 树叶、草地、青蛙， 还有那些当绿色 并不轻松的东西。
+  - separator
+  - paragraph: 接下来是一条分隔线。
+  - separator
+  - paragraph: 下面是一个定义列表：
+  - paragraph:
+    - text: "苹果 : 适合拿来做苹果酱。 橙子 : 典型的柑橘类水果。 番茄 : 英文 tomato 里没有多余的"
+    - code: e
+    - text: 。
+  - paragraph: 这里的正文同样缩进 4 个空格。（如果你想让版面更松一些，可以在每组术语和定义之间加一个空行。）
+  - paragraph: 下面是一个“行块”：
+  - paragraph: "| 第一行 | 第二行 | 第三行"
+  - paragraph: 图片也可以这样写：
+  - paragraph:
+    - text: 行内数学公式可以这样写：
+    - math: ω = d ϕ / d t
+    - text: 。独立成块的数学公式通常单独占一行，并放在双美元符号之间：
+  - paragraph:
+    - math: I = ∫ ρ R 2 d V
+  - math: /π = \d+\.\d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ …/
+  - paragraph: "另外，如果你希望某些标点按字面显示，可以用反斜杠进行转义，例如：`foo`、*bar* 等。"
+  - 'heading "Footnotes #" [level=2]':
+    - text: ""
+    - link "#":
+      - /url: "#footnote-label"
+  - list:
+    - listitem:
+      - paragraph:
+        - text: 这里是脚注内容。
+        - link "Back to reference 1":
+          - /url: "#user-content-fnref-1"
+          - text: ""
+  - paragraph: 支持这篇文章
+  - button "请作者喝杯咖啡"
+  - text: Markdown 示例
+  - link /http:\/\/localhost:\d+\/markdown\//:
+    - /url: http://localhost:4321/markdown/
+  - text: /作者 FangYuan 发布于 \d+-\d+-\d+ 许可协议/
+  - link "MIT":
+    - /url: https://opensource.org/license/mit
+  - img
+  - link "FangYuan 简明指南":
+    - /url: /guide/
+    - img
+    - text: ""

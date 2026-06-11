@@ -1,0 +1,19 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "fangyuan-demo",
+	"main": "src/worker/cloudflare-demo.mjs",
+	"workers_dev": true,
+	"compatibility_date": "2025-12-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS",
+		"run_worker_first": ["/api/*", "/healthz"]
+	},
+	"vars": {
+		"QINGYAN_DEV_ADMIN_TOKEN": "dev-token"
+	},
+	"observability": {
+		"enabled": true
+	}
+}

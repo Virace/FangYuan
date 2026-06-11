@@ -1,0 +1,312 @@
+# FangYuan 外部站点配置模板
+# 复制后的目标文件：<siteRoot>/site.config.yaml
+# 这份文件只覆盖你显式填写的字段，未填写项会继续回退到 src/default-config.ts。
+# 严格模式下会拒绝未知字段，不能依赖“多写几个字段碰碰运气”。
+# 数组字段通常是整体替换；navBarConfig.links 比较特殊，即使你没写 About，也会自动补回保留语义入口。
+
+siteConfig:
+  # 真实站点域名，只允许填写 origin，不要带路径。
+  # 正确示例：https://example.com
+  # 错误示例：https://example.com/blog/
+  # 留空（null）时，构建仍可继续，但 sitemap、RSS、canonical 等依赖真实绝对 URL 的正式产物会被禁用或降级。
+  site: null
+
+  # 部署子路径前缀。
+  # 根路径部署保持 / ；如果站点部署在 https://example.com/blog/，这里填写 /blog/。
+  # 运行时会自动规范成带前后斜杠的形式，因此 blog、/blog、/blog/ 最终都会归一化为 /blog/。
+  base: /
+
+  # 站点主标题。
+  title: {{SITE_TITLE}}
+
+  # 站点副标题。
+  subtitle: {{SITE_SUBTITLE}}
+
+  # 每页文章数。
+  # 设为 null 表示使用内置默认分页大小；设为正整数表示显式覆盖。
+  postsPerPage: null
+
+  # 为 true 时，置顶文章在归档页顶部单独展示后，年份时间线里仍然保留它们。
+  # 设为 false 可以避免归档页出现重复展示。
+  showPinnedInArchiveTimeline: true
+
+  # 站点语言代码。
+  # 支持的值：en、zh_CN、zh_TW、ja、ko、es、th、vi、tr、id
+  lang: zh_CN
+
+  themeColor:
+    # 主题色 Hue，范围只能是 0 到 360。
+    hue: 250
+
+    # 为 true 时隐藏前台主题色选择器，访客不能自行切换主色。
+    fixed: false
+
+  banner:
+    # 是否启用首页横幅。
+    enable: true
+
+    # 横幅图片路径。
+    # 替换位置：assets/images/banner.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
+    # 安全本地写法：assets/images/banner.svg，图片放在外部站点根目录 assets/ 下。
+    # CDN 写法：https://cdn.example.com/banner.webp，不会被本地构建打包或校验。
+    # 不建议在外部站点根目录新增 public/ 后写 /xxx 或 public/xxx；这不是 external site 的资源目录，也不会自动发布。
+    src: assets/images/banner.svg
+
+    # 横幅图片垂直对齐方式，只支持 top / center / bottom。
+    position: center
+
+    credit:
+      # 是否显示横幅署名。
+      enable: true
+
+      # 署名文案。
+      text: credit 文本
+
+      # 署名跳转地址。留空表示只显示文字不跳转。
+      url: ""
+
+  toc:
+    # 是否在文章页和支持目录的内容页显示目录。
+    enable: true
+
+    # 目录最大层级，只支持 1 / 2 / 3。
+    depth: 2
+
+  # favicon 列表。
+  # 替换位置：assets/favicon/icon.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
+  # 留空数组表示继续使用内置默认 favicon 配置。
+  favicon:
+    - src: assets/favicon/icon.svg
+      # 可选，区分亮色或暗色图标，只支持 light / dark。
+      theme: light
+      # 可选，用于区分不同尺寸图标。
+      sizes: 256x256
+  # favicon:
+  #   - src: assets/favicon/icon.svg
+  #     # 可选，区分亮色或暗色图标，只支持 light / dark。
+  #     theme: light
+  #     # 可选，用于区分不同尺寸图标。
+  #     sizes: 32x32
+
+  permalink:
+    # 永久链接规则。
+    # 文章公开链接模板。
+    # 常见写法：
+    # - /%path%/%slug%
+    # - /articles/%slug%.html
+    # - /%year%/%monthnum%/%day%/%postname%/
+    postsPattern: /%path%/%slug%
+
+    # spec 类页面公开链接模板，例如 about 页通常保持 /%slug%。
+    pagesPattern: /%slug%
+
+    # 公开 URL 末尾斜杠策略：
+    # - auto：普通路径补末尾斜杠，.html 路径保持原样
+    # - always：所有公开路径都补末尾斜杠
+    # - never：所有公开路径都移除末尾斜杠
+    # 这是固定连接规则的一部分，不建议再把它单独抽成部署环境配置，否则很容易和路径模板一起形成冲突组合。
+    trailingSlash: auto
+
+    # 只对文章生效的局部路径规则，用来按文章内部目录覆写 postsPattern。
+    # 如果规则和全局 materialization family 不自洽，构建阶段可能直接报错。
+    postPatternRules: []
+    # postPatternRules:
+    #   - match: wp/**
+    #     # 可用占位符：%slug%、%postname%、%path%、%year%、%monthnum%、%day%、%id%、%type%
+    #     pattern: /%year%/%monthnum%/%day%/%slug%
+
+    # alias 或 slug 中带点号时的处理方式：
+    # - error：直接报错，要求你手工修正
+    # - normalize：自动规范化为更安全的 slug
+    aliasValidation: error
+
+    # 更新时间来源：
+    # - manual：只认 frontmatter.updated
+    # - git：读取 Git 最后提交时间
+    # - filesystem：读取文件最后修改时间
+    # - none：不生成更新时间
+    updatedDateMode: manual
+
+    # 当 updatedDateMode 拿不到值时的回退策略：
+    # - none：保持为空
+    # - filesystem：回退到文件最后修改时间
+    updatedDateFallback: none
+
+  postSort:
+    # 同一置顶层内的排序字段。
+    # 支持值：title / published / updated / alias / filename
+    key: published
+
+    # 同一置顶层内的排序方向，只支持 asc / desc。
+    # 实际排序仍会先比较 sticky，再应用这里的字段和方向。
+    order: desc
+
+  taxonomySort:
+    categories:
+      # 分类排序字段：name 表示分类名，count 表示文章数量。
+      key: name
+
+      # 分类排序方向：asc 正序，desc 倒序。
+      order: asc
+
+      # 未分类位置：sorted 表示参与排序，last 表示固定在分类列表最后。
+      uncategorizedPosition: sorted
+
+    tags:
+      # 标签排序字段：name 表示标签名，count 表示文章数量。
+      key: name
+
+      # 标签排序方向：asc 正序，desc 倒序。
+      order: asc
+
+navBarI18n:
+  # 导航文案映射表。
+  # 键名通常与 navBarConfig.links 里的 name 或 id 对应。
+  # 这里只覆盖同名键，不会清空未填写的默认文案。
+  nav.github: GitHub
+
+navBarConfig:
+  # links 一旦显式填写，就会以你的列表为主。
+  # 但 About 属于保留语义入口，如果你没写它，系统会自动补回。
+  links:
+    # name 必填，建议写成 i18n key。
+    # url 和 ref 必须二选一，不能同时出现。
+    - name: nav.home
+      url: /
+
+    - name: nav.archive
+      url: /archive/
+
+    # 这是 ref 链接示例。
+    # ref.collection 只支持 spec 或 posts。
+    # ref.id 要对应内容的 entry.id。
+    - name: nav.about
+      ref:
+        collection: spec
+        id: about
+
+    # 这是外链示例。
+    # external 只能和 url 一起使用，不能和 ref 同时出现。
+    - id: nav.github
+      name: nav.github
+      url: https://github.com/yourname/yourrepo
+      external: true
+
+profileConfig:
+  # 头像图片路径。
+  # 替换位置：assets/images/avatar.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
+  # 安全本地写法：assets/images/avatar.svg，图片放在外部站点根目录 assets/ 下。
+  # CDN 写法：https://cdn.example.com/avatar.png，不会被本地构建打包或校验。
+  # 注意：FangYuan 当前没有独立 logo 配置项；这里是侧栏作者头像，不是 favicon。
+  avatar: assets/images/avatar.svg
+
+  # 作者显示名。
+  name: {{PROFILE_NAME}}
+
+  # 作者简介。
+  bio: {{PROFILE_BIO}}
+
+  # 个人链接列表。
+  # 一旦显式填写，会整体替换默认数组，不会逐项合并。
+  links:
+    - name: GitHub
+      # 图标标识需与当前图标体系兼容。
+      icon: fa6-brands:github
+      url: https://github.com/yourname/yourrepo
+
+footerConfig:
+  # 页脚自定义 HTML。
+  # 直接插入原始 HTML，请自行保证内容可信。
+  customHtml: ""
+
+  # ICP 备案号。设为 null 表示不显示。
+  icp: null
+
+  # 公安备案号。设为 null 表示不显示。
+  # 公安备案图标由 FangYuan 主题内置；这里只配置备案号文本。
+  policeRecord: null
+
+licenseConfig:
+  # 是否展示许可证信息。
+  enable: true
+
+  # 许可证名称。
+  name: MIT
+
+  # 许可证链接。
+  url: https://opensource.org/license/mit
+
+expressiveCodeConfig:
+  # 代码块主题名。
+  # 注意：部分视觉细节仍可能被 astro.config.mjs 里的集成层继续覆写。
+  theme: github-dark
+
+qingyanConfig:
+  # QingYan 后端连接配置。
+  # 评论、页面统计和点赞共用这一组后端参数；各功能是否显示由下方 feature config 的 enable 字段决定。
+  # 如果不接 QingYan，可以把整个 qingyanConfig 设为 null。
+  siteKey: {{QINGYAN_SITE_KEY}}
+
+  # QingYan API 基础路径。
+  # 同站代理联调时通常写 /api；也可以写完整 http(s) 地址，但需要自行处理 CORS 与 Cookie 行为。
+  apiBase: /api
+
+commentConfig:
+  # 评论功能总开关。
+  # 即使这里为 true，只要 qingyanConfig 仍是 null，评论后端也不会真正启用。
+  enable: true
+
+  # 一级评论每页数量。
+  # 运行时会向下取整，并强制最小值为 1；未填写时使用默认 5。
+  rootLimit: 5
+
+  # 评论树最大展开深度。
+  # 运行时会向下取整，并强制最小值为 1；未填写时使用默认 3。
+  maxDepth: 3
+
+pageMetricsConfig:
+  # 页面统计功能总开关。
+  enable: false
+
+  # 只有 enable=true 且 qingyanConfig 非空时，页面统计才会真正启用。
+
+pageFeedbackConfig:
+  # 页面反馈面板总开关。
+  # 只有总开关开启，并且点赞或打赏至少一项开启时，文章页才会渲染“支持这篇文章”区块。
+  enable: true
+
+  # 只有 like.enable=true 且 qingyanConfig 非空时，点赞按钮才会显示。
+  # 打赏可以不依赖 QingYan，只要 reward.enable=true 且 reward.options 非空即可显示。
+
+  like:
+    # 页面点赞开关。
+    # 这是“支持这篇文章”区块中的点赞按钮，不是评论区里的评论点赞。
+    enable: true
+
+  reward:
+    # 打赏开关。
+    # 默认关闭。初始化脚本仍会创建二维码占位图，想预览效果时把这里改成 true 即可。
+    # 关闭后即使 options 里仍有二维码配置，也不会显示打赏入口，也不会把这些占位图打进最终 dist。
+    enable: false
+
+    # 打赏项列表。
+    # 一旦显式填写，会整体替换默认数组，不会逐项合并。
+    options:
+      - id: wechat
+        # 前端稳定标识，建议保持短且唯一。
+        name: 微信
+        # 打赏二维码图片路径。
+        # 替换位置：assets/reward/wechat.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
+        image: assets/reward/wechat.svg
+        # 图片替代文本。
+        alt: 微信打赏二维码
+      - id: alipay
+        name: 支付宝
+        # 替换位置：assets/reward/alipay.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
+        image: assets/reward/alipay.svg
+        alt: 支付宝打赏二维码
+
+# 本地 QingYan 代理目标。
+# 仅用于开发期 FangYuan 访问本地 QingYan 服务，不是正式对外配置。
+# 可填写绝对 http(s) 地址；设为 null 表示关闭本地代理目标。
+qingyanDevProxyTarget: {{QINGYAN_DEV_PROXY_TARGET}}

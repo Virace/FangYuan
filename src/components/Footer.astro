@@ -1,20 +1,79 @@
 ---
-
-import { profileConfig } from "../config";
-import { url } from "../utils/url-utils";
+import { profileConfig, siteConfig } from "../config";
+import policeEmblem from "../theme-assets/icons/police-emblem.png";
+import {
+	footerCustomHtmlLooksLikeMarkup,
+	getFooterIcpRecord,
+	getFooterIcpUrl,
+	getFooterPoliceRecord,
+	getFooterPoliceRecordUrl,
+	getResolvedFooterCustomHtml,
+} from "../utils/footer-utils";
+import { url } from "../utils/permalink/urls";
 
 const currentYear = new Date().getFullYear();
+const customHtml = await getResolvedFooterCustomHtml();
+const hasCustomHtml = customHtml !== "";
+const customHtmlIsMarkup = footerCustomHtmlLooksLikeMarkup();
+const icpRecord = getFooterIcpRecord();
+const policeRecord = getFooterPoliceRecord();
+const policeRecordUrl = getFooterPoliceRecordUrl();
+const policeEmblemSrc = policeEmblem.src;
 ---
 
-<!--<div class="border-t border-[var(&#45;&#45;primary)] mx-16 border-dashed py-8 max-w-[var(&#45;&#45;page-width)] flex flex-col items-center justify-center px-6">-->
-<div class="transition border-t border-black/10 dark:border-white/15 my-10 border-dashed mx-32"></div>
-<!--<div class="transition bg-[oklch(92%_0.01_var(&#45;&#45;hue))] dark:bg-black rounded-2xl py-8 mt-4 mb-8 flex flex-col items-center justify-center px-6">-->
-<div class="transition border-dashed border-[oklch(85%_0.01_var(--hue))] dark:border-white/15 rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
+<div class="transition my-10 border-t border-dashed border-footer-divider"></div>
+<div class="transition border-dashed border-footer-divider rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
     <div class="transition text-50 text-sm text-center">
-        &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. Licensed under MIT. /
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('rss.xml')}>RSS</a> /
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a><br>
+        &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. ALL RIGHTS RESERVED.
+        {siteConfig.site ? (
+			<Fragment>
+				{" / "}
+				<a class="transition link text-primary font-medium" target="_blank" href={url('rss.xml')}>RSS</a> /
+				<a class="transition link text-primary font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a>
+			</Fragment>
+		) : null}
+		<br>
         Built with
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://astro.build">Astro</a>
+        <a class="transition link text-primary font-medium" target="_blank" href="https://astro.build">Astro</a>  
+        &
+		<a class="transition link text-primary font-medium" target="_blank" href="https://github.com/Virace/FangYuan">FangYuan (mod by Fuwari)</a>
     </div>
+
+	{hasCustomHtml && (
+		<div class="transition text-50 text-sm text-center mt-3">
+			{customHtmlIsMarkup ? (
+				<Fragment set:html={customHtml}></Fragment>
+			) : (
+				customHtml
+			)}
+		</div>
+	)}
+
+	{(icpRecord !== "" || policeRecord !== "") && (
+		<div class="transition text-50 text-sm text-center mt-3 flex flex-col items-center gap-y-2">
+			{icpRecord !== "" && (
+				<a class="transition link text-primary font-medium" target="_blank" rel="noreferrer" href={getFooterIcpUrl()}>
+					{icpRecord}
+				</a>
+			)}
+			{policeRecord !== "" && (
+				policeRecordUrl ? (
+					<a
+						class="transition link text-primary font-medium inline-flex items-center gap-2"
+						target="_blank"
+						rel="noreferrer"
+						href={policeRecordUrl}
+					>
+						<img src={policeEmblemSrc} alt="" aria-hidden="true" class="h-4 w-4 object-contain" />
+						{policeRecord}
+					</a>
+				) : (
+					<span class="inline-flex items-center gap-2">
+						<img src={policeEmblemSrc} alt="" aria-hidden="true" class="h-4 w-4 object-contain" />
+						{policeRecord}
+					</span>
+				)
+			)}
+		</div>
+	)}
 </div>

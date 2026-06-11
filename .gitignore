@@ -21,6 +21,7 @@ pnpm-debug.log*
 .DS_Store
 
 .vercel
+.wrangler/
 
 package-lock.json
 bun.lockb
@@ -29,6 +30,15 @@ yarn.lock
 # ide
 .idea
 *.iml
+.frontmatter/database/
 
 # local agent artifacts
 .serena/
+.temp/
+/site/
+
+# Playwright artifacts
+playwright-report/
+test-results/
+tests/e2e/visual.spec.ts-snapshots/
+.playwright-mcp/

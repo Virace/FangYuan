@@ -1,0 +1,240 @@
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+	--font-sans: var(--font-roboto), sans-serif, ui-sans-serif, system-ui, sans-serif;
+	--color-page-bg: var(--page-bg);
+	--color-card-bg: var(--card-bg);
+	--color-primary: var(--primary);
+	--color-btn-content: var(--btn-content);
+	--color-deep-text: var(--deep-text);
+	--color-title-active: var(--title-active);
+	--color-archive-dot: var(--archive-dot);
+	--color-btn-regular-bg: var(--btn-regular-bg);
+	--color-btn-regular-bg-hover: var(--btn-regular-bg-hover);
+	--color-btn-regular-bg-active: var(--btn-regular-bg-active);
+	--color-enter-btn-bg: var(--enter-btn-bg);
+	--color-enter-btn-bg-hover: var(--enter-btn-bg-hover);
+	--color-enter-btn-bg-active: var(--enter-btn-bg-active);
+	--color-btn-plain-bg-hover: var(--btn-plain-bg-hover);
+	--color-btn-plain-bg-active: var(--btn-plain-bg-active);
+	--color-meta-divider: var(--meta-divider);
+	--color-line-divider: var(--line-divider);
+	--color-license-block-bg: var(--license-block-bg);
+	--color-pagination-current-content: var(--pagination-current-content);
+	--color-toc-badge-bg: var(--toc-badge-bg);
+	--color-toc-btn-hover: var(--toc-btn-hover);
+	--color-toc-btn-active: var(--toc-btn-active);
+	--color-display-slider-bg: var(--display-slider-bg);
+	--color-footer-divider: var(--footer-divider);
+	--color-banner-credit-accent: var(--banner-credit-accent);
+	--radius-panel: var(--radius-large);
+}
+
+@utility text-90 {
+	color: rgb(0 0 0 / 0.9);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.9);
+	}
+}
+
+@utility text-75 {
+	color: rgb(0 0 0 / 0.75);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.75);
+	}
+}
+
+@utility text-60 {
+	color: rgb(0 0 0 / 0.6);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.6);
+	}
+}
+
+@utility text-50 {
+	color: rgb(0 0 0 / 0.5);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.5);
+	}
+}
+
+@utility text-30 {
+	color: rgb(0 0 0 / 0.3);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.3);
+	}
+}
+
+@utility text-25 {
+	color: rgb(0 0 0 / 0.25);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.25);
+	}
+}
+
+@utility text-20 {
+	color: rgb(0 0 0 / 0.2);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.2);
+	}
+}
+
+@utility text-5 {
+	color: rgb(0 0 0 / 0.05);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.05);
+	}
+}
+
+@utility bg-soft-contrast {
+	background-color: rgb(0 0 0 / 0.05);
+
+	@variant dark {
+		background-color: rgb(255 255 255 / 0.10);
+	}
+}
+
+@utility icon-28 {
+	font-size: 1.75rem;
+}
+
+@utility icon-32 {
+	font-size: 2rem;
+}
+
+@utility text-panel-title {
+	color: var(--color-neutral-900);
+
+	@variant dark {
+		color: var(--color-neutral-100);
+	}
+}
+
+@utility hide-scrollbar {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+@utility page-shell {
+	max-width: var(--page-width);
+	margin-inline: auto;
+}
+
+@utility page-shell-gutter {
+	padding-inline: 0;
+
+	@media (min-width: 48rem) {
+		padding-inline: 1rem;
+	}
+}
+
+@utility layout-main-grid {
+	display: grid;
+	grid-template-columns: var(--sidebar-width) auto;
+	grid-template-rows: auto 1fr auto;
+	gap: 1rem;
+
+	@media (min-width: 64rem) {
+		grid-template-rows: auto;
+	}
+}
+
+@utility toc-rail {
+	right: calc(var(--toc-width) * -1);
+	width: var(--toc-width);
+}
+
+@utility toc-scroll-region {
+	width: var(--toc-width);
+	height: calc(100vh - 20rem);
+}
+
+@utility post-nav-title {
+	flex: 1 1 0%;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@utility archive-side-col {
+	width: 15%;
+
+	@media (min-width: 48rem) {
+		width: 10%;
+	}
+}
+
+@utility archive-main-col {
+	width: 70%;
+
+	@media (min-width: 48rem) {
+		width: 80%;
+	}
+}
+
+@utility archive-title-col {
+	width: 70%;
+
+	@media (min-width: 48rem) {
+		width: 65%;
+		max-width: 65%;
+	}
+}
+
+@utility archive-tags-col {
+	@media (min-width: 48rem) {
+		display: block;
+		width: 15%;
+	}
+}
+
+@utility search-field-shell {
+	background-color: rgb(0 0 0 / 0.04);
+	transition:
+		background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+	&:hover,
+	&:focus-within {
+		background-color: rgb(0 0 0 / 0.06);
+	}
+
+	&:focus-within {
+		box-shadow: var(--focus-ring-shadow);
+	}
+
+	@variant dark {
+		background-color: rgb(255 255 255 / 0.05);
+
+		&:hover,
+		&:focus-within {
+			background-color: rgb(255 255 255 / 0.10);
+		}
+	}
+}
+
+@utility search-panel-shell {
+	top: calc(var(--spacing) * 20);
+	right: calc(var(--spacing) * 4);
+	left: calc(var(--spacing) * 4);
+	max-height: calc(100vh - 100px);
+	overflow-y: auto;
+
+	@media (min-width: 48rem) {
+		left: auto;
+		width: calc(var(--spacing) * 120);
+	}
+}

@@ -1,25 +1,23 @@
 ---
-title: Draft Workflow Note
-published: 2024-04-11
-description: A hidden draft note for the FangYuan baseline.
-tags: [Draft, Workflow, FangYuan]
-category: Notes
+title: 草稿示例
+published: 2026-01-05
+tags: [Markdown, 写作, 示例]
+category: 示例
 draft: true
 ---
 
-# Draft Workflow Note
+# 这是一篇草稿文章
 
-This entry stays hidden while `draft: true` is enabled.
+这篇文章目前处于草稿状态，因此不会正式发布，也不会展示给普通访客。内容仍在整理中，后续还可以继续编辑和校对。
 
-Use draft posts for topic sketches, migration checklists, and unfinished long-form writing in FangYuan.
+当文章准备发布时，可以把 Frontmatter 里的 `draft` 字段改成 `false`：
 
 ```markdown
 ---
-title: Draft Workflow Note
-published: 2024-04-11
-description: A hidden draft note for the FangYuan baseline.
-tags: [Draft, Workflow, FangYuan]
-category: Notes
+title: 草稿示例
+published: 2026-04-24T08:00:00.000Z
+tags: [Markdown, 写作, 示例]
+category: 示例
 draft: false
 ---
 ```
