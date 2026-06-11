@@ -1,13 +1,15 @@
 # 方圆 / FangYuan
 
-方圆是一个基于 Astro 的个人站点主题，关注内容、配置与站点能力的清晰边界，同时保留轻量、柔和、可持续演进的阅读体验。
+方圆是一个公开开源的 Astro 个人站点主题，关注内容、配置与站点能力的清晰边界，同时保留轻量、柔和、可持续演进的阅读体验。
 
 - 方：边界、秩序、结构、配置、内容治理。
 - 圆：柔和、阅读、交互、视觉、个人表达。
 
 ## 上游说明
 
-本项目基于 [saicaca/fuwari](https://github.com/saicaca/fuwari) 二次开发。
+本项目基于 [saicaca/fuwari](https://github.com/saicaca/fuwari) 二次开发。当前代码已经围绕 FangYuan 的配置、内容输入层、中文站点体验、评论/反馈集成和构建流程做了较大调整，因此作为独立主题仓库维护，不再以向上游提交通用 PR 为主要目标。
+
+感谢 Fuwari 原作者和社区提供了清晰、优雅的主题基础，FangYuan 的早期结构、视觉气质和站点体验都受益于这一上游项目。
 
 ## 相对原版的主要差异
 
@@ -40,6 +42,11 @@ pnpm check
 pnpm build
 pnpm test:node
 ```
+
+说明：
+
+- 仓库仍保留 `private: true`，用于避免误发布到 npm；这不影响 GitHub 仓库公开开源。
+- `pnpm test:node` 覆盖较多构建型回归，耗时明显长于普通检查。日常小改动可优先运行与改动范围匹配的 `check` / `type-check` / `check:svelte` / `build` / 定向 node 测试，正式发布前再按需要扩大验证范围。
 
 ## 外部 site 输入层
 

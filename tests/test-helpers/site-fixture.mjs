@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { rmSync } from "node:fs";
 import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,6 +8,13 @@ import { fileURLToPath } from "node:url";
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(currentDir, "..", "..");
 const distRoot = path.join(repoRoot, "dist");
+const astroGeneratedRoot = path.join(repoRoot, ".astro");
+const astroContentDataStore = path.join(
+	repoRoot,
+	"node_modules",
+	".astro",
+	"data-store.json",
+);
 const tempSitesRoot = path.join(repoRoot, ".temp", "test-sites");
 const buildLockRoot = path.join(tempSitesRoot, ".build-lock");
 
@@ -52,7 +60,14 @@ function run(command, args, expectedStatus = 0, extraEnv = {}) {
 	return result;
 }
 
+function resetGeneratedContentCache() {
+	rmSync(distRoot, { recursive: true, force: true });
+	rmSync(astroGeneratedRoot, { recursive: true, force: true });
+	rmSync(astroContentDataStore, { force: true });
+}
+
 export function runBuild(expectedStatus = 0, extraEnv = {}) {
+	resetGeneratedContentCache();
 	return run("pnpm", ["build"], expectedStatus, extraEnv);
 }
 
@@ -96,6 +111,7 @@ export async function withExternalSiteFixture(t, callback) {
 		siteAboutPath: path.join(fixtureRoot, "content", "spec", "about.md"),
 		siteConfigPath: path.join(fixtureRoot, "site.config.yaml"),
 		runExternalBuild(expectedStatus = 0) {
+			resetGeneratedContentCache();
 			return run("pnpm", ["build"], expectedStatus, {
 				FANGYUAN_SITE_MODE: "external",
 				FANGYUAN_SITE_ROOT: fixtureRoot,
