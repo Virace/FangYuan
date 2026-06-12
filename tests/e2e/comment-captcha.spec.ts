@@ -1188,6 +1188,10 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 	await prepareStablePage(page, COMMENT_TEST_ROUTE);
 
 	const voteButton = page.locator('button[aria-label="点赞"]').first();
+	await voteButton.scrollIntoViewIfNeeded();
+	await page.evaluate(() => {
+		window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" });
+	});
 	await voteButton.click();
 
 	const confirmPopover = page.locator(
@@ -1196,9 +1200,22 @@ test("comment vote should preserve confirmation flow and retry with inline captc
 	await expect(confirmPopover).toBeVisible();
 	await expect(async () => {
 		const box = await confirmPopover.boundingBox();
+		const voteButtonBox = await voteButton.boundingBox();
+		const viewport = page.viewportSize();
 		const buttons = confirmPopover.locator("button");
 		const primaryBox = await buttons.nth(0).boundingBox();
 		const secondaryBox = await buttons.nth(1).boundingBox();
+		const isTopLayer = await confirmPopover.evaluate(
+			(node) => node.closest("#swup-container") === null,
+		);
+		expect(isTopLayer).toBe(true);
+		expect(box?.y ?? Number.NEGATIVE_INFINITY).toBeGreaterThanOrEqual(0);
+		expect(box?.y ?? Number.NEGATIVE_INFINITY).toBeGreaterThan(
+			(voteButtonBox?.y ?? 0) + (voteButtonBox?.height ?? 0),
+		);
+		expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(
+			viewport?.height ?? 0,
+		);
 		expect(box?.width ?? 0).toBeLessThan(300);
 		expect(
 			Math.abs((primaryBox?.width ?? 0) - (secondaryBox?.width ?? 0)),

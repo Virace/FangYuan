@@ -3,6 +3,7 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import type { AutoDismissTone } from "@utils/browser/notice";
 import type { CommentCaptchaState } from "@utils/comments/provider";
+import { onDestroy } from "svelte";
 import { fade, scale, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
 import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
@@ -37,6 +38,121 @@ export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 export let onSubmitCaptcha: (() => void | Promise<void>) | null = null;
 
 let failedAvatarKey: string | null = null;
+let voteUpButton: HTMLButtonElement | null = null;
+let voteDownButton: HTMLButtonElement | null = null;
+
+type VotePopoverOptions = {
+	trigger: HTMLElement | null;
+	align: "start" | "end";
+};
+
+function floatingVotePopover(node: HTMLElement, options: VotePopoverOptions) {
+	let currentOptions = options;
+	let frame = 0;
+	let pageSpacer: HTMLDivElement | null = null;
+
+	function ensurePageSpacer(height: number) {
+		if (!pageSpacer) {
+			pageSpacer = document.createElement("div");
+			pageSpacer.className = "comment-vote-popover-page-spacer";
+			pageSpacer.setAttribute("aria-hidden", "true");
+			document.body.appendChild(pageSpacer);
+		}
+		pageSpacer.style.height = `${height}px`;
+	}
+
+	function clearPageSpacer() {
+		pageSpacer?.remove();
+		pageSpacer = null;
+	}
+
+	function queuePositionUpdate() {
+		if (frame) {
+			cancelAnimationFrame(frame);
+		}
+		frame = requestAnimationFrame(() => {
+			frame = 0;
+			updatePosition();
+		});
+	}
+
+	function updatePosition() {
+		const trigger = currentOptions.trigger;
+		if (!trigger || !document.body.contains(trigger)) {
+			return;
+		}
+
+		const gap = 12;
+		const viewportMargin = 16;
+		const triggerBox = trigger.getBoundingClientRect();
+		const popoverBox = node.getBoundingClientRect();
+		const popoverWidth = popoverBox.width;
+		const popoverHeight = popoverBox.height;
+		let left =
+			currentOptions.align === "end"
+				? triggerBox.right - popoverWidth
+				: triggerBox.left;
+
+		left = Math.min(
+			Math.max(left, viewportMargin),
+			window.innerWidth - popoverWidth - viewportMargin,
+		);
+
+		let top = triggerBox.bottom + gap;
+		const bottomOverflow =
+			top + popoverHeight + viewportMargin - window.innerHeight;
+		if (bottomOverflow > 0) {
+			ensurePageSpacer(popoverHeight + gap + viewportMargin);
+			const documentElement = document.documentElement;
+			const availableScroll =
+				documentElement.scrollHeight - window.innerHeight - window.scrollY;
+			const scrollDelta = Math.min(
+				bottomOverflow,
+				Math.max(0, availableScroll),
+			);
+			if (scrollDelta > 0.5) {
+				window.scrollBy({ top: scrollDelta, behavior: "auto" });
+				queuePositionUpdate();
+				return;
+			}
+			top = Math.min(top, window.innerHeight - popoverHeight - viewportMargin);
+		}
+
+		node.style.left = `${left}px`;
+		node.style.top = `${Math.max(viewportMargin, top)}px`;
+	}
+
+	node.style.position = "fixed";
+	node.style.zIndex = "80";
+	document.body.appendChild(node);
+	queuePositionUpdate();
+	window.addEventListener("resize", queuePositionUpdate);
+	window.addEventListener("scroll", queuePositionUpdate, true);
+
+	return {
+		update(nextOptions: VotePopoverOptions) {
+			currentOptions = nextOptions;
+			queuePositionUpdate();
+		},
+		destroy() {
+			if (frame) {
+				cancelAnimationFrame(frame);
+			}
+			window.removeEventListener("resize", queuePositionUpdate);
+			window.removeEventListener("scroll", queuePositionUpdate, true);
+			clearPageSpacer();
+			node.remove();
+		},
+	};
+}
+
+onDestroy(() => {
+	document
+		.querySelectorAll(".comment-vote-popover-page-spacer")
+		.forEach((node) => {
+			node.remove();
+		});
+});
 
 function formatCommentDate(value: string): string {
 	const date = new Date(value);
@@ -129,6 +245,7 @@ $: showCommentCaptchaDown =
 						<div class="comment-action-anchor">
 							<button
 								type="button"
+								bind:this={voteUpButton}
 								class="comment-action"
 								class:comment-action-active={comment.viewerVote === "up"}
 								aria-label={i18n(I18nKey.commentsVoteUp)}
@@ -170,6 +287,7 @@ $: showCommentCaptchaDown =
 								<div
 									class="comment-vote-popover-wrap comment-vote-popover-wrap-start"
 									data-comment-vote-confirm-target={comment.id}
+									use:floatingVotePopover={{ trigger: voteUpButton, align: "start" }}
 								>
 									<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
 										<div
@@ -206,6 +324,7 @@ $: showCommentCaptchaDown =
 						<div class="comment-action-anchor">
 							<button
 								type="button"
+								bind:this={voteDownButton}
 								class="comment-action"
 								class:comment-action-active={comment.viewerVote === "down"}
 								aria-label={i18n(I18nKey.commentsVoteDown)}
@@ -247,6 +366,7 @@ $: showCommentCaptchaDown =
 								<div
 									class="comment-vote-popover-wrap comment-vote-popover-wrap-end"
 									data-comment-vote-confirm-target={comment.id}
+									use:floatingVotePopover={{ trigger: voteDownButton, align: "end" }}
 								>
 									<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
 										<div
