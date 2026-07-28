@@ -12,8 +12,10 @@ import {
 	CommentCaptchaRequiredError,
 	type CommentCaptchaState,
 	type CommentForm,
+	type CommentInputLimits,
 	type CommentSortBy,
 	type CreateCommentInput,
+	DEFAULT_COMMENT_INPUT_LIMITS,
 } from "../comments/provider";
 import { renderPlainCommentHtml } from "../comments/validation";
 import type {
@@ -83,12 +85,15 @@ type RawQingYanFeatures = {
 	pageViews: RawQingYanFeatureFlag;
 	pageLikes: RawQingYanFeatureFlag;
 	visitors: RawQingYanFeatureFlag;
-	replyEmailNotification: RawQingYanFeatureFlag;
+	replyEmailNotification: RawQingYanFeatureFlag & {
+		defaultChecked?: boolean;
+	};
 };
 
 type RawQingYanCommentForm = {
 	allow: CommentAuthorField[];
 	require: CommentAuthorField[];
+	limits?: Partial<CommentInputLimits>;
 };
 
 type RawQingYanCaptchaState = {
@@ -335,6 +340,9 @@ function normalizeCapability(
 		supportsCaptcha: features.commentCaptcha.enabled,
 		supportsReplyEmailNotification:
 			features.replyEmailNotification.enabled === true,
+		replyEmailNotificationDefaultChecked:
+			features.replyEmailNotification.enabled === true &&
+			features.replyEmailNotification.defaultChecked === true,
 		persistenceMode: "persistent",
 		identityModel: "page_key",
 		message: features.comments.reason ?? undefined,
@@ -345,6 +353,10 @@ function normalizeCommentForm(commentForm: RawQingYanCommentForm): CommentForm {
 	return {
 		allow: commentForm.allow,
 		require: commentForm.require,
+		limits: {
+			...DEFAULT_COMMENT_INPUT_LIMITS,
+			...commentForm.limits,
+		},
 	};
 }
 

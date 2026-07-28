@@ -34,6 +34,22 @@ type RawComment = {
 	children: RawComment[];
 };
 
+type CommentInputLimitsFixture = {
+	authorNameMaxLength: number;
+	authorWebsiteMaxLength: number;
+	pageTitleMaxLength: number;
+	pageKeyMaxLength: number;
+	contentMaxLength: number;
+};
+
+const DEFAULT_COMMENT_INPUT_LIMITS_FIXTURE: CommentInputLimitsFixture = {
+	authorNameMaxLength: 40,
+	authorWebsiteMaxLength: 2048,
+	pageTitleMaxLength: 200,
+	pageKeyMaxLength: 512,
+	contentMaxLength: 2000,
+};
+
 function createCaptchaImage(label: string): string {
 	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="60" viewBox="0 0 160 60"><rect width="160" height="60" rx="8" fill="#f4f7fb"/><text x="80" y="38" text-anchor="middle" font-size="28" fill="#111827">${label}</text></svg>`;
 	return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
@@ -58,6 +74,10 @@ function buildBootstrapResponse(input?: {
 	liked?: boolean;
 	pageMetricsEnabled?: boolean;
 	supportsReplyEmailNotification?: boolean;
+	replyEmailNotificationDefaultChecked?: boolean;
+	omitReplyEmailNotificationDefaultChecked?: boolean;
+	commentInputLimits?: Partial<CommentInputLimitsFixture>;
+	omitCommentInputLimits?: boolean;
 	supportsLike?: boolean;
 	supportsVote?: boolean;
 	viewer?: {
@@ -98,8 +118,20 @@ function buildBootstrapResponse(input?: {
 				: { enabled: false, reason: "feature_disabled" },
 			visitors: { enabled: true },
 			replyEmailNotification: replyEmailNotificationEnabled
-				? { enabled: true }
-				: { enabled: false, reason: "feature_disabled" },
+				? {
+						enabled: true,
+						...(input?.omitReplyEmailNotificationDefaultChecked
+							? {}
+							: {
+									defaultChecked:
+										input?.replyEmailNotificationDefaultChecked ?? false,
+								}),
+					}
+				: {
+						enabled: false,
+						reason: "feature_disabled",
+						defaultChecked: false,
+					},
 		},
 		viewer: input?.viewer ?? {},
 		data: {
@@ -107,6 +139,14 @@ function buildBootstrapResponse(input?: {
 				form: {
 					allow: ["nickname", "email", "website"],
 					require: ["nickname", "email"],
+					...(input?.omitCommentInputLimits
+						? {}
+						: {
+								limits: {
+									...DEFAULT_COMMENT_INPUT_LIMITS_FIXTURE,
+									...input?.commentInputLimits,
+								},
+							}),
 				},
 				display: {
 					avatar: {
@@ -922,6 +962,7 @@ test("reply email notification enabled by QingYan should submit user opt in", as
 
 	const notifyCheckbox = page.getByLabel("回复提醒");
 	await expect(notifyCheckbox).toBeVisible();
+	await expect(notifyCheckbox).not.toBeChecked();
 	await notifyCheckbox.check();
 
 	await composer.getByRole("button", { name: "发表评论" }).click();
@@ -936,6 +977,112 @@ test("reply email notification enabled by QingYan should submit user opt in", as
 			notifyOnReply: true,
 		},
 	});
+});
+
+test("reply email notification default should initialize once and preserve user opt out", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			supportsReplyEmailNotification: true,
+			replyEmailNotificationDefaultChecked: true,
+		}),
+		thread: buildThreadResponse(),
+		commentCreate: {
+			successBody: buildSuccessfulCommentResponse(
+				"created-reply-email-default-opt-out-comment",
+			),
+		},
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	const notifyCheckbox = page.getByLabel("回复提醒");
+	await expect(notifyCheckbox).toBeVisible();
+	await expect(notifyCheckbox).toBeChecked();
+	await notifyCheckbox.uncheck();
+
+	await composer.locator('input[type="text"]').fill("回复提醒默认取消访客");
+	await composer
+		.locator('input[type="email"]')
+		.fill("reply-default-off@example.com");
+	await composer.locator("textarea").fill("用户取消后台建议的默认回复提醒");
+	await composer.getByRole("button", { name: "发表评论" }).click();
+
+	await expect
+		.poll(async () => (await readTestState(page)).commentRetryBody)
+		.toBeTruthy();
+
+	const testState = await readTestState(page);
+	expect(testState.commentRetryBody).toMatchObject({
+		options: {
+			notifyOnReply: false,
+		},
+	});
+});
+
+test("comment input limits from QingYan should control composer maxlength", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			commentInputLimits: {
+				authorNameMaxLength: 31,
+				authorWebsiteMaxLength: 333,
+				pageTitleMaxLength: 144,
+				pageKeyMaxLength: 444,
+				contentMaxLength: 777,
+			},
+		}),
+		thread: buildThreadResponse(),
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await expect(composer.locator("#comment-author-name")).toHaveAttribute(
+		"maxlength",
+		"31",
+	);
+	await expect(composer.locator('input[type="url"]')).toHaveAttribute(
+		"maxlength",
+		"333",
+	);
+	await expect(composer.locator("textarea")).toHaveAttribute("maxlength", "777");
+});
+
+test("legacy QingYan bootstrap should preserve FangYuan comment defaults", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse({
+			supportsReplyEmailNotification: true,
+			omitReplyEmailNotificationDefaultChecked: true,
+			omitCommentInputLimits: true,
+		}),
+		thread: buildThreadResponse(),
+	});
+
+	await prepareStablePage(page, COMMENT_TEST_ROUTE);
+
+	const composer = page.locator("section[data-post-title] form");
+	await expect(page.getByLabel("回复提醒")).not.toBeChecked();
+	await expect(composer.locator("#comment-author-name")).toHaveAttribute(
+		"maxlength",
+		"80",
+	);
+	await expect(composer.locator('input[type="url"]')).toHaveAttribute(
+		"maxlength",
+		"200",
+	);
+	await expect(composer.locator("textarea")).toHaveAttribute("maxlength", "5000");
 });
 
 test("comment composer should remember ordinary author profile by default", async ({
