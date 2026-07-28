@@ -493,7 +493,35 @@ export default defineConfig({
 		{
 			name: "Roboto",
 			cssVariable: "--font-roboto",
-			provider: fontProviders.fontsource(),
+			provider: fontProviders.local(),
+			options: {
+				variants: [
+					{
+						weight: 400,
+						style: "normal",
+						src: [
+							"./node_modules/@fontsource/roboto/files/roboto-latin-400-normal.woff2",
+						],
+						display: "swap",
+					},
+					{
+						weight: 500,
+						style: "normal",
+						src: [
+							"./node_modules/@fontsource/roboto/files/roboto-latin-500-normal.woff2",
+						],
+						display: "swap",
+					},
+					{
+						weight: 700,
+						style: "normal",
+						src: [
+							"./node_modules/@fontsource/roboto/files/roboto-latin-700-normal.woff2",
+						],
+						display: "swap",
+					},
+				],
+			},
 			weights: [400, 500, 700],
 			styles: ["normal"],
 			fallbacks: ["sans-serif"],
@@ -501,7 +529,27 @@ export default defineConfig({
 		{
 			name: "JetBrains Mono",
 			cssVariable: "--font-jetbrains-mono",
-			provider: fontProviders.fontsource(),
+			provider: fontProviders.local(),
+			options: {
+				variants: [
+					{
+						weight: "100 800",
+						style: "normal",
+						src: [
+							"./node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2",
+						],
+						display: "swap",
+					},
+					{
+						weight: "100 800",
+						style: "italic",
+						src: [
+							"./node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-italic.woff2",
+						],
+						display: "swap",
+					},
+				],
+			},
 			weights: [400, 500, 700],
 			styles: ["normal", "italic"],
 			fallbacks: ["monospace"],
