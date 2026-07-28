@@ -283,6 +283,8 @@ test("qingyan mock backend should accept startup defaults for seed richness and 
 			basePageViewCount: 42,
 			baseLikeCount: 5,
 			answer: "1357",
+			replyEmailNotification: true,
+			replyEmailNotificationDefaultChecked: true,
 		},
 	});
 
@@ -304,4 +306,39 @@ test("qingyan mock backend should accept startup defaults for seed richness and 
 	assert.equal(bootstrap.data.pageLikes.count, 5);
 	assert.equal(bootstrap.data.comments.items.length >= 5, true);
 	assert.equal(bootstrap.data.comments.pagination.rootCount >= 5, true);
+	assert.deepEqual(bootstrap.features.replyEmailNotification, {
+		enabled: true,
+		defaultChecked: true,
+	});
+	assert.deepEqual(bootstrap.data.comments.form.limits, {
+		authorNameMaxLength: 40,
+		authorWebsiteMaxLength: 2048,
+		pageTitleMaxLength: 200,
+		pageKeyMaxLength: 512,
+		contentMaxLength: 2000,
+	});
+});
+
+test("qingyan mock backend should force reply notification default off when capability is disabled", async () => {
+	const backend = mockModule.createQingYanMockBackend({
+		defaults: {
+			replyEmailNotification: false,
+			replyEmailNotificationDefaultChecked: true,
+		},
+	});
+
+	const bootstrapResponse = await backend.handleRequest({
+		method: "GET",
+		url: "/api/comments/bootstrap/?siteKey=fangyuan&pageKey=post:reply-disabled&pageTitle=Reply+Disabled",
+		headers: {},
+		body: "",
+	});
+	assert.ok(bootstrapResponse);
+	const bootstrap = JSON.parse(bootstrapResponse.body);
+
+	assert.deepEqual(bootstrap.features.replyEmailNotification, {
+		enabled: false,
+		reason: "feature_disabled",
+		defaultChecked: false,
+	});
 });

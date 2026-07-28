@@ -136,8 +136,7 @@
 }
 
 .comment-vote-popover-wrap {
-    position: absolute;
-    top: calc(100% + 0.75rem);
+    position: fixed;
     z-index: 10;
     width: max-content;
     max-width: min(18rem, calc(100vw - 4rem));

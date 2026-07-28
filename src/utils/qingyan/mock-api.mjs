@@ -4,6 +4,13 @@ import { normalizeQingYanDevProxyRequestPath } from "./dev-proxy.mjs";
 export const QINGYAN_MOCK_TARGET = "mock";
 const DEFAULT_CAPTCHA_ANSWER = "2468";
 const DEFAULT_COOKIE_NAME = "qingyan_visitor";
+const DEFAULT_COMMENT_INPUT_LIMITS = Object.freeze({
+	authorNameMaxLength: 40,
+	authorWebsiteMaxLength: 2048,
+	pageTitleMaxLength: 200,
+	pageKeyMaxLength: 512,
+	contentMaxLength: 2000,
+});
 
 function normalizeCaptchaMode(value, fallback = "threshold") {
 	return ["always", "threshold", "never"].includes(value) ? value : fallback;
@@ -36,6 +43,10 @@ function normalizeMockDefaults(input = {}) {
 			input.replyEmailNotification,
 			true,
 		),
+		replyEmailNotificationDefaultChecked: normalizeBooleanFlag(
+			input.replyEmailNotificationDefaultChecked,
+			false,
+		),
 		seedMode: normalizeSeedMode(input.seedMode, "default"),
 		answer: input.answer || DEFAULT_CAPTCHA_ANSWER,
 		commentCount: clampPositiveInteger(input.commentCount, 4),
@@ -54,6 +65,8 @@ export function resolveQingYanMockStartupDefaults(env = process.env) {
 		defaultStatus: env.QINGYAN_MOCK_STATUS,
 		allowLike: env.QINGYAN_MOCK_ALLOW_LIKE,
 		replyEmailNotification: env.QINGYAN_MOCK_REPLY_EMAIL_NOTIFICATION,
+		replyEmailNotificationDefaultChecked:
+			env.QINGYAN_MOCK_REPLY_EMAIL_NOTIFICATION_DEFAULT_CHECKED,
 		seedMode: env.QINGYAN_MOCK_SEED,
 		answer: env.QINGYAN_MOCK_ANSWER,
 		commentCount: env.QINGYAN_MOCK_COMMENT_COUNT,
@@ -208,6 +221,9 @@ function parseMockOptions(pageUrl, pageKey, defaults) {
 			params.get("qingyanMockAllowLike"),
 			defaults.allowLike,
 		),
+		replyEmailNotification: defaults.replyEmailNotification,
+		replyEmailNotificationDefaultChecked:
+			defaults.replyEmailNotificationDefaultChecked,
 		seedMode: normalizeSeedMode(
 			params.get("qingyanMockSeed"),
 			defaults.seedMode,
@@ -763,10 +779,12 @@ export function createQingYanMockBackend(input = {}) {
 						replyEmailNotification: options.replyEmailNotification
 							? {
 									enabled: true,
+									defaultChecked: options.replyEmailNotificationDefaultChecked,
 								}
 							: {
 									enabled: false,
 									reason: "feature_disabled",
+									defaultChecked: false,
 								},
 					},
 					data: {
@@ -774,6 +792,7 @@ export function createQingYanMockBackend(input = {}) {
 							form: {
 								allow: ["nickname", "email", "website"],
 								require: ["nickname", "email"],
+								limits: DEFAULT_COMMENT_INPUT_LIMITS,
 							},
 							display: threadPayload.display,
 							pagination: threadPayload.pagination,
