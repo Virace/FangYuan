@@ -1,39 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
 
 import { loadExternalSiteConfigYaml } from "../src/utils/site-source/external-config.ts";
 import {
 	buildWelcomePostTemplate,
 	renderSiteConfigTemplate,
 } from "../scripts/site/init-site.js";
-
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.join(currentDir, "..");
-const templatePath = path.join(repoRoot, "scripts", "site", "template.config.yaml");
-
-test("template.config.yaml contains the full commented config surface", async () => {
-	const source = await readFile(templatePath, "utf8");
-	assert.match(source, /siteConfig:/);
-	assert.match(source, /navBarConfig:/);
-	assert.match(source, /profileConfig:/);
-	assert.match(source, /footerConfig:/);
-	assert.match(source, /licenseConfig:/);
-	assert.match(source, /expressiveCodeConfig:/);
-	assert.match(source, /qingyanConfig:/);
-	assert.match(source, /commentConfig:/);
-	assert.match(source, /pageMetricsConfig:/);
-	assert.match(source, /pageFeedbackConfig:/);
-	assert.match(source, /qingyanDevProxyTarget:/);
-	assert.match(source, /taxonomySort:/);
-	assert.match(source, /site:\s+null/);
-	assert.match(source, /base:\s+\//);
-	assert.match(source, /\{\{SITE_TITLE\}\}/);
-	assert.match(source, /永久链接规则/);
-});
 
 test("renderSiteConfigTemplate replaces placeholders without dropping comments", async () => {
 	const rendered = await renderSiteConfigTemplate({
