@@ -4,9 +4,11 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import type { AutoDismissTone } from "@utils/browser/notice";
 import type { CommenterProfile } from "@utils/comments/commenter-profile";
-import type {
-	CommentAuthorField,
-	CommentCaptchaState,
+import {
+	type CommentAuthorField,
+	type CommentCaptchaState,
+	type CommentInputLimits,
+	DEFAULT_COMMENT_INPUT_LIMITS,
 } from "@utils/comments/provider";
 import {
 	type CommentFormValidationField,
@@ -41,12 +43,14 @@ export let allowedFields: CommentAuthorField[] = [
 	"email",
 	"website",
 ];
+export let inputLimits: CommentInputLimits = DEFAULT_COMMENT_INPUT_LIMITS;
 export let requiredFields: CommentAuthorField[] = ["nickname", "email"];
 export let verifiedAuthor: {
 	displayName: string;
 	badgeLabel: string;
 } | null = null;
 export let supportsReplyEmailNotification = false;
+export let replyEmailNotificationDefaultChecked = false;
 export let initialProfile: CommenterProfile | null = null;
 export let captchaState: CommentCaptchaState | null = null;
 export let captchaBusy = false;
@@ -70,6 +74,7 @@ let authorWebsite = "";
 let content = "";
 let rememberProfile = true;
 let notifyOnReply = false;
+let replyEmailNotificationDefaultApplied = false;
 let appliedProfileSignature = "";
 let showEmojiPicker = false;
 let composerForm: HTMLFormElement | null = null;
@@ -95,8 +100,13 @@ $: showEmailField = !useVerifiedAuthor && allowedFields.includes("email");
 $: showWebsiteField = !useVerifiedAuthor && allowedFields.includes("website");
 $: canNotifyOnReply =
 	supportsReplyEmailNotification && !useVerifiedAuthor && showEmailField;
-$: if (!canNotifyOnReply && notifyOnReply) {
+$: if (canNotifyOnReply && !replyEmailNotificationDefaultApplied) {
+	notifyOnReply = replyEmailNotificationDefaultChecked;
+	replyEmailNotificationDefaultApplied = true;
+}
+$: if (!canNotifyOnReply) {
 	notifyOnReply = false;
+	replyEmailNotificationDefaultApplied = false;
 }
 $: if (useVerifiedAuthor) {
 	appliedProfileSignature = "";
@@ -325,7 +335,7 @@ async function focusComposerContent() {
 						aria-invalid={invalidFieldState.nickname}
 						autocomplete="name"
 						class="comment-form-input comment-form-input-embedded comment-form-input-with-trailing text-90"
-						maxlength="80"
+						maxlength={inputLimits.authorNameMaxLength}
 						required={requiredFields.includes("nickname")}
 						type="text"
 					/>
@@ -391,7 +401,7 @@ async function focusComposerContent() {
 					bind:value={authorWebsite}
 					aria-invalid={invalidFieldState.website}
 					class="comment-form-input text-90"
-					maxlength="200"
+					maxlength={inputLimits.authorWebsiteMaxLength}
 					required={requiredFields.includes("website")}
 					type="url"
 				/>
@@ -409,7 +419,7 @@ async function focusComposerContent() {
 				bind:value={content}
 				aria-invalid={invalidFieldState.content}
 				class="comment-form-input min-h-32 text-90"
-				maxlength="5000"
+				maxlength={inputLimits.contentMaxLength}
 				required
 			></textarea>
 		</label>

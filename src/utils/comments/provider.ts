@@ -1,8 +1,25 @@
 export type CommentAuthorField = "nickname" | "email" | "website";
 
+export type CommentInputLimits = {
+	authorNameMaxLength: number;
+	authorWebsiteMaxLength: number;
+	pageTitleMaxLength: number;
+	pageKeyMaxLength: number;
+	contentMaxLength: number;
+};
+
+export const DEFAULT_COMMENT_INPUT_LIMITS: CommentInputLimits = {
+	authorNameMaxLength: 80,
+	authorWebsiteMaxLength: 200,
+	pageTitleMaxLength: 200,
+	pageKeyMaxLength: 512,
+	contentMaxLength: 5000,
+};
+
 export type CommentForm = {
 	allow: CommentAuthorField[];
 	require: CommentAuthorField[];
+	limits: CommentInputLimits;
 };
 
 export type CommentPersistenceMode = "persistent";
@@ -16,6 +33,7 @@ export type CommentCapability = {
 	supportsVote: boolean;
 	supportsCaptcha: boolean;
 	supportsReplyEmailNotification: boolean;
+	replyEmailNotificationDefaultChecked: boolean;
 	persistenceMode: CommentPersistenceMode;
 	identityModel: CommentIdentityModel;
 	message?: string;

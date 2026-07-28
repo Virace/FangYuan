@@ -13,16 +13,15 @@ import {
 	DEFAULT_COMMENT_SORT_BY,
 	normalizeCommentOffset,
 } from "@utils/comments/options";
-import type {
-	CommentAuthorField,
-	CommentCapability,
-	CommentCaptchaState,
-	CommentCaptchaWriteInput,
-	CommentForm,
-} from "@utils/comments/provider";
 import {
+	type CommentAuthorField,
+	type CommentCapability,
 	CommentCaptchaRequiredError,
+	type CommentCaptchaState,
+	type CommentCaptchaWriteInput,
+	type CommentForm,
 	type CommentSortBy,
+	DEFAULT_COMMENT_INPUT_LIMITS,
 } from "@utils/comments/provider";
 import {
 	countCommentsInTree,
@@ -167,9 +166,12 @@ $: supportsVote = capability?.supportsVote ?? false;
 $: supportsCaptcha = capability?.supportsCaptcha ?? false;
 $: supportsReplyEmailNotification =
 	capability?.supportsReplyEmailNotification ?? false;
+$: replyEmailNotificationDefaultChecked =
+	capability?.replyEmailNotificationDefaultChecked ?? false;
 $: verifiedAuthor = viewer.verifiedAuthor ?? null;
 $: usingVerifiedAuthor = Boolean(verifiedAuthor);
 $: allowedFields = commentForm?.allow ?? defaultAllowedFields;
+$: inputLimits = commentForm?.limits ?? DEFAULT_COMMENT_INPUT_LIMITS;
 $: requiredFields = usingVerifiedAuthor
 	? []
 	: (commentForm?.require ?? defaultRequiredFields);
@@ -920,9 +922,11 @@ onDestroy(() => {
 			<CommentComposer
 				showCaptcha={showComposerCaptcha}
 				allowedFields={allowedFields}
+				inputLimits={inputLimits}
 				requiredFields={requiredFields}
 				verifiedAuthor={verifiedAuthor}
 				supportsReplyEmailNotification={supportsReplyEmailNotification}
+				replyEmailNotificationDefaultChecked={replyEmailNotificationDefaultChecked}
 				initialProfile={commenterProfile}
 				captchaState={captchaState}
 				captchaBusy={captchaBusy}
