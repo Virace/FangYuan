@@ -336,20 +336,20 @@ function disableAnimation() {
 }
 */
 
-const bannerEnabled = !!document.getElementById('banner-wrapper')
+const isBannerEnabled = !!document.getElementById('banner-wrapper')
 
-function setClickOutsideToClose(panel: string, ignores: string[]) {
+function setClickOutsideToClose(panelId: string, ignoredElementIds: string[]) {
 	document.addEventListener("click", event => {
-		let panelDom = document.getElementById(panel);
-		let tDom = event.target;
-		if (!(tDom instanceof Node)) return;		// Ensure the event target is an HTML Node
-		for (let ig of ignores) {
-			let ie = document.getElementById(ig)
-			if (ie == tDom || (ie?.contains(tDom))) {
+		const panelElement = document.getElementById(panelId);
+		const clickTarget = event.target;
+		if (!(clickTarget instanceof Node)) return;		// Ensure the event target is an HTML Node
+		for (const ignoredElementId of ignoredElementIds) {
+			const ignoredElement = document.getElementById(ignoredElementId)
+			if (ignoredElement === clickTarget || (ignoredElement?.contains(clickTarget))) {
 				return;
 			}
 		}
-		panelDom!.classList.add("float-panel-closed");
+		panelElement!.classList.add("float-panel-closed");
 	});
 }
 setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
@@ -529,16 +529,16 @@ const setup = () => {
 		document.documentElement.style.setProperty('--content-delay', '0ms')
 
 		// prevent elements from overlapping the navbar
-		if (!bannerEnabled) {
+		if (!isBannerEnabled) {
 			return
 		}
-		let threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 72 - 16
-		let navbar = document.getElementById('navbar-wrapper')
-		if (!navbar || !document.body.classList.contains('lg:is-home')) {
+		const navbarHideThreshold = window.innerHeight * (BANNER_HEIGHT / 100) - 72 - 16
+		const navbarElement = document.getElementById('navbar-wrapper')
+		if (!navbarElement || !document.body.classList.contains('lg:is-home')) {
 			return
 		}
-		if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
-			navbar.classList.add('navbar-hidden')
+		if (document.body.scrollTop >= navbarHideThreshold || document.documentElement.scrollTop >= navbarHideThreshold) {
+			navbarElement.classList.add('navbar-hidden')
 		}
 	})
 	window.swup.hooks.before('content:announce', (visit: { a11y: { announce?: string } }) => {
@@ -583,9 +583,9 @@ const setup = () => {
 		}
 
 		// Hide the TOC while scrolling back to top
-		let toc = document.getElementById('toc-wrapper');
-		if (toc) {
-			toc.classList.add('toc-not-ready')
+		const tableOfContentsElement = document.getElementById('toc-wrapper');
+		if (tableOfContentsElement) {
+			tableOfContentsElement.classList.add('toc-not-ready')
 		}
 	});
 	window.swup.hooks.on('page:view', () => {
@@ -603,9 +603,9 @@ const setup = () => {
 			}
 
             // Just make the transition looks better
-            const toc = document.getElementById('toc-wrapper');
-            if (toc) {
-                toc.classList.remove('toc-not-ready')
+            const tableOfContentsElement = document.getElementById('toc-wrapper');
+            if (tableOfContentsElement) {
+                tableOfContentsElement.classList.remove('toc-not-ready')
             }
         }, 200)
 	});
@@ -616,42 +616,42 @@ if (window?.swup?.hooks) {
 	document.addEventListener('swup:enable', setup)
 }
 
-let backToTopBtn = document.getElementById('back-to-top-btn');
-let toc = document.getElementById('toc-wrapper');
-let navbar = document.getElementById('navbar-wrapper')
+const backToTopButton = document.getElementById('back-to-top-btn');
+const tableOfContentsElement = document.getElementById('toc-wrapper');
+const navbarElement = document.getElementById('navbar-wrapper')
 function scrollFunction() {
-	let bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100)
+	const bannerScrollThreshold = window.innerHeight * (BANNER_HEIGHT / 100)
 
-	if (backToTopBtn) {
-		if (document.body.scrollTop > bannerHeight || document.documentElement.scrollTop > bannerHeight) {
-			backToTopBtn.classList.remove('hide')
+	if (backToTopButton) {
+		if (document.body.scrollTop > bannerScrollThreshold || document.documentElement.scrollTop > bannerScrollThreshold) {
+			backToTopButton.classList.remove('hide')
 		} else {
-			backToTopBtn.classList.add('hide')
+			backToTopButton.classList.add('hide')
 		}
 	}
 
-	if (bannerEnabled && toc) {
-		if (document.body.scrollTop > bannerHeight || document.documentElement.scrollTop > bannerHeight) {
-			toc.classList.remove('toc-hide')
+	if (isBannerEnabled && tableOfContentsElement) {
+		if (document.body.scrollTop > bannerScrollThreshold || document.documentElement.scrollTop > bannerScrollThreshold) {
+			tableOfContentsElement.classList.remove('toc-hide')
 		} else {
-			toc.classList.add('toc-hide')
+			tableOfContentsElement.classList.add('toc-hide')
 		}
 	}
 
-	if (!bannerEnabled) return
-	if (navbar) {
+	if (!isBannerEnabled) return
+	if (navbarElement) {
 		const NAVBAR_HEIGHT = 72
 		const MAIN_PANEL_EXCESS_HEIGHT = MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16			// The height the main panel overlaps the banner
 
-		let bannerHeight = BANNER_HEIGHT
+		let activeBannerHeightPercent = BANNER_HEIGHT
 		if (document.body.classList.contains('lg:is-home') && window.innerWidth >= 1024) {
-			bannerHeight = BANNER_HEIGHT_HOME
+			activeBannerHeightPercent = BANNER_HEIGHT_HOME
 		}
-		let threshold = window.innerHeight * (bannerHeight / 100) - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16
-		if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
-			navbar.classList.add('navbar-hidden')
+		const navbarHideThreshold = window.innerHeight * (activeBannerHeightPercent / 100) - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16
+		if (document.body.scrollTop >= navbarHideThreshold || document.documentElement.scrollTop >= navbarHideThreshold) {
+			navbarElement.classList.add('navbar-hidden')
 		} else {
-			navbar.classList.remove('navbar-hidden')
+			navbarElement.classList.remove('navbar-hidden')
 		}
 	}
 }

@@ -1,8 +1,10 @@
 import { expect, type Page } from "@playwright/test";
 
-const githubRepoCardStubbedPages = new WeakSet<Page>();
-const mockGitHubAvatar =
+const networkIsolationConfiguredPages = new WeakSet<Page>();
+const MOCK_GITHUB_AVATAR =
 	"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%234b5563'/%3E%3Ctext x='32' y='38' font-size='24' text-anchor='middle' fill='white'%3EGH%3C/text%3E%3C/svg%3E";
+const MOCK_EXTERNAL_IMAGE =
+	"<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='#4b5563'/></svg>";
 
 export const SITE_ROUTES = {
 	// These baseline routes are only valid when the suite runs in internal mode.
@@ -30,7 +32,7 @@ function buildGitHubRepoCardPayload(repoPath: string) {
 		stargazers_count: 34,
 		owner: {
 			login: owner,
-			avatar_url: mockGitHubAvatar,
+			avatar_url: MOCK_GITHUB_AVATAR,
 		},
 		license: {
 			spdx_id: "MIT",
@@ -40,23 +42,82 @@ function buildGitHubRepoCardPayload(repoPath: string) {
 	};
 }
 
-async function installGitHubRepoCardStub(page: Page): Promise<void> {
-	if (githubRepoCardStubbedPages.has(page)) {
+async function installExternalNetworkStubs(page: Page): Promise<void> {
+	if (networkIsolationConfiguredPages.has(page)) {
 		return;
 	}
 
-	await page.route("https://api.github.com/repos/**", async (route) => {
-		const url = new URL(route.request().url());
-		const repoPath = url.pathname.replace(/^\/repos\//, "");
+	await page.route("**/*", async (route) => {
+		const request = route.request();
+		const url = new URL(request.url());
 
-		await route.fulfill({
-			status: 200,
-			contentType: "application/json",
-			body: JSON.stringify(buildGitHubRepoCardPayload(repoPath)),
-		});
+		if (
+			!["http:", "https:"].includes(url.protocol) ||
+			url.origin === "http://127.0.0.1:4331"
+		) {
+			await route.continue();
+			return;
+		}
+
+		if (
+			url.origin === "https://api.github.com" &&
+			url.pathname.startsWith("/repos/")
+		) {
+			const repoPath = url.pathname.replace(/^\/repos\//, "");
+			await route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify(buildGitHubRepoCardPayload(repoPath)),
+			});
+			return;
+		}
+
+		switch (request.resourceType()) {
+			case "document":
+				await route.fulfill({
+					status: 200,
+					contentType: "text/html",
+					body: "<!doctype html><html><body>External embed stub</body></html>",
+				});
+				break;
+			case "image":
+				await route.fulfill({
+					status: 200,
+					contentType: "image/svg+xml",
+					body: MOCK_EXTERNAL_IMAGE,
+				});
+				break;
+			case "script":
+				await route.fulfill({
+					status: 200,
+					contentType: "application/javascript",
+					body: "",
+				});
+				break;
+			case "stylesheet":
+				await route.fulfill({
+					status: 200,
+					contentType: "text/css",
+					body: "",
+				});
+				break;
+			default:
+				await route.fulfill({
+					status: 204,
+					body: "",
+				});
+		}
 	});
 
-	githubRepoCardStubbedPages.add(page);
+	networkIsolationConfiguredPages.add(page);
+}
+
+function formatConsoleError(message: string, locationUrl: string): string {
+	if (locationUrl) {
+		return `${message} [${locationUrl}]`;
+	}
+
+	return message;
 }
 
 export function installConsoleErrorCollector(page: Page): string[] {
@@ -64,17 +125,7 @@ export function installConsoleErrorCollector(page: Page): string[] {
 
 	page.on("console", (message) => {
 		if (message.type() === "error") {
-			if (
-				message
-					.text()
-					.includes(
-						"@bilibili/bili-user-fingerprint(report): report is not found",
-					)
-			) {
-				return;
-			}
-
-			errors.push(message.text());
+			errors.push(formatConsoleError(message.text(), message.location().url));
 		}
 	});
 
@@ -85,8 +136,11 @@ export function installConsoleErrorCollector(page: Page): string[] {
 	return errors;
 }
 
-export async function gotoAndWaitForApp(page: Page, path: string): Promise<void> {
-	await installGitHubRepoCardStub(page);
+export async function gotoAndWaitForApp(
+	page: Page,
+	path: string,
+): Promise<void> {
+	await installExternalNetworkStubs(page);
 	await page.goto(path);
 	await expect(page.locator("#swup-container")).toBeVisible();
 	await page.waitForLoadState("networkidle");
@@ -114,15 +168,22 @@ export async function waitForPagefind(page: Page): Promise<void> {
 
 export async function openMobileSearchPanel(page: Page): Promise<void> {
 	await page.getByRole("button", { name: "Search Panel" }).click();
-	await expect(page.locator("#search-panel")).not.toHaveClass(/float-panel-closed/);
+	await expect(page.locator("#search-panel")).not.toHaveClass(
+		/float-panel-closed/,
+	);
 }
 
 export async function openMobileNavMenu(page: Page): Promise<void> {
 	await page.getByRole("button", { name: "Menu" }).click();
-	await expect(page.locator("#nav-menu-panel")).not.toHaveClass(/float-panel-closed/);
+	await expect(page.locator("#nav-menu-panel")).not.toHaveClass(
+		/float-panel-closed/,
+	);
 }
 
-export async function prepareStablePage(page: Page, path: string): Promise<void> {
+export async function prepareStablePage(
+	page: Page,
+	path: string,
+): Promise<void> {
 	await page.addInitScript(() => {
 		localStorage.setItem("theme", "light");
 		localStorage.setItem("hue", "250");

@@ -11,42 +11,56 @@ interface Props {
 
 const { page, style } = Astro.props;
 
-const HIDDEN = -1;
+const HIDDEN_PAGE_ITEM = -1;
 
 const className = Astro.props.class;
 
-const ADJ_DIST = 2;
-const VISIBLE = ADJ_DIST * 2 + 1;
+const ADJACENT_PAGE_DISTANCE = 2;
+const VISIBLE_PAGE_COUNT = ADJACENT_PAGE_DISTANCE * 2 + 1;
 
-// for test
-let count = 1;
-let l = page.currentPage;
-let r = page.currentPage;
-while (0 < l - 1 && r + 1 <= page.lastPage && count + 2 <= VISIBLE) {
-	count += 2;
-	l--;
-	r++;
+let visiblePageCount = 1;
+let firstVisiblePage = page.currentPage;
+let lastVisiblePage = page.currentPage;
+while (
+	0 < firstVisiblePage - 1 &&
+	lastVisiblePage + 1 <= page.lastPage &&
+	visiblePageCount + 2 <= VISIBLE_PAGE_COUNT
+) {
+	visiblePageCount += 2;
+	firstVisiblePage--;
+	lastVisiblePage++;
 }
-while (0 < l - 1 && count < VISIBLE) {
-	count++;
-	l--;
+while (0 < firstVisiblePage - 1 && visiblePageCount < VISIBLE_PAGE_COUNT) {
+	visiblePageCount++;
+	firstVisiblePage--;
 }
-while (r + 1 <= page.lastPage && count < VISIBLE) {
-	count++;
-	r++;
+while (
+	lastVisiblePage + 1 <= page.lastPage &&
+	visiblePageCount < VISIBLE_PAGE_COUNT
+) {
+	visiblePageCount++;
+	lastVisiblePage++;
 }
 
-let pages: number[] = [];
-if (l > 1) pages.push(1);
-if (l === 3) pages.push(2);
-if (l > 3) pages.push(HIDDEN);
-for (let i = l; i <= r; i++) pages.push(i);
-if (r < page.lastPage - 2) pages.push(HIDDEN);
-if (r === page.lastPage - 2) pages.push(page.lastPage - 1);
-if (r < page.lastPage) pages.push(page.lastPage);
+const pageItems: number[] = [];
+if (firstVisiblePage > 1) pageItems.push(1);
+if (firstVisiblePage === 3) pageItems.push(2);
+if (firstVisiblePage > 3) pageItems.push(HIDDEN_PAGE_ITEM);
+for (
+	let pageNumber = firstVisiblePage;
+	pageNumber <= lastVisiblePage;
+	pageNumber++
+) {
+	pageItems.push(pageNumber);
+}
+if (lastVisiblePage < page.lastPage - 2) pageItems.push(HIDDEN_PAGE_ITEM);
+if (lastVisiblePage === page.lastPage - 2) {
+	pageItems.push(page.lastPage - 1);
+}
+if (lastVisiblePage < page.lastPage) pageItems.push(page.lastPage);
 
-const getPageUrl = (p: number) => {
-	return getHomePaginationPath(p);
+const getPageUrl = (pageNumber: number) => {
+	return getHomePaginationPath(pageNumber);
 };
 const prevPageUrl =
 	page.currentPage > 1 ? url(getPageUrl(page.currentPage - 1)) : null;
@@ -70,18 +84,18 @@ const nextPageUrl =
         }
     </div>
     <div class="bg-card-bg flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
-        {pages.map((p) => {
-            if (p == HIDDEN)
+        {pageItems.map((pageNumber) => {
+            if (pageNumber === HIDDEN_PAGE_ITEM)
                 return <Icon name="material-symbols:more-horiz" class="mx-1"/>;
-            if (p == page.currentPage)
+            if (pageNumber === page.currentPage)
                 return <div class="h-11 w-11 rounded-lg bg-primary flex items-center justify-center
                     font-bold text-pagination-current-content"
                 >
-                    {p}
+                    {pageNumber}
                 </div>
-            return <a href={url(getPageUrl(p))} aria-label={`Page ${p}`}
+            return <a href={url(getPageUrl(pageNumber))} aria-label={`Page ${pageNumber}`}
                 class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.85]"
-            >{p}</a>
+            >{pageNumber}</a>
         })}
     </div>
     <div class="w-11 h-11">

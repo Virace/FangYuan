@@ -40,15 +40,17 @@ pnpm install
 pnpm dev
 pnpm check
 pnpm build
-pnpm test:node
+pnpm test
 pnpm test:build
+pnpm test:system
 ```
 
 说明：
 
 - 仓库仍保留 `private: true`，用于避免误发布到 npm；这不影响 GitHub 仓库公开开源。
-- `pnpm test:node` 只运行快速 Node 单元测试，并使用 Node 默认的文件级并发。
+- `pnpm test` 是默认快速测试入口，委托给 `pnpm test:node`，运行 Node 行为测试并使用默认的文件级并发。
 - `pnpm test:build` 运行统一的构建产物矩阵：5 个成功产物覆盖外部富功能、关闭态、两类永久链接和内部 demo，3 个失败场景覆盖必需内容与资源错误。每个场景使用独立的 `out/cache`，同一产物由多项断言复用；仅 Astro 产物准备阶段串行，避免共享 `.astro/` 生成目录发生竞争。
+- `pnpm test:system` 依次运行快速 Node 测试、构建产物矩阵和核心 Playwright 浏览器回归；视觉快照仍通过 `pnpm test:e2e:visual` 独立执行。
 - Astro 字体直接从已安装的 `@fontsource` 包读取本地 `.woff2` 文件，构建和构建测试都不依赖字体 CDN 或下载缓存。
 
 ## 外部 site 输入层
