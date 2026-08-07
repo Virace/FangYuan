@@ -47,6 +47,9 @@ jobs:
       - name: Run Node test suite
         run: pnpm test:node
 
+      - name: Run build artifact matrix
+        run: pnpm test:build
+
       - name: Run production build
         run: pnpm build
 
