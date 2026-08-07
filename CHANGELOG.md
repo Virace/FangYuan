@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.1 - 2026-08-07
+
+本次版本集中更新代码高亮、字体、数学公式、Markdown 解析与开发工具依赖，保持现有站点配置和内容合同不变。
+
+### Highlights
+
+- 将 Expressive Code 核心、折叠区块、行号插件与 Astro 集成统一更新到 0.44.1。
+- 更新本地字体资源、KaTeX 与 Markdown-it，维持现有排版、公式和文章渲染能力。
+- 更新 Biome、Playwright、axe Playwright 与 Svelte Check，保持后续开发和回归工具链同步。
+- 补充多模式构建产物测试矩阵，覆盖内置站点、外部站点和错误输入场景。
+
+### Notes
+
+- 本版本不新增或修改 `site.config.yaml`、Frontmatter、QingYan 或部署合同。
+- 本仓库继续保留 `private: true`，仅发布 GitHub 源码与主题版本，不发布 npm 包。
+
 ## 0.2.0 - 2026-07-28
 
 本次版本补齐 QingYan 最新公开评论配置，并收口近期评论交互、可访问性与依赖维护改动。
