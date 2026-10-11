@@ -682,7 +682,8 @@ RSS 中会降级为更通用的 `<details class="md-fold">` 和 `<summary class=
 
 - 外部 `url` 会自动加 `target="_blank"` 和 `rel="noopener noreferrer"`。
 - 站内 `/...` 链接不会加新窗口属性。
-- 没写 `logo` 且是外链时，会使用 `https://favicon.im/<hostname>?larger=true`。
+- 没写 `logo` 且链接指向 `github.com` 或 `www.github.com` 时，会使用跟随站点亮色 / 暗色主题的 GitHub 图标；显式传入的 `logo` 仍按原图展示。
+- 没写 `logo` 的其他外链，会使用 `https://favicon.im/<hostname>?larger=true`。
 - 没写 `logo` 且是站内链接时，会使用标题首字作为 fallback。
 - 本地 `logo` 会进入 Astro 内容图片管线，最终通常输出 `/static/...`。
 - 无效 `url`、空 `title`、空 `description` 或非法 `logo` 会生成隐藏的 invalid directive 节点。
