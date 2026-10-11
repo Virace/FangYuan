@@ -2,7 +2,7 @@
   "name": "fangyuan",
   "private": true,
   "type": "module",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "dev": "astro dev",
     "dev:internal": "cross-env FANGYUAN_SITE_MODE=internal astro dev",
