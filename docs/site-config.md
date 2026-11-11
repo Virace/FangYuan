@@ -195,6 +195,12 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 - 作用：目录最大层级。
 - 支持值：`1`、`2`、`3`
 
+#### `siteConfig.githubCard.descriptionLines`
+
+- 作用：GitHub 仓库卡片简介最多显示的行数，超出部分显示省略号，原始简介保留完整。
+- 支持值：整数 `1`、`2`、`3`，默认 `1`。
+- 作用范围：所有页面中的 GitHub 仓库卡片，构建快照和浏览器刷新共用同一设置。
+
 #### `siteConfig.favicon`
 
 - 作用：自定义 favicon 列表。

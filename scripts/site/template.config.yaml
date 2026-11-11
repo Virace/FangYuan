@@ -72,6 +72,10 @@ siteConfig:
     # 目录最大层级，只支持 1 / 2 / 3。
     depth: 2
 
+  githubCard:
+    # 仓库简介最多显示的行数，只支持 1 / 2 / 3，超出部分显示省略号。
+    descriptionLines: 1
+
   # favicon 列表。
   # 替换位置：assets/favicon/icon.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
   # 留空数组表示继续使用内置默认 favicon 配置。

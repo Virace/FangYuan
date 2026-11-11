@@ -19,7 +19,7 @@ export function GithubCardComponent(properties, children) {
 
 // 显式插件对象会进入 Astro 的配置摘要，使旧卡片渲染缓存随管线迁移失效。
 export const satteriGithubCard = {
-	name: "fangyuan-github-card",
+	name: "fangyuan-github-card-notice",
 	element: {
 		filter: ["github"],
 		visit(node, context) {
@@ -75,18 +75,23 @@ export function renderGithubCard(repo, snapshot = null) {
 				]),
 				h("span", { class: "github-logo", "aria-hidden": "true" }),
 			]),
-			h(
-				"div",
-				{ class: "gc-description", hidden: !fields.description },
-				fields.description ?? "",
-			),
-			h("div", { class: "gc-infobar", hidden: !snapshot }, [
-				field("gc-stars", fields.stars, "Stars"),
-				field("gc-forks", fields.forks, "Forks"),
-				field("gc-license", fields.license, "License"),
-				field("gc-language", fields.language),
+			h("div", { class: "gc-content" }, [
+				h(
+					"div",
+					{ class: "gc-description", hidden: !fields.description },
+					fields.description ?? "",
+				),
+				h("div", { class: "gc-infobar", hidden: !snapshot }, [
+					field("gc-stars", fields.stars, "Stars"),
+					field("gc-forks", fields.forks, "Forks"),
+					field("gc-license", fields.license, "License"),
+					field("gc-language", fields.language, "Language"),
+				]),
 			]),
-			h("span", { class: "gc-status", hidden: true }),
+			h("span", { class: "gc-status", hidden: true }, [
+				h("span", { class: "gc-status-icon", "aria-hidden": "true" }),
+				h("span", { class: "gc-status-text" }),
+			]),
 		],
 	);
 }

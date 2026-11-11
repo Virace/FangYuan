@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { access, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
+import { htmlToHast } from "satteri";
 
 import { createBuildRun } from "./test-helpers/build-artifact.mjs";
 
@@ -14,6 +15,113 @@ const tinyPng = Buffer.from(
 	"base64",
 );
 const optimizedAssetPattern = /\/static\/.*\.(?:png|webp|jpg|jpeg|svg)/;
+
+test("persistent icons survive main and toc replacement", { timeout: 5 * 60 * 1000 }, async (t) => {
+	const run = await createBuildRun(t);
+	const scenario = await run.createScenario("persistent-icons");
+	const origin = "https://icons.example.test";
+	await writeText(scenario.siteConfigPath, `siteConfig:
+  title: Persistent Icons
+  site: ${origin}
+  postsPerPage: 5
+  banner:
+    enable: false
+  permalink:
+    postsPattern: /posts/%slug%
+navBarConfig:
+  links:
+    - name: nav.home
+      url: /
+    - name: nav.about
+      ref:
+        collection: spec
+        id: about
+`);
+	await writeSpec(scenario, "about.md", "# About icons\n");
+	for (let postNumber = 1; postNumber <= 45; postNumber++) {
+		const tags = Array.from(
+			{ length: 3 },
+			(_, offset) => `Tag${(postNumber * 3 + offset) % 27}`,
+		);
+		const published = new Date(Date.UTC(2026, 6, postNumber)).toISOString().slice(0, 10);
+		await writePost(scenario, `post-${postNumber}.md`, `---
+title: Icon article ${postNumber}
+published: ${published}
+category: Category${postNumber % 9}
+tags: [${tags.join(", ")}]
+---
+
+Article ${postNumber}.
+`);
+	}
+	const artifact = run.buildScenario(scenario);
+	const routes = ["/", "/page/5/", "/about/", "/posts/post-45/"];
+	const pages = new Map();
+	for (const route of routes) {
+		const html = await readBuiltFile(artifact, route.slice(1), "index.html");
+		const page = { ids: [], uses: [], icons: [], links: [] };
+		function walk(node, region = "persistent", widget = "", inMenu = false) {
+			const props = node.properties ?? {};
+			if (node.tagName === "main") region = "main";
+			if (props.id === "toc") region = "toc";
+			if (node.tagName === "widget-layout") {
+				widget = props.dataId ?? props["data-id"];
+			}
+			if (props.id === "nav-menu-panel") inMenu = true;
+			if (props.id) page.ids.push({ id: props.id, region });
+			if (node.tagName === "use") {
+				const reference = props.href ?? props.xLinkHref;
+				if (reference?.startsWith("#")) {
+					page.uses.push({ id: reference.slice(1), region });
+				}
+			}
+			if (node.tagName === "svg") {
+				page.icons.push({ name: props.dataIcon ?? props["data-icon"], region, widget, inMenu });
+			}
+			if (node.tagName === "a" && props.href) {
+				page.links.push(new URL(props.href, origin + route).href);
+			}
+			for (const child of node.children ?? []) walk(child, region, widget, inMenu);
+		}
+		walk(htmlToHast(html));
+		for (const widget of ["categories", "tags"]) {
+			assert.ok(
+				page.icons.some(icon => icon.widget === widget && icon.name === "material-symbols:more-horiz"),
+				`${route}: ${widget} must have a more control`,
+			);
+		}
+		assert.ok(page.icons.some(icon => icon.inMenu), `${route}: menu icons must exist`);
+		const ids = new Set(page.ids.map(entry => entry.id));
+		assert.deepEqual(
+			page.uses.filter(reference => !ids.has(reference.id)),
+			[],
+			`${route}: hard-load SVG references`,
+		);
+		pages.set(route, page);
+	}
+	const hasPaginationEllipsis = page => page.icons.some(icon =>
+		icon.region === "main" && icon.name === "material-symbols:more-horiz",
+	);
+	assert.ok(hasPaginationEllipsis(pages.get("/")), "home pagination must have an ellipsis");
+	assert.equal(hasPaginationEllipsis(pages.get("/page/5/")), false, "middle pagination must omit the ellipsis");
+	for (const targetRoute of routes.slice(1)) {
+		for (const [from, to] of [["/", targetRoute], [targetRoute, "/"]]) {
+			const source = pages.get(from);
+			const target = pages.get(to);
+			assert.ok(source.links.includes(new URL(to, origin).href), `${from} must link to ${to}`);
+			const remaining = entries => [
+				...source[entries].filter(entry => entry.region === "persistent"),
+				...target[entries].filter(entry => entry.region !== "persistent"),
+			];
+			const ids = new Set(remaining("ids").map(entry => entry.id));
+			assert.deepEqual(
+				remaining("uses").filter(reference => !ids.has(reference.id)),
+				[],
+				`${from} -> ${to}: SVG references after replacement`,
+			);
+		}
+	}
+});
 
 async function writeText(filePath, source) {
 	await mkdir(path.dirname(filePath), { recursive: true });

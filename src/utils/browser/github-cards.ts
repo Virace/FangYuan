@@ -7,6 +7,77 @@ import {
 
 let pageController: AbortController | null = null;
 let generation = 0;
+const cardAnimations = new WeakMap<HTMLElement, Animation[]>();
+
+function updateCard(
+	card: HTMLElement,
+	update: () => void,
+	fadeContent = false,
+): void {
+	const previousHeight = card.getBoundingClientRect().height;
+	for (const animation of cardAnimations.get(card) ?? []) animation.cancel();
+	update();
+	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+	// 用实际前后高度过渡，兼容自动换行；布局先展开，提示随后显现。
+	const nextHeight = card.getBoundingClientRect().height;
+	const animations: Animation[] = [];
+	const duration = 240;
+	const easing = "cubic-bezier(0.22, 1, 0.36, 1)";
+	if (previousHeight !== nextHeight) {
+		animations.push(
+			card.animate(
+				[
+					{ height: `${previousHeight}px`, overflow: "clip" },
+					{ height: `${nextHeight}px`, overflow: "clip" },
+				],
+				{ duration, easing },
+			),
+		);
+	}
+	const content = card.querySelector<HTMLElement>(".gc-content");
+	if (fadeContent && content) {
+		animations.push(
+			content.animate([{ opacity: 0.6 }, { opacity: 1 }], {
+				duration: 180,
+				delay: animations.length ? 120 : 0,
+				fill: "backwards",
+				easing,
+			}),
+		);
+	}
+	const status = card.querySelector<HTMLElement>(".gc-status");
+	if (status && !status.hidden) {
+		animations.push(
+			status.animate(
+				[
+					{ opacity: 0, transform: "translateY(-3px)" },
+					{ opacity: 1, transform: "translateY(0)" },
+				],
+				{ duration: 160, delay: duration, fill: "backwards", easing },
+			),
+		);
+	}
+	cardAnimations.set(card, animations);
+}
+
+function setStatus(card: HTMLElement, isStale: boolean): void {
+	const status = card.querySelector<HTMLElement>(".gc-status");
+	if (!status) return;
+	status.hidden = !isStale;
+	if (isStale) {
+		const hasSnapshot = Boolean(
+			card.querySelector(".gc-infobar:not([hidden])"),
+		);
+		setField(
+			card,
+			".gc-status-text",
+			hasSnapshot
+				? "数据可能滞后，请进入仓库查看。"
+				: "暂未获取仓库数据，请进入仓库查看。",
+		);
+	}
+}
 
 function setField(
 	card: HTMLElement,
@@ -29,11 +100,11 @@ function applySnapshot(
 	setField(card, ".gc-user", fields.owner);
 	setField(card, ".gc-repo", fields.name);
 	setField(card, ".gc-description", fields.description);
-	setField(card, ".gc-language", fields.language);
 	for (const [selector, value, label] of [
 		[".gc-stars", fields.stars, "Stars"],
 		[".gc-forks", fields.forks, "Forks"],
 		[".gc-license", fields.license, "License"],
+		[".gc-language", fields.language, "Language"],
 	] as const) {
 		setField(card, selector, value);
 		const element = card.querySelector(selector);
@@ -58,9 +129,11 @@ export function cancelGithubCards(): void {
 	for (const card of document.querySelectorAll<HTMLAnchorElement>(
 		'a.card-github[data-github-state="updating"]',
 	)) {
-		card.dataset.githubState = "stale";
-		card.removeAttribute("aria-busy");
-		setField(card, ".gc-status", "暂未更新");
+		updateCard(card, () => {
+			card.dataset.githubState = "stale";
+			card.removeAttribute("aria-busy");
+			setStatus(card, true);
+		});
 	}
 }
 
@@ -78,9 +151,11 @@ export function refreshGithubCards(): void {
 	)) {
 		const repo = normalizeGithubRepo(card.dataset.githubRepo);
 		if (!repo) continue;
-		card.dataset.githubState = "updating";
-		card.setAttribute("aria-busy", "true");
-		setField(card, ".gc-status", null);
+		updateCard(card, () => {
+			card.dataset.githubState = "updating";
+			card.setAttribute("aria-busy", "true");
+			setStatus(card, false);
+		});
 		const avatar = card.querySelector<HTMLImageElement>(".gc-avatar");
 		if (avatar)
 			avatar.onerror = () => {
@@ -99,10 +174,16 @@ export function refreshGithubCards(): void {
 					return;
 				for (const card of cards) {
 					if (!card.isConnected) continue;
-					if (snapshot) applySnapshot(card, repo, snapshot);
-					card.dataset.githubState = snapshot ? "ready" : "stale";
-					card.removeAttribute("aria-busy");
-					setField(card, ".gc-status", snapshot ? null : "暂未更新");
+					updateCard(
+						card,
+						() => {
+							if (snapshot) applySnapshot(card, repo, snapshot);
+							card.dataset.githubState = snapshot ? "ready" : "stale";
+							card.removeAttribute("aria-busy");
+							setStatus(card, !snapshot);
+						},
+						Boolean(snapshot),
+					);
 				}
 			},
 		);

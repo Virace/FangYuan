@@ -95,6 +95,10 @@ function mergeSiteConfig(
 			...defaultConfig.toc,
 			...override.toc,
 		},
+		githubCard: {
+			...defaultConfig.githubCard,
+			...override.githubCard,
+		},
 		postSort: {
 			...defaultConfig.postSort,
 			...override.postSort,

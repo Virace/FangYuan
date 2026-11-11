@@ -49,9 +49,10 @@ pnpm test:system
 
 - 仓库仍保留 `private: true`，用于避免误发布到 npm；这不影响 GitHub 仓库公开开源。
 - `pnpm test` 是默认快速测试入口，委托给 `pnpm test:node`，运行 Node 行为测试并使用默认的文件级并发。
-- `pnpm test:build` 运行构建产物矩阵：5 个成功产物覆盖外部富功能、关闭态、两类永久链接和内部 demo，3 个失败场景覆盖必需内容与资源错误；另用同一篇文章和保留的缓存连续构建 4 次，验证 GitHub 快照刷新与失败降级。每个场景使用独立的 `out/cache`，同一产物由多项断言复用；Astro 产物准备串行执行，避免共享 `.astro/` 生成目录发生竞争。
+- `pnpm test:build` 运行构建产物矩阵：6 个成功产物覆盖外部富功能、关闭态、两类永久链接、内部 demo 和跨页 SVG 引用，3 个失败场景覆盖必需内容与资源错误；另用同一篇文章和保留的缓存连续构建 4 次，验证 GitHub 快照刷新与失败降级。每个场景使用独立的 `out/cache`，同一产物由多项断言复用；Astro 产物准备串行执行，避免共享 `.astro/` 生成目录发生竞争。
 - `pnpm test:system` 依次运行快速 Node 测试、构建产物矩阵和核心 Playwright 浏览器回归；视觉快照仍通过 `pnpm test:e2e:visual` 独立执行。
 - 构建测试和浏览器测试的前置构建使用固定 GitHub API 响应，不依赖实时 GitHub 网络；浏览器回归包含无 JavaScript、限速、超时、空值与 Swup 卡片生命周期。
+- 导航回归检查菜单箭头在 Swup 切页和历史导航后仍能绘制；测试预览使用 `--ignore-lock`，允许与其他端口的已有预览并存，4331 端口仍须空闲。
 - Astro 字体直接从已安装的 `@fontsource` 包读取本地 `.woff2` 文件，构建和构建测试都不依赖字体 CDN 或下载缓存。
 - 正文使用 Sätteri 原生处理器，RSS 保持独立的 markdown-it 渲染；既有 Markdown 指令写法保持兼容。
 - GitHub 仓库卡片在初始 HTML 中提供仓库入口和可用构建快照，浏览器后台刷新失败时保留已有内容。Actions 构建可使用内置短期 `GITHUB_TOKEN`，本地允许无令牌构建。

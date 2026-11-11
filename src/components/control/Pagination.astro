@@ -86,7 +86,7 @@ const nextPageUrl =
     <div class="bg-card-bg flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
         {pageItems.map((pageNumber) => {
             if (pageNumber === HIDDEN_PAGE_ITEM)
-                return <Icon name="material-symbols:more-horiz" class="mx-1"/>;
+                return <Icon is:inline name="material-symbols:more-horiz" class="mx-1"/>;
             if (pageNumber === page.currentPage)
                 return <div class="h-11 w-11 rounded-lg bg-primary flex items-center justify-center
                     font-bold text-pagination-current-content"
@@ -103,10 +103,10 @@ const nextPageUrl =
             ? <a href={nextPageUrl} aria-label="Next Page"
                 class="btn-card overflow-hidden rounded-lg text-primary w-11 h-11"
             >
-                <Icon name="material-symbols:chevron-right-rounded" class="icon-28"></Icon>
+                <Icon is:inline name="material-symbols:chevron-right-rounded" class="icon-28"></Icon>
             </a>
             : <div class="btn-card disabled overflow-hidden rounded-lg text-primary w-11 h-11">
-                <Icon name="material-symbols:chevron-right-rounded" class="icon-28"></Icon>
+                <Icon is:inline name="material-symbols:chevron-right-rounded" class="icon-28"></Icon>
             </div>
         }
     </div>

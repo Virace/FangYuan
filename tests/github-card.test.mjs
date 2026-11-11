@@ -55,6 +55,7 @@ test("GitHub directive base card contains a usable repository link and unknown s
 	assert.equal(card.tagName, "a");
 	assert.equal(card.properties.href, "https://github.com/Owner/Repo");
 	assert.equal(card.properties.dataGithubRepo, "Owner/Repo");
-	assert.equal(card.children.find(node => node.properties?.className?.includes("gc-infobar")).properties.hidden, true);
+	const content = card.children.find(node => node.properties?.className?.includes("gc-content"));
+	assert.equal(content.children.find(node => node.properties?.className?.includes("gc-infobar")).properties.hidden, true);
 	assert.equal(card.children.some(node => node.tagName === "script"), false);
 });

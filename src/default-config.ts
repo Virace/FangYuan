@@ -57,6 +57,9 @@ export const defaultSiteConfig: SiteConfig = {
 		enable: true, // 是否在文章页右侧显示目录
 		depth: 2, // 目录最大层级，只支持 1 | 2 | 3
 	},
+	githubCard: {
+		descriptionLines: 1, // 仓库简介最多显示 1 / 2 / 3 行，超出部分显示省略号
+	},
 	favicon: [
 		// 留空时使用默认 favicon
 		// {

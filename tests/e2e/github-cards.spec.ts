@@ -43,7 +43,65 @@ for (const status of [403, 429]) {
 		await expect(card.locator(".gc-description")).toHaveText(`Built snapshot for ${repo}`);
 		await expect(card.locator(".gc-stars")).toHaveText("123");
 		await expect(card).toHaveCSS("pointer-events", "auto");
-		await expect(card.locator(".gc-status")).toHaveText("暂未更新");
+		await expect(card.locator(".gc-status")).toHaveText("数据可能滞后，请进入仓库查看。");
+	});
+}
+
+for (const reducedMotion of ["no-preference", "reduce"] as const) {
+	test(`GitHub stale notice follows card expansion with motion ${reducedMotion}`, async ({ page }, testInfo) => {
+		await page.emulateMedia({ reducedMotion });
+		if (reducedMotion === "reduce") {
+			await page.setViewportSize({ width: 390, height: 844 });
+			await page.emulateMedia({ colorScheme: "dark" });
+		}
+		await preparePage(page);
+		let releaseRequest: (() => void) | undefined;
+		await page.route(apiPattern, async route => {
+			await new Promise<void>(resolve => { releaseRequest = resolve; });
+			await route.fulfill({ status: 403, contentType: "application/json", body: "{}" });
+		});
+		await page.goto(SITE_ROUTES.postComplex);
+		const card = page.locator(cardSelector);
+		await expect(card).toHaveAttribute("data-github-state", "updating");
+		await card.scrollIntoViewIfNeeded();
+		const initialHeight = await card.evaluate(element => element.getBoundingClientRect().height);
+		const framesPromise = card.evaluate(element => new Promise<{ height: number; opacity: number; stars: string | null }[]>(resolve => {
+			const frames: { height: number; opacity: number; stars: string | null }[] = [];
+			const observer = new MutationObserver(() => {
+				if (element.getAttribute("data-github-state") !== "stale") return;
+				observer.disconnect();
+				const sample = () => {
+					frames.push({
+						height: element.getBoundingClientRect().height,
+						opacity: Number(getComputedStyle(element.querySelector<HTMLElement>(".gc-status")!).opacity),
+						stars: element.querySelector(".gc-stars")!.textContent,
+					});
+					if (element.getAnimations({ subtree: true }).some(animation => animation.playState === "running")) requestAnimationFrame(sample);
+					else resolve(frames);
+				};
+				sample();
+			});
+			observer.observe(element, { attributes: true, attributeFilter: ["data-github-state"] });
+			element.setAttribute("data-test-observing", "true");
+		}));
+		await expect(card).toHaveAttribute("data-test-observing", "true");
+		await expect.poll(() => typeof releaseRequest).toBe("function");
+		releaseRequest!();
+		const frames = await framesPromise;
+		const finalHeight = frames.at(-1)!.height;
+		expect(finalHeight).toBeGreaterThan(initialHeight);
+		expect(frames.every(frame => frame.stars === "123")).toBe(true);
+		expect(frames.at(-1)!.opacity).toBe(1);
+		if (reducedMotion === "no-preference") {
+			expect(frames[0].opacity).toBe(0);
+			expect(frames.some(frame => frame.height > initialHeight + 0.5 && frame.height < finalHeight - 0.5)).toBe(true);
+			expect(frames.filter(frame => frame.height < finalHeight - 0.5).every(frame => frame.opacity === 0)).toBe(true);
+		} else {
+			expect(frames).toHaveLength(1);
+		}
+		await expect(card.locator(".gc-status-icon")).toBeVisible();
+		await expect(card.locator(".gc-language")).toHaveText("TypeScript");
+		await card.screenshot({ path: testInfo.outputPath("github-card-stale.png") });
 	});
 }
 
