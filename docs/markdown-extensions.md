@@ -26,7 +26,7 @@
 | Bilibili 视频 | `::bilibili{...}` | 支持 | 支持 | 响应式 Bilibili iframe figure |
 | 外链卡片 | `::link-card{...}` | 支持 | 支持 | 卡片式链接 |
 | 外链卡片网格 | `:::link-grid` | 支持 | 支持 | 响应式卡片网格 |
-| GitHub 仓库卡片 | `::github{repo="owner/repo"}` | 支持 | 支持 | 动态仓库信息卡片 |
+| GitHub 仓库卡片 | `::github{repo="owner/repo"}` | 支持 | 支持 | 构建快照与浏览器后台刷新 |
 | RSS 指令降级 | `:hl`、`:::aside`、`:::fold` | 支持 | 不适用 | RSS 内对应 HTML 片段 |
 
 ## 页面差异
@@ -124,7 +124,7 @@ comment: true
 
 ## 标准 Markdown
 
-基础 Markdown 能力由 Astro Markdown 管线提供，正文区域使用 Tailwind Typography 和 `src/styles/markdown.css`、`src/styles/markdown-extend.css` 做站点样式。
+基础 Markdown 能力由 Astro 的 Sätteri 处理器提供，原生 MDAST / HAST 插件承接阅读信息、指令、公式、标题与代码块扩展。正文区域使用 Tailwind Typography 和 `src/styles/markdown.css`、`src/styles/markdown-extend.css` 做站点样式。
 
 常用写法：
 
@@ -343,7 +343,7 @@ toc:
 
 ## 自动 section
 
-所有标题和标题后的内容会被 `remark-sectionize` 按层级包进 `<section>`。
+所有标题和标题后的内容会由原生 section 插件按层级包进 `<section>`。
 
 输入：
 
@@ -716,7 +716,7 @@ RSS 中会降级为更通用的 `<details class="md-fold">` 和 `<summary class=
 
 ## GitHub 仓库卡片
 
-GitHub 卡片用于展示仓库入口。
+GitHub 卡片用于展示公开仓库入口。文章写法保持不变：
 
 ```markdown
 ::github{repo="Virace/FangYuan"}
@@ -726,31 +726,33 @@ GitHub 卡片用于展示仓库入口。
 
 - `repo`：必填，格式必须是 `owner/repo`。
 
-最终产物大致是：
+初始 HTML 始终包含仓库名和可点击链接，禁用 JavaScript 时也能使用。构建时会获取公开 GitHub API 元数据，并把有效结果写入卡片：
 
-```html
-<a id="GCxxxxxx-card" class="card-github fetch-waiting no-styling" href="https://github.com/Virace/FangYuan" target="_blank">
-  <div class="gc-titlebar">...</div>
-  <div class="gc-description">Waiting for api.github.com...</div>
-  <div class="gc-infobar">...</div>
-  <script defer>fetch("https://api.github.com/repos/Virace/FangYuan")...</script>
-</a>
-```
-
-页面加载后，脚本会请求 GitHub API，填充：
-
-- 仓库描述。
+- 仓库描述：默认最多显示 1 行，可用 `siteConfig.githubCard.descriptionLines` 设置为 `1`、`2` 或 `3` 行；超出省略，原始简介保留完整。
 - 主要语言。
 - star 数。
 - fork 数。
 - license。
 - owner avatar。
 
-如果请求失败，卡片会保留可点击状态，并加上 `fetch-error` 类。写法必须是叶子 directive，不能包含子内容。
+同次构建按仓库去重；没有网络或 API 限速时不阻断整站构建，仍输出基础卡片，没有有效统计时不显示占位数字。快照每次构建重新获取，与文章内容缓存分开处理，不依赖上次构建结果。
+
+页面加载后会在保留当前卡面的同时后台刷新。成功时更新规范仓库名、链接与字段；合法空值会隐藏对应信息，统计为 `0` 时正常显示。失败或超时会保留已有数字与主要语言，并在底部显示带信息图标的提示：“数据可能滞后，请进入仓库查看。”没有取得过快照时，提示“暂未获取仓库数据，请进入仓库查看。”，不显示虚构统计。
+
+状态变化时卡片高度平滑过渡，新增提示在展开后淡入；开启“减少动态效果”时直接显示结果。卡片始终可点击，Swup 切页后会为当前页面重新初始化。
+
+Actions 的构建步骤可显式注入内置短期令牌：
+
+```yaml
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+```
+
+令牌只用于构建端 API 认证，不进入浏览器或公开产物。本地可以不提供令牌，不需要另行申请 PAT。只展示公开仓库元数据。写法必须是叶子 directive，不能包含子内容。
 
 ## RSS 中的扩展表现
 
-RSS 渲染不是完整 Astro Markdown 管线，而是 `src/utils/rss-content.ts` 用 `markdown-it` 做简化渲染，并额外处理部分 FangYuan directive。
+RSS 由 `src/utils/content/rss.ts` 使用 `markdown-it` 独立渲染，并额外处理部分 FangYuan directive。
 
 当前 RSS 会特殊处理：
 
@@ -781,7 +783,7 @@ RSS 不会完整执行所有文章页组件。例如 `link-card`、`github`、`b
 - 友链 logo 优先使用本地 `assets/...` 或文章相对路径，避免外部 favicon 不稳定。
 - 文章页需要元信息、归档、反馈、评论时放进 `posts`。
 - About、说明页、友链页这类固定页面放进 `spec`。
-- GitHub Alert 兼容语法只推荐 `NOTE`、`TIP`、`WARNING`；`IMPORTANT` 和 `CAUTION` 优先写成 FangYuan 原生 `:::important`、`:::caution`。
+- GitHub Alert 兼容语法支持 `NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION`，也可使用对应的 FangYuan 原生提示块。
 - 复杂代码块优先使用 Expressive Code attributes，而不是手写 HTML。
 - 需要在 RSS 中保持基本语义的内容，优先使用普通 Markdown、`:hl`、`:::aside` 和 `:::fold`。
 

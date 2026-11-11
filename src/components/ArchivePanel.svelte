@@ -82,7 +82,6 @@ onMount(async () => {
             {#each pinnedPosts as post}
                 <a
                         href={getPostUrlByEntry({ id: post.slug, data: post.data })}
-                        aria-label={post.data.title}
                         class="group btn-plain block! h-10 w-full rounded-lg"
                 >
                     <div class="flex flex-row justify-start items-center h-full">
@@ -140,7 +139,6 @@ onMount(async () => {
             {#each group.posts as post}
                 <a
                         href={getPostUrlByEntry({ id: post.slug, data: post.data })}
-                        aria-label={post.data.title}
                         class="group btn-plain block! h-10 w-full rounded-lg"
                 >
                     <div class="flex flex-row justify-start items-center h-full">

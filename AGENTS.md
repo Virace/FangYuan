@@ -2,6 +2,13 @@
 
 本文件约束当前仓库内的后续分支与集成流程。
 
+## 每轮入口
+
+- 修改代码、配置、测试或项目文档前，先读取 `PROJECT_STANDARD.md`。
+- 产品边界、硬约束和模块设计分别以 `PRODUCT.md`、`PROJECT_CONSTRAINTS.md`、`PROJECT_DESIGN.md` 为准。
+- 本文件保留 FangYuan 的细化执行规则；目录内存在更具体的 `AGENTS.md` 时，局部规则优先。
+- 实际命令、测试分层和交付门禁统一以 `PROJECT_STANDARD.md` 为入口，`package.json` 为命令事实源。
+
 ## 项目技术形态
 
 - 当前项目是 `Astro + TypeScript + Svelte` 的静态站点仓库。

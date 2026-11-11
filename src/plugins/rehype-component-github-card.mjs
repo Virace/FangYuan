@@ -1,95 +1,97 @@
-/// <reference types="mdast" />
 import { h } from "hastscript";
+import {
+	getGithubCardFields,
+	normalizeGithubRepo,
+} from "../utils/github-repo.ts";
 
-/**
- * Creates a GitHub Card component.
- *
- * @param {Object} properties - The properties of the component.
- * @param {string} properties.repo - The GitHub repository in the format "owner/repo".
- * @param {import('mdast').RootContent[]} children - The children elements of the component.
- * @returns {import('mdast').Parent} The created GitHub Card component.
- */
+/** 生成无网络依赖的基础卡面；构建完成后可用本轮公开快照增强。 */
 export function GithubCardComponent(properties, children) {
-	if (Array.isArray(children) && children.length !== 0)
-		return h("div", { class: "hidden" }, [
-			'Invalid directive. ("github" directive must be leaf type "::github{repo="owner/repo"}")',
-		]);
-
-	if (!properties.repo?.includes("/"))
+	const repo = normalizeGithubRepo(properties.repo);
+	if (!repo || (Array.isArray(children) && children.length !== 0)) {
 		return h(
 			"div",
 			{ class: "hidden" },
-			'Invalid repository. ("repo" attributte must be in the format "owner/repo")',
+			"Invalid GitHub repository directive.",
 		);
+	}
+	return renderGithubCard(repo);
+}
 
-	const repo = properties.repo;
-	const cardUuid = `GC${Math.random().toString(36).slice(-6)}`; // Collisions are not important
+// 显式插件对象会进入 Astro 的配置摘要，使旧卡片渲染缓存随管线迁移失效。
+export const satteriGithubCard = {
+	name: "fangyuan-github-card-notice",
+	element: {
+		filter: ["github"],
+		visit(node, context) {
+			context.replaceNode(
+				node,
+				GithubCardComponent(node.properties, node.children),
+			);
+		},
+	},
+};
 
-	const nAvatar = h(`div#${cardUuid}-avatar`, { class: "gc-avatar" });
-	const nLanguage = h(
-		`span#${cardUuid}-language`,
-		{ class: "gc-language" },
-		"Waiting...",
-	);
-
-	const nTitle = h("div", { class: "gc-titlebar" }, [
-		h("div", { class: "gc-titlebar-left" }, [
-			h("div", { class: "gc-owner" }, [
-				nAvatar,
-				h("div", { class: "gc-user" }, repo.split("/")[0]),
-			]),
-			h("div", { class: "gc-divider" }, "/"),
-			h("div", { class: "gc-repo" }, repo.split("/")[1]),
-		]),
-		h("div", { class: "github-logo" }),
-	]);
-
-	const nDescription = h(
-		`div#${cardUuid}-description`,
-		{ class: "gc-description" },
-		"Waiting for api.github.com...",
-	);
-
-	const nStars = h(`div#${cardUuid}-stars`, { class: "gc-stars" }, "00K");
-	const nForks = h(`div#${cardUuid}-forks`, { class: "gc-forks" }, "0K");
-	const nLicense = h(`div#${cardUuid}-license`, { class: "gc-license" }, "0K");
-
-	const nScript = h(
-		`script#${cardUuid}-script`,
-		{ type: "text/javascript", defer: true },
-		`
-      fetch('https://api.github.com/repos/${repo}', { referrerPolicy: "no-referrer" }).then(response => response.json()).then(data => {
-        document.getElementById('${cardUuid}-description').innerText = data.description?.replace(/:[a-zA-Z0-9_]+:/g, '') || "Description not set";
-        document.getElementById('${cardUuid}-language').innerText = data.language;
-        document.getElementById('${cardUuid}-forks').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.forks).replaceAll("\u202f", '');
-        document.getElementById('${cardUuid}-stars').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.stargazers_count).replaceAll("\u202f", '');
-        const avatarEl = document.getElementById('${cardUuid}-avatar');
-        avatarEl.style.backgroundImage = 'url(' + data.owner.avatar_url + ')';
-        avatarEl.style.backgroundColor = 'transparent';
-        document.getElementById('${cardUuid}-license').innerText = data.license?.spdx_id || "no-license";
-        document.getElementById('${cardUuid}-card').classList.remove("fetch-waiting");
-        console.log("[GITHUB-CARD] Loaded card for ${repo} | ${cardUuid}.")
-      }).catch(err => {
-        const c = document.getElementById('${cardUuid}-card');
-        c?.classList.add("fetch-error");
-        console.warn("[GITHUB-CARD] (Error) Loading card for ${repo} | ${cardUuid}.")
-      })
-    `,
-	);
-
+export function renderGithubCard(repo, snapshot = null) {
+	const fields = getGithubCardFields(repo, snapshot);
+	const field = (className, value, label) =>
+		h(
+			"span",
+			{
+				class: className,
+				hidden: value === null,
+				...(label && value !== null
+					? { "aria-label": `${label}: ${value}` }
+					: {}),
+			},
+			value ?? "",
+		);
 	return h(
-		`a#${cardUuid}-card`,
+		"a",
 		{
-			class: "card-github fetch-waiting no-styling",
-			href: `https://github.com/${repo}`,
+			class: "card-github no-styling",
+			href: fields.href,
 			target: "_blank",
-			repo,
+			rel: "noopener noreferrer",
+			"data-github-repo": repo,
+			"data-github-state": snapshot ? "ready" : "static",
 		},
 		[
-			nTitle,
-			nDescription,
-			h("div", { class: "gc-infobar" }, [nStars, nForks, nLicense, nLanguage]),
-			nScript,
+			h("div", { class: "gc-titlebar" }, [
+				h("div", { class: "gc-titlebar-left" }, [
+					h("div", { class: "gc-owner" }, [
+						h("img", {
+							class: "gc-avatar",
+							...(fields.avatarUrl ? { src: fields.avatarUrl } : {}),
+							hidden: !fields.avatarUrl,
+							alt: "",
+							loading: "lazy",
+							decoding: "async",
+							referrerPolicy: "no-referrer",
+						}),
+						h("span", { class: "gc-user" }, fields.owner),
+					]),
+					h("span", { class: "gc-divider", "aria-hidden": "true" }, "/"),
+					h("span", { class: "gc-repo" }, fields.name),
+				]),
+				h("span", { class: "github-logo", "aria-hidden": "true" }),
+			]),
+			h("div", { class: "gc-content" }, [
+				h(
+					"div",
+					{ class: "gc-description", hidden: !fields.description },
+					fields.description ?? "",
+				),
+				h("div", { class: "gc-infobar", hidden: !snapshot }, [
+					field("gc-stars", fields.stars, "Stars"),
+					field("gc-forks", fields.forks, "Forks"),
+					field("gc-license", fields.license, "License"),
+					field("gc-language", fields.language, "Language"),
+				]),
+			]),
+			h("span", { class: "gc-status", hidden: true }, [
+				h("span", { class: "gc-status-icon", "aria-hidden": "true" }),
+				h("span", { class: "gc-status-text" }),
+			]),
 		],
 	);
 }

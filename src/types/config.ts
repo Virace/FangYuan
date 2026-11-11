@@ -93,6 +93,9 @@ export type SiteConfig = {
 		enable: boolean;
 		depth: 1 | 2 | 3;
 	};
+	githubCard: {
+		descriptionLines: 1 | 2 | 3;
+	};
 
 	favicon: Favicon[];
 	permalink: PermalinkConfig;

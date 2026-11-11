@@ -16,6 +16,6 @@ jobs:
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
         with:
-          version: latest
+          version: 2.6.6
       - name: Run Biome
         run: biome ci ./src --reporter=github

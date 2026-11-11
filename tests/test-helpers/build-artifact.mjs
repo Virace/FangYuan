@@ -19,8 +19,11 @@ const astroGeneratedRoot = path.join(repoRoot, ".astro");
 const testBuildsRoot = path.join(repoRoot, ".temp", "test-builds");
 const staleRunAgeMs = 24 * 60 * 60 * 1000;
 const buildTimeoutMs = 5 * 60 * 1000;
+const githubPreload = new URL("./github-fetch.mjs", import.meta.url).href;
 
 const isolatedEnvironmentKeys = [
+	"GITHUB_TOKEN",
+	"FANGYUAN_TEST_GITHUB_FIXTURE",
 	"FANGYUAN_BUILD_CACHE_DIR",
 	"FANGYUAN_BUILD_OUT_DIR",
 	"FANGYUAN_BASE",
@@ -72,6 +75,7 @@ function createChildEnvironment(scenario, extraEnv) {
 
 	Object.assign(env, {
 		CI: "1",
+		NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --import=${githubPreload}`.trim(),
 		...extraEnv,
 		FANGYUAN_BUILD_CACHE_DIR: scenario.cacheDir,
 		FANGYUAN_BUILD_OUT_DIR: scenario.outDir,
@@ -169,7 +173,7 @@ export async function createBuildRun(t) {
 
 	function buildScenario(
 		scenario,
-		{ expectFailure = false, env: extraEnv = {} } = {},
+		{ expectFailure = false, env: extraEnv = {}, rebuild = false } = {},
 	) {
 		assert.equal(
 			scenarios.get(scenario.name),
@@ -177,7 +181,7 @@ export async function createBuildRun(t) {
 			`Unknown build scenario: ${scenario.name}`,
 		);
 		assert.equal(
-			scenario.built,
+			scenario.built && !rebuild,
 			false,
 			`Build scenario "${scenario.name}" can only be executed once`,
 		);

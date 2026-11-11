@@ -58,18 +58,8 @@ function isAssetAlias(value) {
 	);
 }
 
-function getVFilePath(context) {
-	const filePath = context?.vfile?.path;
-	if (!filePath) {
-		return "";
-	}
-
-	const value = String(filePath);
-	if (value.startsWith("file:")) {
-		return fileURLToPath(value);
-	}
-
-	return value;
+function getEntryFilePath(context) {
+	return context?.fileURL ? fileURLToPath(context.fileURL) : "";
 }
 
 function isPathInside(targetPath, rootPath) {
@@ -115,7 +105,7 @@ function resolveLocalLogo(logo, context) {
 		return null;
 	}
 
-	const entryFilePath = getVFilePath(context);
+	const entryFilePath = getEntryFilePath(context);
 	if (!entryFilePath) {
 		return null;
 	}
@@ -129,15 +119,7 @@ function resolveLocalLogo(logo, context) {
 }
 
 function registerLocalLogo(context, logo) {
-	if (!context?.vfile?.data) {
-		return;
-	}
-
-	context.vfile.data.astro ??= {};
-	const astroData = context.vfile.data.astro;
-	const localImagePaths = new Set(astroData.localImagePaths ?? []);
-	localImagePaths.add(logo);
-	astroData.localImagePaths = [...localImagePaths];
+	context.data.astro.localImagePaths.add(logo);
 }
 
 function resolveLogoSource(logo, context) {
@@ -219,7 +201,7 @@ function buildLogoNode({ href, logo, title }) {
  * @param {string} properties.description - The card description.
  * @param {string} [properties.logo] - Optional external URL, site-absolute path, or local image path.
  * @param {import('mdast').RootContent[]} children - The children elements of the component.
- * @param {Object} context - rehype-components context.
+ * @param {import('satteri').HastVisitorContext} context - 当前文档的资源与路径上下文。
  * @returns {import('mdast').Parent} The created link card component.
  */
 export function LinkCardComponent(properties, children, context) {

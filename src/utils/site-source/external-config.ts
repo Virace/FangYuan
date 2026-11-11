@@ -19,13 +19,20 @@ export type ExternalSiteConfigYaml = {
 	fangyuanConfigVersion?: number;
 	siteConfig?: Omit<
 		Partial<SiteConfig>,
-		"themeColor" | "banner" | "toc" | "permalink" | "postSort" | "taxonomySort"
+		| "themeColor"
+		| "banner"
+		| "toc"
+		| "githubCard"
+		| "permalink"
+		| "postSort"
+		| "taxonomySort"
 	> & {
 		themeColor?: Partial<SiteConfig["themeColor"]>;
 		banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
 			credit?: Partial<SiteConfig["banner"]["credit"]>;
 		};
 		toc?: Partial<SiteConfig["toc"]>;
+		githubCard?: Partial<SiteConfig["githubCard"]>;
 		permalink?: Partial<SiteConfig["permalink"]> & {
 			postPatternRules?: SiteConfig["permalink"]["postPatternRules"];
 		};
@@ -124,7 +131,7 @@ const rewardOptionSchema = z
 	})
 	.strict();
 
-const externalSiteConfigSchema: z.ZodTypeAny = z
+const externalSiteConfigSchema: z.ZodType = z
 	.object({
 		fangyuanConfigVersion: z.number().int().nonnegative().optional(),
 		siteConfig: z
@@ -176,6 +183,12 @@ const externalSiteConfigSchema: z.ZodTypeAny = z
 					.object({
 						enable: z.boolean().optional(),
 						depth: tocDepthSchema.optional(),
+					})
+					.strict()
+					.optional(),
+				githubCard: z
+					.object({
+						descriptionLines: z.number().int().min(1).max(3).optional(),
 					})
 					.strict()
 					.optional(),

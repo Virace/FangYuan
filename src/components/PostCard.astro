@@ -66,8 +66,8 @@ const isPinned = isPinnedPost(entry.data);
                 </span>
             )}
             {title}
-            <Icon class="inline icon-32 text-primary md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
-            <Icon class="text-primary icon-32 transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
+            <Icon is:inline class="inline icon-32 text-primary md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
+            <Icon is:inline class="text-primary icon-32 transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
         </a>
 
         <!-- metadata -->
@@ -98,7 +98,7 @@ const isPinned = isPinnedPost(entry.data);
                     ]} >
         <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
         <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
-            <Icon name="material-symbols:chevron-right-rounded"
+            <Icon is:inline name="material-symbols:chevron-right-rounded"
                   class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl">
             </Icon>
         </div>
@@ -112,7 +112,7 @@ const isPinned = isPinnedPost(entry.data);
          absolute right-3 top-3 bottom-3 rounded-xl bg-enter-btn-bg
          hover:bg-enter-btn-bg-hover active:bg-enter-btn-bg-active active:scale-95
         ">
-            <Icon name="material-symbols:chevron-right-rounded"
+            <Icon is:inline name="material-symbols:chevron-right-rounded"
                   class="transition text-primary text-4xl mx-auto">
             </Icon>
         </a>
