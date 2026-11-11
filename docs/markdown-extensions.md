@@ -124,7 +124,7 @@ comment: true
 
 ## 标准 Markdown
 
-基础 Markdown 能力由 Astro Markdown 管线提供，正文区域使用 Tailwind Typography 和 `src/styles/markdown.css`、`src/styles/markdown-extend.css` 做站点样式。
+基础 Markdown 能力由 Astro 的 Sätteri 处理器提供，原生 MDAST / HAST 插件承接阅读信息、指令、公式、标题与代码块扩展。正文区域使用 Tailwind Typography 和 `src/styles/markdown.css`、`src/styles/markdown-extend.css` 做站点样式。
 
 常用写法：
 
@@ -343,7 +343,7 @@ toc:
 
 ## 自动 section
 
-所有标题和标题后的内容会被 `remark-sectionize` 按层级包进 `<section>`。
+所有标题和标题后的内容会由原生 section 插件按层级包进 `<section>`。
 
 输入：
 
@@ -750,7 +750,7 @@ GitHub 卡片用于展示仓库入口。
 
 ## RSS 中的扩展表现
 
-RSS 渲染不是完整 Astro Markdown 管线，而是 `src/utils/rss-content.ts` 用 `markdown-it` 做简化渲染，并额外处理部分 FangYuan directive。
+RSS 由 `src/utils/content/rss.ts` 使用 `markdown-it` 独立渲染，并额外处理部分 FangYuan directive。
 
 当前 RSS 会特殊处理：
 
@@ -781,7 +781,7 @@ RSS 不会完整执行所有文章页组件。例如 `link-card`、`github`、`b
 - 友链 logo 优先使用本地 `assets/...` 或文章相对路径，避免外部 favicon 不稳定。
 - 文章页需要元信息、归档、反馈、评论时放进 `posts`。
 - About、说明页、友链页这类固定页面放进 `spec`。
-- GitHub Alert 兼容语法只推荐 `NOTE`、`TIP`、`WARNING`；`IMPORTANT` 和 `CAUTION` 优先写成 FangYuan 原生 `:::important`、`:::caution`。
+- GitHub Alert 兼容语法支持 `NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION`，也可使用对应的 FangYuan 原生提示块。
 - 复杂代码块优先使用 Expressive Code attributes，而不是手写 HTML。
 - 需要在 RSS 中保持基本语义的内容，优先使用普通 Markdown、`:hl`、`:::aside` 和 `:::fold`。
 

@@ -55,6 +55,9 @@ internal src/content or FANGYUAN_SITE_ROOT/content
 
 外部资源先由站点源和图片解析层确定语义，再交给 Astro / Vite 资源管线；页面组件不直接推断文件系统位置。
 
+正文使用 Sätteri 原生 MDAST / HAST 插件；阅读统计、摘要、指令、section、公式与标题链接在 `src/plugins/` 中组合，Expressive Code 使用其官方 Sätteri 接入。RSS 继续由 `src/utils/content/rss.ts` 的 markdown-it 管线独立渲染。
+
+
 ## 浏览器交互流
 
 静态 HTML 启动后，Svelte island 负责搜索、主题、评论、反馈和局部控制。Swup 更新 `main` 与 TOC 容器；跨页仍必须有效的 dialog、drawer、backdrop、定位和过渡样式由全局样式提供。QingYan 能力由公开配置和 bootstrap 响应启用，关闭时不挂载对应交互面。
