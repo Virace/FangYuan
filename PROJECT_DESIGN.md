@@ -57,6 +57,7 @@ internal src/content or FANGYUAN_SITE_ROOT/content
 
 正文使用 Sätteri 原生 MDAST / HAST 插件；阅读统计、摘要、指令、section、公式与标题链接在 `src/plugins/` 中组合，Expressive Code 使用其官方 Sätteri 接入。RSS 继续由 `src/utils/content/rss.ts` 的 markdown-it 管线独立渲染。
 
+GitHub 卡片先由内容插件生成基础 HTML，再在 Astro 本轮 HTML 输出完成后获取公开元数据并增强产物，快照不进入文章内容缓存。浏览器模块负责有限超时的后台刷新与 Swup 页面生命周期；构建令牌仅在构建模块中读取。
 
 ## 浏览器交互流
 

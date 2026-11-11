@@ -39,6 +39,7 @@ jobs:
       - name: Build current demo content
         run: pnpm build:internal
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           FANGYUAN_SITE: https://virace.github.io
           FANGYUAN_BASE: /FangYuan/
 

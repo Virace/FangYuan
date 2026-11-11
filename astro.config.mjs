@@ -18,9 +18,10 @@ import {
 } from "./src/default-config.ts";
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
+import { githubCardBuildIntegration } from "./src/plugins/github-card-build.mjs";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
 import { BilibiliVideoComponent } from "./src/plugins/rehype-component-bilibili-video.mjs";
-import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
+import { satteriGithubCard } from "./src/plugins/rehype-component-github-card.mjs";
 import { LinkCardComponent } from "./src/plugins/rehype-component-link-card.mjs";
 import { LinkGridComponent } from "./src/plugins/rehype-component-link-grid.mjs";
 import { satteriComponents, satteriDirectives } from "./src/plugins/satteri-directives.mjs";
@@ -560,6 +561,7 @@ export default defineConfig({
 		: {}),
 	integrations: [
 		externalSiteDevWatchIntegration(),
+		githubCardBuildIntegration(),
 		swup({
 			theme: false,
 			animationClass: "transition-swup-", // see https://swup.js.org/options/#animationselector
@@ -645,8 +647,8 @@ export default defineConfig({
 			hastPlugins: [
 				satteriKatex,
 				satteriHeadingIdsPlugin(),
+				satteriGithubCard,
 				satteriComponents({
-					github: GithubCardComponent,
 					bilibili: BilibiliVideoComponent,
 					"link-card": LinkCardComponent,
 					"link-grid": LinkGridComponent,

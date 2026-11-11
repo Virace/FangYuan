@@ -45,7 +45,7 @@ Biome 解析 Markdown frontmatter，但保留代码块、frontmatter 和 HTML �
 | --- | --- | --- |
 | 快速默认测试 | `pnpm test` | 委托给 `test:node`，验证项目自有逻辑、脚本和边界适配 |
 | Node 测试明细入口 | `pnpm test:node` | 直接运行 `tests/*.test.mjs` |
-| 构建集成 | `pnpm test:build` | 串行准备隔离的真实 Astro 构建产物矩阵 |
+| 构建集成 | `pnpm test:build` | 串行准备真实 Astro 产物矩阵，并验证 GitHub 快照在内容缓存复用时刷新 |
 | 核心浏览器回归 | `pnpm test:e2e` | 构建内部 demo 后运行关键导航、交互与可访问性流程 |
 | 完整系统测试 | `pnpm test:system` | 依次运行快速测试、构建矩阵和核心浏览器回归 |
 | 视觉回归 | `pnpm test:e2e:visual` | 独立运行截图基线，不属于默认系统测试 |
@@ -115,7 +115,7 @@ Biome 解析 Markdown frontmatter，但保留代码块、frontmatter 和 HTML �
 | 风险或稳定契约 | 可观察行为 | 最低有效证据 | 环境与位置 | 执行时机 |
 | --- | --- | --- | --- | --- |
 | 配置、固定链接、排序、迁移或脚本规则回归 | 给定输入得到稳定输出或明确失败 | Node 行为测试 | `tests/*.test.mjs`，无实时网络 | 修改对应规则时；默认快速门禁 |
-| 外部 / 内部内容源、资源与 Astro 产物不一致 | 隔离构建成功产出正确 HTML / XML / 资源，非法输入明确失败 | 真实构建集成 | `tests/site-build.integration.mjs`，串行准备 Astro 产物 | 修改构建、内容输入或资源管线时 |
+| 外部 / 内部内容源、资源或 GitHub 快照缓存行为不一致 | 隔离构建产出正确 HTML / XML / 资源；同稿缓存下快照可刷新，非法输入明确失败 | 真实构建集成 | `tests/site-build.integration.mjs`、`tests/github-card-build.integration.mjs`，串行准备 Astro 产物 | 修改构建、内容输入、资源或快照生命周期时 |
 | Swup 导航、island 交互或可访问性退化 | 浏览器中的标题、焦点、面板、主题、TOC 和 ARIA 行为正确 | Playwright E2E | `tests/e2e/`，内部 demo 构建与 Chromium | 修改浏览器交互或完整交付时 |
 | 视觉布局或字体产生非语义变化 | 截图差异经人工判断符合设计 | 独立视觉快照 + 人工验收 | `test:e2e:visual`，固定 Chromium 环境 | 明确视觉任务或发布前抽查 |
 | QingYan / Cloudflare 真实部署差异 | 预发布环境能完成真实网络交互且不泄露内部错误 | 本地 mock/适配测试 + 预发布人工验收 | 本地测试不替代生产服务 | 修改外部契约或部署配置时 |
@@ -125,6 +125,8 @@ Biome 解析 Markdown frontmatter，但保留代码块、frontmatter 和 HTML �
 不得新增读取 `src/` 源码后用字符串或正则断言实现细节的测试。纯文案、注释、格式、私有重命名、文件移动和装饰性视觉调整通常使用目标 diff、静态检查或人工验收，不为测试数量新增自动化。
 
 视觉品质、真实移动设备、生产 CDN / 缓存、真实 QingYan 服务和部署平台差异不能由默认本地测试完全证明，发布前按变更风险人工验收。系统测试不包含视觉快照，也不连接实时外部服务。
+
+GitHub 卡片的构建与浏览器用例复用测试专用请求替换层和固定公开 payload，不访问实时 GitHub，也不使用真实令牌；生产构建保持实际 API 获取与失败降级。
 
 ## 7. 项目例外
 

@@ -2,7 +2,7 @@ import { expect, type Page } from "@playwright/test";
 
 const networkIsolationConfiguredPages = new WeakSet<Page>();
 const MOCK_GITHUB_AVATAR =
-	"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%234b5563'/%3E%3Ctext x='32' y='38' font-size='24' text-anchor='middle' fill='white'%3EGH%3C/text%3E%3C/svg%3E";
+	"https://avatars.githubusercontent.com/u/1?v=4";
 const MOCK_EXTERNAL_IMAGE =
 	"<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='#4b5563'/></svg>";
 
@@ -26,9 +26,12 @@ function buildGitHubRepoCardPayload(repoPath: string) {
 	const [owner = "unknown", name = "repo"] = repoPath.split("/");
 
 	return {
+		private: false,
+		visibility: "public",
 		description: `Mocked GitHub card for ${repoPath}`,
 		language: "TypeScript",
 		forks: 12,
+		forks_count: 12,
 		stargazers_count: 34,
 		owner: {
 			login: owner,

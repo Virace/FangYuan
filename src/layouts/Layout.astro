@@ -282,6 +282,7 @@ import {
 	// ClickScrollPlugin
 } from 'overlayscrollbars';
 import { resolveSwupAnnouncementText } from "../utils/browser/swup-a11y";
+import { cancelGithubCards, refreshGithubCards } from "../utils/browser/github-cards";
 import {getHue, getStoredTheme, setHue, setTheme} from "../utils/browser/theme-settings";
 import {pathsEqual, url} from "../utils/permalink/urls";
 import {
@@ -449,6 +450,7 @@ function init() {
 	loadHue();
 	initCustomScrollbar();
 	showBanner();
+	refreshGithubCards();
 }
 
 function resolvePageAnnouncement() {
@@ -523,6 +525,8 @@ function scrollToTopBeforeSwap() {
 init();
 
 const setup = () => {
+	window.swup.hooks.on('visit:start', cancelGithubCards)
+	window.swup.hooks.on('content:replace', refreshGithubCards)
 	window.swup.hooks.on('visit:start', () => setContentBusy(true))
 	window.swup.hooks.on('content:replace', () => setContentBusy(true))
 	window.swup.hooks.on('visit:end', () => setContentBusy(false))

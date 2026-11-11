@@ -26,7 +26,7 @@
 | Bilibili 视频 | `::bilibili{...}` | 支持 | 支持 | 响应式 Bilibili iframe figure |
 | 外链卡片 | `::link-card{...}` | 支持 | 支持 | 卡片式链接 |
 | 外链卡片网格 | `:::link-grid` | 支持 | 支持 | 响应式卡片网格 |
-| GitHub 仓库卡片 | `::github{repo="owner/repo"}` | 支持 | 支持 | 动态仓库信息卡片 |
+| GitHub 仓库卡片 | `::github{repo="owner/repo"}` | 支持 | 支持 | 构建快照与浏览器后台刷新 |
 | RSS 指令降级 | `:hl`、`:::aside`、`:::fold` | 支持 | 不适用 | RSS 内对应 HTML 片段 |
 
 ## 页面差异
@@ -716,7 +716,7 @@ RSS 中会降级为更通用的 `<details class="md-fold">` 和 `<summary class=
 
 ## GitHub 仓库卡片
 
-GitHub 卡片用于展示仓库入口。
+GitHub 卡片用于展示公开仓库入口。文章写法保持不变：
 
 ```markdown
 ::github{repo="Virace/FangYuan"}
@@ -726,18 +726,7 @@ GitHub 卡片用于展示仓库入口。
 
 - `repo`：必填，格式必须是 `owner/repo`。
 
-最终产物大致是：
-
-```html
-<a id="GCxxxxxx-card" class="card-github fetch-waiting no-styling" href="https://github.com/Virace/FangYuan" target="_blank">
-  <div class="gc-titlebar">...</div>
-  <div class="gc-description">Waiting for api.github.com...</div>
-  <div class="gc-infobar">...</div>
-  <script defer>fetch("https://api.github.com/repos/Virace/FangYuan")...</script>
-</a>
-```
-
-页面加载后，脚本会请求 GitHub API，填充：
+初始 HTML 始终包含仓库名和可点击链接，禁用 JavaScript 时也能使用。构建时会获取公开 GitHub API 元数据，并把有效结果写入卡片：
 
 - 仓库描述。
 - 主要语言。
@@ -746,7 +735,18 @@ GitHub 卡片用于展示仓库入口。
 - license。
 - owner avatar。
 
-如果请求失败，卡片会保留可点击状态，并加上 `fetch-error` 类。写法必须是叶子 directive，不能包含子内容。
+同次构建按仓库去重；没有网络或 API 限速时不阻断整站构建，仍输出基础卡片，没有有效统计时不显示占位数字。快照每次构建重新获取，与文章内容缓存分开处理，不依赖上次构建结果。
+
+页面加载后会在保留当前卡面的同时后台刷新。成功时更新规范仓库名、链接与字段；合法空值会隐藏对应信息，统计为 `0` 时正常显示。失败或超时会结束刷新并保留已有内容，卡片始终可点击。Swup 切页后会为当前页面重新初始化。
+
+Actions 的构建步骤可显式注入内置短期令牌：
+
+```yaml
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+```
+
+令牌只用于构建端 API 认证，不进入浏览器或公开产物。本地可以不提供令牌，不需要另行申请 PAT。只展示公开仓库元数据。写法必须是叶子 directive，不能包含子内容。
 
 ## RSS 中的扩展表现
 
