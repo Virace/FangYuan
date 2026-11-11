@@ -180,6 +180,14 @@ function getFallbackInitial(title) {
 }
 
 function buildLogoNode({ href, logo, title }) {
+	const hostname = parseExternalUrl(href)?.hostname;
+	if (!logo && (hostname === "github.com" || hostname === "www.github.com")) {
+		return h("span", {
+			class: "lc-logo lc-logo-github",
+			"aria-hidden": "true",
+		});
+	}
+
 	const src = logo || getFaviconFallbackUrl(href);
 	if (src) {
 		return h("img", {
