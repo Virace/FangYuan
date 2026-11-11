@@ -455,6 +455,17 @@ function resolvePageAnnouncement() {
 	return resolveSwupAnnouncementText(document, document.title)
 }
 
+// Swup A11y 把 busy 写到不允许 ARIA 属性的 html；状态应限定到被替换的 main。
+function setContentBusy(isBusy: boolean) {
+	document.documentElement.removeAttribute('aria-busy')
+	const mainContent = document.querySelector('main')
+	if (isBusy) {
+		mainContent?.setAttribute('aria-busy', 'true')
+	} else {
+		mainContent?.removeAttribute('aria-busy')
+	}
+}
+
 type SwupContentScrollVisit = {
 	to: { hash?: string }
 	history?: { popstate?: boolean }
@@ -512,6 +523,9 @@ function scrollToTopBeforeSwap() {
 init();
 
 const setup = () => {
+	window.swup.hooks.on('visit:start', () => setContentBusy(true))
+	window.swup.hooks.on('content:replace', () => setContentBusy(true))
+	window.swup.hooks.on('visit:end', () => setContentBusy(false))
 	// TODO: temp solution to change the height of the banner
 /*
 	window.swup.hooks.on('animation:out:start', () => {

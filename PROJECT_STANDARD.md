@@ -8,10 +8,10 @@
 
 ## 2. 技术栈与真实命令
 
-- 运行时：Node.js `>=22.12.0`，本地基线见 `.nvmrc`。
-- 包管理器：pnpm `>=9`，仓库固定 `packageManager: pnpm@9.14.4` 并提交 `pnpm-lock.yaml`。
+- 运行时：Node.js `>=22.23.4`，本地与 CI 推荐基线为 `.nvmrc` 中的 `26.13.0`。
+- 包管理器：pnpm `12.18.0`，由 `packageManager` 固定并提交 `pnpm-lock.yaml`；安装策略在 `pnpm-workspace.yaml` 中维护。
 - 模块：ESM；`package.json` 使用 `"type": "module"`。
-- 应用：Astro 6 静态站点，TypeScript 严格配置，交互 island 使用 Svelte 5，样式以 Tailwind CSS 4 和 `src/styles/` 为主。
+- 应用：Astro 7 静态站点，TypeScript 6 严格配置，交互 island 使用 Svelte 5，样式以 Tailwind CSS 4 和 `src/styles/` 为主。
 - 工具：Astro Check、TypeScript、Svelte Check、Biome、Node.js test runner、Playwright。
 
 ### 安装与运行
@@ -36,6 +36,8 @@
 | `src/` Biome 安全修复与格式化 | `pnpm format` |
 
 `pnpm format` 和 `pnpm lint` 只覆盖 `src/`；根配置、`scripts/` 和 `tests/` 不因一次局部任务被机械重排。
+
+Biome 解析 Markdown frontmatter，但保留代码块、frontmatter 和 HTML 示例的原文，避免格式化改变演示行号或内容语义。
 
 ### 测试入口
 

@@ -2,8 +2,8 @@
 
 ## 技术与版本边界
 
-- Node.js 最低版本为 `22.12.0`；包管理统一使用 pnpm，锁文件为 `pnpm-lock.yaml`。
-- 项目使用 ESM、Astro 6、TypeScript 严格配置、Svelte 5 和 Tailwind CSS 4。
+- Node.js 最低版本为 `22.23.4`，开发与 CI 基线为 `26.13.0`；包管理统一使用固定的 pnpm `12.18.0`，锁文件为 `pnpm-lock.yaml`。
+- 项目使用 ESM、Astro 7、TypeScript 6 严格配置、Svelte 5 和 Tailwind CSS 4。
 - 构建目标是静态站点；浏览器交互必须保持可静态部署，不引入主题自带的常驻应用服务器。
 - 依赖升级采用最小改动并迁到新版本推荐状态，不保留没有真实需要的跨版本兼容层。
 

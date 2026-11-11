@@ -32,11 +32,11 @@
 
 要求：
 
-- Node.js >= 22.12.0
-- pnpm >= 9
+- Node.js >= 22.23.4（开发与 CI 基线为 `.nvmrc` 中的 26.13.0）
+- pnpm 12.18.0（由 `package.json` 的 `packageManager` 固定）
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 pnpm check
 pnpm build

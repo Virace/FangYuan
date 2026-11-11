@@ -124,7 +124,7 @@ const rewardOptionSchema = z
 	})
 	.strict();
 
-const externalSiteConfigSchema: z.ZodTypeAny = z
+const externalSiteConfigSchema: z.ZodType = z
 	.object({
 		fangyuanConfigVersion: z.number().int().nonnegative().optional(),
 		siteConfig: z
