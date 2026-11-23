@@ -76,6 +76,12 @@ siteConfig:
     # 仓库简介最多显示的行数，只支持 1 / 2 / 3，超出部分显示省略号。
     descriptionLines: 1
 
+  notifications:
+    # 队列基准：top 在导航栏下方；bottom 在视口底部及可见页脚上方留白。
+    position: top
+    # 新消息是否在已有消息上方出现；与基准位置独立，false 表示在下方追加。
+    newestOnTop: false
+
   # favicon 列表。
   # 替换位置：assets/favicon/icon.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
   # 留空数组表示继续使用内置默认 favicon 配置。

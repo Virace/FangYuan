@@ -5,6 +5,8 @@
 	--color-page-bg: var(--page-bg);
 	--color-card-bg: var(--card-bg);
 	--color-primary: var(--primary);
+	--color-accent-solid: var(--accent-solid);
+	--color-accent-foreground: var(--accent-foreground);
 	--color-btn-content: var(--btn-content);
 	--color-deep-text: var(--deep-text);
 	--color-title-active: var(--title-active);
@@ -59,6 +61,14 @@
 
 	@variant dark {
 		color: rgb(255 255 255 / 0.5);
+	}
+}
+
+@utility text-muted {
+	color: rgb(0 0 0 / 0.56);
+
+	@variant dark {
+		color: rgb(255 255 255 / 0.52);
 	}
 }
 
@@ -124,6 +134,13 @@
 
 	&::-webkit-scrollbar {
 		display: none;
+	}
+}
+
+@utility panel-edge {
+	@variant dark {
+		outline: 1px solid rgb(255 255 255 / 0.13);
+		outline-offset: -1px;
 	}
 }
 

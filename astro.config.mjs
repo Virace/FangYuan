@@ -24,12 +24,17 @@ import { BilibiliVideoComponent } from "./src/plugins/rehype-component-bilibili-
 import { satteriGithubCard } from "./src/plugins/rehype-component-github-card.mjs";
 import { LinkCardComponent } from "./src/plugins/rehype-component-link-card.mjs";
 import { LinkGridComponent } from "./src/plugins/rehype-component-link-grid.mjs";
-import { satteriComponents, satteriDirectives } from "./src/plugins/satteri-directives.mjs";
+import {
+	satteriComponents,
+	satteriDirectives,
+} from "./src/plugins/satteri-directives.mjs";
 import { satteriHeadingAnchors } from "./src/plugins/satteri-heading-anchors.mjs";
 import { satteriKatex } from "./src/plugins/satteri-katex.mjs";
 import { satteriMetadata } from "./src/plugins/satteri-metadata.mjs";
 import { satteriSectionize } from "./src/plugins/satteri-sectionize.mjs";
 import { satteriSmartDashes } from "./src/plugins/satteri-smart-dashes.mjs";
+import { studioIntegration } from "./src/plugins/studio-integration.mjs";
+import { contentRoutesIntegration } from "./src/plugins/studio-routes-integration.mjs";
 import { clearContentRouteManifestCache } from "./src/utils/content-routes.ts";
 import { resolveAstroBuildConfig } from "./src/utils/permalink/materialization.ts";
 import { resolveFangYuanRoot } from "./src/utils/project-root.ts";
@@ -42,6 +47,7 @@ import {
 	isQingYanMockTarget,
 } from "./src/utils/qingyan/mock-api.mjs";
 import { externalSiteAssetDevPrefix } from "./src/utils/site-source/assets.ts";
+import { normalizeAstroContentImageImporterQuery } from "./src/utils/site-source/content-image-importer.ts";
 import { resolveSiteSourceContext } from "./src/utils/site-source/context.ts";
 import { createDevStaticAssetMiddleware } from "./src/utils/site-source/dev-static-assets.mjs";
 import {
@@ -50,7 +56,6 @@ import {
 	registerExternalSiteDevWatch,
 } from "./src/utils/site-source/dev-watch.mjs";
 import { resolveDevWatchIgnoredPatterns } from "./src/utils/site-source/dev-watch-ignore.mjs";
-import { normalizeAstroContentImageImporterQuery } from "./src/utils/site-source/content-image-importer.ts";
 import { loadExternalSiteConfigYaml } from "./src/utils/site-source/external-config.ts";
 import {
 	normalizeConfiguredBase,
@@ -202,7 +207,7 @@ function resolveExternalSiteAssetImport(id) {
 			? normalizedId
 			: isExternalSiteAsset(normalizedId)
 				? path.resolve(externalSiteRoot, normalizedId)
-			: null;
+				: null;
 	if (!absoluteImportPath) {
 		return null;
 	}
@@ -321,7 +326,17 @@ function collectExternalSiteAssetReferences() {
 	const footerConfig = externalSiteConfig?.footerConfig;
 	const pageFeedbackConfig = externalSiteConfig?.pageFeedbackConfig;
 
-	addExternalSiteAssetReference(references, siteConfig?.banner?.src);
+	if (siteConfig?.banner?.enable !== false) {
+		const banner = siteConfig?.banner;
+		const prism = banner?.optics?.prism;
+		if (prism && typeof prism === "object") {
+			for (const asset of [prism.face, prism.back, prism.spacer]) {
+				addExternalSiteAssetReference(references, asset);
+			}
+		} else {
+			addExternalSiteAssetReference(references, prism || banner?.optics?.insert || banner?.src);
+		}
+	}
 	for (const favicon of siteConfig?.favicon ?? []) {
 		addExternalSiteAssetReference(references, favicon.src);
 	}
@@ -474,6 +489,9 @@ const qingyanMockPlugin =
 
 // https://astro.build/config
 export default defineConfig({
+	...(process.env.FANGYUAN_STUDIO === "1"
+		? { devToolbar: { enabled: false } }
+		: {}),
 	...(siteUrl ? { site: siteUrl } : {}),
 	...(siteBuildPaths.outDir ? { outDir: siteBuildPaths.outDir } : {}),
 	...(siteBuildPaths.cacheDir ? { cacheDir: siteBuildPaths.cacheDir } : {}),
@@ -560,6 +578,8 @@ export default defineConfig({
 			}
 		: {}),
 	integrations: [
+		contentRoutesIntegration(),
+		...(process.env.FANGYUAN_STUDIO === "1" ? [studioIntegration()] : []),
 		externalSiteDevWatchIntegration(),
 		githubCardBuildIntegration(),
 		swup({
@@ -608,6 +628,10 @@ export default defineConfig({
 				codeFontFamily:
 					"var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
 				codeLineHeight: "1.5rem",
+				lineNumbers: {
+					foreground: "#8b949e",
+					highlightForeground: "#c9d1d9",
+				},
 				frames: {
 					editorBackground: "var(--codeblock-bg)",
 					terminalBackground: "var(--codeblock-bg)",
@@ -652,11 +676,16 @@ export default defineConfig({
 					bilibili: BilibiliVideoComponent,
 					"link-card": LinkCardComponent,
 					"link-grid": LinkGridComponent,
-					note: (properties, children) => AdmonitionComponent(properties, children, "note"),
-					tip: (properties, children) => AdmonitionComponent(properties, children, "tip"),
-					important: (properties, children) => AdmonitionComponent(properties, children, "important"),
-					caution: (properties, children) => AdmonitionComponent(properties, children, "caution"),
-					warning: (properties, children) => AdmonitionComponent(properties, children, "warning"),
+					note: (properties, children) =>
+						AdmonitionComponent(properties, children, "note"),
+					tip: (properties, children) =>
+						AdmonitionComponent(properties, children, "tip"),
+					important: (properties, children) =>
+						AdmonitionComponent(properties, children, "important"),
+					caution: (properties, children) =>
+						AdmonitionComponent(properties, children, "caution"),
+					warning: (properties, children) =>
+						AdmonitionComponent(properties, children, "warning"),
 				}),
 				satteriHeadingAnchors,
 			],

@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const en: Translation = {
+	[Key.noticeRegion]: "Notifications",
+	[Key.noticePinned]: "Priority notice",
+	[Key.engagementLoadFailed]:
+		"Interaction information could not be loaded. Please try again later.",
+	[Key.commentsCaptchaRefreshFailed]:
+		"Could not refresh the captcha. Please try again.",
 	[Key.home]: "Home",
 	[Key.about]: "About",
 	[Key.archive]: "Archive",

@@ -9,6 +9,7 @@
 - `update-site-config.js`：读取、备份并写回外部 `site.config.yaml` 迁移结果
 - `update-site-config-migrations.js`：维护 `site.config.yaml` 的版本化迁移规则
 - `template.config.yaml`：面向用户维护的外部站点配置模板
+- `sync-content-routes.mjs`：审阅并同步已有稳定 ID 的路径登记；默认仅展示，`--write` 后写入，`--recover` 完成中断的同步，详见 `content-routes.md`
 
 ## `scripts/qingyan`
 

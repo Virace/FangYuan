@@ -176,7 +176,7 @@
 
 .custom-md .md-fold-summary {
 	display: block;
-	cursor: pointer;
+	cursor: var(--cursor-link, pointer);
 	position: relative;
 	padding: 0.95rem 3rem 0.95rem 2.8rem;
 	font-weight: 700;

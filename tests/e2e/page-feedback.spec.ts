@@ -6,7 +6,7 @@ test("page feedback shows reward entry by default and keeps like gated by backen
 	page,
 }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
-	await prepareStablePage(page, "/wp/termux-ha-core/");
+	await prepareStablePage(page, "/markdown/");
 
 	const feedbackCard = page.locator("section").filter({
 		hasText: "支持这篇文章",

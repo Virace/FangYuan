@@ -74,6 +74,10 @@ const postsCollection: ReturnType<typeof defineCollection> = defineCollection({
 	),
 	schema: ({ image }: SchemaContext) =>
 		z.object({
+			contentId: z
+				.string()
+				.regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/)
+				.optional(),
 			title: z.string(),
 			published: z.date(),
 			updated: z.date().optional(),
@@ -117,6 +121,10 @@ const specCollection: ReturnType<typeof defineCollection> = defineCollection({
 		}),
 	),
 	schema: z.object({
+		contentId: z
+			.string()
+			.regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/)
+			.optional(),
 		title: z.string().optional().default(""),
 		alias: z.string().optional().default(""),
 		permalink: z.string().optional().default(""),

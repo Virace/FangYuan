@@ -61,7 +61,7 @@ onMount(async () => {
 });
 </script>
 
-<div class="card-base px-8 py-6">
+<div class="card-base panel-edge px-8 py-6">
     {#if pinnedPosts.length > 0}
         <div>
             <div class="flex flex-row w-full items-center h-15">
@@ -74,7 +74,7 @@ onMount(async () => {
                   -outline-offset-2 z-50"
                     ></div>
                 </div>
-                <div class="archive-main-col transition text-left text-50">
+                <div class="archive-main-col transition text-left text-muted">
                     {pinnedPosts.length} {i18n(pinnedPosts.length === 1 ? I18nKey.postCount : I18nKey.postsCount)}
                 </div>
             </div>
@@ -85,7 +85,7 @@ onMount(async () => {
                         class="group btn-plain block! h-10 w-full rounded-lg"
                 >
                     <div class="flex flex-row justify-start items-center h-full">
-                        <div class="archive-side-col transition text-sm text-right text-50">
+                        <div class="archive-side-col transition text-sm text-right text-muted">
                             {formatDate(post.data.published)}
                         </div>
 
@@ -101,7 +101,7 @@ onMount(async () => {
 
                         <div
                                 class="archive-title-col text-left font-bold
-                     group-hover:translate-x-1 transition-all group-hover:text-primary
+                     group-hover:translate-x-1 transition-all group-hover:text-accent-foreground
                      text-75 pr-8 whitespace-nowrap text-ellipsis overflow-hidden"
                         >
                             {post.data.title}
@@ -109,7 +109,7 @@ onMount(async () => {
 
                         <div
                                 class="hidden archive-tags-col text-left text-sm transition
-                     whitespace-nowrap text-ellipsis overflow-hidden text-30"
+                     whitespace-nowrap text-ellipsis overflow-hidden text-muted"
                         >
                             {formatTag(post.data.tags)}
                         </div>
@@ -131,7 +131,7 @@ onMount(async () => {
                   -outline-offset-2 z-50"
                     ></div>
                 </div>
-                <div class="archive-main-col transition text-left text-50">
+                <div class="archive-main-col transition text-left text-muted">
                     {group.posts.length} {i18n(group.posts.length === 1 ? I18nKey.postCount : I18nKey.postsCount)}
                 </div>
             </div>
@@ -143,7 +143,7 @@ onMount(async () => {
                 >
                     <div class="flex flex-row justify-start items-center h-full">
                         <!-- date -->
-                        <div class="archive-side-col transition text-sm text-right text-50">
+                        <div class="archive-side-col transition text-sm text-right text-muted">
                             {formatDate(post.data.published)}
                         </div>
 
@@ -161,7 +161,7 @@ onMount(async () => {
                         <!-- post title -->
                         <div
                                 class="archive-title-col text-left font-bold
-                     group-hover:translate-x-1 transition-all group-hover:text-primary
+                     group-hover:translate-x-1 transition-all group-hover:text-accent-foreground
                      text-75 pr-8 whitespace-nowrap text-ellipsis overflow-hidden"
                         >
                             {post.data.title}
@@ -170,7 +170,7 @@ onMount(async () => {
                         <!-- tag list -->
                         <div
                                 class="hidden archive-tags-col text-left text-sm transition
-                     whitespace-nowrap text-ellipsis overflow-hidden text-30"
+                     whitespace-nowrap text-ellipsis overflow-hidden text-muted"
                         >
                             {formatTag(post.data.tags)}
                         </div>

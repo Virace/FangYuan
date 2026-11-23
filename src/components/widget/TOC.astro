@@ -47,8 +47,8 @@ const maxLevel = depth;
                     {heading.depth == minDepth + 2 && <div class="transition w-1.5 h-1.5 rounded-sm bg-soft-contrast"></div>}
                 </div>
                 <div class:list={["transition text-sm", {
-                    "text-50": heading.depth == minDepth || heading.depth == minDepth + 1,
-                    "text-30": heading.depth == minDepth + 2,
+                    "text-60": heading.depth == minDepth || heading.depth == minDepth + 1,
+                    "text-muted": heading.depth == minDepth + 2,
                 }]}>{removeTailingHash(heading.text)}</div>
             </a>
     )}
@@ -207,6 +207,17 @@ class TableOfContents extends HTMLElement {
         } else {
             console.debug('Animation element not found');
         }
+    };
+
+    refresh() {
+        this.observer.disconnect();
+        this.headingIdxMap.clear();
+        this.sections = [];
+        this.headings = [];
+        this.tocEntries = [];
+        this.active = [];
+        this.anchorNavTarget = null;
+        this.init();
     };
 
     init() {

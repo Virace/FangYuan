@@ -1,8 +1,8 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import Icon from "@iconify/svelte";
-import { type AutoDismissTone, getAutoDismissMs } from "@utils/browser/notice";
+import { getAutoDismissMs } from "@utils/browser/notice";
+import { getPageNoticeScope, showNotice } from "@utils/browser/notifications";
 import {
 	CommentCaptchaRequiredError,
 	type CommentCaptchaState,
@@ -17,7 +17,6 @@ import type { QingYanClientConfig } from "@utils/qingyan/contracts";
 import { onDestroy, onMount } from "svelte";
 import { fade, scale } from "svelte/transition";
 import InlineCommentCaptcha from "../comments/InlineCommentCaptcha.svelte";
-import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
 import RewardModal from "./RewardModal.svelte";
 
 export let postKey: string;
@@ -28,6 +27,7 @@ export let rewardItems: RewardOption[] = [];
 export let qingyan: QingYanClientConfig | null = null;
 
 const qingyanClient = getQingYanClient(qingyan);
+const pageScope = getPageNoticeScope();
 
 type FangYuanDebugWindow = Window & {
 	__FANGYUAN_QINGYAN_DEBUG__?: Record<string, unknown>;
@@ -39,8 +39,13 @@ let liked = false;
 let loading = true;
 let likeBusy = false;
 let captchaBusy = false;
-let noticeMessage = "";
-let noticeTone: AutoDismissTone = "info";
+let celebrating = false;
+let celebrationTimer: ReturnType<typeof setTimeout> | null = null;
+const confetti = Array.from({ length: 12 }, (_, index) => ({
+	x: Math.cos((index * Math.PI) / 6) * (28 + (index % 3) * 8),
+	y: Math.sin((index * Math.PI) / 6) * (28 + (index % 3) * 8),
+	angle: index * 37,
+}));
 let captchaError = "";
 let captchaPrompt = "";
 let captchaValue = "";
@@ -48,37 +53,17 @@ let rewardOpen = false;
 let captchaState = null as CommentCaptchaState | null;
 let showCaptcha = false;
 let pendingLikeAction = false;
-let noticeTimer: ReturnType<typeof setTimeout> | null = null;
 let captchaFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 
 $: showLike = enableLike && (capability?.supportsLike ?? false);
 $: showReward = rewardItems.length > 0;
 $: showCard = showLike || showReward;
 
-function clearNoticeTimer() {
-	if (noticeTimer) {
-		clearTimeout(noticeTimer);
-		noticeTimer = null;
-	}
-}
-
 function clearCaptchaFeedbackTimer() {
 	if (captchaFeedbackTimer) {
 		clearTimeout(captchaFeedbackTimer);
 		captchaFeedbackTimer = null;
 	}
-}
-
-function setNotice(message: string, tone: AutoDismissTone) {
-	noticeMessage = message;
-	noticeTone = tone;
-	clearNoticeTimer();
-	noticeTimer = setTimeout(
-		() => {
-			noticeMessage = "";
-		},
-		getAutoDismissMs(message, tone),
-	);
 }
 
 function clearCaptchaFeedback() {
@@ -127,8 +112,6 @@ function updatePageFeedbackDebugHook() {
 			captchaState,
 			captchaPrompt,
 			captchaError,
-			noticeMessage,
-			noticeTone,
 			retryPendingAction: () => void handleLike(),
 			refreshCaptcha: () => void handleRefreshCaptcha(),
 		},
@@ -174,7 +157,13 @@ onMount(() => {
 			liked = payload.pageFeedback.liked;
 		})
 		.catch(() => {
-			setNotice(i18n(I18nKey.pageFeedbackLikeFailed), "error");
+			showNotice({
+				message: i18n(I18nKey.engagementLoadFailed),
+				tone: "error",
+				priority: "important",
+				scope: pageScope,
+				key: "engagement-bootstrap",
+			});
 		})
 		.finally(() => {
 			loading = false;
@@ -193,16 +182,12 @@ async function handleLike() {
 		}
 	} else if (captchaState?.required && !captchaState.verified) {
 		showCaptcha = true;
-		noticeMessage = "";
-		clearNoticeTimer();
 		setCaptchaPrompt(i18n(I18nKey.commentsCaptchaRequiredTip));
 		pendingLikeAction = true;
 		return;
 	}
 
 	likeBusy = true;
-	noticeMessage = "";
-	clearNoticeTimer();
 
 	try {
 		const nextState = await qingyanClient.likePage({
@@ -213,6 +198,12 @@ async function handleLike() {
 		});
 		likeCount = nextState.likeCount;
 		liked = nextState.liked;
+		if (liked && pageScope === getPageNoticeScope()) {
+			celebrating = true;
+			celebrationTimer = setTimeout(() => {
+				celebrating = false;
+			}, 700);
+		}
 		showCaptcha = false;
 		pendingLikeAction = false;
 		captchaValue = "";
@@ -230,7 +221,13 @@ async function handleLike() {
 		if (pendingLikeAction) {
 			setCaptchaError(i18n(I18nKey.commentsCaptchaVerifyFailed));
 		} else {
-			setNotice(i18n(I18nKey.pageFeedbackLikeFailed), "error");
+			showNotice({
+				message: i18n(I18nKey.pageFeedbackLikeFailed),
+				tone: "error",
+				priority: "important",
+				scope: pageScope,
+				key: "page-like-failed",
+			});
 		}
 	} finally {
 		likeBusy = false;
@@ -253,7 +250,7 @@ async function handleRefreshCaptcha() {
 		});
 		captchaValue = "";
 	} catch {
-		setCaptchaError(i18n(I18nKey.commentsLoadFailed));
+		setCaptchaError(i18n(I18nKey.commentsCaptchaRefreshFailed));
 	} finally {
 		captchaBusy = false;
 	}
@@ -262,7 +259,7 @@ async function handleRefreshCaptcha() {
 $: updatePageFeedbackDebugHook();
 
 onDestroy(() => {
-	clearNoticeTimer();
+	if (celebrationTimer) clearTimeout(celebrationTimer);
 	clearCaptchaFeedbackTimer();
 	if (import.meta.env.DEV && typeof window !== "undefined") {
 		const nextDebug = {
@@ -277,19 +274,19 @@ onDestroy(() => {
 {#if showCard}
 	<section class="card-base mb-6 rounded-panel border border-line-divider px-4 py-4 md:px-6">
 		<div class="flex flex-col">
-			<div class="flex flex-row items-center justify-between gap-3 sm:gap-4 md:gap-5">
+			<div class="post-feedback-row">
 				<div class="min-w-0 flex-1">
 					<p class="text-base font-semibold text-90 md:text-lg">
 						{i18n(I18nKey.pageFeedbackRewardTitle)}
 					</p>
 				</div>
 
-				<div class="ml-3 flex max-w-[72%] shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
+				<div class="post-feedback-actions">
 					{#if showLike}
-						<div class="comment-captcha-popover-anchor">
+						<div class="comment-captcha-popover-anchor post-like-anchor">
 							<button
 								type="button"
-								class="btn-card inline-flex h-10 items-center gap-1.5 rounded-full border border-line-divider px-3 text-xs font-semibold text-75 shadow-sm sm:h-11 sm:gap-2 sm:px-4 sm:text-sm"
+								class="btn-card post-feedback-button rounded-full border border-line-divider text-75"
 								class:border-primary={liked}
 								class:text-primary={liked}
 								class:bg-btn-plain-bg-hover={liked}
@@ -297,16 +294,14 @@ onDestroy(() => {
 								aria-pressed={liked}
 								on:click={handleLike}
 							>
-								<Icon
-									icon={liked ? "material-symbols:thumb-up-rounded" : "material-symbols:thumb-up-outline-rounded"}
-									class="text-base sm:text-lg"
-								/>
+								<svg class="post-feedback-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="10" width="4.2" height="10.5" rx="1.4" /><path d="M9.1 20.5V10l3.1-6.1a1.65 1.65 0 0 1 3.1 1.2L14.1 10h4.4a2.2 2.2 0 0 1 2.1 2.8l-1.5 5.7a2.7 2.7 0 0 1-2.6 2H9.1Z" /></svg>
 								<span class="whitespace-nowrap">
 									{liked ? i18n(I18nKey.pageFeedbackLiked) : i18n(I18nKey.pageFeedbackLike)}
 									{" "}
 									{likeCount}
 								</span>
 							</button>
+							{#if celebrating}<span class="post-like-burst" aria-hidden="true">{#each confetti as particle, index}<i style={`--burst-x:${particle.x}px;--burst-y:${particle.y}px;--burst-angle:${particle.angle}deg;--burst-hue:${index * 30};`}></i>{/each}</span>{/if}
 
 							{#if showCaptcha && captchaState}
 								<div
@@ -342,22 +337,14 @@ onDestroy(() => {
 					{#if showReward}
 						<button
 							type="button"
-							class="btn-card inline-flex h-10 items-center gap-1.5 rounded-full border border-line-divider px-3 text-xs font-semibold text-75 shadow-sm sm:h-11 sm:gap-2 sm:px-4 sm:text-sm"
+							class="btn-card post-feedback-button rounded-full border border-line-divider text-75"
 							on:click={() => (rewardOpen = true)}
 						>
-							<span aria-hidden="true" class="text-sm leading-none sm:text-base">☕</span>
+							<svg class="post-feedback-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h12v5.5a5.5 5.5 0 0 1-5.5 5.5h-1A5.5 5.5 0 0 1 4 14.5V9ZM16 10h1.5a3 3 0 0 1 0 6H16M3 22h15M7 3v2M11 2v3M15 3v2" /></svg>
 							<span class="whitespace-nowrap">{i18n(I18nKey.pageFeedbackReward)}</span>
 						</button>
 					{/if}
 				</div>
-			</div>
-
-			<div class="flex w-full justify-end">
-				<InlineFeedbackNotice
-					message={noticeMessage}
-					tone={noticeTone}
-					duration={180}
-				/>
 			</div>
 		</div>
 	</section>

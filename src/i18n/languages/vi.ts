@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const vi: Translation = {
+	[Key.noticeRegion]: "Thông báo",
+	[Key.noticePinned]: "Thông báo ưu tiên",
+	[Key.engagementLoadFailed]:
+		"Không thể tải thông tin tương tác. Vui lòng thử lại sau.",
+	[Key.commentsCaptchaRefreshFailed]:
+		"Không thể làm mới mã xác minh. Vui lòng thử lại.",
 	[Key.home]: "Trang chủ",
 	[Key.about]: "Giới thiệu",
 	[Key.archive]: "Kho bài",

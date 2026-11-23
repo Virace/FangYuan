@@ -161,12 +161,77 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 
 #### `siteConfig.banner.src`
 
-- 作用：横幅图片路径。
+- 当 `optics.prism` 和 `optics.insert` 均留空时，填写 `src` 会显示整幅横图，可配置图片位置和署名。省略 `src` 或留空则显示内置交互透镜。
+- 白色入射光穿过镜片后展开成渐变光谱。桌面移动鼠标可以改变观察角度，连续点击入射光会发出多道独立脉冲。手形光标张开时可抓住光束，绕镜片拖动会带动远端光带弯曲，松手后光路在选定方向收直。手机支持连续轻点，开启「减少动态效果」时显示静帧。
+- 使用内置透镜时，顶图和正文留白共享细颗粒渐变。亮色从灰蓝过渡到页面底色，暗色从石墨色过渡到深色底。圆形光斑随桌面指针移动，经过顶图与正文的边界时在两种亮度之间渐变。滚动时光斑淡出，停稳后在指针当前位置恢复。指针位于页脚时光斑保持隐藏。触屏和「减少动态效果」模式使用静态背景。自定义图片横幅沿用纯色页面背景。
 - 路径规则：
   - `assets/images/banner.svg`：推荐。指向外部站点根目录 `assets/images/banner.svg`，会作为本地图片输入参与构建。
   - `https://cdn.example.com/banner.webp`：可用。远程图片会原样透传，不会被本地构建打包或校验。
   - `/favicon/icon.png` 或 `public/favicon/icon.png`：不是 external site 的资源目录，也不会从 FangYuan 仓库 `public/` 复制旧占位资源。
 - 建议：站点自有横幅优先放在外部站点根目录 `<siteRoot>/assets/`，不要依赖临时构建产物路径。`init-site` 默认会创建 `assets/images/banner.svg` 作为替换占位符。
+
+#### `siteConfig.banner.optics.insert`
+
+填写一张图片即可在交互透镜的玻璃下放入图案。图片居中等比缩放，透明区域透出镜片底色。图案随镜片倾斜，表面保留反光，点击入射光时脉冲会扫亮图案。建议用透明 SVG、PNG 或 WebP。
+
+```yaml
+siteConfig:
+  banner:
+    enable: true
+    src: assets/images/banner.png
+    optics:
+      insert: assets/images/mark.svg
+```
+
+在透镜模式下，`insert` 优先于 `src`；清空夹层配置就会恢复横图。图片路径遵循上面的横幅资源规则。
+
+#### `siteConfig.banner.optics.prism`
+
+用一张透明底素材替换整个分光元件。将素材放进外部站点的 `assets/`，例如：
+
+```yaml
+siteConfig:
+  banner:
+    enable: true
+    optics:
+      prism: assets/images/prism.svg
+```
+
+例如，把下面的不对称三角形保存为站点的 `assets/images/prism.svg`。构建后拖动左侧白光，可以看到入射点和彩光出口分别沿三角形的两条边移动。
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="248" height="248" viewBox="-124 -124 248 248">
+  <path d="M-96 -72L104 0 -64 90Z" fill="#7abfe2" fill-opacity=".7"/>
+</svg>
+```
+
+图案会等比居中。画布中心是光轴，两束光分别从中心向相反方向找到主体边缘；拖动光束后会沿新方向重新取点。素材应让光轴落在连续的主体内，实体区域的不透明度至少为 50%。可以用 SVG 绘制切面和侧壁，或使用透明 PNG、WebP。构建时从本地素材取样，页面内只需按角度插值。
+
+需要随观察角度露出不同侧边时，可以给各层使用同尺寸、同中心的透明画布：
+
+```yaml
+siteConfig:
+  banner:
+    enable: true
+    optics:
+      prism:
+        face: assets/images/prism.svg
+        spacer: assets/images/prism-spacer.svg
+        guides:
+          - [[8, 12], [26, 33], [35, 36], [81, 90]]
+        back: assets/images/prism-back.svg
+        crown: diamond
+```
+
+`face` 决定光束的入射和出射边缘。`back` 是后座，`spacer` 位于后座与正面之间，两者均可省略。`crown: diamond` 会在光轴上方嵌入带立体切面的菱形晶体，反光随视角移动。省略 `crown` 时仅显示配置的素材层。
+
+可选的 `guides` 在中层绘制导光刻槽。每条槽用至少两个 `[x, y]` 点描述，由中心向外排列。坐标以 248 × 248 的棱镜画布中心为原点，向右、向下为正。光束转向槽尾时，刻槽逐渐亮起，亮线末端随视角接到正面的实际出口。
+
+点击入射光时，同一道脉冲会扫过正面的玻璃，在中层透出青光，并在后座的切边留下稍晚的暖色反光。这些反应由主题按图层绘制，换图即可沿用。换成其他形状时，如果希望导光线贴合新图案的刻纹，需要在 `guides` 里标出新路径。轮廓取样只决定进出光的位置。
+
+外部站点通过素材和 `site.config.yaml` 定义中央件。当前构建入口只挂载主题内的 `OpticalBanner.astro`，外部仓库里的 Astro 或 Svelte 组件没有对应的注册入口。
+
+桌面和触屏都可以按住光束转向，开启「减少动态效果」时显示静帧。同时配置时，显示顺序为 `prism`、`insert`、`src`、主题默认透镜。移除 `prism` 即可恢复之前的样式。
 
 #### `siteConfig.banner.position`
 

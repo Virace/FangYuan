@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ja: Translation = {
+	[Key.noticeRegion]: "通知",
+	[Key.noticePinned]: "優先通知",
+	[Key.engagementLoadFailed]:
+		"操作情報を読み込めませんでした。しばらくしてからお試しください。",
+	[Key.commentsCaptchaRefreshFailed]:
+		"認証コードを更新できませんでした。もう一度お試しください。",
 	[Key.home]: "ホーム",
 	[Key.about]: "このサイトについて",
 	[Key.archive]: "アーカイブ",

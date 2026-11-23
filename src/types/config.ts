@@ -7,6 +7,16 @@ export type AliasValidationMode = "error" | "normalize";
 export type UpdatedDateMode = "manual" | "git" | "filesystem" | "none";
 export type UpdatedDateFallback = "none" | "filesystem";
 
+export type OpticalPrismConfig =
+	| string
+	| {
+			face: string;
+			back?: string;
+			spacer?: string;
+			guides?: [number, number][][];
+			crown?: "diamond";
+	  };
+
 export type PostPatternRule = {
 	match: string;
 	pattern: string;
@@ -53,6 +63,11 @@ export type PermalinkConfig = {
 	updatedDateFallback: UpdatedDateFallback;
 };
 
+export type NotificationConfig = {
+	position: "top" | "bottom";
+	newestOnTop: boolean;
+};
+
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
@@ -82,6 +97,7 @@ export type SiteConfig = {
 	banner: {
 		enable: boolean;
 		src: string;
+		optics?: { insert?: string; prism?: OpticalPrismConfig };
 		position?: "top" | "center" | "bottom";
 		credit: {
 			enable: boolean;
@@ -96,6 +112,7 @@ export type SiteConfig = {
 	githubCard: {
 		descriptionLines: 1 | 2 | 3;
 	};
+	notifications: NotificationConfig;
 
 	favicon: Favicon[];
 	permalink: PermalinkConfig;

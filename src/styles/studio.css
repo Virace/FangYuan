@@ -1,0 +1,19 @@
+@import "@fontsource/roboto/latin-400.css";
+@import "@fontsource/roboto/latin-500.css";
+@import "@fontsource/roboto/latin-700.css";
+@import "@fontsource-variable/jetbrains-mono";
+@import "katex/dist/katex.css";
+@import "./variables.css";
+@import "./markdown-extend.css";
+@import "./main.css";
+@import "./markdown.css";
+@import "./expressive-code.css";
+
+@source inline("prose prose-base dark:prose-invert max-w-none");
+
+:scope {
+	--font-roboto: "Roboto";
+	--font-jetbrains-mono: "JetBrains Mono Variable";
+	font-family: var(--font-roboto), sans-serif;
+	color: var(--tw-prose-body, var(--deep-text));
+}

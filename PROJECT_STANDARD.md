@@ -47,8 +47,11 @@ Biome 解析 Markdown frontmatter，但保留代码块、frontmatter 和 HTML �
 | Node 测试明细入口 | `pnpm test:node` | 直接运行 `tests/*.test.mjs` |
 | 构建集成 | `pnpm test:build` | 串行准备真实 Astro 产物矩阵，并验证 GitHub 快照在内容缓存复用时刷新 |
 | 核心浏览器回归 | `pnpm test:e2e` | 构建内部 demo 后运行关键导航、交互与可访问性流程 |
+| QingYan 浏览器专项 | `pnpm test:e2e:qingyan` | 显式开启测试 API 的内部构建，验证通知、点赞、评论及验证码；与默认浏览器回归串行运行 |
 | 完整系统测试 | `pnpm test:system` | 依次运行快速测试、构建矩阵和核心浏览器回归 |
 | 视觉回归 | `pnpm test:e2e:visual` | 独立运行截图基线，不属于默认系统测试 |
+
+需要保留构建验证材料时，设置 `FANGYUAN_TEST_KEEP_ARTIFACTS=1` 后运行 `pnpm test:build`。该模式保留本轮 `.temp/test-builds/run-*/` 和 Astro 生成状态，并跳过旧验证目录清理，便于人工检查与按精确路径手动清理。
 
 ## 3. 代码组织
 

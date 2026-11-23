@@ -2,6 +2,10 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const th: Translation = {
+	[Key.noticeRegion]: "การแจ้งเตือน",
+	[Key.noticePinned]: "การแจ้งเตือนสำคัญ",
+	[Key.engagementLoadFailed]: "โหลดข้อมูลการโต้ตอบไม่สำเร็จ โปรดลองอีกครั้งภายหลัง",
+	[Key.commentsCaptchaRefreshFailed]: "รีเฟรชรหัสยืนยันไม่สำเร็จ โปรดลองอีกครั้ง",
 	[Key.home]: "หน้าแรก",
 	[Key.about]: "เกี่ยวกับ",
 	[Key.archive]: "คลัง",

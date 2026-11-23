@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const id: Translation = {
+	[Key.noticeRegion]: "Notifikasi",
+	[Key.noticePinned]: "Pemberitahuan prioritas",
+	[Key.engagementLoadFailed]:
+		"Informasi interaksi gagal dimuat. Coba lagi nanti.",
+	[Key.commentsCaptchaRefreshFailed]:
+		"Gagal memperbarui captcha. Silakan coba lagi.",
 	[Key.home]: "Beranda",
 	[Key.about]: "Tentang",
 	[Key.archive]: "Arsip",

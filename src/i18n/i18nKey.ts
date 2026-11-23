@@ -3,6 +3,10 @@ const I18nKey = {
 	about: "about",
 	archive: "archive",
 	search: "search",
+	noticeRegion: "noticeRegion",
+	noticePinned: "noticePinned",
+	engagementLoadFailed: "engagementLoadFailed",
+	commentsCaptchaRefreshFailed: "commentsCaptchaRefreshFailed",
 
 	tags: "tags",
 	categories: "categories",

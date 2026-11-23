@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @import "./tailwind-theme.css";
+@import "./notices.css";
 
 .card-base {
     overflow: hidden;
@@ -242,7 +243,7 @@
 }
 
 .btn-plain:hover {
-    color: var(--primary);
+    color: var(--accent-foreground);
 }
 
 .btn-plain:focus-visible {
@@ -284,6 +285,10 @@
 
 .btn-regular:hover {
     background-color: var(--btn-regular-bg-hover);
+}
+
+.btn-regular:is(:hover, :active) {
+    color: var(--btn-regular-content-hover);
 }
 
 .btn-regular:active {
@@ -594,7 +599,7 @@
     line-height: 1;
     white-space: nowrap;
     transform: translateY(-50%);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
     user-select: none;
     transition:
         color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
@@ -798,6 +803,30 @@
 }
 
 @layer base {
+    @media (any-pointer: fine) and (forced-colors: none) {
+        :root {
+            --cursor-link: var(--cursor-link-image, url("../theme-assets/icons/cursor-link.svg")) 8 2, pointer;
+            --cursor-grab: var(--cursor-grab-image, url("../theme-assets/icons/optics-grab.svg")) 11 13, grab;
+            --cursor-grabbing: var(--cursor-grabbing-image, url("../theme-assets/icons/optics-grabbing.svg")) 11 13, grabbing;
+            cursor: var(--cursor-dot-image, url("../theme-assets/icons/cursor-dot.svg")) 6 6, default;
+        }
+
+        :root.dark {
+            cursor: var(--cursor-dot-dark-image, url("../theme-assets/icons/cursor-dot-dark.svg")) 6 6, default;
+        }
+
+        :where(a[href], button:enabled, summary, select:enabled, [role="button"]:not([aria-disabled="true"]),
+            input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"]):enabled) {
+            cursor: var(--cursor-link);
+        }
+
+        :where(textarea, input:not([type]), input:is([type="text"], [type="search"], [type="url"], [type="email"],
+            [type="password"], [type="tel"], [type="number"]), [contenteditable="true"], [contenteditable=""],
+            .custom-md p, .custom-md pre) {
+            cursor: text;
+        }
+    }
+
     h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th, td, strong {
         transition:
             color 0.15s cubic-bezier(0.4, 0, 0.2, 1),

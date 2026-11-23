@@ -2,7 +2,6 @@
 import type { I18nKey as I18nKeyType } from "@i18n/i18nKey";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import type { AutoDismissTone } from "@utils/browser/notice";
 import type { CommenterProfile } from "@utils/comments/commenter-profile";
 import {
 	type CommentAuthorField,
@@ -16,7 +15,6 @@ import {
 } from "@utils/comments/validation";
 import { tick } from "svelte";
 import { fade, scale, slide } from "svelte/transition";
-import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
 import EmojiPicker from "./EmojiPicker.svelte";
 import InlineCommentCaptcha from "./InlineCommentCaptcha.svelte";
 
@@ -57,8 +55,6 @@ export let captchaBusy = false;
 export let captchaValue = "";
 export let captchaError = "";
 export let captchaPrompt = "";
-export let noticeMessage = "";
-export let noticeTone: AutoDismissTone = "info";
 export let onSubmit:
 	| ((detail: CommentComposerSubmitDetail) => boolean | Promise<boolean>)
 	| null = null;
@@ -270,13 +266,6 @@ async function focusComposerContent() {
 	novalidate
 	on:submit|preventDefault={handleSubmit}
 >
-	<InlineFeedbackNotice
-		message={noticeMessage}
-		tone={noticeTone}
-		duration={180}
-		className="mb-4"
-	/>
-
 	<div class="flex items-start justify-between gap-3 mb-4">
 		<div>
 			<h3 class="font-semibold text-90">{i18n(I18nKey.commentsSubmit)}</h3>

@@ -29,10 +29,10 @@ const links: ResolvedNavBarLink[] = resolveNavbarLinks(
     <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 -top-8 -z-1 h-[calc(2rem+1px)] bg-card-bg transition-colors"></div>
     <div class:list={[
         className,
-        "card-base overflow-visible! page-shell h-18 rounded-t-none! flex items-center justify-between px-4"]}>
+        "card-base panel-edge overflow-visible! page-shell h-18 rounded-t-none! flex items-center justify-between px-4"]}>
         <a href={url('/')} class="btn-plain scale-animation rounded-lg h-13 px-5 font-bold active:scale-95">
-            <div class="flex flex-row text-primary items-center text-md">
-                <Icon name="material-symbols:home-outline-rounded" class="icon-28 mb-1 mr-2" />
+            <div class="flex flex-row text-accent-solid items-center text-md">
+                <Icon name="material-symbols:home-outline-rounded" class="icon-28 mb-1 mr-2 text-primary" />
                 {siteConfig.title}
             </div>
         </a>
