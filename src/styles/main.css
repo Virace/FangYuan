@@ -469,6 +469,22 @@
     position: relative;
 }
 
+.navbar-tools {
+    --button-width: calc(var(--spacing) * 11);
+    --search-width: var(--button-width);
+    --menu-width: var(--button-width);
+    display: grid;
+    grid-template-columns: var(--search-width) repeat(var(--theme-buttons), var(--button-width)) var(--menu-width);
+
+    @variant md {
+        --menu-width: 0px;
+    }
+
+    @variant lg {
+        --search-width: calc(var(--spacing) * 62);
+    }
+}
+
 .search-field-input {
     background-color: transparent;
     color: rgb(0 0 0 / 0.5);

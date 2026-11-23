@@ -1,0 +1,60 @@
+diff --git a/overlayscrollbars.cjs b/overlayscrollbars.cjs
+index d525618a96eb3bc10e9d945add972767623b4bf2..cf13f492feff43dc18f91b8046476cca8bb267c1 100644
+--- a/overlayscrollbars.cjs
++++ b/overlayscrollbars.cjs
+@@ -2428,8 +2428,9 @@ const createStructureSetupElements = t => {
+       removeAttrs(y, [ U, j ]);
+     }
+   } ];
+-  let ct = contents(st.find((t => t && !elementIsGenerated(t))));
++  const contentSource = st.find((t => t && !elementIsGenerated(t)));
+   const rt = D ? W : tt || Z;
++  let ct = contentSource === rt ? [] : contents(contentSource);
+   const it = bind(runEachAndClear, et);
+   const appendElements = () => {
+     const t = getDocumentWindow();
+diff --git a/overlayscrollbars.cjs.js b/overlayscrollbars.cjs.js
+index a5f8dae860ec66b922fecf43ebd5dc25f971e41c..53f5fbccce0346d2023c06239f9e4360833cde6d 100644
+--- a/overlayscrollbars.cjs.js
++++ b/overlayscrollbars.cjs.js
+@@ -2428,8 +2428,9 @@ const createStructureSetupElements = t => {
+       removeAttrs(y, [ U, j ]);
+     }
+   } ];
+-  let ct = contents(st.find((t => t && !elementIsGenerated(t))));
++  const contentSource = st.find((t => t && !elementIsGenerated(t)));
+   const rt = D ? W : tt || Z;
++  let ct = contentSource === rt ? [] : contents(contentSource);
+   const it = bind(runEachAndClear, et);
+   const appendElements = () => {
+     const t = getDocumentWindow();
+diff --git a/overlayscrollbars.esm.js b/overlayscrollbars.esm.js
+index 7b2549cb0044804251dd371017e3c48d94e895d2..84d472b73a03320dc263c9036dbd8feb50613e6b 100644
+--- a/overlayscrollbars.esm.js
++++ b/overlayscrollbars.esm.js
+@@ -2422,8 +2422,9 @@ const createStructureSetupElements = t => {
+       removeAttrs(y, [ U, B ]);
+     }
+   } ];
+-  let ct = contents(st.find((t => t && !elementIsGenerated(t))));
++  const contentSource = st.find((t => t && !elementIsGenerated(t)));
+   const rt = D ? W : tt || Z;
++  let ct = contentSource === rt ? [] : contents(contentSource);
+   const it = bind(runEachAndClear, et);
+   const appendElements = () => {
+     const t = getDocumentWindow();
+diff --git a/overlayscrollbars.mjs b/overlayscrollbars.mjs
+index 5e4420d1376ed4280222acda21c123753bd6ab96..b72ab87115acfc7d784d8c6bedc4db817535912f 100644
+--- a/overlayscrollbars.mjs
++++ b/overlayscrollbars.mjs
+@@ -2422,8 +2422,9 @@ const createStructureSetupElements = t => {
+       removeAttrs(y, [ U, B ]);
+     }
+   } ];
+-  let ct = contents(st.find((t => t && !elementIsGenerated(t))));
++  const contentSource = st.find((t => t && !elementIsGenerated(t)));
+   const rt = D ? W : tt || Z;
++  let ct = contentSource === rt ? [] : contents(contentSource);
+   const it = bind(runEachAndClear, et);
+   const appendElements = () => {
+     const t = getDocumentWindow();

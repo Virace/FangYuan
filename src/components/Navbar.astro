@@ -25,8 +25,8 @@ const links: ResolvedNavBarLink[] = resolveNavbarLinks(
 		: link,
 );
 ---
-<div id="navbar" class="z-50 onload-animation">
-    <div class="absolute h-8 left-0 right-0 -top-8 bg-card-bg transition"></div> <!-- used for onload animation -->
+<div id="navbar" class="relative z-50">
+    <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 -top-8 -z-1 h-[calc(2rem+1px)] bg-card-bg transition-colors"></div>
     <div class:list={[
         className,
         "card-base overflow-visible! page-shell h-18 rounded-t-none! flex items-center justify-between px-4"]}>
@@ -48,15 +48,18 @@ const links: ResolvedNavBarLink[] = resolveNavbarLinks(
                 </a>;
             })}
         </div>
-        <div class="flex">
-            <!--<SearchPanel client:load>-->
-            <Search client:only="svelte"></Search>
+        <div class="navbar-tools" style={{ "--theme-buttons": siteConfig.themeColor.fixed ? 1 : 2 }}>
+            <div class="flex h-11 justify-end">
+                <Search client:only="svelte"></Search>
+            </div>
             {!siteConfig.themeColor.fixed && (
                     <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
                         <Icon name="material-symbols:palette-outline" class="text-xl"></Icon>
                     </button>
             )}
-            <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
+            <div>
+                <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
+            </div>
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:hidden!" id="nav-menu-switch">
                 <Icon name="material-symbols:menu-rounded" class="text-xl"></Icon>
             </button>
