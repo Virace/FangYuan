@@ -1,9 +1,176 @@
 import { expect, type Page, test } from "@playwright/test";
-import { prepareStablePage, VIEWPORTS } from "./support/site-fixtures";
+import { installExternalNetworkStubs, prepareStablePage, VIEWPORTS } from "./support/site-fixtures";
 
 const COMMENT_TEST_ROUTE = "/extra/";
 const COMMENTER_PROFILE_STORAGE_KEY = "qingyan:commenter-profile:v1:default";
 const CREATED_COMMENT_TIMESTAMP = "2026-05-28T00:00:00.000Z";
+
+async function configureNotificationPlacement(page: Page, position: "top" | "bottom", newestOnTop: boolean) {
+	await page.route("**/extra/", async (route) => {
+		const response = await route.fetch();
+		const html = (await response.text()).replace(
+			/<astro-island\b[^>]*component-url="[^"]*\/GlobalNotices\.[^"]*"[^>]*>[\s\S]*?<\/astro-island>/,
+			(island) => island.replace(/\bprops="([^"]*)"/, (_attribute, encoded) => {
+				const props = JSON.parse(encoded.replaceAll("&quot;", '"').replaceAll("&amp;", "&"));
+				props.placement = [0, { position: [0, position], newestOnTop: [0, newestOnTop] }];
+				return `props="${JSON.stringify(props).replaceAll("&", "&amp;").replaceAll('"', "&quot;")}"`;
+			}).replace(/(class="global-notices" data-position=")[^"]*"/, `$1${position}"`),
+		);
+		await route.fulfill({ response, body: html });
+	});
+}
+
+for (const position of ["top", "bottom"] as const) {
+for (const newestOnTop of [false, true]) {
+test(`global notifications stack with live motion at ${position}, newestOnTop=${newestOnTop}, without moving back-to-top`, async ({ page }) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await installExternalNetworkStubs(page);
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse(), threadError: true,
+		commentCreate: { firstErrorCode: "validation_error", firstErrorMessage: "评论提交失败，请稍后重试。", successBody: {} },
+		pageLike: { firstErrorCode: "service_unavailable", firstErrorMessage: "暂时无法点赞。", successBody: {} },
+	});
+	await configureNotificationPlacement(page, position, newestOnTop);
+	await page.goto(COMMENT_TEST_ROUTE);
+	await page.waitForLoadState("networkidle");
+	const composer = page.locator("section[data-post-title] form");
+	await composer.locator('input[type="text"]').fill("通知堆叠测试");
+	await composer.locator('input[type="email"]').fill("visitor@example.com");
+	await composer.locator("textarea").fill("保留这段正文");
+	const originalTop = await composer.evaluate((element) => element.getBoundingClientRect().top + scrollY);
+	await page.locator("#back-to-top-btn button").click({ trial: true });
+	const originalBackTop = await page.locator("#back-to-top-btn").boundingBox();
+	const entryMotion = page.evaluate(() => new Promise<{ x: number; y: number; anchorDelta: number }>((resolve) => {
+		const layer = document.querySelector(".global-notices")!;
+		const observer = new MutationObserver(() => {
+			const card = layer.querySelector<HTMLElement>('[data-phase="entering"]');
+			if (!card) return;
+			observer.disconnect();
+			requestAnimationFrame(() => {
+				const matrix = new DOMMatrix(getComputedStyle(card).transform);
+				const wrapper = card.parentElement!.getBoundingClientRect();
+				const anchor = layer.getBoundingClientRect();
+				resolve({ x: matrix.m41, y: matrix.m42, anchorDelta: layer.getAttribute("data-position") === "top" ? wrapper.top - anchor.top : wrapper.bottom - anchor.bottom });
+			});
+		});
+		observer.observe(layer, { childList: true, attributes: true, subtree: true });
+	}));
+	await composer.getByRole("button", { name: "发表评论" }).click();
+	const motion = await entryMotion;
+	expect(motion.x).toBeGreaterThan(0);
+	expect(motion.x).toBeLessThanOrEqual(16);
+	expect(motion.y).toBe(0);
+	expect(motion.anchorDelta).toBeCloseTo(0, 0);
+	const feedback = page.locator("section").filter({ hasText: "支持这篇文章" }).first();
+	await feedback.getByRole("button", { name: /^点赞/ }).click();
+	await page.getByRole("button", { name: "最早在前" }).click();
+	const active = page.locator('.global-notice[data-phase="visible"]');
+	await expect(active).toHaveCount(3);
+	await expect.poll(async () => active.evaluateAll((elements) => {
+		const bounds = elements.map((element) => element.getBoundingClientRect()).sort((left, right) => left.top - right.top);
+		return bounds.slice(1).every((rect, index) => rect.top - bounds[index].bottom >= 10);
+	})).toBe(true);
+	expect(await composer.evaluate((element) => element.getBoundingClientRect().top + scrollY)).toBeCloseTo(originalTop, 0);
+	await expect(active.last()).toContainText("评论加载失败。");
+	const geometry = await active.evaluateAll((elements) => elements.map((element) => {
+		const rect = element.getBoundingClientRect();
+		return { top: rect.top, bottom: rect.bottom };
+	}));
+	expect(newestOnTop ? geometry[2].top < geometry[0].top : geometry[2].top > geometry[0].top).toBe(true);
+	const anchor = await page.locator(".global-notices").boundingBox();
+	const anchorEdge = position === "top" ? Math.min(...geometry.map((rect) => rect.top)) : Math.max(...geometry.map((rect) => rect.bottom));
+	expect(anchorEdge).toBeCloseTo(anchor!.y, 0);
+	if (position === "bottom") {
+	const covered = await page.locator("#back-to-top-btn button").evaluate((element) => {
+		const rect = element.getBoundingClientRect();
+		return Boolean(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest(".global-notice"));
+	});
+	expect(covered).toBe(true);
+	}
+	const currentBackTop = await page.locator("#back-to-top-btn").boundingBox();
+	expect(currentBackTop!.x).toBeCloseTo(originalBackTop!.x, 0);
+	expect(currentBackTop!.y).toBeCloseTo(originalBackTop!.y, 0);
+	await page.screenshot({ path: `.temp/global-notifications/final/stack-${position}-${newestOnTop}.png` });
+	await active.nth(1).getByRole("button", { name: /关闭/ }).press("Enter");
+	await expect(active).toHaveCount(2);
+	await expect(page.locator(".global-notice-close:focus")).toHaveCount(1);
+	await expect.poll(async () => {
+		const edges = await active.evaluateAll((elements) => elements.map((element) => {
+			const rect = element.getBoundingClientRect();
+			return { top: rect.top, bottom: rect.bottom };
+		}));
+		return position === "top" ? Math.min(...edges.map((rect) => rect.top)) : Math.max(...edges.map((rect) => rect.bottom));
+	}).toBeCloseTo(anchor!.y, 0);
+	await page.locator(".footer").scrollIntoViewIfNeeded();
+	await expect.poll(async () => {
+		const footerTop = await page.locator(".footer").evaluate((element) => element.getBoundingClientRect().top);
+		return active.evaluateAll((elements, footerTop) => elements.every((element) => element.getBoundingClientRect().bottom <= footerTop - 15), footerTop);
+	}).toBe(true);
+});
+}
+}
+
+test("global notifications buffer bootstrap failures until their host loads and deduplicate consumers", async ({ page }) => {
+	let releaseHost = () => {};
+	let hostRequested = false;
+	const hostReady = new Promise<void>((resolve) => { releaseHost = resolve; });
+	await page.route("**/GlobalNotices.*.js", async (route) => { hostRequested = true; await hostReady; await route.continue(); });
+	await installFetchMock(page, { bootstrap: buildBootstrapResponse(), bootstrapError: true });
+	try {
+		await page.goto(COMMENT_TEST_ROUTE, { waitUntil: "domcontentloaded" });
+		await expect.poll(() => hostRequested).toBe(true);
+		await expect.poll(async () => (await readTestState(page)).bootstrapQuery).toBeTruthy();
+	} finally { releaseHost(); }
+	const notice = page.locator('.global-notice[data-phase="visible"]');
+	await expect(notice).toHaveCount(1);
+	await expect(notice).toContainText("互动信息加载失败，请稍后再试。");
+	await expect(page.getByText("internal bootstrap failure")).toHaveCount(0);
+	await expect(notice.locator(".global-notice-pin")).toBeVisible();
+	await notice.getByRole("button", { name: /关闭/ }).click();
+	await expect(page.locator(".global-notice")).toHaveCount(0);
+});
+
+test("global notifications center two rendered lines and top-align wrapped content without moving the form", async ({ page }) => {
+	const message = "暂时无法完成此操作，请稍后重试。\n评论内容已保留。";
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await installFetchMock(page, {
+		bootstrap: buildBootstrapResponse(),
+		commentCreate: { firstErrorCode: "validation_error", firstErrorMessage: message, successBody: {} },
+	});
+	await installExternalNetworkStubs(page);
+	await page.goto(COMMENT_TEST_ROUTE);
+	await page.waitForLoadState("networkidle");
+	const composer = page.locator("section[data-post-title] form");
+	await composer.locator('input[type="text"]').fill("通知测试");
+	await composer.locator('input[type="email"]').fill("visitor@example.com");
+	await composer.locator("textarea").fill("失败后仍需保留的正文");
+	const initialHeight = await composer.evaluate((element) => element.offsetHeight);
+	await composer.getByRole("button", { name: "发表评论" }).click();
+	const notice = page.locator('.global-notice[data-phase="visible"]');
+	await expect(notice).toHaveCount(1);
+	await notice.hover();
+	await expect(notice).toHaveAttribute("data-compact", "true");
+	await page.screenshot({ path: ".temp/global-notifications/two-lines-light.png" });
+	await expect(composer.locator("textarea")).toHaveValue("失败后仍需保留的正文");
+	expect(await composer.evaluate((element) => element.offsetHeight)).toBe(initialHeight);
+	const lightBackground = await notice.evaluate((element) => getComputedStyle(element).backgroundColor);
+	await page.evaluate(() => document.documentElement.classList.add("dark"));
+	await expect.poll(() => notice.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(lightBackground);
+	await page.setViewportSize({ width: 320, height: 844 });
+	await expect(notice).toHaveAttribute("data-compact", "false");
+	const placement = await notice.evaluate((element) => {
+		const card = element.getBoundingClientRect();
+		const icon = element.querySelector(".global-notice-icon")!.getBoundingClientRect();
+		const close = element.querySelector(".global-notice-close")!.getBoundingClientRect();
+		return { iconTop: icon.top - card.top, closeTop: close.top - card.top, left: card.left, right: card.right };
+	});
+	expect(placement.iconTop).toBeLessThan(20);
+	expect(placement.closeTop).toBeLessThan(20);
+	expect(placement.left).toBeGreaterThanOrEqual(0);
+	expect(placement.right).toBeLessThanOrEqual(320);
+	await composer.scrollIntoViewIfNeeded();
+	await page.screenshot({ path: ".temp/global-notifications/wrapped-dark-mobile.png" });
+});
 
 type RawComment = {
 	id: string;
@@ -233,6 +400,8 @@ async function installFetchMock(
 	page: Page,
 	input: {
 		bootstrap: ReturnType<typeof buildBootstrapResponse>;
+		bootstrapError?: boolean;
+		threadError?: boolean;
 		thread?: ReturnType<typeof buildThreadResponse>;
 		captchaState?: ReturnType<typeof buildCaptchaState>;
 		refreshedCaptchaState?: ReturnType<typeof buildCaptchaState>;
@@ -335,11 +504,13 @@ async function installFetchMock(
 
 			if (url.pathname === "/api/comments/bootstrap/" && method === "GET") {
 				testState.bootstrapQuery = queryObject(url);
+				if (config.bootstrapError) return jsonResponse({ error: { code: "service_unavailable", message: "internal bootstrap failure" } }, 503);
 				return jsonResponse(config.bootstrap);
 			}
 
 			if (url.pathname === "/api/comments/thread/" && method === "GET") {
 				testState.threadQuery = queryObject(url);
+				if (config.threadError) return jsonResponse({ error: { code: "service_unavailable", message: "internal thread failure" } }, 503);
 				return jsonResponse(
 					config.thread ??
 						threadResponse(config.bootstrap.data.comments?.items ?? []),
@@ -601,6 +772,7 @@ test("QingYan comment captcha and create requests leave page identity to Referer
 	await expect
 		.poll(async () => Number((await readTestState(page)).refreshCount))
 		.toBe(1);
+	await expect(page.locator('[data-comment-captcha-target="composer"] img')).toHaveAttribute("src", refreshedCaptcha.challenge.imageData);
 	await captchaInput.fill("1357");
 	await composer.getByRole("button", { name: "确认" }).click();
 
@@ -1421,6 +1593,7 @@ test("comment list should render QingYan avatarUrl and fall back to initials on 
 	page,
 }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
+	await installExternalNetworkStubs(page);
 
 	const avatarUrl = "https://avatar.example.test/fangyuan-test.png";
 	const missingAvatarUrl = "https://avatar.example.test/missing.png";

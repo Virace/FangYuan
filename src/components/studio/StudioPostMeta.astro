@@ -1,0 +1,23 @@
+---
+import ImageWrapper from "../misc/ImageWrapper.astro";
+import PostMeta from "../PostMeta.astro";
+
+interface Props {
+	frontmatter: Record<string, unknown>;
+	coverSrc?: string;
+	coverOnly?: boolean;
+}
+
+const { frontmatter, coverSrc, coverOnly = false } = Astro.props;
+const published = new Date(String(frontmatter.published ?? ""));
+const updated = new Date(String(frontmatter.updated ?? ""));
+const tags = Array.isArray(frontmatter.tags)
+	? frontmatter.tags.filter((tag): tag is string => typeof tag === "string")
+	: [];
+---
+
+{coverOnly ? (
+	coverSrc && <ImageWrapper src={coverSrc} class="mb-8 rounded-xl banner-container" alt={String(frontmatter.title ?? "")} />
+) : (
+	Number.isFinite(published.getTime()) && <PostMeta class="mb-5" published={published} updated={Number.isFinite(updated.getTime()) ? updated : undefined} tags={tags} category={typeof frontmatter.category === "string" ? frontmatter.category : null} />
+)}

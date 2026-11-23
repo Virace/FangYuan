@@ -1,0 +1,173 @@
+<optical-backdrop aria-hidden="true">
+	<span class="ambient"></span>
+	<span class="hero-wash"></span>
+	<span class="paper"></span>
+	<span class="spot"></span>
+</optical-backdrop>
+
+<style>
+	optical-backdrop {
+		display: contents;
+		pointer-events: none;
+		--cool: #709698;
+		--warm: #caa5a0;
+		--mist: #b2a9c6;
+		--wash: #cbd3d9;
+		--grain-opacity: .085;
+		--reflected-light: rgb(255 252 234 / .65);
+	}
+	:global(.dark) optical-backdrop {
+		--cool: #426266;
+		--warm: #674452;
+		--mist: #483d58;
+		--wash: #15151c;
+		--grain-opacity: .055;
+		--reflected-light: rgb(219 229 232 / .19);
+	}
+	.ambient, .paper { position: fixed; inset: 0; }
+	.ambient {
+		background:
+			radial-gradient(ellipse at 0% 34%, color-mix(in oklab, var(--cool) 15%, transparent), transparent 65%),
+			radial-gradient(ellipse at 103% 42%, color-mix(in oklab, var(--mist) 17%, transparent), transparent 60%);
+		mask-image: linear-gradient(#000 40%, transparent 96%);
+	}
+	.hero-wash {
+		position: absolute;
+		inset-inline: 0;
+		top: calc(var(--banner-height) - var(--banner-height-home));
+		height: var(--banner-height-home);
+		background:
+			radial-gradient(ellipse at 16% 65%, color-mix(in oklab, var(--cool) 48%, transparent), transparent 54%),
+			radial-gradient(ellipse at 84% 20%, color-mix(in oklab, var(--warm) 50%, transparent), transparent 53%),
+			linear-gradient(109deg, var(--wash) 5%, color-mix(in oklab, var(--wash) 85%, var(--mist)) 74%, var(--wash));
+		mask-image: linear-gradient(to bottom, #000 48%, rgb(0 0 0 / .91) 67%, transparent);
+	}
+	.paper {
+		background: url("../../theme-assets/optics/grain.webp") repeat;
+		background-size: 128px 128px;
+		opacity: var(--grain-opacity);
+		mask-image: linear-gradient(#000 45%, rgb(0 0 0 / .48) 76%, transparent 98%);
+	}
+	.spot {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 238px;
+		aspect-ratio: 1;
+		border-radius: 50%;
+		opacity: 0;
+		transition: opacity 180ms ease-out;
+	}
+	.spot[data-visible] { opacity: 1; }
+	.spot::before, .spot::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: radial-gradient(circle closest-side, var(--reflected-light), transparent 100%);
+		opacity: 0;
+		transition: opacity 240ms ease-in-out;
+	}
+	:global(.dark) .spot[data-light]::after {
+		--page-glow-opacity: 1;
+		background: url("../../theme-assets/optics/page-glow.webp") center / 100% 100% no-repeat;
+	}
+	.spot[data-light="banner"]::before { opacity: 1; }
+	.spot[data-light="page"]::after { opacity: var(--page-glow-opacity, .23); }
+	@media (prefers-reduced-motion: reduce) {
+		.spot, .spot::before, .spot::after { transition: none; }
+	}
+	@media (min-width: 1024px) {
+		:global(body.lg\:is-home) .hero-wash { transform: translateY(var(--banner-height-extend)); }
+		@media (prefers-reduced-motion: no-preference) {
+			.hero-wash { transition: transform 700ms cubic-bezier(.4,0,.2,1); }
+		}
+	}
+	@media (forced-colors: active) {
+		optical-backdrop { display: none; }
+	}
+</style>
+
+<script>
+	class OpticalBackdrop extends HTMLElement {
+		private cleanup?: () => void;
+
+		connectedCallback() {
+			const spot = this.querySelector<HTMLElement>(".spot")!;
+			const motion = matchMedia("(any-pointer: fine) and (prefers-reduced-motion: no-preference) and (forced-colors: none)");
+			let frame = 0;
+			let scrollTimer = 0;
+			let pointer: { x: number; y: number } | undefined;
+			let moveTarget: Element | null = null;
+
+			const hide = () => {
+				cancelAnimationFrame(frame);
+				frame = 0;
+				moveTarget = null;
+				spot.removeAttribute("data-visible");
+			};
+			const forgetPointer = () => {
+				clearTimeout(scrollTimer);
+				scrollTimer = 0;
+				pointer = undefined;
+				hide();
+			};
+			const paint = () => {
+				frame = 0;
+				if (!pointer) return;
+				const { x, y } = pointer;
+				const target = moveTarget ?? document.elementFromPoint(x, y);
+				moveTarget = null;
+				if (!target || target.closest(".footer")) {
+					spot.removeAttribute("data-visible");
+					return;
+				}
+				spot.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;
+				const level = target.closest("optical-banner") ? "banner" : "page";
+				if (spot.dataset.light !== level) spot.dataset.light = level;
+				spot.toggleAttribute("data-visible", true);
+			};
+			const move = (event: PointerEvent) => {
+				if (event.pointerType === "touch") {
+					forgetPointer();
+					return;
+				}
+				pointer = { x: event.clientX, y: event.clientY };
+				if (scrollTimer) return;
+				moveTarget = event.target instanceof Element ? event.target : null;
+				if (!frame) frame = requestAnimationFrame(paint);
+			};
+			const scroll = () => {
+				hide();
+				clearTimeout(scrollTimer);
+				scrollTimer = window.setTimeout(() => {
+					scrollTimer = 0;
+					if (pointer) frame = requestAnimationFrame(paint);
+				}, 150);
+			};
+			let listeners: AbortController | undefined;
+			const listen = () => {
+				listeners?.abort();
+				forgetPointer();
+				if (!motion.matches) return;
+				listeners = new AbortController();
+				const options = { passive: true, signal: listeners.signal };
+				document.addEventListener("pointermove", move, options);
+				document.addEventListener("scroll", scroll, { ...options, capture: true });
+				document.addEventListener("pointercancel", forgetPointer, options);
+				document.documentElement.addEventListener("pointerleave", forgetPointer, options);
+				window.addEventListener("blur", forgetPointer, options);
+			};
+			listen();
+			motion.addEventListener("change", listen);
+			this.cleanup = () => {
+				listeners?.abort();
+				forgetPointer();
+				motion.removeEventListener("change", listen);
+			};
+		}
+
+		disconnectedCallback() { this.cleanup?.(); }
+	}
+	if (!customElements.get("optical-backdrop")) customElements.define("optical-backdrop", OpticalBackdrop);
+</script>

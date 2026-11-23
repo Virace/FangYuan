@@ -30,8 +30,10 @@ html.is-animating .transition-swup-fade {
     animation-fill-mode: forwards;
 }
 
-#navbar {
-    animation-delay: 0ms;
+@media (prefers-reduced-motion: no-preference) {
+    #navbar {
+        animation: 300ms ease backwards fade-in-up;
+    }
 }
 
 #sidebar {

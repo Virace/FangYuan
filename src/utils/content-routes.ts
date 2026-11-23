@@ -3,6 +3,10 @@ import {
 	attachAdjacentPostLinks,
 	sortPostRoutes,
 } from "./content/post-ordering.ts";
+import {
+	emptyRouteRegistry,
+	inspectContentRoutes,
+} from "./content-route-history.ts";
 import { materializePublicPath } from "./permalink/materialization.ts";
 import { resolvePermalinkForEntry } from "./permalink/resolver.ts";
 
@@ -19,6 +23,7 @@ type TocFrontmatter = {
 };
 
 type PostRouteData = {
+	contentId?: string;
 	title: string;
 	published: Date;
 	updated?: Date;
@@ -43,6 +48,7 @@ type PostRouteData = {
 };
 
 type SpecRouteData = {
+	contentId?: string;
 	title?: string;
 	alias?: string;
 	permalink?: string;
@@ -270,6 +276,19 @@ export function buildContentRouteManifest({
 		return route;
 	});
 	const routes = [...postRoutes, ...specRoutes];
+	const { issues } = inspectContentRoutes({
+		routes: routes.map((route) => ({
+			contentId: route.entry.data.contentId,
+			publicPath: route.publicPath,
+			sourcePath: `${route.kind}:${route.entryId}`,
+			published: true,
+		})),
+		registry: emptyRouteRegistry(),
+		requireRegistry: false,
+	});
+	const errors = issues.filter((issue) => issue.severity === "error");
+	if (errors.length)
+		throw new Error(errors.map((issue) => issue.message).join("\n"));
 	const directoryRoutes = routes.filter(
 		isDirectoryContentRoute,
 	) as DirectoryRoutedContentEntry[];
@@ -401,6 +420,12 @@ export function clearContentRouteManifestCache(): void {
 export async function getContentRouteManifest(): Promise<ContentRouteManifest> {
 	if (!cachedManifestPromise) {
 		cachedManifestPromise = (async () => {
+			const { readRouteSnapshot, assertRouteSnapshot } = await import(
+				"./content-route-store.ts"
+			);
+			assertRouteSnapshot(
+				readRouteSnapshot({ themeRoot: process.env.FANGYUAN_ROOT }),
+			);
 			const [{ getCollection }, { siteConfig }] = await Promise.all([
 				import("astro:content"),
 				import("../config"),

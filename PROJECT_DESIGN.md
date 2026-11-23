@@ -13,6 +13,7 @@ FangYuan 是 Astro 静态站点主题。Astro 负责路由、内容加载、页�
 - `src/content.config.ts`：声明 posts / spec collections 及 frontmatter schema。
 - `src/utils/content/`：内容排序、日期、分页、归档和 RSS 逻辑。
 - `src/utils/permalink/` 与 `src/utils/content-routes.ts`：固定链接解析、物化方式和路由清单。
+- `src/utils/content-route-history.ts`：纯身份、历史归属和输出冲突校验；`content-route-store.ts` 读取一致的源文件快照并准备登记变化。
 - `src/utils/site-source/`：选择内部或外部站点源，加载配置、内容与资源，并处理开发监听。
 - `src/utils/comments/`、`src/utils/qingyan/`、`src/utils/page-feedback/`：可选 QingYan 能力的客户端契约、状态与适配。
 - `scripts/site/`：初始化、升级、迁移和构建包装。
@@ -59,11 +60,17 @@ internal src/content or FANGYUAN_SITE_ROOT/content
 
 GitHub 卡片先由内容插件生成基础 HTML，再在 Astro 本轮 HTML 输出完成后获取公开元数据并增强产物，快照不进入文章内容缓存。浏览器模块负责有限超时的后台刷新与 Swup 页面生命周期；构建令牌仅在构建模块中读取。
 
+`contentRoutesIntegration` 在正式构建核对文章与 `content-routes.yaml`，并在结束时从同一已校验快照生成全部历史跳转与 `content-index.json`；构建期间输入变化则失败。Studio 的 analyze/prepare 只返回拟写数据，写入与恢复由独立编辑器协调，保存锁存在时主题拒绝读取。数据格式、同步与恢复入口见 `docs/content-routes.md`。
+
 ## 浏览器交互流
 
 静态 HTML 启动后，Svelte island 负责搜索、主题、评论、反馈和局部控制。Swup 更新 `main` 与 TOC 容器；跨页仍必须有效的 dialog、drawer、backdrop、定位和过渡样式由全局样式提供。QingYan 能力由公开配置和 bootstrap 响应启用，关闭时不挂载对应交互面。
 
+OverlayScrollbars 2.17.0 初始化时会把已有子节点重新插入原容器，触发首屏 CSS 动画重播。`patches/overlayscrollbars@2.17.0.patch` 跳过这次原位插入，保留创建滚动容器时必要的节点迁移。
+
 ## 错误模型
+
+全局通知使用 `src/utils/browser/notifications.ts` 的共享内存队列与 `GlobalNotices.svelte` 单宿主，位于 Swup 替换容器之外。业务捕获页面代次后发布纯文本结果；调度管理优先级与可读时间，组件报告真实尺寸，定位包装和卡片分别承载堆叠与出入场动画。样式、调用和公告复用边界见 `docs/notifications.md`。
 
 - 配置、内容、资源和固定链接不合法：构建或脚本明确失败，测试验证失败结果与诊断类别。
 - 外部可选服务不可用：保持静态内容和无关交互可用，向用户显示有限且可恢复的状态，不透传内部异常。

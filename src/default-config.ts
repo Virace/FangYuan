@@ -45,7 +45,7 @@ export const defaultSiteConfig: SiteConfig = {
 	},
 	banner: {
 		enable: true,
-		src: "assets/images/demo-banner.png", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
+		src: "",
 		position: "center", // 等价于 object-position，只支持 "top" | "center" | "bottom"
 		credit: {
 			enable: false, // 是否显示横幅图片署名
@@ -59,6 +59,10 @@ export const defaultSiteConfig: SiteConfig = {
 	},
 	githubCard: {
 		descriptionLines: 1, // 仓库简介最多显示 1 / 2 / 3 行，超出部分显示省略号
+	},
+	notifications: {
+		position: "top", // 队列基准位于导航栏下方；bottom 则在视口底部及可见页脚上方留白
+		newestOnTop: false, // 新消息在已有消息下方；true 则在上方，与基准位置独立
 	},
 	favicon: [
 		// 留空时使用默认 favicon

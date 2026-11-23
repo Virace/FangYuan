@@ -88,7 +88,11 @@ export function satteriDirectives() {
 				...node.data,
 				hName: "mark",
 				hProperties: {
-					className: ["md-highlight", `tone-${tone}`],
+					className: [
+						"md-highlight",
+						`tone-${tone}`,
+						...(element.properties.className ?? []),
+					],
 					"data-tone": tone,
 				},
 			};
@@ -97,7 +101,9 @@ export function satteriDirectives() {
 			return {
 				...node.data,
 				hName: "aside",
-				hProperties: { className: ["md-aside"] },
+				hProperties: {
+					className: ["md-aside", ...(element.properties.className ?? [])],
+				},
 			};
 		}
 		if (node.type === "containerDirective" && node.name === "fold") {
@@ -107,11 +113,19 @@ export function satteriDirectives() {
 				hName: "fangyuan-fold",
 				hProperties: {
 					id: `md-fold-${foldIndex}`,
+					className: element.properties.className,
 					title: node.attributes?.title || "Details",
 					icon: normalizeFoldIcon(node.attributes?.icon),
 					open: isTruthyAttribute(node.attributes?.open),
 				},
 			};
+		}
+		if (
+			node.type === "containerDirective" &&
+			admonitionTypes.has(node.name.toUpperCase()) &&
+			node.children[0]?.data?.directiveLabel
+		) {
+			element.properties["has-directive-label"] = true;
 		}
 		return {
 			...node.data,
@@ -175,6 +189,13 @@ export function satteriComponents(components) {
 					node.children,
 					context,
 				);
+				if (result?.type === "element" && node.properties.className?.length)
+					result.properties.className = [
+						...new Set([
+							...(result.properties.className ?? []),
+							...node.properties.className,
+						]),
+					];
 				context.replaceNode(node, result ?? []);
 			},
 		},

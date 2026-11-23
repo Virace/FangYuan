@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ko: Translation = {
+	[Key.noticeRegion]: "알림",
+	[Key.noticePinned]: "우선 알림",
+	[Key.engagementLoadFailed]:
+		"상호 작용 정보를 불러오지 못했습니다. 나중에 다시 시도해 주세요.",
+	[Key.commentsCaptchaRefreshFailed]:
+		"인증 코드를 새로고침하지 못했습니다. 다시 시도해 주세요.",
 	[Key.home]: "홈",
 	[Key.about]: "소개",
 	[Key.archive]: "아카이브",

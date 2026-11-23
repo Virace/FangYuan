@@ -45,7 +45,7 @@ function buildGitHubRepoCardPayload(repoPath: string) {
 	};
 }
 
-async function installExternalNetworkStubs(page: Page): Promise<void> {
+export async function installExternalNetworkStubs(page: Page): Promise<void> {
 	if (networkIsolationConfiguredPages.has(page)) {
 		return;
 	}

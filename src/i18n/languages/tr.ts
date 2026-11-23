@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const tr: Translation = {
+	[Key.noticeRegion]: "Bildirimler",
+	[Key.noticePinned]: "Öncelikli bildirim",
+	[Key.engagementLoadFailed]:
+		"Etkileşim bilgileri yüklenemedi. Lütfen daha sonra tekrar deneyin.",
+	[Key.commentsCaptchaRefreshFailed]:
+		"Doğrulama kodu yenilenemedi. Lütfen tekrar deneyin.",
 	[Key.home]: "Anasayfa",
 	[Key.about]: "Hakkında",
 	[Key.archive]: "Arşiv",

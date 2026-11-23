@@ -7,6 +7,8 @@ import type { ResolvedTocConfig } from "@utils/toc-config";
 import type { ImageMetadata, MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
+import OpticalBackdrop from "../components/misc/OpticalBackdrop.astro";
+import OpticalBanner from "../components/misc/OpticalBanner.astro";
 import TOC from "../components/widget/TOC.astro";
 import { configImageBaseRoots, siteConfig } from "../config";
 import {
@@ -14,7 +16,11 @@ import {
 	BANNER_HEIGHT_EXTEND,
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "../constants/constants";
-import { resolveConfigImage } from "../utils/image-source";
+import {
+	resolveConfigAssetUrl,
+	resolveConfigImage,
+} from "../utils/image-source";
+import { resolveOpticalPrism } from "../utils/prism-profile";
 import Layout from "./Layout.astro";
 
 interface Props {
@@ -40,13 +46,26 @@ const {
 	resolvedToc,
 	enablePhotoSwipe = false,
 } = Astro.props;
-const hasBannerCredit =
-	siteConfig.banner.enable && siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
-const bannerSource = await resolveConfigImage(
-	siteConfig.banner.src,
-	configImageBaseRoots.banner,
-);
+const prism = siteConfig.banner.enable
+	? await resolveOpticalPrism(siteConfig.banner.optics?.prism)
+	: undefined;
+const insertSrc =
+	siteConfig.banner.enable && !prism
+		? await resolveConfigAssetUrl(
+				siteConfig.banner.optics?.insert,
+				configImageBaseRoots.lensInsert,
+			)
+		: undefined;
+const bannerSource =
+	siteConfig.banner.enable && !insertSrc && !prism
+		? await resolveConfigImage(
+				siteConfig.banner.src,
+				configImageBaseRoots.banner,
+			)
+		: undefined;
+const hasBannerCredit =
+	siteConfig.banner.enable && bannerSource && siteConfig.banner.credit.enable;
 
 const mainPanelTop = siteConfig.banner.enable
 	? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
@@ -64,18 +83,18 @@ const mainPanelTop = siteConfig.banner.enable
 </div>
 
 <!-- Banner -->
-{siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
-    <ImageWrapper id="banner" alt="Banner image of the blog" class:list={["object-cover h-full transition duration-700 opacity-0 scale-105"]}
+{siteConfig.banner.enable && !bannerSource && <OpticalBackdrop />}
+{siteConfig.banner.enable && <div id="banner-wrapper" class:list={["absolute z-10 w-full transition duration-700", { "overflow-hidden": bannerSource }]} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
+    {bannerSource ? <ImageWrapper id="banner" alt="Banner image of the blog" class:list={["object-cover h-full transition duration-700 opacity-0 scale-105"]}
                   src={bannerSource} position={siteConfig.banner.position}
-    >
-    </ImageWrapper>
+    /> : <OpticalBanner insertSrc={insertSrc} prism={prism} />}
 </div>}
 
 <!-- Main content -->
 <div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
-    <div class="relative page-shell pointer-events-auto">
-        <div id="main-grid" class="transition duration-700 w-full left-0 right-0 layout-main-grid
+    <div class="relative page-shell">
+        <div id="main-grid" class="pointer-events-auto transition duration-700 w-full left-0 right-0 layout-main-grid
     mx-auto page-shell-gutter"
         >
             <!-- Banner image credit -->

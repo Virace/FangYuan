@@ -2,6 +2,10 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const zh_TW: Translation = {
+	[Key.noticeRegion]: "全站通知",
+	[Key.noticePinned]: "優先保留",
+	[Key.engagementLoadFailed]: "互動資訊載入失敗，請稍後再試。",
+	[Key.commentsCaptchaRefreshFailed]: "驗證碼重新整理失敗，請重試。",
 	[Key.home]: "首頁",
 	[Key.about]: "關於",
 	[Key.archive]: "彙整",

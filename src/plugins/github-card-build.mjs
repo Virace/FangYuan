@@ -67,7 +67,11 @@ export function githubCardBuildIntegration() {
 					for (const { node, repo } of cards)
 						Object.assign(
 							node,
-							renderGithubCard(repo, snapshots.get(repo.toLowerCase())),
+							renderGithubCard(
+								repo,
+								snapshots.get(repo.toLowerCase()),
+								node.properties.className,
+							),
 						);
 					await writeFile(filePath, hastToHtml(tree), "utf8");
 				}

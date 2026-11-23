@@ -14,7 +14,7 @@ export function GithubCardComponent(properties, children) {
 			"Invalid GitHub repository directive.",
 		);
 	}
-	return renderGithubCard(repo);
+	return renderGithubCard(repo, null, properties.className ?? []);
 }
 
 // 显式插件对象会进入 Astro 的配置摘要，使旧卡片渲染缓存随管线迁移失效。
@@ -31,7 +31,7 @@ export const satteriGithubCard = {
 	},
 };
 
-export function renderGithubCard(repo, snapshot = null) {
+export function renderGithubCard(repo, snapshot = null, classNames = []) {
 	const fields = getGithubCardFields(repo, snapshot);
 	const field = (className, value, label) =>
 		h(
@@ -48,7 +48,7 @@ export function renderGithubCard(repo, snapshot = null) {
 	return h(
 		"a",
 		{
-			class: "card-github no-styling",
+			class: [...new Set(["card-github", "no-styling", ...classNames])],
 			href: fields.href,
 			target: "_blank",
 			rel: "noopener noreferrer",
