@@ -10,13 +10,8 @@ function isHome(visit: Visit): boolean {
 	return pathsEqual(new URL(visit.to.url, location.href).pathname, url("/"));
 }
 
-function setBannerHome(home: boolean, pulse = false): void {
-	if (document.body.classList.contains("lg:is-home") === home) return;
+function setBannerHome(home: boolean): void {
 	document.body.classList.toggle("lg:is-home", home);
-	if (pulse)
-		document
-			.querySelector("optical-banner")
-			?.dispatchEvent(new Event("fangyuan:optical-pulse"));
 }
 
 function getImprint(visit: Visit): TransitionFrameState["imprint"] {
@@ -155,6 +150,7 @@ export function installOpticalTransition(
 	let duration = 0;
 	let rollStart = 0;
 	let quick = false;
+	let pulsed = false;
 	let replacedAt = 0;
 	let slowFrames = 0;
 	let sampleVisit = false;
@@ -215,11 +211,25 @@ export function installOpticalTransition(
 		duration = ms;
 	}
 
+	function pulseBanner() {
+		if (pulsed) return;
+		document.querySelector("optical-banner")?.dispatchEvent(
+			new CustomEvent("fangyuan:optical-pulse", {
+				detail: {
+					onPlay: () => {
+						pulsed = true;
+					},
+				},
+			}),
+		);
+	}
+
 	function hold(visit: Visit, now: number) {
 		phase("holding", now, quick ? 115 : 160);
 		state.scrollNorm = 0;
 		state.scrollVelocity = 0;
-		setBannerHome(isHome(visit), true);
+		setBannerHome(isHome(visit));
+		pulseBanner();
 		permit.resolve();
 	}
 
@@ -302,6 +312,7 @@ export function installOpticalTransition(
 			return;
 		}
 		const continuing = !!host;
+		pulsed = false;
 		slowFrames = 0;
 		sampleVisit = !continuing && document.visibilityState === "visible";
 		host ??= new VeilHost();
@@ -332,7 +343,10 @@ export function installOpticalTransition(
 		visit.animation.selector = false;
 		visit.scroll.animate = false;
 		document.documentElement.classList.add("optical-transition-active");
-		if (!isHome(visit)) setBannerHome(false, true);
+		if (!isHome(visit)) {
+			setBannerHome(false);
+			pulseBanner();
+		}
 		if (!frame) frame = requestAnimationFrame(draw);
 	});
 	swup.hooks.before("animation:out:await", (visit, args) => {
@@ -362,7 +376,8 @@ export function installOpticalTransition(
 		main.dataset.opticalRevealed = "";
 		state.imprint.title =
 			main.dataset.swupAnnouncement?.trim() || document.title;
-		setBannerHome(isHome(visit), true);
+		setBannerHome(isHome(visit));
+		pulseBanner();
 		replacedAt = performance.now();
 	});
 	motion.addEventListener("change", () => {

@@ -165,6 +165,40 @@ test("deep article navigation hides the old TOC and restores the new headings on
 	await expect(toc.locator("a[href^='#']").first()).toBeVisible();
 });
 
+for (const [source, destination, deep] of [
+	[SITE_ROUTES.home, SITE_ROUTES.postBasic, false],
+	[SITE_ROUTES.home, SITE_ROUTES.postBasic, true],
+	[SITE_ROUTES.postComplex, "/content-directives/", true],
+	[SITE_ROUTES.postComplex, SITE_ROUTES.home, true],
+] as const) {
+	test(`navigation plays one visible banner pulse from ${source} to ${destination} (deep=${deep})`, async ({ page }) => {
+		await gotoAndWaitForApp(page, source);
+		const pulses = await page.evaluate(async ({ destination, deep }) => {
+			if (deep) scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" });
+			const banner = document.querySelector("optical-banner")!;
+			const played: number[] = [];
+			const observer = new MutationObserver(records => {
+				for (const record of records) {
+					for (const node of record.addedNodes) {
+						if (node instanceof SVGUseElement) played.push(banner.getBoundingClientRect().bottom);
+					}
+				}
+			});
+			observer.observe(banner.querySelector("#optics-wave")!, { childList: true });
+			const end = new Promise<void>(resolve => window.swup.hooks.once("visit:end", () => resolve()));
+			document.querySelector<HTMLAnchorElement>(`a[href="${destination}"]`)!.click();
+			await end;
+			while (document.querySelector(".optical-transition-veil")) {
+				await new Promise(requestAnimationFrame);
+			}
+			observer.disconnect();
+			return played;
+		}, { destination, deep });
+		expect(pulses).toHaveLength(1);
+		expect(pulses[0]).toBeGreaterThan(0);
+	});
+}
+
 test("reading position survives a covered deep article navigation and back", async ({ page }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
 	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);
