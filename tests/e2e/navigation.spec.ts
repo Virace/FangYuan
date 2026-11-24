@@ -138,6 +138,33 @@ test("the pinned sidebar stays in place when opening a lower homepage article", 
 	expect(await page.evaluate(() => scrollY)).toBe(0);
 });
 
+test("deep article navigation hides the old TOC and restores the new headings on scroll", async ({ page }) => {
+	await page.setViewportSize({ width: 1600, height: 900 });
+	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);
+	const next = page.locator("main a:has(.post-nav-title)").first();
+	await next.scrollIntoViewIfNeeded();
+	const toc = page.locator("#toc-wrapper");
+	await expect(toc).toHaveCSS("opacity", "1");
+	const transition = await next.evaluate((link: HTMLAnchorElement) => {
+		const rail = document.getElementById("toc-wrapper")!;
+		const hitTesting = new Promise<string>(resolve => {
+			window.swup.hooks.once("visit:start", () => resolve(getComputedStyle(rail).pointerEvents));
+		});
+		const result = new Promise<string>(resolve => {
+			window.swup.hooks.before("content:replace", () => resolve(getComputedStyle(rail).opacity));
+		});
+		link.click();
+		return Promise.all([hitTesting, result]);
+	});
+	expect(transition[0]).toBe("none");
+	expect(Number(transition[1])).toBeLessThan(0.05);
+	await expect(page.locator(".optical-transition-veil")).toHaveCount(0);
+	await expect(toc).toHaveCSS("opacity", "0");
+	await page.evaluate(() => window.scrollTo({ top: innerHeight, behavior: "instant" }));
+	await expect(toc).toHaveCSS("opacity", "1");
+	await expect(toc.locator("a[href^='#']").first()).toBeVisible();
+});
+
 test("reading position survives a covered deep article navigation and back", async ({ page }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
 	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);
