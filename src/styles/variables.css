@@ -102,6 +102,27 @@
 	--sidebar-width: 17.5rem;
 	--toc-width: clamp(0rem, calc((100vw - var(--page-width)) / 2 - 1rem), var(--sidebar-width));
 	--toc-item-active: oklch(0.70 0.13 var(--hue));
+	--toc-rail-track: color-mix(in oklab, var(--deep-text) 13%, transparent);
+	--toc-rail-glow: color-mix(in oklch, var(--accent-solid) 36%, transparent);
+	--toc-active-capsule-bg: color-mix(in oklab, var(--card-bg) 78%, var(--page-bg));
+	--toc-active-capsule-border: color-mix(in oklch, var(--accent-solid) 24%, rgb(255 255 255 / 0.85));
+	--toc-active-capsule-shadow:
+		0 4px 16px -6px color-mix(in oklch, var(--accent-solid) 18%, rgb(15 23 42 / 0.12)),
+		inset 0 1px 0 rgb(255 255 255 / 0.88);
+	--toc-active-text: oklch(0.45 0.13 var(--hue));
+	--toc-active-subtext: color-mix(in oklch, var(--toc-active-text) 82%, var(--deep-text));
+	--toc-item-hover-bg: color-mix(in oklab, var(--card-bg) 52%, transparent);
+	--toc-tick-idle: color-mix(in oklab, var(--deep-text) 38%, transparent);
+	--toc-dock-idle-opacity: 0.55;
+	--toc-dock-hover-bg: color-mix(in oklab, var(--card-bg) 72%, transparent);
+	--toc-dock-hover-border: color-mix(in oklab, var(--deep-text) 12%, transparent);
+	--toc-popover-bg: color-mix(in oklch, oklch(0.98 0.01 var(--hue)) 92%, transparent);
+	--toc-popover-border: color-mix(in oklch, var(--accent-solid) 24%, rgb(255 255 255 / 0.92));
+	--toc-popover-shadow:
+		0 20px 48px -16px rgb(15 23 42 / 0.22),
+		0 4px 14px -4px rgb(15 23 42 / 0.1),
+		inset 0 1px 0 rgb(255 255 255 / 0.95);
+	--toc-scrim-bg: rgb(15 23 42 / 0.08);
 }
 
 :root.dark {
@@ -184,4 +205,25 @@
 	--toc-btn-hover: oklch(0.22 0.02 var(--hue));
 	--toc-btn-active: oklch(0.25 0.02 var(--hue));
 	--toc-item-active: oklch(0.35 0.07 var(--hue));
+	--toc-rail-track: rgb(255 255 255 / 0.14);
+	--toc-rail-glow: color-mix(in oklch, var(--primary) 54%, transparent);
+	--toc-active-capsule-bg: color-mix(in oklab, var(--card-bg) 80%, color-mix(in oklch, var(--primary) 14%, transparent));
+	--toc-active-capsule-border: color-mix(in oklch, var(--primary) 32%, rgb(255 255 255 / 0.14));
+	--toc-active-capsule-shadow:
+		0 8px 22px -10px rgb(0 0 0 / 0.56),
+		inset 0 1px 0 rgb(255 255 255 / 0.1);
+	--toc-active-text: oklch(0.84 0.11 var(--hue));
+	--toc-active-subtext: rgb(255 255 255 / 0.9);
+	--toc-item-hover-bg: rgb(255 255 255 / 0.07);
+	--toc-tick-idle: rgb(255 255 255 / 0.36);
+	--toc-dock-idle-opacity: 0.55;
+	--toc-dock-hover-bg: color-mix(in oklab, var(--card-bg) 72%, transparent);
+	--toc-dock-hover-border: rgb(255 255 255 / 0.12);
+	--toc-popover-bg: color-mix(in oklch, oklch(0.21 0.018 var(--hue)) 92%, transparent);
+	--toc-popover-border: color-mix(in oklch, var(--primary) 28%, rgb(255 255 255 / 0.16));
+	--toc-popover-shadow:
+		0 22px 48px -12px rgb(0 0 0 / 0.68),
+		0 4px 14px -4px rgb(0 0 0 / 0.36),
+		inset 0 1px 0 rgb(255 255 255 / 0.14);
+	--toc-scrim-bg: rgb(0 0 0 / 0.24);
 }

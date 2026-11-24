@@ -110,5 +110,6 @@ export const vi: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"Nếu bài viết này hữu ích với bạn, hãy ủng hộ tác giả qua các kênh bên dưới.",
 	[Key.pageFeedbackClose]: "Đóng",
+	[Key.tableOfContents]: "Mục lục",
 	[Key.license]: "Giấy phép bản quyền",
 };

@@ -100,5 +100,6 @@ export const th: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"หากบทความนี้เป็นประโยชน์ คุณสามารถสนับสนุนผู้เขียนผ่านช่องทางด้านล่างได้",
 	[Key.pageFeedbackClose]: "ปิด",
+	[Key.tableOfContents]: "สารบัญ",
 	[Key.license]: "สัญญาอนุญาต",
 };

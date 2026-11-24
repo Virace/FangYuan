@@ -112,5 +112,6 @@ export const tr: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"Bu yazı işine yaradıysa aşağıdaki kanallar üzerinden yazarı destekleyebilirsin.",
 	[Key.pageFeedbackClose]: "Kapat",
+	[Key.tableOfContents]: "İçindekiler",
 	[Key.license]: "Lisans",
 };

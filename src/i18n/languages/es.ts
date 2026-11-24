@@ -114,5 +114,6 @@ export const es: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"Si esta publicación te ayudó, puedes apoyar al autor a través de los canales de abajo.",
 	[Key.pageFeedbackClose]: "Cerrar",
+	[Key.tableOfContents]: "Índice",
 	[Key.license]: "Licencia",
 };

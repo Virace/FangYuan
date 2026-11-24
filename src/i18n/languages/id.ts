@@ -108,5 +108,6 @@ export const id: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"Jika postingan ini membantu Anda, Anda dapat mendukung penulis melalui kanal di bawah ini.",
 	[Key.pageFeedbackClose]: "Tutup",
+	[Key.tableOfContents]: "Daftar Isi",
 	[Key.license]: "Lisensi",
 };

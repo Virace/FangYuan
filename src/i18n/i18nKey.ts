@@ -94,6 +94,7 @@ const I18nKey = {
 	pageFeedbackRewardTitle: "pageFeedbackRewardTitle",
 	pageFeedbackRewardDescription: "pageFeedbackRewardDescription",
 	pageFeedbackClose: "pageFeedbackClose",
+	tableOfContents: "tableOfContents",
 	license: "license",
 } as const;
 

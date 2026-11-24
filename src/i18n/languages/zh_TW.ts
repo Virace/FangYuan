@@ -98,5 +98,6 @@ export const zh_TW: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"如果這篇內容對你有幫助，歡迎透過下方渠道支持作者。",
 	[Key.pageFeedbackClose]: "關閉",
+	[Key.tableOfContents]: "目錄",
 	[Key.license]: "許可協議",
 };
