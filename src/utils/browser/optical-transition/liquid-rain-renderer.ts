@@ -69,9 +69,14 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 	let lastPhase: TransitionFrameState["phase"] | undefined;
 	let surfaceFraction = 1;
 	let entryFraction = 1;
+	const background = document.createElement("canvas");
+	background.width = 256;
+	background.height = 192;
+	let glowLayer: CanvasRenderingContext2D | null = null;
 	return {
 		id: "liquid-rain",
 		prepare({ width, height }) {
+			glowLayer ??= background.getContext("2d", { alpha: false });
 			const styles = getComputedStyle(document.body);
 			const hue = Number.parseFloat(styles.getPropertyValue("--hue")) || 0;
 			titleFont = `600 16px ${styles.fontFamily}`;
@@ -125,28 +130,39 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 				ctx.closePath();
 				ctx.clip();
 			}
-			ctx.drawImage(ink.base, 0, 0, w, h);
+			const glow = glowLayer ?? ctx;
+			if (glowLayer)
+				glowLayer.setTransform(
+					background.width / w,
+					0,
+					0,
+					background.height / h,
+					0,
+					0,
+				);
+			glow.drawImage(ink.base, 0, 0, w, h);
 			drawGlow(
-				ctx,
+				glow,
 				ink.glows[0],
 				w * (0.28 + 0.1 * Math.sin(time * 1.4)),
 				h * (0.34 + 0.12 * Math.cos(time * 1.1)),
 				Math.max(w * 0.48, h * 0.4),
 			);
 			drawGlow(
-				ctx,
+				glow,
 				ink.glows[1],
 				w * (0.72 + 0.08 * Math.cos(time * 1.2)),
 				h * (0.64 - 0.1 * Math.sin(time * 1.3)),
 				Math.max(w * 0.44, h * 0.38),
 			);
 			drawGlow(
-				ctx,
+				glow,
 				ink.glows[2],
 				cx,
 				h * (0.5 - state.scrollNorm * 0.14),
 				Math.max(w * 0.34, h * 0.28),
 			);
+			if (glowLayer) ctx.drawImage(background, 0, 0, w, h);
 			ctx.save();
 			ctx.translate(cx, cy);
 			ctx.rotate(-0.21);

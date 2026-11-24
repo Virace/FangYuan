@@ -115,6 +115,29 @@ test("swup navigation keeps article toc in the right rail", async ({ page }) => 
 	expect(metrics.toc.left).toBeGreaterThan(metrics.main.right);
 });
 
+test("the pinned sidebar stays in place when opening a lower homepage article", async ({ page }) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await gotoAndWaitForApp(page, SITE_ROUTES.home);
+	const article = page.locator(`main a[data-transition-title][href="${SITE_ROUTES.postWithCover}"]`);
+	const position = await article.evaluate(async (link: HTMLAnchorElement) => {
+		link.scrollIntoView({ block: "center", behavior: "instant" });
+		const sticky = document.getElementById("sidebar-sticky")!;
+		const profileBottom = sticky.previousElementSibling!.getBoundingClientRect().bottom;
+		const top = () => sticky.getBoundingClientRect().top;
+		const before = top();
+		const atNavigationStart = new Promise<number>(resolve => {
+			window.swup.hooks.once("visit:start", () => { resolve(top()); });
+		});
+		link.click();
+		return { profileBottom, before, after: await atNavigationStart };
+	});
+	expect(position.profileBottom).toBeLessThan(0);
+	expect(Math.abs(position.after - position.before)).toBeLessThan(1);
+	await expect(page.locator("#post-container")).toBeVisible();
+	await expect(page.locator(".optical-transition-veil")).toHaveCount(0);
+	expect(await page.evaluate(() => scrollY)).toBe(0);
+});
+
 test("reading position survives a covered deep article navigation and back", async ({ page }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
 	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);

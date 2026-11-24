@@ -131,7 +131,7 @@ function stickyThreshold(): number {
 		Number.parseFloat(getComputedStyle(profile).marginBottom);
 	return Math.max(
 		0,
-		Math.ceil(naturalTop - Number.parseFloat(getComputedStyle(sticky).top) + 8),
+		Math.ceil(naturalTop - sticky.getBoundingClientRect().top + 8),
 	);
 }
 
@@ -154,6 +154,12 @@ export function installOpticalTransition(
 	let rollStart = 0;
 	let quick = false;
 	let replacedAt = 0;
+	let slowFrames = 0;
+	let sampleVisit = false;
+	let warmed = false;
+	let fadeVisit: Visit | undefined;
+	const recentSlowVisits: boolean[] = [];
+	let useFade = false;
 	const state: TransitionFrameState = {
 		phase: "entering",
 		phaseProgress: 0,
@@ -168,7 +174,16 @@ export function installOpticalTransition(
 		imprint: { eyebrow: "", title: "" },
 	};
 
-	function finish() {
+	function finish(completed = false) {
+		if (completed && sampleVisit) {
+			if (warmed) {
+				recentSlowVisits.push(slowFrames >= 3);
+				if (recentSlowVisits.length > 3) recentSlowVisits.shift();
+				useFade = recentSlowVisits.filter(Boolean).length >= 2;
+			}
+			warmed = true;
+		}
+		sampleVisit = false;
 		cancelAnimationFrame(frame);
 		frame = 0;
 		permit.resolve();
@@ -178,6 +193,17 @@ export function installOpticalTransition(
 		current = undefined;
 		main = null;
 		document.documentElement.classList.remove("optical-transition-active");
+	}
+
+	function fade(visit: Visit) {
+		finish();
+		useFade = true;
+		fadeVisit = visit;
+		document.documentElement.classList.add("optical-transition-light");
+		document.documentElement.classList.toggle(
+			"optical-banner-changing",
+			document.body.classList.contains("lg:is-home") !== isHome(visit),
+		);
 	}
 
 	function phase(name: TransitionFrameState["phase"], now: number, ms: number) {
@@ -210,6 +236,13 @@ export function installOpticalTransition(
 		if (!current || !host?.ctx || !main || (current.done && !replacedAt))
 			return finish();
 		const elapsed = Math.max(0, now - previousTime) / 1000;
+		if (
+			sampleVisit &&
+			previousTime !== started &&
+			state.phase !== "holding" &&
+			elapsed > 0.045
+		)
+			slowFrames++;
 		state.dt = Math.min(0.034, elapsed);
 		state.elapsedSec = (now - started) / 1000;
 		previousTime = now;
@@ -238,7 +271,7 @@ export function installOpticalTransition(
 					);
 				break;
 			case "exiting":
-				if (progress === 1) return finish();
+				if (progress === 1) return finish(true);
 				break;
 		}
 		host.sync(main);
@@ -248,6 +281,7 @@ export function installOpticalTransition(
 	}
 
 	swup.hooks.on("visit:start", (visit) => {
+		fadeVisit = undefined;
 		main = document.getElementById("swup-container");
 		const eligible =
 			visit.animation.animate &&
@@ -256,18 +290,20 @@ export function installOpticalTransition(
 			!visit.to.hash &&
 			!visit.scroll.target &&
 			!motion.matches;
+		if (eligible && useFade && main) {
+			return fade(visit);
+		}
+		document.documentElement.classList.remove("optical-banner-changing");
 		if (!eligible || !main) {
 			finish();
 			setBannerHome(isHome(visit));
 			return;
 		}
 		const continuing = !!host;
+		slowFrames = 0;
+		sampleVisit = !continuing && document.visibilityState === "visible";
 		host ??= new VeilHost();
-		if (!host.ctx) {
-			finish();
-			setBannerHome(isHome(visit));
-			return;
-		}
+		if (!host.ctx) return fade(visit);
 		const now = performance.now();
 		permit.resolve();
 		permit = Promise.withResolvers<void>();
@@ -275,18 +311,12 @@ export function installOpticalTransition(
 		replacedAt = 0;
 		quick = scrollY <= 16;
 		state.imprint = getImprint(visit);
-		visit.animation.selector = false;
-		visit.scroll.animate = false;
-		document.documentElement.classList.add("optical-transition-active");
-		if (!isHome(visit)) setBannerHome(false, true);
 		if (!continuing) {
 			host.sync(main);
 			try {
 				renderer.prepare({ mainElement: main, ...host.geometry });
 			} catch {
-				finish();
-				setBannerHome(isHome(visit));
-				return;
+				return fade(visit);
 			}
 			started = previousTime = now;
 			state.scrollNorm = quick ? 0 : 1;
@@ -297,6 +327,10 @@ export function installOpticalTransition(
 		} else if (state.phase === "holding") {
 			close(visit, now);
 		}
+		visit.animation.selector = false;
+		visit.scroll.animate = false;
+		document.documentElement.classList.add("optical-transition-active");
+		if (!isHome(visit)) setBannerHome(false, true);
 		if (!frame) frame = requestAnimationFrame(draw);
 	});
 	swup.hooks.before("animation:out:await", (visit, args) => {
@@ -305,13 +339,21 @@ export function installOpticalTransition(
 		return permit.promise;
 	});
 	swup.hooks.on("visit:abort", (visit) => {
-		if (visit === current) permit.resolve();
+		if (visit === current) {
+			sampleVisit = false;
+			permit.resolve();
+		}
 	});
 	swup.hooks.before("content:scroll", (visit) => {
 		if (visit === current) visit.scroll.scrolledToContent = true;
 		if (!visit.to.hash && !visit.scroll.target) visit.scroll.animate = false;
 	});
 	swup.hooks.on("content:replace", (visit) => {
+		if (visit === fadeVisit) {
+			setBannerHome(isHome(visit));
+			const revealed = document.getElementById("swup-container");
+			if (revealed) revealed.dataset.opticalRevealed = "";
+		}
 		if (visit !== current) return;
 		main = document.getElementById("swup-container");
 		if (!main) return finish();
@@ -326,5 +368,8 @@ export function installOpticalTransition(
 		setBannerHome(isHome(current));
 		finish();
 	});
-	window.addEventListener("pagehide", finish);
+	document.addEventListener("visibilitychange", () => {
+		if (document.hidden) sampleVisit = false;
+	});
+	window.addEventListener("pagehide", () => finish());
 }
