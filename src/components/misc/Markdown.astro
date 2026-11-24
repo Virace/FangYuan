@@ -11,30 +11,48 @@ const className = Astro.props.class;
 </div>
 
 <script>
-document.addEventListener("click", function (e: MouseEvent) {
-    const target = e.target as Element | null;
-    if (target && target.classList.contains("copy-btn")) {
-        const preEle = target.closest("pre");
-        const codeEle = preEle?.querySelector("code");
-        const code = Array.from(codeEle?.querySelectorAll(".code:not(summary *)") ?? [])
-            .map(el => el.textContent)
-            .map(t => t === "\n" ? "" : t)
-            .join("\n");
-        navigator.clipboard.writeText(code);
+const markdownRuntimeWindow = window as Window & {
+	__fangyuanMarkdownHandlersBound?: boolean;
+};
 
-        const timeoutId = target.getAttribute("data-timeout-id");
-        if (timeoutId) {
-            clearTimeout(parseInt(timeoutId));
-        }
+if (!markdownRuntimeWindow.__fangyuanMarkdownHandlersBound) {
+	markdownRuntimeWindow.__fangyuanMarkdownHandlersBound = true;
 
-        target.classList.add("success");
+	document.addEventListener("click", (e: MouseEvent) => {
+		const target = e.target as Element | null;
+		if (!target) return;
 
-        // 设置新的timeout并保存ID到按钮的自定义属性中
-        const newTimeoutId = setTimeout(() => {
-            target.classList.remove("success");
-        }, 1000);
+		const spoiler = target.closest(".custom-md spoiler");
+		if (spoiler instanceof HTMLElement) {
+			const revealed = spoiler.getAttribute("data-revealed") === "true";
+			spoiler.setAttribute("data-revealed", revealed ? "false" : "true");
+			return;
+		}
 
-        target.setAttribute("data-timeout-id", newTimeoutId.toString());
-    }
-});
+		if (target.classList.contains("copy-btn")) {
+			const preEle = target.closest("pre");
+			const codeEle = preEle?.querySelector("code");
+			const code = Array.from(
+				codeEle?.querySelectorAll(".code:not(summary *)") ?? [],
+			)
+				.map((el) => el.textContent)
+				.map((t) => (t === "\n" ? "" : t))
+				.join("\n");
+			navigator.clipboard.writeText(code);
+
+			const timeoutId = target.getAttribute("data-timeout-id");
+			if (timeoutId) {
+				clearTimeout(Number.parseInt(timeoutId, 10));
+			}
+
+			target.classList.add("success");
+
+			const newTimeoutId = setTimeout(() => {
+				target.classList.remove("success");
+			}, 1000);
+
+			target.setAttribute("data-timeout-id", newTimeoutId.toString());
+		}
+	});
+}
 </script>
