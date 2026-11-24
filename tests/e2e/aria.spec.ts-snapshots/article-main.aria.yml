@@ -164,7 +164,6 @@
   - text: /作者 FangYuan 发布于 \d+-\d+-\d+ 许可协议/
   - link "MIT":
     - /url: https://opensource.org/license/mit
-  - img
   - link "FangYuan 简明指南":
     - /url: /guide/
     - img
