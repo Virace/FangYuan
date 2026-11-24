@@ -56,6 +56,17 @@
 	--link-active: oklch(0.90 0.05 var(--hue));
 
 	--float-panel-bg: white;
+	--navbar-glass-bg: color-mix(in oklch, oklch(0.985 0.008 var(--hue)) 78%, transparent);
+	--navbar-glass-border: color-mix(in oklch, var(--accent-solid) 16%, rgb(255 255 255 / 0.86));
+	--navbar-glass-shadow:
+		0 12px 32px -20px rgb(15 23 42 / 0.22),
+		inset 0 1px 0 rgb(255 255 255 / 0.78);
+	--float-panel-glass-bg: color-mix(in oklch, oklch(0.985 0.009 var(--hue)) 91%, transparent);
+	--float-panel-glass-border: color-mix(in oklch, var(--accent-solid) 20%, rgb(255 255 255 / 0.92));
+	--float-panel-glass-shadow:
+		0 20px 44px -16px rgb(15 23 42 / 0.2),
+		0 4px 12px -4px rgb(15 23 42 / 0.08),
+		inset 0 1px 0 rgb(255 255 255 / 0.92);
 
 	--scrollbar-bg-light: rgba(0, 0, 0, 0.4);
 	--scrollbar-bg-hover-light: rgba(0, 0, 0, 0.5);
@@ -169,6 +180,17 @@
 	--link-active: oklch(0.35 0.07 var(--hue));
 
 	--float-panel-bg: oklch(0.19 0.015 var(--hue));
+	--navbar-glass-bg: color-mix(in oklch, oklch(0.2 0.017 var(--hue)) 74%, transparent);
+	--navbar-glass-border: color-mix(in oklch, var(--primary) 20%, rgb(255 255 255 / 0.14));
+	--navbar-glass-shadow:
+		0 16px 38px -18px rgb(0 0 0 / 0.65),
+		inset 0 1px 0 rgb(255 255 255 / 0.08);
+	--float-panel-glass-bg: color-mix(in oklch, oklch(0.2 0.018 var(--hue)) 91%, transparent);
+	--float-panel-glass-border: color-mix(in oklch, var(--primary) 26%, rgb(255 255 255 / 0.16));
+	--float-panel-glass-shadow:
+		0 22px 48px -12px rgb(0 0 0 / 0.7),
+		0 4px 14px -4px rgb(0 0 0 / 0.35),
+		inset 0 1px 0 rgb(255 255 255 / 0.12);
 
 	--scrollbar-bg: var(--scrollbar-bg-dark);
 	--scrollbar-bg-hover: var(--scrollbar-bg-hover-dark);

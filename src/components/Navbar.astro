@@ -26,13 +26,13 @@ const links: ResolvedNavBarLink[] = resolveNavbarLinks(
 );
 ---
 <div id="navbar" class="relative z-50">
-    <div aria-hidden="true" class="card-base panel-edge pointer-events-none absolute inset-x-0 -top-8 bottom-0 -z-1 rounded-t-none!"></div>
+    <div aria-hidden="true" class="navbar-glass-surface pointer-events-none absolute inset-x-0 -top-8 bottom-0 -z-1"></div>
     <div class:list={[
         className,
         "page-shell h-18 flex items-center justify-between px-4"]}>
         <a href={url('/')} class="btn-plain scale-animation rounded-lg h-13 px-5 font-bold active:scale-95">
             <div class="flex flex-row text-accent-solid items-center text-md">
-                <Icon name="material-symbols:home-outline-rounded" class="icon-28 mb-1 mr-2 text-primary" />
+                <span class="fy-brand-glyph mr-2.5" aria-hidden="true"></span>
                 {siteConfig.title}
             </div>
         </a>
