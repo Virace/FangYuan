@@ -226,6 +226,31 @@ test("the footer-constrained sidebar keeps its position across the scroll jump",
 	expect(await page.evaluate(() => scrollY)).toBe(0);
 });
 
+test("a single material preparation failure only downgrades that navigation", async ({ page }) => {
+	await gotoAndWaitForApp(page, SITE_ROUTES.home);
+	await page.evaluate(() => {
+		const getContext = HTMLCanvasElement.prototype.getContext;
+		HTMLCanvasElement.prototype.getContext = function(this: HTMLCanvasElement, ...args: Parameters<typeof getContext>) {
+			const veil = document.querySelector(".optical-transition-veil");
+			if (veil && !veil.contains(this)) {
+				HTMLCanvasElement.prototype.getContext = getContext;
+				throw new Error("Material preparation interrupted");
+			}
+			return Reflect.apply(getContext, this, args);
+		} as typeof getContext;
+	});
+	await page.locator("#navbar a[href='/archive/']").first().click();
+	await expect(page.locator("html")).toHaveClass(/optical-transition-light/);
+	await expect(page.locator("main")).toHaveAttribute("data-swup-announcement", "归档");
+	await expect(page.locator("main")).not.toHaveAttribute("aria-busy", "true");
+	await expect(page.locator("html")).not.toHaveClass(/optical-transition-light/);
+	await page.locator("#navbar a[href='/']").first().click();
+	await expect(page.locator(".optical-transition-veil")).toBeVisible();
+	await expect(page.locator("html")).not.toHaveClass(/optical-transition-light/);
+	await expect(page.locator(".optical-transition-veil")).toHaveCount(0);
+	await expect(page.locator("body")).toHaveClass(/lg:is-home/);
+});
+
 test("reading position survives a covered deep article navigation and back", async ({ page }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
 	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);

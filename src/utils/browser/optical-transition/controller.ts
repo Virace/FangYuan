@@ -196,13 +196,22 @@ export function installOpticalTransition(
 
 	function fade(visit: Visit) {
 		finish();
-		useFade = true;
 		fadeVisit = visit;
 		document.documentElement.classList.add("optical-transition-light");
 		document.documentElement.classList.toggle(
 			"optical-banner-changing",
 			document.body.classList.contains("lg:is-home") !== isHome(visit),
 		);
+	}
+
+	function releaseFade() {
+		if (fadeVisit && !useFade) {
+			document.documentElement.classList.remove(
+				"optical-transition-light",
+				"optical-banner-changing",
+			);
+		}
+		fadeVisit = undefined;
 	}
 
 	function phase(name: TransitionFrameState["phase"], now: number, ms: number) {
@@ -315,7 +324,7 @@ export function installOpticalTransition(
 	}
 
 	swup.hooks.on("visit:start", (visit) => {
-		fadeVisit = undefined;
+		releaseFade();
 		main = document.getElementById("swup-container");
 		const eligible =
 			visit.animation.animate &&
@@ -338,7 +347,10 @@ export function installOpticalTransition(
 		slowFrames = 0;
 		sampleVisit = !continuing && document.visibilityState === "visible";
 		host ??= new VeilHost();
-		if (!host.ctx) return fade(visit);
+		if (!host.ctx) {
+			useFade = true;
+			return fade(visit);
+		}
 		const now = performance.now();
 		permit.resolve();
 		permit = Promise.withResolvers<void>();
@@ -381,6 +393,9 @@ export function installOpticalTransition(
 			sampleVisit = false;
 			permit.resolve();
 		}
+	});
+	swup.hooks.on("visit:end", (visit) => {
+		if (visit === fadeVisit) releaseFade();
 	});
 	swup.hooks.before("content:scroll", (visit) => {
 		if (visit === current) visit.scroll.scrolledToContent = true;
