@@ -36,9 +36,14 @@ onMount(() => {
 </script>
 
 {#if pageViewCount !== null}
-	<div class="flex items-center gap-2 text-sm text-50">
-		<span aria-hidden="true">👀</span>
-		<span>{i18n(I18nKey.pageViews)}</span>
-		<span class="text-75">{pageViewCount}</span>
+	<div class="flex items-center text-sm text-muted">
+		<div class="meta-icon" aria-hidden="true">
+			<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M2.25 12s3.75-6.5 9.75-6.5S21.75 12 21.75 12s-3.75 6.5-9.75 6.5S2.25 12 2.25 12Z" />
+				<circle cx="12" cy="12" r="2.75" />
+			</svg>
+		</div>
+		<span class="font-medium">{i18n(I18nKey.pageViews)}</span>
+		<span class="ml-1.5 font-medium tabular-nums text-75">{pageViewCount}</span>
 	</div>
 {/if}

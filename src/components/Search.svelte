@@ -158,7 +158,7 @@ $: if (initialized && keywordMobile) {
 </button>
 
 <!-- search panel -->
-<div id="search-panel" class="search-panel-shell float-panel float-panel-closed absolute shadow-2xl rounded-2xl p-2">
+<div id="search-panel" class="search-panel-shell float-panel float-panel-closed absolute rounded-2xl p-2">
 
     <!-- search bar inside panel for phone/tablet -->
     <div id="search-bar-inside" class="search-field-shell flex relative lg:hidden items-center h-11 rounded-xl">
@@ -177,8 +177,8 @@ $: if (initialized && keywordMobile) {
         <a href={item.url}
            class="optical-menu-item first-of-type:mt-2 lg:first-of-type:mt-0 group block
        rounded-xl text-lg px-3 py-2">
-            <div class="transition text-90 inline-flex font-bold group-hover:text-primary">
-                {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-xs translate-x-1 my-auto text-primary"></Icon>
+            <div class="transition text-90 inline-flex font-bold group-hover:text-accent-foreground">
+                {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-xs translate-x-1 my-auto text-accent-solid"></Icon>
             </div>
             <div class="transition text-sm text-50">
                 {@html item.excerpt}

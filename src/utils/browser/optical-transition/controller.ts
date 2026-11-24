@@ -14,38 +14,57 @@ function setBannerHome(home: boolean): void {
 	document.body.classList.toggle("lg:is-home", home);
 }
 
+function getSiteName(): string {
+	return (
+		document
+			.querySelector<HTMLMetaElement>('meta[property="og:site_name"]')
+			?.content?.trim() || ""
+	);
+}
+
+function isHomeOrPagination(path: string): boolean {
+	return (
+		pathsEqual(path, url("/")) || isHomePaginationPath(path, url("/page/"))
+	);
+}
+
 function getImprint(visit: Visit): TransitionFrameState["imprint"] {
 	const path = new URL(visit.to.url, location.href).pathname;
 	const home = isHome(visit);
+	const homeIndex = isHomeOrPagination(path);
 	const archive = pathsEqual(path, url(getArchivePath()));
 	const about = pathsEqual(path.replace(/\.html$/, ""), url("/about/"));
 	let eyebrow = "ARTICLE";
-	if (home || isHomePaginationPath(path, url("/page/")))
-		eyebrow = "HOME · INDEX";
+	if (homeIndex) eyebrow = "HOME · INDEX";
 	else if (archive) eyebrow = "ARCHIVE";
 	else if (about) eyebrow = "ABOUT";
+	const siteName = getSiteName();
+	if (homeIndex && siteName) return { eyebrow, title: siteName };
 	const link = visit.trigger.el;
-	const title = (
-		link?.getAttribute("data-transition-title") ||
-		link?.getAttribute("aria-label") ||
-		link?.textContent ||
-		""
-	)
+	const explicitTitle =
+		link?.getAttribute("data-transition-title")?.replace(/\s+/g, " ").trim() ||
+		"";
+	const visibleText = (link?.textContent || "").replace(/\s+/g, " ").trim();
+	const ariaLabel = (link?.getAttribute("aria-label") || "")
 		.replace(/\s+/g, " ")
 		.trim();
 	const generic =
 		/^(?:上一篇|下一篇|阅读全文|阅读更多|read more|next|previous)[\s→←»«]*$/i;
-	if (title && !generic.test(title)) return { eyebrow, title };
+	const assistiveLabel =
+		/^(?:view all posts|go to |page \d+$|previous page$|next page$)/i;
+	const title =
+		explicitTitle ||
+		(visibleText && !generic.test(visibleText) ? visibleText : "") ||
+		(ariaLabel && !generic.test(ariaLabel) && !assistiveLabel.test(ariaLabel)
+			? ariaLabel
+			: "");
+	if (title) return { eyebrow, title };
 	const card = link
 		?.closest(".card-base")
 		?.querySelector<HTMLElement>("[data-transition-title]");
-	const siteName =
-		home &&
-		document.querySelector<HTMLMetaElement>('meta[property="og:site_name"]')
-			?.content;
 	return {
 		eyebrow,
-		title: card?.dataset.transitionTitle || siteName || eyebrow,
+		title: card?.dataset.transitionTitle || (home ? siteName : "") || eyebrow,
 	};
 }
 
@@ -148,6 +167,7 @@ export function installOpticalTransition(
 	let duration = 0;
 	let rollStart = 0;
 	let sidebarReturn: Animation | undefined;
+	let scrollGuard: AbortController | undefined;
 	let quick = false;
 	let pulsed = false;
 	let replacedAt = 0;
@@ -171,7 +191,28 @@ export function installOpticalTransition(
 		imprint: { eyebrow: "", title: "" },
 	};
 
+	function lockUserScroll() {
+		if (scrollGuard) return;
+		scrollGuard = new AbortController();
+		const blockScroll = (event: Event) => {
+			if (event.cancelable) event.preventDefault();
+		};
+		for (const eventName of ["wheel", "touchmove"] as const) {
+			window.addEventListener(eventName, blockScroll, {
+				capture: true,
+				passive: false,
+				signal: scrollGuard.signal,
+			});
+		}
+	}
+
+	function unlockUserScroll() {
+		scrollGuard?.abort();
+		scrollGuard = undefined;
+	}
+
 	function finish(completed = false) {
+		unlockUserScroll();
 		if (completed && sampleVisit) {
 			if (warmed) {
 				recentSlowVisits.push(slowFrames >= 3);
@@ -376,6 +417,7 @@ export function installOpticalTransition(
 		}
 		visit.animation.selector = false;
 		visit.scroll.animate = false;
+		lockUserScroll();
 		document.documentElement.classList.add("optical-transition-active");
 		if (!isHome(visit)) {
 			setBannerHome(false);
@@ -411,8 +453,14 @@ export function installOpticalTransition(
 		main = document.getElementById("swup-container");
 		if (!main) return finish();
 		main.dataset.opticalRevealed = "";
+		if (scrollY !== 0) {
+			window.scrollTo({ top: 0, behavior: "instant" });
+		}
+		const targetPath = new URL(visit.to.url, location.href).pathname;
 		state.imprint.title =
-			main.dataset.swupAnnouncement?.trim() || document.title;
+			(isHomeOrPagination(targetPath) ? getSiteName() : "") ||
+			main.dataset.swupAnnouncement?.trim() ||
+			document.title;
 		setBannerHome(isHome(visit));
 		pulseBanner();
 		replacedAt = performance.now();

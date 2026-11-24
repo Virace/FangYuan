@@ -62,6 +62,7 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 	const texturesForHue = createRainTextureCache();
 	let materials: RainTextures["materials"] = [];
 	let tails: RainTextures["tails"] = [];
+	let eyebrowFont = "";
 	let titleFont = "";
 	let measured = "";
 	let measuredWidth = 0;
@@ -79,6 +80,7 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 			glowLayer ??= background.getContext("2d", { alpha: false });
 			const styles = getComputedStyle(document.body);
 			const hue = Number.parseFloat(styles.getPropertyValue("--hue")) || 0;
+			eyebrowFont = `600 11px ${styles.fontFamily}`;
 			titleFont = `600 16px ${styles.fontFamily}`;
 			({ materials, tails } = texturesForHue(hue));
 			const count =
@@ -218,9 +220,15 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 			}
 			ctx.globalAlpha = 1;
 			ctx.textAlign = "center";
-			ctx.font = "600 11px ui-monospace, monospace";
-			ctx.fillStyle = isDark ? "rgba(176,228,242,.72)" : "rgba(30,45,62,.60)";
-			ctx.fillText(state.imprint.eyebrow, cx, cy - 12);
+			ctx.font = eyebrowFont;
+			if ("letterSpacing" in ctx) {
+				ctx.letterSpacing = "0.18em";
+			}
+			ctx.fillStyle = isDark ? "rgba(176,228,242,.74)" : "rgba(30,45,62,.58)";
+			ctx.fillText(state.imprint.eyebrow, cx, cy - 13);
+			if ("letterSpacing" in ctx) {
+				ctx.letterSpacing = "0px";
+			}
 			ctx.font = titleFont;
 			if (measured !== state.imprint.title || measuredWidth !== w) {
 				measured = state.imprint.title;

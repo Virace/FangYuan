@@ -262,7 +262,7 @@ async function focusComposerContent() {
 
 <form
 	bind:this={composerForm}
-	class="card-base rounded-panel p-5"
+	class="comment-composer-shell rounded-panel p-5"
 	novalidate
 	on:submit|preventDefault={handleSubmit}
 >

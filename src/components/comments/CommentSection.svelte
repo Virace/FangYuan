@@ -799,7 +799,7 @@ onDestroy(() => {
 
 {#if showCommentSection}
 	<section
-		class="card-base mt-4 px-6 md:px-9 pt-6 pb-6 relative w-full"
+		class="card-base panel-edge mt-4 px-6 md:px-9 pt-6 pb-6 relative w-full"
 		data-post-title={postTitle}
 	>
 		<CommentHeader count={countCommentsInTree(comments)} loading={loading} />
