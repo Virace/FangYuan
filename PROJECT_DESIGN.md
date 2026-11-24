@@ -66,7 +66,7 @@ GitHub 卡片先由内容插件生成基础 HTML，再在 Astro 本轮 HTML 输�
 
 静态 HTML 启动后，Svelte island 负责搜索、主题、评论、反馈和局部控制。Swup 更新 `main` 与 TOC 容器；跨页仍必须有效的 dialog、drawer、backdrop、定位和过渡样式由全局样式提供。QingYan 能力由公开配置和 bootstrap 响应启用，关闭时不挂载对应交互面。
 
-OverlayScrollbars 2.17.0 初始化时会把已有子节点重新插入原容器，触发首屏 CSS 动画重播。`patches/overlayscrollbars@2.17.0.patch` 跳过这次原位插入，保留创建滚动容器时必要的节点迁移。
+页面和块级公式使用原生滚动。在使用传统滚动条的桌面环境中，主题按实际滚动位置显示浮动滑块，并将拖动映射到原生滚动区域。切页时只为新正文重新绑定公式滑块。
 
 ## 错误模型
 
