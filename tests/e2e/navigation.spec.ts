@@ -199,6 +199,33 @@ for (const [source, destination, deep] of [
 	});
 }
 
+test("the footer-constrained sidebar keeps its position across the scroll jump", async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 540 });
+	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);
+	const jump = await page.locator("main a:has(.post-nav-title)").first().evaluate(async (link: HTMLAnchorElement) => {
+		await document.fonts.ready;
+		scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" });
+		const sticky = document.getElementById("sidebar-sticky")!;
+		const read = () => ({ y: scrollY, top: sticky.getBoundingClientRect().top });
+		let previous = read();
+		const start = previous;
+		const max = document.documentElement.scrollHeight - innerHeight;
+		link.click();
+		while (previous.y > 0) {
+			await new Promise(requestAnimationFrame);
+			const current = read();
+			if (previous.y - current.y > 1000) return { start, max, before: previous, after: current };
+			previous = current;
+		}
+		throw new Error("The article did not exercise a deep scroll jump");
+	});
+	expect(Math.abs(jump.start.y - jump.max)).toBeLessThan(1);
+	expect(jump.before.top).toBeLessThan(0);
+	expect(Math.abs(jump.after.top - jump.before.top)).toBeLessThan(1);
+	await expect(page.locator(".optical-transition-veil")).toHaveCount(0);
+	expect(await page.evaluate(() => scrollY)).toBe(0);
+});
+
 test("reading position survives a covered deep article navigation and back", async ({ page }) => {
 	await page.setViewportSize(VIEWPORTS.desktop);
 	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);

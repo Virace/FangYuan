@@ -116,11 +116,9 @@ function installHistoryRestoration(swup: Swup) {
 	});
 }
 
-function stickyThreshold(): number {
-	const sticky = document.getElementById("sidebar-sticky");
+function stickyThreshold(sticky: HTMLElement | null): number {
 	const profile = sticky?.previousElementSibling;
-	if (!sticky || !profile || !matchMedia("(min-width: 1024px)").matches)
-		return 0;
+	if (!sticky || !profile) return 0;
 	// sticky.offsetTop 会包含吸顶后的位移。用其前一段的流内底边和边距还原自然顶边。
 	const naturalTop =
 		profile.getBoundingClientRect().bottom +
@@ -149,6 +147,7 @@ export function installOpticalTransition(
 	let phaseStart = 0;
 	let duration = 0;
 	let rollStart = 0;
+	let sidebarReturn: Animation | undefined;
 	let quick = false;
 	let pulsed = false;
 	let replacedAt = 0;
@@ -183,6 +182,8 @@ export function installOpticalTransition(
 		}
 		sampleVisit = false;
 		cancelAnimationFrame(frame);
+		sidebarReturn?.cancel();
+		sidebarReturn = undefined;
 		frame = 0;
 		permit.resolve();
 		if (host) renderer.dispose();
@@ -234,10 +235,26 @@ export function installOpticalTransition(
 	}
 
 	function close(visit: Visit, now: number) {
-		const threshold = stickyThreshold();
+		const sticky =
+			!quick && matchMedia("(min-width: 1024px)").matches
+				? document.getElementById("sidebar-sticky")
+				: null;
+		const threshold = stickyThreshold(sticky);
 		rollStart = quick ? 0 : Math.min(scrollY, threshold);
-		if (scrollY !== rollStart)
+		if (scrollY !== rollStart) {
+			const previousTop = sticky?.getBoundingClientRect().top;
+			sidebarReturn?.cancel();
 			window.scrollTo({ top: rollStart, behavior: "instant" });
+			if (sticky && previousTop !== undefined) {
+				const offset = previousTop - sticky.getBoundingClientRect().top;
+				if (offset < -1) {
+					sidebarReturn = sticky.animate(
+						[{ translate: `0 ${offset}px` }, { translate: "0 0" }],
+						{ duration: 180, easing: "ease-out" },
+					);
+				}
+			}
+		}
 		if (!rollStart) return hold(visit, now);
 		state.scrollNorm = 1;
 		phase("rolling", now, Math.min(380, Math.max(240, rollStart * 0.7)));
