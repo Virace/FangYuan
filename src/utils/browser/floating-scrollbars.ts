@@ -1,5 +1,8 @@
 type Axis = "horizontal" | "vertical";
 
+export const floatingScrollbarMedia =
+	"(any-pointer: fine) and (forced-colors: none)";
+
 function createRail(
 	host: HTMLElement,
 	viewport: HTMLElement,
@@ -218,7 +221,7 @@ function hasClassicScrollbars(): boolean {
 }
 
 export function initFloatingScrollbars(): () => void {
-	const desktop = matchMedia("(any-pointer: fine) and (forced-colors: none)");
+	const desktop = matchMedia(floatingScrollbarMedia);
 	let documentEvents: AbortController | undefined;
 	let formulaEvents: AbortController | undefined;
 	function refreshFormulas() {
