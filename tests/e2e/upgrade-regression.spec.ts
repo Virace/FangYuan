@@ -30,7 +30,7 @@ test("reloading with classic scrollbars keeps the page aligned before scripts lo
 		const scripts = Promise.withResolvers<void>();
 		await page.route("**/*", async route => {
 			if (route.request().resourceType() === "script") await scripts.promise;
-			await route.continue();
+			await route.fallback();
 		});
 		try {
 			await page.reload({ waitUntil: "commit" });
