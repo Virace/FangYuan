@@ -21,8 +21,10 @@ const policeRecordUrl = getFooterPoliceRecordUrl();
 const policeEmblemSrc = policeEmblem.src;
 ---
 
-<div class="transition my-10 border-t border-dashed border-footer-divider"></div>
-<div class="transition border-dashed border-footer-divider rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
+<div class="optical-divider my-10" aria-hidden="true">
+    <span class="optical-divider-focus"></span>
+</div>
+<div class="transition rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
     <div class="transition text-60 text-sm text-center">
         &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. ALL RIGHTS RESERVED.
         {siteConfig.site ? (

@@ -39,6 +39,7 @@ const links: ResolvedNavBarLink[] = resolveNavbarLinks(
         <div class="hidden md:flex">
             {links.map((l) => {
                 return <a aria-label={l.name} href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
+                          data-nav-link={!l.external ? "true" : undefined}
                           class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95"
                 >
                     <div class="flex items-center">
@@ -109,7 +110,40 @@ function loadButtonScript() {
     }
 }
 
+function normalizeNavPath(pathname: string) {
+    const trimmed = pathname.replace(/\/+$/, "");
+    return trimmed === "" ? "/" : trimmed;
+}
+
+function syncActiveNavLinks() {
+    const currentPath = normalizeNavPath(window.location.pathname);
+    const homePath = normalizeNavPath(import.meta.env.BASE_URL);
+    for (const link of document.querySelectorAll<HTMLAnchorElement>("#navbar a[data-nav-link]")) {
+        const href = link.getAttribute("href");
+        if (!href) continue;
+        try {
+            const targetPath = normalizeNavPath(new URL(href, window.location.origin).pathname);
+            const isHome = targetPath === homePath;
+            const isActive = isHome
+                ? currentPath === targetPath
+                : currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
+            link.classList.toggle("nav-link-active", isActive);
+        } catch {
+            link.classList.remove("nav-link-active");
+        }
+    }
+}
+
 loadButtonScript();
+syncActiveNavLinks();
+
+if (window?.swup?.hooks) {
+    window.swup.hooks.on("page:view", syncActiveNavLinks);
+} else {
+    document.addEventListener("swup:enable", () => {
+        window?.swup?.hooks?.on("page:view", syncActiveNavLinks);
+    });
+}
 </script>
 
 {import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>

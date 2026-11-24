@@ -67,6 +67,26 @@
 		0 20px 44px -16px rgb(15 23 42 / 0.2),
 		0 4px 12px -4px rgb(15 23 42 / 0.08),
 		inset 0 1px 0 rgb(255 255 255 / 0.92);
+	--optical-glass-hover-bg: color-mix(in oklch, white 56%, color-mix(in oklch, var(--primary) 16%, transparent));
+	--optical-glass-hover-border: color-mix(in oklch, var(--accent-solid) 24%, rgb(255 255 255 / 0.88));
+	--optical-glass-hover-shadow:
+		0 4px 14px -8px color-mix(in oklch, var(--accent-solid) 26%, rgb(15 23 42 / 0.14)),
+		inset 0 1px 0 rgb(255 255 255 / 0.92);
+	--optical-glass-active-bg: color-mix(in oklch, white 46%, color-mix(in oklch, var(--primary) 24%, transparent));
+	--optical-chip-bg: color-mix(in oklch, var(--primary) 4.5%, rgb(255 255 255 / 0.68));
+	--optical-chip-border: color-mix(in oklch, var(--accent-solid) 14%, rgb(15 23 42 / 0.09));
+	--optical-chip-hover-bg: color-mix(in oklch, var(--primary) 10%, rgb(255 255 255 / 0.88));
+	--optical-chip-hover-border: color-mix(in oklch, var(--accent-solid) 36%, rgb(255 255 255 / 0.72));
+	--optical-chip-active-bg: color-mix(in oklch, var(--primary) 16%, rgb(255 255 255 / 0.82));
+	--optical-card-surface: color-mix(in oklch, white 98%, var(--page-bg));
+	--optical-card-border: color-mix(in oklch, var(--accent-solid) 16%, rgb(15 23 42 / 0.11));
+	--optical-card-rim-highlight: rgb(255 255 255 / 0.92);
+	--optical-card-shadow:
+		0 10px 28px -14px rgb(15 23 42 / 0.14),
+		0 2px 6px -2px rgb(15 23 42 / 0.06);
+	--optical-slot-bg: color-mix(in oklch, var(--deep-text) 3.5%, rgb(255 255 255 / 0.48));
+	--optical-slot-border: color-mix(in oklch, var(--deep-text) 9%, rgb(255 255 255 / 0.72));
+	--optical-card-sheen: color-mix(in oklch, var(--primary) 16%, rgb(255 255 255 / 0.72));
 
 	--scrollbar-bg-light: rgba(0, 0, 0, 0.4);
 	--scrollbar-bg-hover-light: rgba(0, 0, 0, 0.5);
@@ -191,6 +211,26 @@
 		0 22px 48px -12px rgb(0 0 0 / 0.7),
 		0 4px 14px -4px rgb(0 0 0 / 0.35),
 		inset 0 1px 0 rgb(255 255 255 / 0.12);
+	--optical-glass-hover-bg: color-mix(in oklch, rgb(255 255 255 / 0.08) 72%, color-mix(in oklch, var(--primary) 24%, transparent));
+	--optical-glass-hover-border: color-mix(in oklch, var(--primary) 34%, rgb(255 255 255 / 0.18));
+	--optical-glass-hover-shadow:
+		0 6px 18px -8px rgb(0 0 0 / 0.55),
+		inset 0 1px 0 rgb(255 255 255 / 0.18);
+	--optical-glass-active-bg: color-mix(in oklch, rgb(255 255 255 / 0.05) 68%, color-mix(in oklch, var(--primary) 30%, transparent));
+	--optical-chip-bg: color-mix(in oklch, var(--primary) 7%, rgb(255 255 255 / 0.03));
+	--optical-chip-border: color-mix(in oklch, var(--primary) 18%, rgb(255 255 255 / 0.1));
+	--optical-chip-hover-bg: color-mix(in oklch, var(--primary) 16%, rgb(255 255 255 / 0.06));
+	--optical-chip-hover-border: color-mix(in oklch, var(--primary) 46%, rgb(255 255 255 / 0.22));
+	--optical-chip-active-bg: color-mix(in oklch, var(--primary) 22%, rgb(255 255 255 / 0.08));
+	--optical-card-surface: oklch(0.24 0.016 var(--hue));
+	--optical-card-border: color-mix(in oklch, var(--primary) 22%, rgb(255 255 255 / 0.15));
+	--optical-card-rim-highlight: rgb(255 255 255 / 0.12);
+	--optical-card-shadow:
+		0 14px 34px -14px rgb(0 0 0 / 0.62),
+		0 2px 8px -2px rgb(0 0 0 / 0.34);
+	--optical-slot-bg: rgb(255 255 255 / 0.045);
+	--optical-slot-border: rgb(255 255 255 / 0.11);
+	--optical-card-sheen: color-mix(in oklch, var(--primary) 18%, rgb(255 255 255 / 0.14));
 
 	--scrollbar-bg: var(--scrollbar-bg-dark);
 	--scrollbar-bg-hover: var(--scrollbar-bg-hover-dark);

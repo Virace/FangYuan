@@ -175,8 +175,8 @@ $: if (initialized && keywordMobile) {
     <!-- search results -->
     {#each result as item}
         <a href={item.url}
-           class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
-       rounded-xl text-lg px-3 py-2 hover:bg-btn-plain-bg-hover active:bg-btn-plain-bg-active">
+           class="optical-menu-item first-of-type:mt-2 lg:first-of-type:mt-0 group block
+       rounded-xl text-lg px-3 py-2">
             <div class="transition text-90 inline-flex font-bold group-hover:text-primary">
                 {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-xs translate-x-1 my-auto text-primary"></Icon>
             </div>

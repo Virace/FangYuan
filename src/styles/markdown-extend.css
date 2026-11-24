@@ -310,8 +310,16 @@
 }
 
 .custom-md hr {
-	border-color: var(--line-divider);
-	border-style: dashed;
+	border: none;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		var(--line-divider) 24%,
+		color-mix(in oklch, var(--primary) 28%, var(--line-divider)) 50%,
+		var(--line-divider) 76%,
+		transparent
+	);
 }
 
 .custom-md iframe {

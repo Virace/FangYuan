@@ -18,11 +18,9 @@ $: if (hue || hue === 0) {
 
 <div id="display-setting" class="float-panel float-panel-closed absolute transition-all w-80 right-4 px-4 py-4">
     <div class="flex flex-row gap-2 mb-3 items-center justify-between">
-        <div class="flex gap-2 font-bold text-lg text-panel-title transition relative ml-3
-            before:w-1 before:h-4 before:rounded-md before:bg-primary
-            before:absolute before:-left-3 before:top-[0.33rem]"
-        >
-            {i18n(I18nKey.themeColor)}
+        <div class="flex items-center gap-2 font-bold text-base text-panel-title transition">
+            <span class="fy-brand-glyph-sm" aria-hidden="true"></span>
+            <span>{i18n(I18nKey.themeColor)}</span>
             <button aria-label="Reset to Default" class="btn-regular w-7 h-7 rounded-md  active:scale-90 will-change-transform"
                     class:opacity-0={hue === defaultHue} class:pointer-events-none={hue === defaultHue} on:click={resetHue}>
                 <div class="text-btn-content">
@@ -31,8 +29,8 @@ $: if (hue || hue === 0) {
             </button>
         </div>
         <div class="flex gap-1">
-            <div id="hueValue" class="transition bg-btn-regular-bg w-10 h-7 rounded-md flex justify-center
-            font-bold text-sm items-center text-btn-content">
+            <div id="hueValue" class="transition optical-chip-static w-10 h-7 rounded-md flex justify-center
+            font-bold text-sm tabular-nums items-center text-btn-content">
                 {hue}
             </div>
         </div>

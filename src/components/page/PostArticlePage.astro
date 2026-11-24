@@ -119,7 +119,7 @@ const jsonLd = {
                     class="transition w-full block font-bold mb-3
                     text-3xl md:text-4xl/11
                     text-90
-                    md:before:w-1 before:h-5 before:rounded-md before:bg-primary
+                    optical-post-title-beam before:hidden md:before:block
                     before:absolute before:top-3 before:-left-4.5
                 ">
                     {entry.data.title}
@@ -139,7 +139,7 @@ const jsonLd = {
                         <PageViewCounter client:only="svelte" postKey={postKey} postTitle={entry.data.title} postUrl={postUrl} qingyan={qingyanConfig} />
                     </div>
                 )}
-                {!entry.data.image && <div class="border-line-divider border-dashed border-b mb-5"></div>}
+                {!entry.data.image && <div class="optical-hairline mb-5" aria-hidden="true"></div>}
             </div>
 
             {entry.data.image &&

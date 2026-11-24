@@ -129,7 +129,7 @@ test("markdown inline links do not expand paragraph height on hover", async ({ p
 	expect(hovered.paragraphHeight).toBe(before.paragraphHeight);
 });
 
-test("markdown inline links keep dashed underline on hover", async ({ page }) => {
+test("markdown inline links keep solid underline on hover", async ({ page }) => {
 	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);
 	await disableMotion(page);
 
@@ -164,7 +164,7 @@ test("markdown inline links keep dashed underline on hover", async ({ page }) =>
 	expect(hoveredStyle.textDecorationLine).toBe("none");
 	expect(hoveredStyle.textDecorationStyle).toBe("solid");
 	expect(hoveredStyle.borderBottomWidth).toBe("1px");
-	expect(hoveredStyle.borderBottomStyle).toBe("dashed");
+	expect(hoveredStyle.borderBottomStyle).toBe("solid");
 	expect(hoveredStyle.borderBottomColor).toBe(hoveredStyle.color);
 });
 

@@ -83,18 +83,18 @@ const nextPageUrl =
             </div>
         }
     </div>
-    <div class="bg-card-bg flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
+    <div class="optical-page-shell flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
         {pageItems.map((pageNumber) => {
             if (pageNumber === HIDDEN_PAGE_ITEM)
                 return <Icon is:inline name="material-symbols:more-horiz" class="mx-1"/>;
             if (pageNumber === page.currentPage)
-                return <div aria-current="page" class="h-11 w-11 rounded-lg bg-accent-solid flex items-center justify-center
-                    font-bold text-pagination-current-content"
+                return <div aria-current="page" class="optical-page-current h-11 w-11 rounded-lg flex items-center justify-center
+                    font-bold"
                 >
                     {pageNumber}
                 </div>
             return <a href={url(getPageUrl(pageNumber))} aria-label={`Page ${pageNumber}`}
-                class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.85]"
+                class="btn-card w-11 h-11 rounded-lg active:scale-[0.85]"
             >{pageNumber}</a>
         })}
     </div>

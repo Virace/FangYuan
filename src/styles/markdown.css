@@ -48,14 +48,14 @@
     margin: -0.25rem;
     padding: 0.25rem 0.25rem calc(0.25rem - 1px);
     border-radius: 0.375rem;
-    border-bottom: 1px dashed transparent;
+    border-bottom: 1px solid transparent;
     background-color: transparent;
     color: var(--accent-foreground);
     font-weight: 500;
     text-decoration-line: underline;
-    text-decoration-style: dashed;
+    text-decoration-style: solid;
     text-decoration-thickness: 1px;
-    text-decoration-color: var(--link-underline);
+    text-decoration-color: color-mix(in oklch, var(--accent-foreground) 38%, transparent);
     text-underline-offset: 4px;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
@@ -75,25 +75,27 @@
     z-index: -1;
     border-radius: inherit;
     background-color: transparent;
-    transform: scale(0.85);
+    opacity: 0;
+    transform: scale(0.92);
     transition:
-        transform 0.15s ease-out,
-        background-color 0.15s ease-out,
-        opacity 0.15s ease-out;
+        transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .custom-md a:not(.no-styling):hover::before {
-    background-color: var(--btn-plain-bg-hover);
+    background-color: color-mix(in oklch, var(--primary) 11%, transparent);
+    opacity: 1;
     transform: scale(1);
 }
 
 .custom-md a:not(.no-styling):active::before {
-    background-color: var(--btn-plain-bg-active);
+    background-color: color-mix(in oklch, var(--primary) 17%, transparent);
 }
 
 .custom-md a:not(.no-styling):hover,
 .custom-md a:not(.no-styling):active {
-    background: var(--btn-plain-bg-hover);
+    background: color-mix(in oklch, var(--primary) 11%, transparent);
     border-bottom-color: currentcolor;
     text-decoration: none;
     text-decoration-color: transparent;

@@ -70,8 +70,7 @@ onMount(async () => {
                 </div>
                 <div class="archive-side-col">
                     <div
-                            class="h-3 w-3 bg-transparent rounded-full outline outline-primary mx-auto
-                  -outline-offset-2 z-50"
+                            class="h-2.5 w-2.5 bg-transparent rounded-full border-2 border-accent-solid mx-auto z-50"
                     ></div>
                 </div>
                 <div class="archive-main-col transition text-left text-muted">
@@ -90,13 +89,7 @@ onMount(async () => {
                         </div>
 
                         <div class="archive-side-col relative dash-line h-full flex items-center">
-                            <div
-                                    class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
-                       bg-archive-dot group-hover:bg-primary outline-4 z-50
-                       outline-card-bg
-                       group-hover:outline-btn-plain-bg-hover
-                       group-active:outline-btn-plain-bg-active"
-                            ></div>
+                            <div class="archive-rail-dot mx-auto z-50"></div>
                         </div>
 
                         <div
@@ -127,8 +120,7 @@ onMount(async () => {
                 </div>
                 <div class="archive-side-col">
                     <div
-                            class="h-3 w-3 bg-transparent rounded-full outline outline-primary mx-auto
-                  -outline-offset-2 z-50"
+                            class="h-2.5 w-2.5 bg-transparent rounded-full border-2 border-accent-solid mx-auto z-50"
                     ></div>
                 </div>
                 <div class="archive-main-col transition text-left text-muted">
@@ -149,13 +141,7 @@ onMount(async () => {
 
                         <!-- dot and line -->
                         <div class="archive-side-col relative dash-line h-full flex items-center">
-                            <div
-                                    class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
-                       bg-archive-dot group-hover:bg-primary outline-4 z-50
-                       outline-card-bg
-                       group-hover:outline-btn-plain-bg-hover
-                       group-active:outline-btn-plain-bg-active"
-                            ></div>
+                            <div class="archive-rail-dot mx-auto z-50"></div>
                         </div>
 
                         <!-- post title -->
