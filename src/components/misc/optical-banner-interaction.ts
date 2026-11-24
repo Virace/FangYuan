@@ -200,7 +200,7 @@ class OpticalBanner extends HTMLElement {
 			targetY = nextY;
 			if (x !== targetX || y !== targetY) wake();
 		};
-		const playPulse = (start: PointerEvent) => {
+		const playPulse = (start?: PointerEvent) => {
 			const matrix = lightOrbit.getScreenCTM();
 			if (!matrix || motion.matches) return;
 			const inverse = matrix.inverse();
@@ -214,7 +214,7 @@ class OpticalBanner extends HTMLElement {
 				new DOMPoint(rect.right, bottom),
 			].map((point) => point.matrixTransform(inverse).x);
 			const source =
-				start.target === inletHandle
+				start && start.target === inletHandle
 					? Math.min(
 							prismProfile ? -prismRadius(prismProfile, angle + Math.PI) : -74,
 							new DOMPoint(start.clientX, start.clientY).matrixTransform(
@@ -406,10 +406,17 @@ class OpticalBanner extends HTMLElement {
 			if (!entry.isIntersecting) reset();
 		});
 		visibility.observe(this);
+		const pulseOnNavigation = () => {
+			const rect = this.getBoundingClientRect();
+			if (rect.bottom > 0 && rect.top < innerHeight && !motion.matches)
+				playPulse();
+		};
+		this.addEventListener("fangyuan:optical-pulse", pulseOnNavigation);
 		motion.addEventListener("change", reset);
 		this.cleanup = () => {
 			reset();
 			visibility.disconnect();
+			this.removeEventListener("fangyuan:optical-pulse", pulseOnNavigation);
 			motion.removeEventListener("change", reset);
 		};
 	}

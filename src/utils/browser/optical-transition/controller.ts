@@ -1,0 +1,330 @@
+import type Swup from "@swup/astro/client/Swup";
+import { getArchivePath, pathsEqual, url } from "../../permalink/urls";
+import type { OpticalTransitionRenderer, TransitionFrameState } from "./types";
+import { VeilHost } from "./veil-host";
+
+type Visit = Swup["visit"];
+
+function isHome(visit: Visit): boolean {
+	return pathsEqual(new URL(visit.to.url, location.href).pathname, url("/"));
+}
+
+function setBannerHome(home: boolean, pulse = false): void {
+	if (document.body.classList.contains("lg:is-home") === home) return;
+	document.body.classList.toggle("lg:is-home", home);
+	if (pulse)
+		document
+			.querySelector("optical-banner")
+			?.dispatchEvent(new Event("fangyuan:optical-pulse"));
+}
+
+function getImprint(visit: Visit): TransitionFrameState["imprint"] {
+	const path = new URL(visit.to.url, location.href).pathname;
+	const home = isHome(visit);
+	const archive = pathsEqual(path, url(getArchivePath()));
+	const about = pathsEqual(path.replace(/\.html$/, ""), url("/about/"));
+	let eyebrow = "ARTICLE";
+	if (home) eyebrow = "HOME · INDEX";
+	else if (archive) eyebrow = "ARCHIVE";
+	else if (about) eyebrow = "ABOUT";
+	const link = visit.trigger.el;
+	const title = (
+		link?.getAttribute("data-transition-title") ||
+		link?.getAttribute("aria-label") ||
+		link?.textContent ||
+		""
+	)
+		.replace(/\s+/g, " ")
+		.trim();
+	const generic =
+		/^(?:上一篇|下一篇|阅读全文|阅读更多|read more|next|previous)[\s→←»«]*$/i;
+	if (title && !generic.test(title)) return { eyebrow, title };
+	const card = link
+		?.closest(".card-base")
+		?.querySelector<HTMLElement>("[data-transition-title]");
+	const siteName =
+		home &&
+		document.querySelector<HTMLMetaElement>('meta[property="og:site_name"]')
+			?.content;
+	return {
+		eyebrow,
+		title: card?.dataset.transitionTitle || siteName || eyebrow,
+	};
+}
+
+function installHistoryRestoration(swup: Swup) {
+	const positions = new Map<
+		number,
+		{ url: string; top: number; left: number }
+	>();
+	let displayedEntry: number | undefined = history.state?.index;
+	let displayedUrl = swup.location.url;
+	let stopRestore: (() => void) | undefined;
+
+	swup.hooks.before("visit:start", (visit) => {
+		stopRestore?.();
+		if (
+			displayedEntry !== undefined &&
+			displayedUrl === visit.from.url &&
+			(visit.history.popstate || displayedEntry === history.state?.index)
+		) {
+			positions.set(displayedEntry, {
+				url: visit.from.url,
+				top: scrollY,
+				left: scrollX,
+			});
+		}
+	});
+	swup.hooks.on("content:scroll", (visit) => {
+		displayedEntry = history.state?.index;
+		displayedUrl = visit.to.url;
+		if (
+			!visit.history.popstate ||
+			visit.to.hash ||
+			displayedEntry === undefined
+		)
+			return;
+		const position = positions.get(displayedEntry);
+		const grid = document.getElementById("main-grid");
+		if (!position || position.url !== visit.to.url || !grid) return;
+		// 浏览器可能在短页或尚未撑开的正文上恢复历史位置。仅在布局完成后补足，用户输入即让出滚动权。
+		const inputs = new AbortController();
+		const sizes = new ResizeObserver(() => {
+			if (scrollY !== position.top || scrollX !== position.left) {
+				window.scrollTo({
+					top: position.top,
+					left: position.left,
+					behavior: "instant",
+				});
+			}
+			if (
+				Math.abs(scrollY - position.top) < 1 &&
+				Math.abs(scrollX - position.left) < 1
+			)
+				stop();
+		});
+		function stop() {
+			sizes.disconnect();
+			inputs.abort();
+			stopRestore = undefined;
+		}
+		stopRestore = stop;
+		for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+			window.addEventListener(event, stop, {
+				signal: inputs.signal,
+				passive: true,
+			});
+		}
+		sizes.observe(grid);
+	});
+}
+
+function stickyThreshold(): number {
+	const sticky = document.getElementById("sidebar-sticky");
+	const profile = sticky?.previousElementSibling;
+	if (!sticky || !profile || !matchMedia("(min-width: 1024px)").matches)
+		return 0;
+	// sticky.offsetTop 会包含吸顶后的位移。用其前一段的流内底边和边距还原自然顶边。
+	const naturalTop =
+		profile.getBoundingClientRect().bottom +
+		scrollY +
+		Number.parseFloat(getComputedStyle(profile).marginBottom);
+	return Math.max(
+		0,
+		Math.ceil(naturalTop - Number.parseFloat(getComputedStyle(sticky).top) + 8),
+	);
+}
+
+/** 每个 visit 有自己的置换许可；光幕可跨 visit 接续，一次只保留一个绘制循环。 */
+export function installOpticalTransition(
+	swup: Swup,
+	renderer: OpticalTransitionRenderer,
+): void {
+	installHistoryRestoration(swup);
+	const motion = matchMedia("(prefers-reduced-motion: reduce)");
+	let host: VeilHost | undefined;
+	let main: HTMLElement | null = null;
+	let current: Visit | undefined;
+	let permit = Promise.withResolvers<void>();
+	let frame = 0;
+	let started = 0;
+	let previousTime = 0;
+	let phaseStart = 0;
+	let duration = 0;
+	let rollStart = 0;
+	let quick = false;
+	let replacedAt = 0;
+	const state: TransitionFrameState = {
+		phase: "entering",
+		phaseProgress: 0,
+		scrollNorm: 0,
+		scrollVelocity: 0,
+		elapsedSec: 0,
+		dt: 0,
+		width: 0,
+		height: 0,
+		dpr: 1,
+		isDark: false,
+		imprint: { eyebrow: "", title: "" },
+	};
+
+	function finish() {
+		cancelAnimationFrame(frame);
+		frame = 0;
+		permit.resolve();
+		if (host) renderer.dispose();
+		host?.remove();
+		host = undefined;
+		current = undefined;
+		main = null;
+		document.documentElement.classList.remove("optical-transition-active");
+	}
+
+	function phase(name: TransitionFrameState["phase"], now: number, ms: number) {
+		state.phase = name;
+		state.phaseProgress = 0;
+		phaseStart = now;
+		duration = ms;
+	}
+
+	function hold(visit: Visit, now: number) {
+		phase("holding", now, quick ? 115 : 160);
+		state.scrollNorm = 0;
+		state.scrollVelocity = 0;
+		setBannerHome(isHome(visit), true);
+		permit.resolve();
+	}
+
+	function close(visit: Visit, now: number) {
+		const threshold = stickyThreshold();
+		rollStart = quick ? 0 : Math.min(scrollY, threshold);
+		if (scrollY !== rollStart)
+			window.scrollTo({ top: rollStart, behavior: "instant" });
+		if (!rollStart) return hold(visit, now);
+		state.scrollNorm = 1;
+		phase("rolling", now, Math.min(380, Math.max(240, rollStart * 0.7)));
+	}
+
+	function draw(now: number) {
+		frame = 0;
+		if (!current || !host?.ctx || !main || (current.done && !replacedAt))
+			return finish();
+		const elapsed = Math.max(0, now - previousTime) / 1000;
+		state.dt = Math.min(0.034, elapsed);
+		state.elapsedSec = (now - started) / 1000;
+		previousTime = now;
+		const progress = Math.min(1, Math.max(0, (now - phaseStart) / duration));
+		state.phaseProgress = progress;
+		switch (state.phase) {
+			case "entering":
+				if (progress === 1) close(current, quick ? phaseStart + duration : now);
+				break;
+			case "rolling": {
+				const top = Math.round(rollStart * (1 - progress) ** 3);
+				state.scrollVelocity = elapsed
+					? Math.max(0, scrollY - top) / elapsed
+					: 0;
+				window.scrollTo({ top, behavior: "instant" });
+				state.scrollNorm = top / rollStart;
+				if (progress === 1) hold(current, now);
+				break;
+			}
+			case "holding":
+				if (replacedAt && progress === 1)
+					phase(
+						"exiting",
+						Math.max(phaseStart + duration, replacedAt),
+						quick ? 275 : 350,
+					);
+				break;
+			case "exiting":
+				if (progress === 1) return finish();
+				break;
+		}
+		host.sync(main);
+		Object.assign(state, host.geometry);
+		renderer.render(host.ctx, state);
+		frame = requestAnimationFrame(draw);
+	}
+
+	swup.hooks.on("visit:start", (visit) => {
+		main = document.getElementById("swup-container");
+		const eligible =
+			visit.animation.animate &&
+			visit.scroll.reset &&
+			!visit.history.popstate &&
+			!visit.to.hash &&
+			!visit.scroll.target &&
+			!motion.matches;
+		if (!eligible || !main) {
+			finish();
+			setBannerHome(isHome(visit));
+			return;
+		}
+		const continuing = !!host;
+		host ??= new VeilHost();
+		if (!host.ctx) {
+			finish();
+			setBannerHome(isHome(visit));
+			return;
+		}
+		const now = performance.now();
+		permit.resolve();
+		permit = Promise.withResolvers<void>();
+		current = visit;
+		replacedAt = 0;
+		quick = scrollY <= 16;
+		state.imprint = getImprint(visit);
+		visit.animation.selector = false;
+		visit.scroll.animate = false;
+		document.documentElement.classList.add("optical-transition-active");
+		if (!isHome(visit)) setBannerHome(false, true);
+		if (!continuing) {
+			host.sync(main);
+			try {
+				renderer.prepare({ mainElement: main, ...host.geometry });
+			} catch {
+				finish();
+				setBannerHome(isHome(visit));
+				return;
+			}
+			started = previousTime = now;
+			state.scrollNorm = quick ? 0 : 1;
+			state.scrollVelocity = 0;
+			phase("entering", now, quick ? 160 : 205);
+		} else if (state.phase === "exiting") {
+			phase("entering", now, Math.max(32, 160 * state.phaseProgress));
+		} else if (state.phase === "holding") {
+			close(visit, now);
+		}
+		if (!frame) frame = requestAnimationFrame(draw);
+	});
+	swup.hooks.before("animation:out:await", (visit, args) => {
+		if (visit !== current) return;
+		args.skip = true;
+		return permit.promise;
+	});
+	swup.hooks.on("visit:abort", (visit) => {
+		if (visit === current) permit.resolve();
+	});
+	swup.hooks.before("content:scroll", (visit) => {
+		if (visit === current) visit.scroll.scrolledToContent = true;
+		if (!visit.to.hash && !visit.scroll.target) visit.scroll.animate = false;
+	});
+	swup.hooks.on("content:replace", (visit) => {
+		if (visit !== current) return;
+		main = document.getElementById("swup-container");
+		if (!main) return finish();
+		main.dataset.opticalRevealed = "";
+		state.imprint.title =
+			main.dataset.swupAnnouncement?.trim() || document.title;
+		setBannerHome(isHome(visit), true);
+		replacedAt = performance.now();
+	});
+	motion.addEventListener("change", () => {
+		if (!motion.matches || !current) return;
+		setBannerHome(isHome(current));
+		finish();
+	});
+	window.addEventListener("pagehide", finish);
+}

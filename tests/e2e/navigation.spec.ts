@@ -114,3 +114,71 @@ test("swup navigation keeps article toc in the right rail", async ({ page }) => 
 	expect(metrics.toc.left).toBeGreaterThan(metrics.sidebar.right);
 	expect(metrics.toc.left).toBeGreaterThan(metrics.main.right);
 });
+
+test("reading position survives a covered deep article navigation and back", async ({ page }) => {
+	await page.setViewportSize(VIEWPORTS.desktop);
+	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);
+	const nextArticle = page.locator("main a:has(.post-nav-title)").first();
+	await nextArticle.scrollIntoViewIfNeeded();
+	const readingPosition = await page.evaluate(() => window.scrollY);
+	expect(readingPosition).toBeGreaterThan(2500);
+	const destination = await nextArticle.getAttribute("href");
+	await nextArticle.click();
+	const veil = page.locator(".optical-transition-veil");
+	await expect(veil).toBeVisible();
+	await expect(page).toHaveURL(new URL(destination!, page.url()).href);
+	await expect(page.locator("main")).not.toHaveAttribute("aria-busy", "true");
+	await expect(veil).toHaveCount(0);
+	expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+	await page.goBack();
+	await expect(page.locator("main")).toHaveAttribute("data-swup-announcement", "Markdown 扩展功能");
+	await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(readingPosition);
+	await expect(veil).toHaveCount(0);
+});
+
+test("a second destination takes over while the first page is loading", async ({ page }) => {
+	let release!: () => void;
+	const delayed = new Promise<void>(resolve => { release = resolve; });
+	await gotoAndWaitForApp(page, SITE_ROUTES.home);
+	await page.route("**/archive/", async route => {
+		await delayed;
+		await route.continue();
+	});
+	const archive = page.locator('#navbar a[href="/archive/"]').first();
+	const about = page.locator('#navbar a[href="/about/"]').first();
+	try {
+		await archive.click();
+		await expect(page.locator(".optical-transition-veil")).toBeVisible();
+		await about.click();
+	} finally {
+		release();
+	}
+	await expect(page.locator("main")).toContainText("关于");
+	await expect(page.locator(".optical-transition-veil")).toHaveCount(0);
+	await expect(page).toHaveURL(/\/about\/$/);
+});
+
+test("reduced motion navigates from a deep article without mounting a veil", async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: "reduce" });
+	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);
+	const veilMounted = await page.evaluateHandle(() => {
+		const mounted: Element[] = [];
+		new MutationObserver(records => {
+			for (const record of records) {
+				for (const node of record.addedNodes) {
+					if (node instanceof Element && node.matches(".optical-transition-veil")) mounted.push(node);
+				}
+			}
+		}).observe(document.body, { childList: true });
+		return mounted;
+	});
+	const nextArticle = page.locator("main a:has(.post-nav-title)").first();
+	await nextArticle.scrollIntoViewIfNeeded();
+	expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(2500);
+	const title = (await nextArticle.innerText()).trim();
+	await nextArticle.click();
+	await expect(page.locator("main")).toHaveAttribute("data-swup-announcement", title);
+	await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+	expect(await veilMounted.evaluate(nodes => nodes.length)).toBe(0);
+});

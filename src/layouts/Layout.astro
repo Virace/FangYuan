@@ -206,8 +206,6 @@ const canonicalUrl =
 		<GlobalNotices client:load placement={siteConfig.notifications} closeLabel={i18n(I18nKey.pageFeedbackClose)} pinnedLabel={i18n(I18nKey.noticePinned)} regionLabel={i18n(I18nKey.noticeRegion)} />
 		<slot />
 
-		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
-		<div id="page-height-extend" class="hidden h-[300vh]"></div>
 	</body>
 </html>
 
@@ -263,11 +261,12 @@ const canonicalUrl =
 
 <script>
 import { initFloatingScrollbars } from "../utils/browser/floating-scrollbars";
+import { installOpticalTransition } from "../utils/browser/optical-transition/controller";
+import { createLiquidRainRenderer } from "../utils/browser/optical-transition/liquid-rain-renderer";
 import { resolveSwupAnnouncementText } from "../utils/browser/swup-a11y";
 import { notices } from "../utils/browser/notifications";
 import { cancelGithubCards, refreshGithubCards } from "../utils/browser/github-cards";
 import {getHue, getStoredTheme, setHue, setTheme} from "../utils/browser/theme-settings";
-import {pathsEqual, url} from "../utils/permalink/urls";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_HOME,
@@ -385,64 +384,12 @@ function setContentBusy(isBusy: boolean) {
 	}
 }
 
-type SwupContentScrollVisit = {
-	to: { hash?: string }
-	history?: { popstate?: boolean }
-	scroll: {
-		target?: string | false
-		animate?: boolean
-	}
-}
-
-function shouldPreScrollVisit(visit: SwupContentScrollVisit) {
-	return (
-		!visit.history?.popstate &&
-		!visit.to.hash &&
-		!visit.scroll.target &&
-		window.scrollY > 16
-	)
-}
-
-function scrollToTopBeforeSwap() {
-	const startY = window.scrollY
-	if (startY <= 16) {
-		window.scrollTo(0, 0)
-		return Promise.resolve()
-	}
-
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-	if (prefersReducedMotion) {
-		window.scrollTo(0, 0)
-		return Promise.resolve()
-	}
-
-	const duration = Math.min(520, Math.max(260, startY * 0.24))
-	const startTime = performance.now()
-
-	return new Promise<void>(resolve => {
-		const step = (now: number) => {
-			const progress = Math.max(0, Math.min(1, (now - startTime) / duration))
-			const eased = 1 - (1 - progress) ** 3
-			window.scrollTo(0, Math.round(startY * (1 - eased)))
-
-			if (progress < 1) {
-				requestAnimationFrame(step)
-				return
-			}
-
-			window.scrollTo(0, 0)
-			resolve()
-		}
-
-		requestAnimationFrame(step)
-	})
-}
-
 /* Load settings when entering the site */
 const refreshFormulaScrollbars = initFloatingScrollbars();
 init();
 
 const setup = () => {
+	installOpticalTransition(window.swup, createLiquidRainRenderer())
 	window.swup.hooks.before('content:replace', () => notices.replacePage())
 	window.swup.hooks.on('visit:start', cancelGithubCards)
 	window.swup.hooks.on('content:replace', refreshGithubCards)
@@ -466,7 +413,7 @@ const setup = () => {
 			navbarElement.classList.add('navbar-hidden')
 		}
 	})
-	window.swup.hooks.before('content:announce', (visit: { a11y: { announce?: string } }) => {
+	window.swup.hooks.before('content:announce', (visit) => {
 		const announcement = resolvePageAnnouncement()
 		if (!announcement) {
 			return
@@ -474,60 +421,7 @@ const setup = () => {
 
 		visit.a11y.announce = announcement
 	})
-	window.swup.hooks.before('content:scroll', (visit: SwupContentScrollVisit) => {
-		if (visit.to.hash || visit.scroll.target) {
-			return
-		}
-
-		visit.scroll.animate = false
-	})
-	window.swup.hooks.before('visit:start', async (visit: SwupContentScrollVisit) => {
-		if (!shouldPreScrollVisit(visit)) {
-			return
-		}
-
-		visit.scroll.animate = false
-		await scrollToTopBeforeSwap()
-	})
 	window.swup.hooks.on('content:replace', refreshFormulaScrollbars)
-	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
-		// change banner height immediately when a link is clicked
-		const bodyElement = document.querySelector('body')
-		bodyElement!.classList.toggle('lg:is-home', pathsEqual(visit.to.url, url('/')));
-
-		// increase the page height during page transition to prevent the scrolling animation from jumping
-		const heightExtend = document.getElementById('page-height-extend')
-		if (heightExtend) {
-			heightExtend.classList.remove('hidden')
-		}
-
-		// Hide the TOC while scrolling back to top
-		const tableOfContentsElement = document.getElementById('toc-wrapper');
-		if (tableOfContentsElement) {
-			tableOfContentsElement.classList.add('toc-not-ready')
-		}
-	});
-	window.swup.hooks.on('page:view', () => {
-		// hide the temp high element when the transition is done
-		const heightExtend = document.getElementById('page-height-extend')
-		if (heightExtend) {
-			heightExtend.classList.remove('hidden')
-		}
-	});
-	window.swup.hooks.on('visit:end', (_visit: {to: {url: string}}) => {
-		setTimeout(() => {
-			const heightExtend = document.getElementById('page-height-extend')
-			if (heightExtend) {
-				heightExtend.classList.add('hidden')
-			}
-
-            // Just make the transition looks better
-            const tableOfContentsElement = document.getElementById('toc-wrapper');
-            if (tableOfContentsElement) {
-                tableOfContentsElement.classList.remove('toc-not-ready')
-            }
-        }, 200)
-	});
 }
 if (window?.swup?.hooks) {
 	setup()

@@ -51,7 +51,7 @@ export function createBeamPulses(
 	>();
 	let frame = 0;
 	let dirty = true;
-	let lastPose = "";
+	let lastPose: DOMMatrix | undefined;
 	spectrum.onload = () => {
 		dirty = true;
 	};
@@ -75,8 +75,16 @@ export function createBeamPulses(
 			canvas.height = field.height = height;
 			dirty = true;
 		}
-		const poseKey = pose.toString();
-		if (dirty || poseKey !== lastPose) {
+		if (
+			dirty ||
+			!lastPose ||
+			pose.a !== lastPose.a ||
+			pose.b !== lastPose.b ||
+			pose.c !== lastPose.c ||
+			pose.d !== lastPose.d ||
+			pose.e !== lastPose.e ||
+			pose.f !== lastPose.f
+		) {
 			paint.resetTransform();
 			paint.clearRect(0, 0, width, height);
 			const setPlane = (element: SVGGraphicsElement) => {
@@ -117,7 +125,7 @@ export function createBeamPulses(
 					);
 				}
 			}
-			lastPose = poseKey;
+			lastPose = pose;
 			dirty = false;
 		}
 		context.resetTransform();
