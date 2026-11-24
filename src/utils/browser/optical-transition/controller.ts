@@ -1,4 +1,5 @@
 import type Swup from "@swup/astro/client/Swup";
+import { isHomePaginationPath } from "../../permalink/materialization";
 import { getArchivePath, pathsEqual, url } from "../../permalink/urls";
 import type { OpticalTransitionRenderer, TransitionFrameState } from "./types";
 import { VeilHost } from "./veil-host";
@@ -24,7 +25,8 @@ function getImprint(visit: Visit): TransitionFrameState["imprint"] {
 	const archive = pathsEqual(path, url(getArchivePath()));
 	const about = pathsEqual(path.replace(/\.html$/, ""), url("/about/"));
 	let eyebrow = "ARTICLE";
-	if (home) eyebrow = "HOME · INDEX";
+	if (home || isHomePaginationPath(path, url("/page/")))
+		eyebrow = "HOME · INDEX";
 	else if (archive) eyebrow = "ARCHIVE";
 	else if (about) eyebrow = "ABOUT";
 	const link = visit.trigger.el;

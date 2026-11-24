@@ -104,6 +104,16 @@ export function materializePublicPath(publicPath: string): {
 	};
 }
 
+export function isHomePaginationPath(
+	path: string,
+	pagePrefix = "/page/",
+): boolean {
+	return (
+		path.startsWith(pagePrefix) &&
+		/^\d+(?:\.html)?\/?$/.test(path.slice(pagePrefix.length))
+	);
+}
+
 export function getPaginationPublicPath(
 	pageNumber: number,
 	buildFormat: "directory" | "file",

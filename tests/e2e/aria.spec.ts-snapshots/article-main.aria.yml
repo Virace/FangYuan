@@ -169,3 +169,7 @@
     - /url: /guide/
     - img
     - text: ""
+  - link "用小标题组织文章目录":
+    - /url: /article-outline/
+    - text: ""
+    - img

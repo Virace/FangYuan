@@ -7,7 +7,10 @@ import {
 	emptyRouteRegistry,
 	inspectContentRoutes,
 } from "./content-route-history.ts";
-import { materializePublicPath } from "./permalink/materialization.ts";
+import {
+	isHomePaginationPath,
+	materializePublicPath,
+} from "./permalink/materialization.ts";
 import { resolvePermalinkForEntry } from "./permalink/resolver.ts";
 
 type BaseContentEntry<TData extends Record<string, unknown>> = {
@@ -171,9 +174,7 @@ function normalizeComparablePublicPath(publicPath: string): string {
 function assertRouteDoesNotOccupyReservedPath(route: RoutedContentEntry): void {
 	const normalizedPublicPath = normalizeComparablePublicPath(route.publicPath);
 	const occupiesHomeRoute = normalizedPublicPath === "/";
-	const occupiesHomePagination = /^\/page\/\d+(?:\.html)?$/.test(
-		normalizedPublicPath,
-	);
+	const occupiesHomePagination = isHomePaginationPath(normalizedPublicPath);
 	const occupiesBuiltInRoute = new Set([
 		"/404",
 		"/404.html",
