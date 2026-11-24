@@ -1,6 +1,5 @@
 ---
 import { Font } from "astro:assets";
-import "overlayscrollbars/overlayscrollbars.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import GlobalStyles from "@components/GlobalStyles.astro";
@@ -116,9 +115,7 @@ const canonicalUrl =
 ---
 
 <!DOCTYPE html>
-<html lang={siteLang} class="bg-page-bg text-sm transition md:text-base"
-	  data-overlayscrollbars-initialize
->
+<html lang={siteLang} class="bg-page-bg text-sm transition md:text-base">
 	<head>
 
 		<title>{pageTitle}</title>
@@ -203,9 +200,7 @@ const canonicalUrl =
 		)}
 
 	</head>
-	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
-		  data-overlayscrollbars-initialize
-	>
+	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}>
 		<GlobalStyles />
 		<ConfigCarrier></ConfigCarrier>
 		<GlobalNotices client:load placement={siteConfig.notifications} closeLabel={i18n(I18nKey.pageFeedbackClose)} pinnedLabel={i18n(I18nKey.noticePinned)} regionLabel={i18n(I18nKey.noticeRegion)} />
@@ -267,12 +262,7 @@ const canonicalUrl =
 </style>
 
 <script>
-import {
-	OverlayScrollbars,
-	// ScrollbarsHidingPlugin,
-	// SizeObserverPlugin,
-	// ClickScrollPlugin
-} from 'overlayscrollbars';
+import { initFloatingScrollbars } from "../utils/browser/floating-scrollbars";
 import { resolveSwupAnnouncementText } from "../utils/browser/swup-a11y";
 import { notices } from "../utils/browser/notifications";
 import { cancelGithubCards, refreshGithubCards } from "../utils/browser/github-cards";
@@ -360,71 +350,6 @@ function loadHue() {
 	setHue(getHue())
 }
 
-function initCustomScrollbar() {
-	const bodyElement = document.querySelector('body');
-	if (!bodyElement) return;
-	OverlayScrollbars(
-		// docs say that a initialization to the body element would affect native functionality like window.scrollTo
-		// but just leave it here for now
-		{
-			target: bodyElement,
-			cancel: {
-				nativeScrollbarsOverlaid: true,    // don't initialize the overlay scrollbar if there is a native one
-			}
-		}, {
-		scrollbars: {
-			theme: 'scrollbar-base scrollbar-auto py-1',
-			autoHide: 'move',
-			autoHideDelay: 500,
-			autoHideSuspend: false,
-		},
-	});
-
-	const katexElements = document.querySelectorAll('.katex-display') as NodeListOf<HTMLElement>;
-
-	const katexObserverOptions = {
-		root: null,
-		rootMargin: '100px',
-		threshold: 0.1
-	};
-
-	const processKatexElement = (element: HTMLElement) => {
-		if (!element.parentNode) return;
-		if (element.hasAttribute('data-scrollbar-initialized')) return;
-
-		const container = document.createElement('div');
-		container.className = 'katex-display-container';
-		container.setAttribute('aria-label', 'scrollable container for formulas');
-
-		element.parentNode.insertBefore(container, element);
-		container.appendChild(element);
-
-		OverlayScrollbars(container, {
-			scrollbars: {
-				theme: 'scrollbar-base scrollbar-auto',
-				autoHide: 'leave',
-				autoHideDelay: 500,
-				autoHideSuspend: false
-			}
-		});
-
-		element.setAttribute('data-scrollbar-initialized', 'true');
-	};
-
-	const katexObserver = new IntersectionObserver((entries, observer) => {
-		entries.forEach(entry => {
-			if (entry.isIntersecting) {
-			processKatexElement(entry.target as HTMLElement);
-			observer.unobserve(entry.target);
-			}
-		});
-	}, katexObserverOptions);
-
-	katexElements.forEach(element => {
-		katexObserver.observe(element);
-	});
-}
-
 function showBanner() {
 	if (!siteConfig.banner.enable) return;
 
@@ -441,7 +366,6 @@ function init() {
 	// disableAnimation()()		// TODO
 	loadTheme();
 	loadHue();
-	initCustomScrollbar();
 	showBanner();
 	refreshGithubCards();
 }
@@ -497,7 +421,7 @@ function scrollToTopBeforeSwap() {
 
 	return new Promise<void>(resolve => {
 		const step = (now: number) => {
-			const progress = Math.min(1, (now - startTime) / duration)
+			const progress = Math.max(0, Math.min(1, (now - startTime) / duration))
 			const eased = 1 - (1 - progress) ** 3
 			window.scrollTo(0, Math.round(startY * (1 - eased)))
 
@@ -515,6 +439,7 @@ function scrollToTopBeforeSwap() {
 }
 
 /* Load settings when entering the site */
+const refreshFormulaScrollbars = initFloatingScrollbars();
 init();
 
 const setup = () => {
@@ -564,7 +489,7 @@ const setup = () => {
 		visit.scroll.animate = false
 		await scrollToTopBeforeSwap()
 	})
-	window.swup.hooks.on('content:replace', initCustomScrollbar)
+	window.swup.hooks.on('content:replace', refreshFormulaScrollbars)
 	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
 		// change banner height immediately when a link is clicked
 		const bodyElement = document.querySelector('body')

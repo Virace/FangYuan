@@ -33,6 +33,14 @@ export const satteriKatex = {
 				});
 			}
 			const rendered = htmlToHast(html, { fragment: true });
+			if (displayMode) {
+				const viewport = rendered.children[0]?.children?.find(
+					(child) =>
+						child.type === "element" &&
+						child.properties.className?.includes("katex"),
+				);
+				if (viewport) viewport.properties.tabIndex = 0;
+			}
 			context.replaceNode(scope, rendered.children);
 		},
 	},

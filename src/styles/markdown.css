@@ -271,8 +271,17 @@
     content: none;
 }
 
-.custom-md .katex-display-container {
+.custom-md .katex-display {
+    position: relative;
     max-width: 100%;
-    margin: 1em 0;
+}
+
+.custom-md .katex-display > .katex {
     overflow-x: auto;
+    padding-block: 0.125em;
+}
+
+.custom-md .katex-display > .katex > .katex-html {
+    width: max-content;
+    min-width: 100%;
 }
