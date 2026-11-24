@@ -22,7 +22,7 @@ export class VeilHost {
 		const rect = main.getBoundingClientRect();
 		const top = Math.max(0, rect.top);
 		const width = rect.width;
-		const height = Math.max(0, innerHeight - top);
+		const height = Math.max(0, Math.min(innerHeight, rect.bottom) - top);
 		const dpr = Math.min(devicePixelRatio, 2);
 		this.host.style.transform = `translate3d(${Math.max(0, rect.left)}px,${top}px,0)`;
 		this.host.style.width = `${width}px`;

@@ -260,6 +260,13 @@ export function installOpticalTransition(
 		phase("rolling", now, Math.min(380, Math.max(240, rollStart * 0.7)));
 	}
 
+	function paint() {
+		if (!host?.ctx || !main) return;
+		host.sync(main);
+		Object.assign(state, host.geometry);
+		renderer.render(host.ctx, state);
+	}
+
 	function draw(now: number) {
 		frame = 0;
 		if (!current || !host?.ctx || !main || (current.done && !replacedAt))
@@ -303,9 +310,7 @@ export function installOpticalTransition(
 				if (progress === 1) return finish(true);
 				break;
 		}
-		host.sync(main);
-		Object.assign(state, host.geometry);
-		renderer.render(host.ctx, state);
+		paint();
 		frame = requestAnimationFrame(draw);
 	}
 
@@ -396,6 +401,8 @@ export function installOpticalTransition(
 		setBannerHome(isHome(visit));
 		pulseBanner();
 		replacedAt = performance.now();
+		state.dt = 0;
+		paint();
 	});
 	motion.addEventListener("change", () => {
 		if (!motion.matches || !current) return;
