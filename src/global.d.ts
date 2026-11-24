@@ -1,9 +1,10 @@
-import type { AstroIntegration } from "@swup/astro";
+import type Swup from "@swup/astro/client/Swup";
+import type {} from "@swup/astro/client/SwupA11yPlugin";
+import type {} from "@swup/astro/client/SwupScrollPlugin";
 
 declare global {
 	interface Window {
-		// type from '@swup/astro' is incorrect
-		swup: AstroIntegration;
+		swup: Swup;
 		pagefind: {
 			search: (query: string) => Promise<{
 				results: Array<{

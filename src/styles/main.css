@@ -762,7 +762,7 @@
 
 
 .toc-hide,
-.toc-not-ready {
+html.optical-transition-active #toc-wrapper {
     pointer-events: none;
     opacity: 0;
 }

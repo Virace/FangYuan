@@ -9,24 +9,23 @@ export function createBeamPulses(
 	beam: SVGGElement,
 ): BeamPulses | undefined {
 	const context = canvas.getContext("2d");
-	const field = document.createElement("canvas");
-	const paint = field.getContext("2d");
 	const svg = beam.ownerSVGElement;
 	const source = svg?.querySelector<SVGImageElement>("#optics-slice image");
 	const inlet = beam.querySelector<SVGGElement>("[data-plane=incoming]");
-	const slices = beam.querySelectorAll<SVGUseElement>(
-		"[data-spectrum-segment]",
-	);
-	if (!context || !paint || !svg || !source || !inlet) return;
+	const outlet = beam.querySelector<SVGGElement>("[data-plane=outgoing]");
+	if (!context || !svg || !source || !inlet || !outlet) return;
 
+	const slices = Array.from(
+		outlet.querySelectorAll<SVGUseElement>("[data-spectrum-segment]"),
+	);
 	const spectrum = new Image();
 	const inletFade = svg.querySelector("#optics-inlet-fade");
-	const fade = paint.createLinearGradient(0, 0, 30, 0);
+	const fade = context.createLinearGradient(0, 0, 30, 0);
 	for (const stop of inletFade?.querySelectorAll("stop") ?? []) {
 		const alpha = 1 - Number(stop.getAttribute("stop-opacity") ?? 1);
 		fade.addColorStop(stop.offset.baseVal, `rgb(0 0 0 / ${alpha})`);
 	}
-	const inletColor = paint.createLinearGradient(0, -19, 0, 19);
+	const inletColor = context.createLinearGradient(0, -19, 0, 19);
 	for (const stop of svg.querySelectorAll<SVGStopElement>(
 		"#optics-pulse-inlet stop",
 	)) {
@@ -50,19 +49,27 @@ export function createBeamPulses(
 		{ from: number; to: number; duration: number }
 	>();
 	let frame = 0;
-	let dirty = true;
-	let lastPose = "";
-	spectrum.onload = () => {
-		dirty = true;
-	};
+	let sliceMatrices: DOMMatrix[] | undefined;
+	let combinedMask: CanvasRenderingContext2D | null = null;
 
 	const render = () => {
 		frame = 0;
-		for (const animation of pulses.keys()) {
-			if (animation.playState === "idle" || animation.playState === "finished")
+		const packets: { x: number; alpha: number }[] = [];
+		for (const [animation, { from, to, duration }] of pulses) {
+			if (
+				animation.playState === "idle" ||
+				animation.playState === "finished"
+			) {
 				pulses.delete(animation);
+				continue;
+			}
+			const progress = Number(animation.currentTime) / duration;
+			packets.push({
+				x: from + (to - from) * progress,
+				alpha: Math.min(1, progress / 0.045),
+			});
 		}
-		if (!pulses.size) return;
+		if (!packets.length) return;
 		const bounds = canvas.getBoundingClientRect();
 		const pose = beam.getScreenCTM();
 		if (!pose || !bounds.width || !bounds.height) return;
@@ -70,89 +77,96 @@ export function createBeamPulses(
 		pose.f -= bounds.top;
 		const width = Math.ceil(bounds.width);
 		const height = Math.ceil(bounds.height);
-		if (canvas.width !== width || canvas.height !== height) {
-			canvas.width = field.width = width;
-			canvas.height = field.height = height;
-			dirty = true;
-		}
-		const poseKey = pose.toString();
-		if (dirty || poseKey !== lastPose) {
-			paint.resetTransform();
-			paint.clearRect(0, 0, width, height);
-			const setPlane = (element: SVGGraphicsElement) => {
-				const matrix = element.getScreenCTM();
-				if (matrix)
-					paint.setTransform(
-						matrix.a,
-						matrix.b,
-						matrix.c,
-						matrix.d,
-						matrix.e - bounds.left,
-						matrix.f - bounds.top,
-					);
-			};
-			setPlane(inlet);
-			paint.fillStyle = inletColor;
-			paint.fillRect(-4400, -19, inletFade ? 4430 : 4400, 38);
-			if (inletFade) {
-				paint.globalCompositeOperation = "destination-out";
-				paint.fillStyle = fade;
-				paint.fillRect(0, -19, 30, 38);
-				paint.globalCompositeOperation = "source-over";
-			}
-			if (spectrum.naturalWidth) {
-				const half = spectrum.naturalHeight / 2;
-				for (const slice of slices) {
-					setPlane(slice);
-					paint.drawImage(
-						spectrum,
-						0,
-						half,
-						spectrum.naturalWidth,
-						half,
-						0,
-						0,
-						1,
-						1,
-					);
-				}
-			}
-			lastPose = poseKey;
-			dirty = false;
-		}
+		if (canvas.width !== width) canvas.width = width;
+		if (canvas.height !== height) canvas.height = height;
 		context.resetTransform();
 		context.clearRect(0, 0, width, height);
-		context.globalCompositeOperation = "source-over";
-		for (const [animation, { from, to, duration }] of pulses) {
-			const progress = Number(animation.currentTime) / duration;
-			context.setTransform(pose);
-			context.translate(from + (to - from) * progress, 0);
-			context.fillStyle = band;
-			context.globalAlpha = Math.min(1, progress / 0.045);
-			context.fillRect(-64, -4400, 76, 8800);
+		context.save();
+		context.setTransform(pose);
+		context.beginPath();
+		for (const { x } of packets) context.rect(x - 64, -4400, 76, 8800);
+		context.clip();
+		const entry = inlet.transform.baseVal.getItem(0).matrix;
+		const inletEnd = inletFade ? 30 : 0;
+		const overlaps = (left: number, right: number) =>
+			packets.some(({ x }) => x + 12 >= left && x - 64 <= right);
+		if (overlaps(entry.e - 4400 * entry.a, entry.e + inletEnd * entry.a)) {
+			context.setTransform(pose.multiply(entry));
+			context.fillStyle = inletColor;
+			context.fillRect(-4400, -19, 4400 + inletEnd, 38);
+			if (inletFade) {
+				context.globalCompositeOperation = "destination-out";
+				context.fillStyle = fade;
+				context.fillRect(0, -19, 30, 38);
+				context.globalCompositeOperation = "source-over";
+			}
+		}
+		if (spectrum.naturalWidth) {
+			const exit = outlet.transform.baseVal.getItem(0).matrix;
+			sliceMatrices ??= slices.map((slice) =>
+				exit.multiply(slice.transform.baseVal.getItem(0).matrix),
+			);
+			const half = spectrum.naturalHeight / 2;
+			for (const matrix of sliceMatrices) {
+				if (!overlaps(matrix.e, matrix.e + matrix.a)) continue;
+				context.setTransform(pose.multiply(matrix));
+				context.drawImage(
+					spectrum,
+					0,
+					half,
+					spectrum.naturalWidth,
+					half,
+					0,
+					0,
+					1,
+					1,
+				);
+			}
+		}
+		context.restore();
+
+		context.globalCompositeOperation = "destination-in";
+		let mask = context;
+		if (packets.length > 1) {
+			combinedMask ??= document.createElement("canvas").getContext("2d");
+			if (combinedMask) {
+				mask = combinedMask;
+				if (mask.canvas.width !== width) mask.canvas.width = width;
+				if (mask.canvas.height !== height) mask.canvas.height = height;
+				mask.resetTransform();
+				mask.clearRect(0, 0, width, height);
+			}
+		}
+		for (const { x, alpha } of packets) {
+			mask.setTransform(pose);
+			mask.translate(x, 0);
+			mask.fillStyle = band;
+			mask.globalAlpha = alpha;
+			mask.fillRect(-64, -4400, 76, 8800);
 		}
 		context.resetTransform();
 		context.globalAlpha = 1;
-		context.globalCompositeOperation = "source-in";
-		context.drawImage(field, 0, 0);
+		if (mask !== context) context.drawImage(mask.canvas, 0, 0);
+		context.globalCompositeOperation = "source-over";
 		frame = requestAnimationFrame(render);
 	};
 
 	return {
-		add(animation: Animation, from: number, to: number, duration: number) {
+		add(animation, from, to, duration) {
 			if (!spectrum.src) spectrum.src = source.href.baseVal;
 			pulses.set(animation, { from, to, duration });
 			if (!frame) frame = requestAnimationFrame(render);
 		},
 		invalidate() {
-			dirty = true;
+			sliceMatrices = undefined;
 		},
 		reset() {
 			cancelAnimationFrame(frame);
 			frame = 0;
 			pulses.clear();
-			canvas.width = canvas.height = field.width = field.height = 1;
-			dirty = true;
+			canvas.width = canvas.height = 1;
+			combinedMask = null;
+			sliceMatrices = undefined;
 		},
 	};
 }

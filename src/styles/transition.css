@@ -1,13 +1,63 @@
 /* Page transition animations with Swup */
-html.is-changing .transition-swup-fade {
+html.is-changing:not(.optical-transition-active) .transition-swup-fade {
     transition:
         opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
         transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-html.is-animating .transition-swup-fade {
+html.is-animating:not(.optical-transition-active) .transition-swup-fade {
     opacity: 0;
     transform: translateY(1rem);
+}
+
+.optical-transition-veil {
+    position: fixed;
+    inset: 0 auto auto 0;
+    z-index: 35;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: var(--radius-large) var(--radius-large) 0 0;
+}
+
+.optical-transition-veil[data-clipped-top] {
+    border-radius: 0;
+}
+
+.optical-transition-veil canvas {
+    display: block;
+    width: 100%;
+}
+
+html.optical-transition-light .optics-stage,
+html.optical-transition-light #banner-wrapper,
+html.optical-transition-light #main-grid,
+html.optical-transition-light #sidebar-sticky {
+    transition-property: none;
+}
+
+html.optical-transition-light #sidebar {
+    animation: none;
+    opacity: 1;
+}
+
+html.optical-transition-light.optical-banner-changing.is-changing :is(#banner-wrapper, #sidebar) {
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.optical-transition-light.optical-banner-changing.is-animating :is(#banner-wrapper, #sidebar) {
+    opacity: 0;
+}
+
+#swup-container[data-optical-revealed] .onload-animation {
+    opacity: 1;
+    animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #swup-container .onload-animation {
+        opacity: 1;
+        animation: none;
+    }
 }
 
 /* Fade-in animations for components */

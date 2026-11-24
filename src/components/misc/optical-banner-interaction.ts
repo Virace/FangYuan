@@ -73,6 +73,7 @@ class OpticalBanner extends HTMLElement {
 		let tailAngle = 0;
 		let tailVelocity = 0;
 		let lastBend = 0;
+		let resizing = false;
 		let drag:
 			| {
 					start: PointerEvent;
@@ -190,7 +191,7 @@ class OpticalBanner extends HTMLElement {
 					: 0;
 		};
 		const wake = () => {
-			if (!frame) {
+			if (!frame && !resizing) {
 				previousTime = performance.now();
 				frame = requestAnimationFrame(step);
 			}
@@ -200,9 +201,9 @@ class OpticalBanner extends HTMLElement {
 			targetY = nextY;
 			if (x !== targetX || y !== targetY) wake();
 		};
-		const playPulse = (start: PointerEvent) => {
+		const playPulse = (start?: PointerEvent): boolean => {
 			const matrix = lightOrbit.getScreenCTM();
-			if (!matrix || motion.matches) return;
+			if (!matrix || motion.matches) return false;
 			const inverse = matrix.inverse();
 			const rect = this.getBoundingClientRect();
 			const bottom = spill?.getBoundingClientRect().bottom ?? rect.bottom;
@@ -214,7 +215,7 @@ class OpticalBanner extends HTMLElement {
 				new DOMPoint(rect.right, bottom),
 			].map((point) => point.matrixTransform(inverse).x);
 			const source =
-				start.target === inletHandle
+				start && start.target === inletHandle
 					? Math.min(
 							prismProfile ? -prismRadius(prismProfile, angle + Math.PI) : -74,
 							new DOMPoint(start.clientX, start.clientY).matrixTransform(
@@ -251,6 +252,7 @@ class OpticalBanner extends HTMLElement {
 				beamPulses ??= createBeamPulses(pulseCanvas, beam);
 				beamPulses?.add(sweep, source, end, duration);
 			}
+			return true;
 		};
 		const reset = () => {
 			beamPulses?.reset();
@@ -326,7 +328,7 @@ class OpticalBanner extends HTMLElement {
 			aim(0, 0);
 		};
 		this.onpointerdown = (event) => {
-			if (!event.isPrimary || drag) return;
+			if (resizing || !event.isPrimary || drag) return;
 			pendingMove = undefined;
 			const onBeam =
 				event.target instanceof Element && event.target.matches(".beam-handle");
@@ -402,14 +404,54 @@ class OpticalBanner extends HTMLElement {
 			playPulse(start);
 		};
 
+		const stage = this.querySelector<HTMLElement>(
+			".optics-viewport .optics-stage",
+		);
+		const resize = (event: TransitionEvent) => {
+			if (event.target !== stage || event.propertyName !== "transform") return;
+			resizing = event.type === "transitionrun";
+			if (resizing) {
+				cancelAnimationFrame(frame);
+				frame = 0;
+				endDrag();
+				pendingMove = touchStart = undefined;
+				this.removeAttribute("data-lit");
+				targetX = targetY = 0;
+			} else if (
+				pendingMove ||
+				x !== targetX ||
+				y !== targetY ||
+				angle !== targetAngle ||
+				tailAngle !== angle ||
+				tailVelocity
+			) {
+				wake();
+			}
+		};
+		const listeners = new AbortController();
+		for (const event of [
+			"transitionrun",
+			"transitionend",
+			"transitioncancel",
+		] as const)
+			stage?.addEventListener(event, resize, { signal: listeners.signal });
 		const visibility = new IntersectionObserver(([entry]) => {
 			if (!entry.isIntersecting) reset();
 		});
 		visibility.observe(this);
+		const pulseOnNavigation = (event: Event) => {
+			const rect = this.getBoundingClientRect();
+			if (rect.bottom > 0 && rect.top < innerHeight && playPulse()) {
+				if (event instanceof CustomEvent) event.detail?.onPlay?.();
+			}
+		};
+		this.addEventListener("fangyuan:optical-pulse", pulseOnNavigation);
 		motion.addEventListener("change", reset);
 		this.cleanup = () => {
+			listeners.abort();
 			reset();
 			visibility.disconnect();
+			this.removeEventListener("fangyuan:optical-pulse", pulseOnNavigation);
 			motion.removeEventListener("change", reset);
 		};
 	}
