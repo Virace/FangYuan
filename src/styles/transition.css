@@ -28,6 +28,11 @@ html.is-animating:not(.optical-transition-active) .transition-swup-fade {
     width: 100%;
 }
 
+html.optical-transition-active #banner-wrapper,
+html.optical-transition-active #main-grid {
+    will-change: transform;
+}
+
 html.optical-transition-light .optics-stage,
 html.optical-transition-light #banner-wrapper,
 html.optical-transition-light #main-grid,

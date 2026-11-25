@@ -122,6 +122,8 @@ class TableOfContents extends HTMLElement {
 	resizeFrame = 0;
 	scrollFrame = 0;
 	initFrame = 0;
+	transitionFallbackTimer = 0;
+	transitionEndHandler: (() => void) | null = null;
 	isInitialized = false;
 	proseAnimationTarget: HTMLElement | null = null;
 
@@ -369,8 +371,42 @@ class TableOfContents extends HTMLElement {
 		requestAnimationFrame(() => this.toggleActiveHeading());
 	};
 
+	/**
+	 * 滚动超出正文主体后通过独立状态隐藏 TOC，避免在评论区遮挡或停留。
+	 */
+	updateArticleBoundsVisibility = () => {
+		if (!this.wrapperEl) return;
+
+		const contentEl =
+			document.querySelector<HTMLElement>("#post-container .markdown-content") ??
+			document.getElementById("post-container");
+		if (!contentEl) {
+			delete this.wrapperEl.dataset.tocPastArticle;
+			return;
+		}
+
+		const rect = contentEl.getBoundingClientRect();
+		if (rect.height <= 0) {
+			delete this.wrapperEl.dataset.tocPastArticle;
+			return;
+		}
+
+		const isCurrentlyPast = this.wrapperEl.dataset.tocPastArticle === "true";
+		const hideThreshold = isCurrentlyPast ? 140 : 100;
+		if (rect.bottom <= hideThreshold) {
+			this.wrapperEl.dataset.tocPastArticle = "true";
+		} else {
+			delete this.wrapperEl.dataset.tocPastArticle;
+		}
+	};
+
 	updateProgress = () => {
-		if (this.wrapperEl?.classList.contains("toc-hide")) {
+		this.updateArticleBoundsVisibility();
+
+		if (
+			this.wrapperEl?.classList.contains("toc-hide") ||
+			this.wrapperEl?.dataset.tocPastArticle === "true"
+		) {
 			this.setOpen(false);
 			this.setHover(false);
 		}
@@ -529,6 +565,15 @@ class TableOfContents extends HTMLElement {
 		}
 	};
 
+	scheduleInit = () => {
+		if (this.initFrame || !this.isConnected || this.isInitialized) return;
+		this.initFrame = requestAnimationFrame(() => {
+			this.initFrame = 0;
+			if (!this.isConnected) return;
+			this.init();
+		});
+	};
+
 	connectedCallback() {
 		this.proseAnimationTarget = document.querySelector<HTMLElement>(".prose");
 		this.proseAnimationTarget?.addEventListener(
@@ -537,11 +582,32 @@ class TableOfContents extends HTMLElement {
 			{ once: true },
 		);
 
-		this.initFrame = requestAnimationFrame(() => {
-			this.initFrame = 0;
-			if (!this.isConnected) return;
-			this.init();
-		});
+		if (
+			document.documentElement.classList.contains("optical-transition-active")
+		) {
+			// 光幕遮挡且 #toc-wrapper 隐藏期间延后首次布局测量，避免抢跑阻塞切页帧率。
+			const onReady = () => {
+				if (this.transitionFallbackTimer) {
+					window.clearTimeout(this.transitionFallbackTimer);
+					this.transitionFallbackTimer = 0;
+				}
+				if (this.transitionEndHandler) {
+					document.removeEventListener(
+						"fangyuan:optical-transition-end",
+						this.transitionEndHandler,
+					);
+					this.transitionEndHandler = null;
+				}
+				this.scheduleInit();
+			};
+			this.transitionEndHandler = onReady;
+			document.addEventListener("fangyuan:optical-transition-end", onReady, {
+				once: true,
+			});
+			this.transitionFallbackTimer = window.setTimeout(onReady, 900);
+		} else {
+			this.scheduleInit();
+		}
 
 		document.fonts?.ready.then(() => {
 			if (!this.isConnected || !this.isInitialized) return;
@@ -633,6 +699,17 @@ class TableOfContents extends HTMLElement {
 			cancelAnimationFrame(this.initFrame);
 			this.initFrame = 0;
 		}
+		if (this.transitionFallbackTimer) {
+			window.clearTimeout(this.transitionFallbackTimer);
+			this.transitionFallbackTimer = 0;
+		}
+		if (this.transitionEndHandler) {
+			document.removeEventListener(
+				"fangyuan:optical-transition-end",
+				this.transitionEndHandler,
+			);
+			this.transitionEndHandler = null;
+		}
 		if (this.resizeFrame) {
 			cancelAnimationFrame(this.resizeFrame);
 			this.resizeFrame = 0;
@@ -673,6 +750,7 @@ class TableOfContents extends HTMLElement {
 		if (this.wrapperEl && !this.wrapperEl.querySelector("table-of-contents")) {
 			delete this.wrapperEl.dataset.tocLayout;
 			delete this.wrapperEl.dataset.tocSwitching;
+			delete this.wrapperEl.dataset.tocPastArticle;
 			this.wrapperEl.style.removeProperty("--toc-outside-width");
 			this.wrapperEl.style.removeProperty("--toc-popover-width");
 			this.wrapperEl.style.removeProperty("--toc-inside-right");

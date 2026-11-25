@@ -4,11 +4,11 @@ import { COMMENT_EMOJIS } from "@constants/comment-emojis";
 export let onSelect: ((emoji: string) => void) | null = null;
 </script>
 
-<div class="flex flex-wrap gap-2">
+<div class="comment-emoji-grid">
 	{#each COMMENT_EMOJIS as emoji}
 		<button
 			type="button"
-			class="comment-action comment-action-icon text-base"
+			class="comment-action comment-emoji-cell text-base"
 			on:click={() => onSelect?.(emoji)}
 		>
 			{emoji}

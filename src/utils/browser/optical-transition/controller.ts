@@ -232,7 +232,13 @@ export function installOpticalTransition(
 		host = undefined;
 		current = undefined;
 		main = null;
+		const wasActive = document.documentElement.classList.contains(
+			"optical-transition-active",
+		);
 		document.documentElement.classList.remove("optical-transition-active");
+		if (wasActive) {
+			document.dispatchEvent(new Event("fangyuan:optical-transition-end"));
+		}
 	}
 
 	function fade(visit: Visit) {

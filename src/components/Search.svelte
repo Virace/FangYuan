@@ -4,6 +4,7 @@ import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
 import { url } from "@utils/permalink/urls.ts";
 import { onMount } from "svelte";
+import { siteConfig } from "@/config";
 import type { SearchResult } from "@/global";
 
 let keywordDesktop = "";
@@ -12,6 +13,12 @@ let result: SearchResult[] = [];
 let isSearching = false;
 let pagefindLoaded = false;
 let initialized = false;
+const isZhLocale = siteConfig.lang.toLowerCase().startsWith("zh");
+const emptySearchTitle = isZhLocale ? "未找到匹配内容" : "No matching results";
+const emptySearchHint = isZhLocale
+	? "换一个关键词，或尝试更短的词组。"
+	: "Try a different keyword or a shorter phrase.";
+const clearSearchLabel = isZhLocale ? "清空搜索" : "Clear search";
 
 const fakeResult: SearchResult[] = [
 	{
@@ -36,6 +43,11 @@ const togglePanel = () => {
 	panel?.classList.toggle("float-panel-closed");
 };
 
+const closePanel = () => {
+	const panel = document.getElementById("search-panel");
+	panel?.classList.add("float-panel-closed");
+};
+
 const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
 	const panel = document.getElementById("search-panel");
 	if (!panel || !isDesktop) return;
@@ -48,7 +60,8 @@ const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
 };
 
 const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
-	if (!keyword) {
+	const trimmed = keyword.trim();
+	if (!trimmed) {
 		setPanelVisibility(false, isDesktop);
 		result = [];
 		return;
@@ -64,7 +77,7 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 		let searchResults: SearchResult[] = [];
 
 		if (import.meta.env.PROD && pagefindLoaded && window.pagefind) {
-			const response = await window.pagefind.search(keyword);
+			const response = await window.pagefind.search(trimmed);
 			searchResults = await Promise.all(
 				response.results.map((item) => item.data()),
 			);
@@ -76,13 +89,30 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 		}
 
 		result = searchResults;
-		setPanelVisibility(result.length > 0, isDesktop);
+		setPanelVisibility(true, isDesktop);
 	} catch (error) {
 		console.error("Search error:", error);
 		result = [];
 		setPanelVisibility(false, isDesktop);
 	} finally {
 		isSearching = false;
+	}
+};
+
+const clearDesktopKeyword = () => {
+	keywordDesktop = "";
+	result = [];
+	setPanelVisibility(false, true);
+};
+
+const clearMobileKeyword = () => {
+	keywordMobile = "";
+	result = [];
+};
+
+const handleInputKeydown = (event: KeyboardEvent) => {
+	if (event.key === "Escape") {
+		closePanel();
 	}
 };
 
@@ -125,30 +155,33 @@ onMount(() => {
 	}
 });
 
-$: if (initialized && keywordDesktop) {
-	(async () => {
-		await search(keywordDesktop, true);
-	})();
+$: if (initialized && keywordDesktop !== undefined) {
+	void search(keywordDesktop, true);
 }
 
-$: if (initialized && keywordMobile) {
-	(async () => {
-		await search(keywordMobile, false);
-	})();
+$: if (initialized && keywordMobile !== undefined) {
+	void search(keywordMobile, false);
 }
+
+$: hasActiveKeyword = Boolean(keywordDesktop.trim() || keywordMobile.trim());
 </script>
 
 <!-- search bar for desktop view -->
-<div id="search-bar" class="search-field-shell hidden lg:flex items-center h-11 mr-2 rounded-lg">
+<div id="search-bar" class="search-field-shell relative hidden lg:flex items-center h-11 mr-2 rounded-lg">
     <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
     <input
            aria-label={i18n(I18nKey.search)}
            placeholder="{i18n(I18nKey.search)}"
            bind:value={keywordDesktop}
            on:focus={() => search(keywordDesktop, true)}
-           class="search-field-input pl-10 text-sm
-          h-full w-40 active:w-60 focus:w-60 text-50 placeholder:text-black/25 dark:placeholder:text-white/25"
+           on:keydown={handleInputKeydown}
+           class={`search-field-input pl-10 text-sm h-full w-40 active:w-60 focus:w-60 placeholder:text-black/25 dark:placeholder:text-white/25 ${keywordDesktop ? "pr-8" : "pr-3"}`}
     />
+    {#if keywordDesktop}
+        <button type="button" on:click={clearDesktopKeyword} aria-label={clearSearchLabel} class="search-clear-btn right-2">
+            <Icon icon="material-symbols:close-rounded" class="text-sm"></Icon>
+        </button>
+    {/if}
 </div>
 
 <!-- toggle btn for phone/tablet view -->
@@ -165,24 +198,60 @@ $: if (initialized && keywordMobile) {
         <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
         <input
                aria-label={i18n(I18nKey.search)}
-               placeholder="Search"
+               placeholder="{i18n(I18nKey.search)}"
                bind:value={keywordMobile}
-               class="search-field-input pl-10 absolute inset-0 text-sm
-                focus:w-60 text-50 placeholder:text-black/25 dark:placeholder:text-white/25"
+               on:keydown={handleInputKeydown}
+               class={`search-field-input pl-10 absolute inset-0 w-full text-sm placeholder:text-black/25 dark:placeholder:text-white/25 ${keywordMobile ? "pr-9" : "pr-3"}`}
         />
+        {#if keywordMobile}
+            <button type="button" on:click={clearMobileKeyword} aria-label={clearSearchLabel} class="search-clear-btn right-2.5">
+                <Icon icon="material-symbols:close-rounded" class="text-sm"></Icon>
+            </button>
+        {/if}
     </div>
 
+    {#if hasActiveKeyword || result.length > 0}
+        <div class="flex items-center justify-between px-2.5 pt-2 lg:pt-1 pb-1.5" aria-hidden="true">
+            <div class="flex items-center gap-2 text-xs font-semibold text-75">
+                <span class="fy-brand-glyph-sm"></span>
+                <span>{i18n(I18nKey.search)}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="optical-chip-static px-1.5 py-0.5 rounded text-xs tabular-nums font-medium text-accent-foreground">
+                    {result.length}
+                </span>
+                <kbd class="hidden lg:inline-flex optical-chip-static px-1.5 py-0.5 rounded text-xs font-mono text-muted">ESC</kbd>
+            </div>
+        </div>
+        <div class="optical-hairline mb-1" aria-hidden="true"></div>
+    {/if}
+
     <!-- search results -->
-    {#each result as item}
-        <a href={item.url}
-           class="optical-menu-item first-of-type:mt-2 lg:first-of-type:mt-0 group block
-       rounded-xl text-lg px-3 py-2">
-            <div class="transition text-90 inline-flex font-bold group-hover:text-accent-foreground">
-                {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-xs translate-x-1 my-auto text-accent-solid"></Icon>
+    {#if result.length > 0}
+        {#each result as item, index}
+            {#if index > 0}
+                <div class="optical-hairline mx-2 my-0.5" aria-hidden="true"></div>
+            {/if}
+            <a href={item.url}
+               class="optical-menu-item optical-search-result group flex items-center justify-between gap-3 rounded-xl pl-4 pr-3 py-2.5">
+                <div class="min-w-0">
+                    <div class="transition text-[0.94rem] font-bold leading-snug text-90 group-hover:text-accent-foreground truncate">
+                        {item.meta.title}
+                    </div>
+                    <div class="transition text-xs leading-5 text-muted mt-0.5 line-clamp-2">
+                        {@html item.excerpt}
+                    </div>
+                </div>
+                <Icon icon="material-symbols:chevron-right-rounded" class="transition text-lg shrink-0 text-muted group-hover:text-accent-solid group-hover:translate-x-0.5"></Icon>
+            </a>
+        {/each}
+    {:else if hasActiveKeyword && !isSearching}
+        <div class="py-6 px-4 text-center space-y-1.5">
+            <div class="optical-chip-static w-9 h-9 mx-auto rounded-xl grid place-items-center text-accent-solid">
+                <Icon icon="material-symbols:search" class="text-lg"></Icon>
             </div>
-            <div class="transition text-sm text-50">
-                {@html item.excerpt}
-            </div>
-        </a>
-    {/each}
+            <div class="text-xs font-semibold text-75">{emptySearchTitle}</div>
+            <div class="text-xs text-muted">{emptySearchHint}</div>
+        </div>
+    {/if}
 </div>

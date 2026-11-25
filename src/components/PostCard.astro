@@ -52,7 +52,7 @@ const fallbackCover = hasCover
 const isPinned = isPinnedPost(entry.data);
 ---
 <div class:list={["card-base optical-post-card flex flex-col-reverse md:flex-col w-full rounded-panel overflow-hidden relative md:min-h-[12.75rem]", className]} style={style}>
-    <div class="optical-card-blur-band hidden md:block pointer-events-none" aria-hidden="true"></div>
+    {hasCover && <div class="optical-card-blur-band hidden md:block pointer-events-none" aria-hidden="true"></div>}
     <div class="optical-card-text-scrim hidden md:block pointer-events-none" aria-hidden="true"></div>
 
     <div class:list={["optical-card-content relative z-10 pl-6 md:pl-9 pr-6 md:pr-4 pt-5 md:pt-7 pb-6 flex-1 flex flex-col justify-between w-full", hasCover ? "md:w-[70%]" : "md:w-[78%]"]}>

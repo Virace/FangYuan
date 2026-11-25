@@ -96,7 +96,7 @@ const jsonLd = {
         <div id="post-container" class:list={["card-base panel-edge z-10 px-6 md:px-9 pt-6 pb-4 relative w-full ", {}]}>
             {!hasPrimaryHeading && <h1 class="sr-only">{entry.data.title}</h1>}
 
-            <div class="flex flex-row text-muted gap-5 mb-3 transition onload-animation">
+            <div class="flex flex-wrap items-center text-muted gap-x-5 gap-y-2 mb-3 transition onload-animation">
                 <div class="flex flex-row items-center">
                     <div class="meta-icon">
                         <Icon name="material-symbols:notes-rounded" class="text-xl"></Icon>
@@ -111,6 +111,9 @@ const jsonLd = {
                         {remarkPluginFrontmatter.minutes} {" " + i18n(remarkPluginFrontmatter.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}
                     </div>
                 </div>
+                {pageMetricsConfig.enable && qingyanConfig && (
+                    <PageViewCounter client:only="svelte" postKey={postKey} postTitle={entry.data.title} postUrl={postUrl} qingyan={qingyanConfig} />
+                )}
             </div>
 
             <div class="relative onload-animation">
@@ -134,11 +137,6 @@ const jsonLd = {
                         tags={entry.data.tags}
                         category={entry.data.category}
                 ></PostMetadata>
-                {pageMetricsConfig.enable && qingyanConfig && (
-                    <div class="mb-5">
-                        <PageViewCounter client:only="svelte" postKey={postKey} postTitle={entry.data.title} postUrl={postUrl} qingyan={qingyanConfig} />
-                    </div>
-                )}
                 {!entry.data.image && <div class="optical-hairline mb-5" aria-hidden="true"></div>}
             </div>
 
