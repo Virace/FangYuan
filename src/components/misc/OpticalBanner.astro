@@ -262,7 +262,13 @@ const ticks = Array.from(
 			</div>
 		</div>
 	</div>
-	<canvas class="beam-pulses" width="1" height="1"></canvas>
+	<div class="beam-pulses-layer">
+		<div class="beam-pulses-frame">
+			<div class="optics-stage beam-pulses-stage">
+				<canvas class="beam-pulses" width="1" height="1"></canvas>
+			</div>
+		</div>
+	</div>
 </optical-banner>
 
 <style>
@@ -285,10 +291,20 @@ const ticks = Array.from(
 		mask-image: linear-gradient(to bottom, #000, rgb(0 0 0 / .92) 12%, rgb(0 0 0 / .55) 38%, rgb(0 0 0 / .18) 66%, rgb(0 0 0 / .035) 86%, transparent);
 	}
 	.spill-frame { position: absolute; inset: auto 0 100%; height: var(--optics-height); }
-	.beam-pulses {
+	.beam-pulses-layer {
 		position: absolute; inset: 0 0 auto; width: 100%; height: calc(100% + var(--spill-height));
-		pointer-events: none; display: var(--pulse-display, none);
+		pointer-events: none; visibility: hidden;
 		mask-image: linear-gradient(to bottom, black calc(100% - var(--spill-height)), rgb(0 0 0 / .55) calc(100% - var(--spill-height) * .62), transparent);
+	}
+	optical-banner[data-pulsing] .beam-pulses-layer { visibility: visible; }
+	.beam-pulses-frame { position: absolute; inset: 0 0 var(--spill-height); }
+	.beam-pulses-stage { contain: none; }
+	.beam-pulses {
+		position: absolute;
+		inset: 0 0 calc(var(--spill-height) * -1);
+		width: 100%;
+		height: calc(100% + var(--spill-height));
+		pointer-events: none;
 	}
 	.optics-stage { position: absolute; inset: 0; pointer-events: none; }
 	.optics {
@@ -349,7 +365,8 @@ const ticks = Array.from(
 				transform: translateY(calc(-50% + (var(--banner-height-home) - var(--banner-height)) / 2)) scale(1);
 			}
 			.optics { height: var(--compact); top: 50%; }
-			.spill-frame .optics-stage { contain: none; }
+			.spill-frame .optics-stage,
+			.beam-pulses-stage { contain: none; }
 			:global(body.lg\:is-home) .optics-stage { transform: translateY(-50%) scale(var(--zoom)); }
 			@media (prefers-reduced-motion: no-preference) {
 				.optics-stage { transition: transform 700ms cubic-bezier(.4,0,.2,1); }

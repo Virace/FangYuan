@@ -5,6 +5,8 @@ export interface VeilGeometry {
 	height: number;
 	dpr: number;
 	isDark: boolean;
+	startVisibleHeight?: number;
+	targetVisibleHeight?: number;
 }
 
 export interface TransitionFrameState extends VeilGeometry {
@@ -26,6 +28,7 @@ export interface OpticalTransitionRenderer {
 		width: number;
 		height: number;
 		isDark: boolean;
+		startVisibleHeight?: number;
 	}): void;
 	render(ctx: CanvasRenderingContext2D, state: TransitionFrameState): void;
 	dispose(): void;

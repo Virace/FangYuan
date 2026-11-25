@@ -69,14 +69,27 @@ export function createBeamPulses(
 				alpha: Math.min(1, progress / 0.045),
 			});
 		}
-		if (!packets.length) return;
-		const bounds = canvas.getBoundingClientRect();
-		const pose = beam.getScreenCTM();
-		if (!pose || !bounds.width || !bounds.height) return;
-		pose.e -= bounds.left;
-		pose.f -= bounds.top;
-		const width = Math.ceil(bounds.width);
-		const height = Math.ceil(bounds.height);
+		if (!packets.length) {
+			context.resetTransform();
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			return;
+		}
+		const cssWidth = canvas.clientWidth;
+		const cssHeight = canvas.clientHeight;
+		const ctm = beam.getCTM();
+		if (!ctm || !cssWidth || !cssHeight) return;
+		const svgStyle = getComputedStyle(svg);
+		const ox =
+			Number.parseFloat(svgStyle.left) - Number.parseFloat(svgStyle.width) / 2;
+		const oy =
+			Number.parseFloat(svgStyle.top) - Number.parseFloat(svgStyle.height) / 2;
+		const dpr = Math.min(window.devicePixelRatio || 1, 2);
+		const width = Math.ceil(cssWidth * dpr);
+		const height = Math.ceil(cssHeight * dpr);
+		const pose = new DOMMatrix()
+			.scale(dpr, dpr)
+			.translate(ox, oy)
+			.multiply(ctm);
 		if (canvas.width !== width) canvas.width = width;
 		if (canvas.height !== height) canvas.height = height;
 		context.resetTransform();

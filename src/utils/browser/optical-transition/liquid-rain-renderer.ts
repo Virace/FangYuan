@@ -70,14 +70,9 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 	let lastPhase: TransitionFrameState["phase"] | undefined;
 	let surfaceFraction = 1;
 	let entryFraction = 1;
-	const background = document.createElement("canvas");
-	background.width = 256;
-	background.height = 192;
-	let glowLayer: CanvasRenderingContext2D | null = null;
 	return {
 		id: "liquid-rain",
-		prepare({ width, height }) {
-			glowLayer ??= background.getContext("2d", { alpha: false });
+		prepare({ width, height, startVisibleHeight }) {
 			const styles = getComputedStyle(document.body);
 			const hue = Number.parseFloat(styles.getPropertyValue("--hue")) || 0;
 			eyebrowFont = `600 11px ${styles.fontFamily}`;
@@ -96,7 +91,11 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 				color: i % rainColors.length,
 			}));
 			lastPhase = undefined;
-			entryFraction = surfaceFraction = 1.08;
+			const startRatio =
+				startVisibleHeight && height > 0
+					? Math.min(1, startVisibleHeight / height)
+					: 1;
+			entryFraction = surfaceFraction = startRatio + 0.08;
 			measuredWidth = -1;
 		},
 		render(ctx, state) {
@@ -110,8 +109,13 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 			} = state;
 			if (!w || !h) return;
 			const ink = materials[Number(isDark)];
+			const targetH =
+				state.targetVisibleHeight && state.targetVisibleHeight > 0
+					? Math.min(h, state.targetVisibleHeight)
+					: h;
+			const exitRatio = h > 0 ? targetH / h : 1;
 			const cx = w / 2;
-			const cy = h / 2;
+			const cy = targetH / 2;
 			const wave = phase === "entering" || phase === "exiting";
 			const amp = phase === "exiting" ? 15 * (1 - 0.4 * p) : 15;
 			const margin = Math.max(24 / h, 0.08);
@@ -120,7 +124,7 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 			if (phase === "entering")
 				surfaceFraction = -margin + (entryFraction + margin) * (1 - p) ** 2.4;
 			else if (phase === "exiting")
-				surfaceFraction = -margin + (1 + 2 * margin) * p ** 1.3;
+				surfaceFraction = -margin + (exitRatio + 2 * margin) * p ** 1.3;
 			else surfaceFraction = -margin;
 			lastPhase = phase;
 			ctx.clearRect(0, 0, w, h);
@@ -132,39 +136,28 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 				ctx.closePath();
 				ctx.clip();
 			}
-			const glow = glowLayer ?? ctx;
-			if (glowLayer)
-				glowLayer.setTransform(
-					background.width / w,
-					0,
-					0,
-					background.height / h,
-					0,
-					0,
-				);
-			glow.drawImage(ink.base, 0, 0, w, h);
+			ctx.drawImage(ink.base, 0, 0, w, h);
 			drawGlow(
-				glow,
+				ctx,
 				ink.glows[0],
 				w * (0.28 + 0.1 * Math.sin(time * 1.4)),
 				h * (0.34 + 0.12 * Math.cos(time * 1.1)),
 				Math.max(w * 0.48, h * 0.4),
 			);
 			drawGlow(
-				glow,
+				ctx,
 				ink.glows[1],
 				w * (0.72 + 0.08 * Math.cos(time * 1.2)),
 				h * (0.64 - 0.1 * Math.sin(time * 1.3)),
 				Math.max(w * 0.44, h * 0.38),
 			);
 			drawGlow(
-				glow,
+				ctx,
 				ink.glows[2],
 				cx,
 				h * (0.5 - state.scrollNorm * 0.14),
 				Math.max(w * 0.34, h * 0.28),
 			);
-			if (glowLayer) ctx.drawImage(background, 0, 0, w, h);
 			ctx.save();
 			ctx.translate(cx, cy);
 			ctx.rotate(-0.21);

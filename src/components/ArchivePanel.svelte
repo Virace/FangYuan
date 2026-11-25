@@ -14,13 +14,41 @@ export let categories: string[] = [];
 export let sortedPosts: PostForList[] = [];
 export let showPinnedInTimeline = true;
 
-const params = new URLSearchParams(window.location.search);
-tags = params.has("tag") ? params.getAll("tag") : [];
-categories = params.has("category") ? params.getAll("category") : [];
-const uncategorized = params.get("uncategorized");
+function filterArchivePosts(
+	posts: PostForList[],
+	nextTags: string[],
+	nextCategories: string[],
+	uncategorized: string | null,
+): PostForList[] {
+	let filteredPosts: PostForList[] = posts;
 
-let groups: ArchivePostGroup[] = [];
-let pinnedPosts: PostForList[] = [];
+	if (nextTags.length > 0) {
+		filteredPosts = filteredPosts.filter(
+			(post) =>
+				Array.isArray(post.data.tags) &&
+				post.data.tags.some((tag) => nextTags.includes(tag)),
+		);
+	}
+
+	if (nextCategories.length > 0) {
+		filteredPosts = filteredPosts.filter(
+			(post) =>
+				post.data.category && nextCategories.includes(post.data.category),
+		);
+	}
+
+	if (uncategorized) {
+		filteredPosts = filteredPosts.filter((post) => !post.data.category);
+	}
+
+	return filteredPosts;
+}
+
+const initialGroups = buildArchivePostGroups(sortedPosts, {
+	showPinnedInTimeline,
+});
+let groups: ArchivePostGroup[] = initialGroups.yearGroups;
+let pinnedPosts: PostForList[] = initialGroups.pinnedPosts;
 
 function formatDate(date: Date) {
 	const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -32,27 +60,22 @@ function formatTag(tagList: string[]) {
 	return tagList.map((t) => `#${t}`).join(" ");
 }
 
-onMount(async () => {
-	let filteredPosts: PostForList[] = sortedPosts;
+onMount(() => {
+	const params = new URLSearchParams(window.location.search);
+	tags = params.has("tag") ? params.getAll("tag") : [];
+	categories = params.has("category") ? params.getAll("category") : [];
+	const uncategorized = params.get("uncategorized");
 
-	if (tags.length > 0) {
-		filteredPosts = filteredPosts.filter(
-			(post) =>
-				Array.isArray(post.data.tags) &&
-				post.data.tags.some((tag) => tags.includes(tag)),
-		);
+	if (tags.length === 0 && categories.length === 0 && !uncategorized) {
+		return;
 	}
 
-	if (categories.length > 0) {
-		filteredPosts = filteredPosts.filter(
-			(post) => post.data.category && categories.includes(post.data.category),
-		);
-	}
-
-	if (uncategorized) {
-		filteredPosts = filteredPosts.filter((post) => !post.data.category);
-	}
-
+	const filteredPosts = filterArchivePosts(
+		sortedPosts,
+		tags,
+		categories,
+		uncategorized,
+	);
 	const archiveGroups = buildArchivePostGroups(filteredPosts, {
 		showPinnedInTimeline,
 	});
