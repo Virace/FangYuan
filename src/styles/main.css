@@ -1086,24 +1086,6 @@ table-of-contents {
     font-weight: 500;
 }
 
-.toc-fy-glyph {
-    width: 0.68rem;
-    height: 0.68rem;
-    border-radius: 0.2rem;
-    border: 1.25px solid color-mix(in oklch, var(--accent-solid) 64%, var(--line-color));
-    display: inline-grid;
-    place-items: center;
-    flex-shrink: 0;
-}
-
-.toc-fy-glyph::after {
-    content: "";
-    width: 0.24rem;
-    height: 0.24rem;
-    border-radius: 999px;
-    background: var(--accent-solid);
-}
-
 .toc-panel-actions {
     display: inline-flex;
     align-items: center;
@@ -1773,43 +1755,43 @@ table-of-contents {
         box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.fy-brand-glyph {
-    width: 0.92rem;
-    height: 0.92rem;
-    border-radius: 0.26rem;
-    border: 1.5px solid color-mix(in oklch, var(--accent-solid) 72%, var(--line-color));
-    display: inline-grid;
-    place-items: center;
+.fy-brand-mark {
+    width: 1.125rem;
+    height: 1.125rem;
+    display: inline-block;
     flex-shrink: 0;
-    transition:
-        border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.fy-brand-glyph::after {
-    content: "";
-    width: 0.32rem;
-    height: 0.32rem;
+.fy-brand-mark-body {
+    fill: var(--deep-text);
+    transition: fill 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root.dark .fy-brand-mark-body {
+    fill: #f8fafc;
+}
+
+.optical-panel-beam {
+    width: 3px;
+    height: 0.85rem;
     border-radius: 999px;
-    background: var(--accent-solid);
-}
-
-.fy-brand-glyph-sm {
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 0.22rem;
-    border: 1.3px solid color-mix(in oklch, var(--primary) 64%, var(--line-color));
-    display: inline-grid;
-    place-items: center;
     flex-shrink: 0;
+    background: linear-gradient(
+        180deg,
+        var(--accent-solid),
+        color-mix(in oklch, var(--primary) 42%, transparent)
+    );
+    box-shadow: 0 0 6px var(--toc-rail-glow);
 }
 
-.fy-brand-glyph-sm::after {
-    content: "";
-    width: 0.26rem;
-    height: 0.26rem;
+.optical-status-dot {
+    width: 0.375rem;
+    height: 0.375rem;
     border-radius: 999px;
+    flex-shrink: 0;
     background: var(--accent-solid);
+    box-shadow: 0 0 8px var(--toc-rail-glow);
 }
 
 .nav-link-active {
@@ -2228,24 +2210,55 @@ table-of-contents {
         mask-image: none;
         -webkit-mask-image: none;
     }
+
+    .optical-card-cover-mirror {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -20%;
+        width: 60%;
+        overflow: hidden;
+    }
+
+    .optical-card-cover-mirror img {
+        object-position: left center !important;
+        transform: scaleX(-1);
+    }
+
+    .optical-card-cover-real {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 40%;
+        width: 60%;
+        overflow: hidden;
+    }
+
+    .optical-card-cover-real img {
+        object-position: left center !important;
+    }
 }
 
 .optical-card-blur-band {
     position: absolute;
-    inset: 0 32% 0 0;
+    inset: 0 36% 0 0;
     z-index: 1;
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(22px) saturate(135%);
+    -webkit-backdrop-filter: blur(22px) saturate(135%);
     mask-image: linear-gradient(
-        96deg,
+        94deg,
+        #000 0%,
         #000 46%,
-        rgb(0 0 0 / 0.72) 68%,
+        rgb(0 0 0 / 0.85) 66%,
+        rgb(0 0 0 / 0.35) 84%,
         transparent 100%
     );
     -webkit-mask-image: linear-gradient(
-        96deg,
+        94deg,
+        #000 0%,
         #000 46%,
-        rgb(0 0 0 / 0.72) 68%,
+        rgb(0 0 0 / 0.85) 66%,
+        rgb(0 0 0 / 0.35) 84%,
         transparent 100%
     );
 }
@@ -2255,12 +2268,13 @@ table-of-contents {
     inset: 0;
     z-index: 2;
     background: linear-gradient(
-        96deg,
-        var(--optical-card-surface) 0%,
-        var(--optical-card-surface) 22%,
-        color-mix(in oklch, var(--optical-card-surface) 90%, transparent) 42%,
-        color-mix(in oklch, var(--optical-card-surface) 44%, transparent) 64%,
-        transparent 86%
+        94deg,
+        color-mix(in oklch, var(--optical-card-surface) 97%, transparent) 0%,
+        color-mix(in oklch, var(--optical-card-surface) 94%, transparent) 24%,
+        color-mix(in oklch, var(--optical-card-surface) 82%, transparent) 42%,
+        color-mix(in oklch, var(--optical-card-surface) 48%, transparent) 56%,
+        color-mix(in oklch, var(--optical-card-surface) 14%, transparent) 70%,
+        transparent 84%
     );
 }
 
@@ -2618,24 +2632,6 @@ html.optical-transition-active .back-to-top-btn {
 
 .dark .post-feedback-mark-label {
     color: rgba(255, 255, 255, 0.52);
-}
-
-.post-feedback-fy-glyph {
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 0.22rem;
-    border: 1.3px solid color-mix(in oklch, var(--primary) 62%, var(--line-color));
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-}
-
-.post-feedback-fy-glyph::after {
-    content: "";
-    width: 0.28rem;
-    height: 0.28rem;
-    border-radius: 999px;
-    background: var(--primary);
 }
 
 .post-feedback-dock {

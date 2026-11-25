@@ -16,7 +16,7 @@ const className = Astro.props.class;
 ---
 <widget-layout data-id={id} data-is-collapsed={String(isCollapsed)} class={"pb-4 card-base panel-edge " + className} style={style}>
     <div class="widget-title-bar font-bold transition text-base text-panel-title mx-4 mt-4 mb-2.5">
-        <span class="fy-brand-glyph-sm" aria-hidden="true"></span>
+        <span class="optical-panel-beam" aria-hidden="true"></span>
         <span>{name}</span>
     </div>
     <div id={id} class:list={["collapse-wrapper px-4 overflow-hidden", {"collapsed": isCollapsed}]}>

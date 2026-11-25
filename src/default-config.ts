@@ -151,7 +151,7 @@ export const defaultNavBarConfig: NavBarConfig = {
 };
 
 export const defaultProfileConfig: ProfileConfig = {
-	avatar: "assets/images/demo-avatar.png", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
+	avatar: "assets/images/demo-avatar.svg", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
 	name: "FangYuan",
 	bio: "在清晰结构与柔和表达之间，打磨一个长期演进的个人站点。",
 	links: [

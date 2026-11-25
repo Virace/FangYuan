@@ -19,7 +19,7 @@ $: if (hue || hue === 0) {
 <div id="display-setting" class="float-panel float-panel-closed absolute transition-all w-80 right-4 px-4 py-4">
     <div class="flex flex-row gap-2 mb-3 items-center justify-between">
         <div class="flex items-center gap-2 font-bold text-base text-panel-title transition">
-            <span class="fy-brand-glyph-sm" aria-hidden="true"></span>
+            <span class="optical-panel-beam" aria-hidden="true"></span>
             <span>{i18n(I18nKey.themeColor)}</span>
             <button aria-label="Reset to Default" class="btn-regular w-7 h-7 rounded-md  active:scale-90 will-change-transform"
                     class:opacity-0={hue === defaultHue} class:pointer-events-none={hue === defaultHue} on:click={resetHue}>

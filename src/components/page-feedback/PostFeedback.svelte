@@ -280,7 +280,7 @@ onDestroy(() => {
 	<section class="post-feedback-section onload-animation">
 		<div class="post-feedback-endmark">
 			<p class="post-feedback-mark-label">
-				<span class="post-feedback-fy-glyph" aria-hidden="true"></span>
+				<span class="optical-status-dot" aria-hidden="true"></span>
 				<span>{i18n(I18nKey.pageFeedbackRewardTitle)}</span>
 			</p>
 		</div>

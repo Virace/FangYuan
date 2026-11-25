@@ -1,107 +1,83 @@
-# 方圆 / FangYuan
+<p align="center">
+  <img src="docs/assets/brand/fangyuan-badge-blue.svg" alt="FangYuan Logo" width="72" height="72" />
+</p>
 
-方圆是一个公开开源的 Astro 个人站点主题，关注内容、配置与站点能力的清晰边界，同时保留轻量、柔和、可持续演进的阅读体验。
+<h1 align="center">方圆 / FangYuan</h1>
 
-- 方：边界、秩序、结构、配置、内容治理。
-- 圆：柔和、阅读、交互、视觉、个人表达。
+<p align="center">
+  基于 Astro 7 的静态个人站点主题，衍生自 <a href="https://github.com/saicaca/fuwari">saicaca/fuwari</a>
+</p>
 
-## 上游说明
+方圆把主题代码和真实站点内容拆开维护：站点配置、文章和图片放到独立目录，主题源码按需更新而不覆盖你的数据。页面上延续了“方与圆”的光学风格，并提供常用的中文写作与站点管理脚手架。
 
-本项目基于 [saicaca/fuwari](https://github.com/saicaca/fuwari) 二次开发。当前代码已经围绕 FangYuan 的配置、内容输入层、中文站点体验、评论/反馈集成和构建流程做了较大调整，因此作为独立主题仓库维护，不再以向上游提交通用 PR 为主要目标。
+---
 
-感谢 Fuwari 原作者和社区提供了清晰、优雅的主题基础，FangYuan 的早期结构、视觉气质和站点体验都受益于这一上游项目。
+## 主要特点
 
-## 相对原版的主要差异
+- **内容与主题分离**：真实站点的 `site.config.yaml`、Markdown 文章和静态图片放在外部目录（默认 `site/`，也可通过 `FANGYUAN_SITE_ROOT` 指定任意路径），升级主题不碰业务数据。
+- **光学横幅与主题配色**：内置三层方形背板与圆形透镜横幅（可拖动光束、点击脉冲分色），支持 `optics.insert` 嵌标、`optics.prism` 换镜，或切回普通横图；带明暗模式、动态 `--hue` 调色、Swup 切页和 Pagefind 本地搜索。
+- **中文写作与路由控制**：文章与图片可同目录共置；内置提示块、折叠块、高亮、剧透、外链卡片、GitHub 仓库卡片、B 站视频和 KaTeX 公式；支持自定义永久链接与路径迁移后的历史地址跳转。
+- **可选的评论与互动**：评论、点赞、阅读量与打赏能力对接 `QingYan`，未配置或关闭时前端自动隐藏对应区域。
 
-### 体验侧
-
-- 默认横幅由三层方形背板和圆形透镜组成。拖动光束可以转向，连续点击入射光可以看到多道脉冲穿镜分色。外部站点可用 `optics.insert` 将 Logo 嵌入圆镜，用 `optics.prism` 将整个透镜换成自己的分光元件，或用 `banner.src` 显示横图。[横幅配置与分层素材示例](docs/site-config.md#siteconfigbanneropticsprism)
-- 默认站点身份、演示内容、关于页和中文文案已经围绕方圆重新整理，不再只是原版主题的英文 demo。
-- 写作体验更接近真实内容站点：正常编写 Markdown，并把文章图片放在文章目录或站点资源目录中即可，构建时由主题处理资源解析。
-- 评论、页面反馈和页面统计可以接入 `QingYan`；当后端未配置或运行时关闭时，前端会直接隐藏对应区块，不展示冗余占位组件。
-- 点赞和评论结果使用支持主题、堆叠与优先级的全局通知，不推动正文；字段及验证码纠错保留在输入位置。调用与公告复用方式见 [全局通知](docs/notifications.md)。
-- 内容组织能力更适合长期维护：固定链接、归档排序、置顶文章、内容页目录与 Markdown 扩展都已经接入当前主题主线。
-
-### 代码结构侧
-
-- 新增了外部 `site/` 输入层，站点配置、文章内容和资源文件可以从仓库外置输入，主题源码和真实站点内容可以分开维护。
-- 外部站点配置集中到严格的 `site/site.config.yaml`，并提供 `node scripts/site/init-site.js` 初始化脚手架。
-- 图片输入语义扩展到了 `site/assets/`、`src/`、主题 `public/` 和远程 URL，适配真实内容站点而不是只服务仓库内 demo。
-- 固定链接、页面路由、分页、置顶排序和部分站点能力都通过配置与工具层收口，减少页面中重复拼接规则。
-- 字体与样式体系做了进一步本地化和工程化收口，例如 Astro Font API、Markdown 扩展、代码块增强、内容页目录与反馈区等能力都已经接入当前主题主线。
+---
 
 ## 快速开始
 
-要求：
+环境要求：Node.js `>= 22.23.4`（开发与 CI 基线见 `.nvmrc` 中的 `26.13.0`）、pnpm `12.18.0`。
 
-- Node.js >= 22.23.4（开发与 CI 基线为 `.nvmrc` 中的 26.13.0）
-- pnpm 12.18.0（由 `package.json` 的 `packageManager` 固定）
+### 体验仓库内置示例
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm dev
-pnpm check
-pnpm build
-pnpm test
-pnpm test:build
-pnpm test:system
+pnpm dev:internal
 ```
 
-说明：
-
-- 仓库仍保留 `private: true`，用于避免误发布到 npm；这不影响 GitHub 仓库公开开源。
-- `pnpm test` 是默认快速测试入口，委托给 `pnpm test:node`，运行 Node 行为测试并使用默认的文件级并发。
-- `pnpm test:build` 运行构建产物矩阵：6 个成功产物覆盖外部富功能、关闭态、两类永久链接、内部 demo 和跨页 SVG 引用，3 个失败场景覆盖必需内容与资源错误；另用同一篇文章和保留的缓存连续构建 4 次，验证 GitHub 快照刷新与失败降级。每个场景使用独立的 `out/cache`，同一产物由多项断言复用；Astro 产物准备串行执行，避免共享 `.astro/` 生成目录发生竞争。
-- `pnpm test:system` 依次运行快速 Node 测试、构建产物矩阵和核心 Playwright 浏览器回归；视觉快照仍通过 `pnpm test:e2e:visual` 独立执行。
-- 构建测试和浏览器测试的前置构建使用固定 GitHub API 响应，不依赖实时 GitHub 网络；浏览器回归包含无 JavaScript、限速、超时、空值与 Swup 卡片生命周期。
-- 导航回归检查菜单箭头在 Swup 切页和历史导航后仍能绘制；测试预览使用 `--ignore-lock`，允许与其他端口的已有预览并存，4331 端口仍须空闲。
-- Astro 字体直接从已安装的 `@fontsource` 包读取本地 `.woff2` 文件，构建和构建测试都不依赖字体 CDN 或下载缓存。
-- 正文使用 Sätteri 原生处理器，RSS 保持独立的 markdown-it 渲染；既有 Markdown 指令写法保持兼容。
-- GitHub 仓库卡片在初始 HTML 中提供仓库入口和可用构建快照，浏览器后台刷新失败时保留已有内容。Actions 构建可使用内置短期 `GITHUB_TOKEN`，本地允许无令牌构建。
-
-## 外部 site 输入层
-
-- 配置文件：`site/site.config.yaml`
-- 内容目录：`site/content/`
-- 资源目录：`site/assets/`
-
-初始化本地 `site/` 目录：
+### 初始化并运行自己的站点
 
 ```bash
 node scripts/site/init-site.js
+pnpm dev
+pnpm build
 ```
 
-更多说明：
+初始化脚本会生成 `site/site.config.yaml`、`site/content/`、`site/assets/` 以及配套编辑器配置；之后直接维护 `site/` 即可，不要把站点私有数据改回 `src/`。已有站点升级可使用 `node scripts/site/update-site.js`。
 
-- `docs/site-config.md`
-- `docs/init-site.md`
-- `docs/scripts.md`
-- `docs/markdown-extensions.md`
+### 常用命令
 
-说明：
+| 命令 | 说明 |
+| --- | --- |
+| `pnpm dev` / `pnpm build` | 默认模式开发预览与构建（自动选择外部 `site/` 或内置示例） |
+| `pnpm dev:internal` / `pnpm build:internal` | 强制使用仓库内置示例运行或构建 |
+| `pnpm dev:external` / `pnpm build:external` | 强制使用外部站点目录运行或构建 |
+| `pnpm check` | 运行 Astro 页面、路由与内容集合检查 |
+| `pnpm test` | 运行快速 Node 单元测试 |
+| `pnpm test:system` | 依次运行 Node 测试、构建矩阵与 Playwright 核心回归 |
 
-- `site/` 已加入 `.gitignore`，用于承载本地站点输入，不进入主题仓库版本控制
-- 初始化脚本会复制维护中的 `scripts/site/template.config.yaml` 模板，并替换少量初始化占位符
-- 初始化脚本会在 `site/assets/README.md` 写入安全资源目录说明
-- 生成后的 `site/site.config.yaml` 需要直接维护，而不是回写运行时代码
-- 如果你接入 `QingYan`，通常只需要在这里填写站点 key、API 基础路径和开发期代理目标
+---
 
-### 图片输入语义
+## 文档导航
 
-- Markdown 正文图片继续按 Markdown 原生相对路径解析，例如 `./inline.svg`、`../images/foo.png`
-- 文章 frontmatter `image` 和站点配置里的图片字段支持本地资源、主题 `public/` 资源以及远程 URL
-- 外部站点自有图片的安全目录是 `site/assets/`，初始化后的数据源内引用写成 `assets/...`
-- `site/assets/` 与 `src/` 下现有资源目录都可以作为本地图片输入来源
-- 远程 `https://...` 图片会原样透传，不会被本地构建打包、压缩或校验
+| 文档 | 内容 |
+| --- | --- |
+| [外部站点初始化与升级](docs/init-site.md) | `init-site` / `update-site` 命令参数与生成目录说明 |
+| [站点配置说明](docs/site-config.md) | `site.config.yaml` 全量配置项与 [光学横幅分层配置](docs/site-config.md#siteconfigbanneropticsprism) |
+| [Markdown 扩展语法](docs/markdown-extensions.md) | 指令写法、代码块增强、卡片与图文路径规则 |
+| [稳定身份与历史地址](docs/content-routes.md) | `contentId` 登记、改链接保留旧地址跳转与恢复流程 |
+| [全局通知](docs/notifications.md) | 站点通知调用、队列与样式边界 |
+| [脚本目录](docs/scripts.md) | `scripts/` 下站点、内容与 QingYan 脚本清单 |
 
-### 资源策略
+---
 
-- 正文字体与代码字体通过 Astro Font API 注册，不再依赖直接 `@fontsource/*` CSS import
-- `astro.config.mjs` 中保留了一组可选的全局图片编码默认值，但默认关闭，避免把不同图片用法强行收口到一套统一参数
-- `public/**` 图片路径继续按主题仓库静态资源处理；不要把外部站点自有图片放进外部根目录 `public/` 并假设会自动发布
-- 远程图片 URL 默认继续透传；只有未来单独规划并授权的可信来源，才会进一步纳入 Astro 处理
-- 浏览器视觉快照若因字体分发策略调整而变化，应先确认是预期设计结果，再决定是否更新基线
+## 图片与目录分工
 
-## 许可
+- **文章配图与封面**：放在文章同目录或子目录中，Markdown 用相对路径引用（例如 `./inline.svg`、`./cover.webp`）。封面最适配 **`1200 × 600`**（`2:1`，高清 `1600 × 800`）或常见 **`1280 × 720`**（`16:9`），构图居中或略偏右；不填封面时列表卡片自动使用纯 CSS 光学渐变背景，零图片开销。
+- **外部站点共享图片**：放在 `<siteRoot>/assets/`，在配置或 frontmatter 中写成 `assets/...`；未被引用的占位图不会进入 `dist/`。
+- **主题默认资源与固定图标**：内置示例图放在 `src/assets/`，主题固定光学素材放在 `src/theme-assets/`。
+- **远程链接**：`https://...` 图片地址原样透传，构建时不下载打包。
 
-本仓库继续使用 MIT 许可证。
+---
+
+## 致谢与许可
+
+感谢上游项目 [saicaca/fuwari](https://github.com/saicaca/fuwari) 提供了最初的页面结构与视觉基础。  
+本项目以 [MIT License](LICENSE) 开源。

@@ -17,7 +17,6 @@ FangYuan 是 Astro 静态站点主题。Astro 负责路由、内容加载、页�
 - `src/utils/site-source/`：选择内部或外部站点源，加载配置、内容与资源，并处理开发监听。
 - `src/utils/comments/`、`src/utils/qingyan/`、`src/utils/page-feedback/`：可选 QingYan 能力的客户端契约、状态与适配。
 - `scripts/site/`：初始化、升级、迁移和构建包装。
-- `scripts/wp-migration/`：WordPress WXR 审计与转换。
 - `tests/`：Node 行为测试和真实 Astro 构建产物矩阵。
 - `tests/e2e/`：核心浏览器流程、可访问性和视觉快照。
 
@@ -95,7 +94,6 @@ GitHub 卡片先由内容插件生成基础 HTML，再在 Astro 本轮 HTML 输�
 - posts / spec frontmatter schema。
 - `FANGYUAN_SITE_ROOT`、`FANGYUAN_SITE_MODE`、`FANGYUAN_SITE`、`FANGYUAN_BASE` 及已声明的公开环境变量。
 - QingYan bootstrap、评论、反馈和统计客户端契约。
-- WordPress WXR 输入与转换产物。
 - 静态输出中的永久链接、RSS、sitemap、Pagefind 索引和资源路径。
 
 共享契约发生语义变化时，先更新 schema、迁移策略和行为测试，再调整消费者；不得只在页面层做局部兼容。

@@ -8,7 +8,7 @@ export let loading = false;
 
 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
 	<div class="flex flex-wrap items-center gap-2.5">
-		<span class="fy-brand-glyph-sm" aria-hidden="true"></span>
+		<span class="optical-panel-beam" aria-hidden="true"></span>
 		<h2 class="text-lg font-bold text-90">
 			{i18n(I18nKey.comments)}
 		</h2>

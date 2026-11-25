@@ -21,7 +21,3 @@
 
 - `new-post.js`：在 `src/content/posts/` 下创建 Markdown 文章脚手架
 - `generate-pagination-test-posts.js`：生成可随时删除的分页测试文章
-
-## `scripts/wp-migration`
-
-- WordPress WXR 审计与转换辅助脚本

@@ -213,7 +213,7 @@ $: hasActiveKeyword = Boolean(keywordDesktop.trim() || keywordMobile.trim());
     {#if hasActiveKeyword || result.length > 0}
         <div class="flex items-center justify-between px-2.5 pt-2 lg:pt-1 pb-1.5" aria-hidden="true">
             <div class="flex items-center gap-2 text-xs font-semibold text-75">
-                <span class="fy-brand-glyph-sm"></span>
+                <span class="optical-panel-beam" aria-hidden="true"></span>
                 <span>{i18n(I18nKey.search)}</span>
             </div>
             <div class="flex items-center gap-1.5">

@@ -55,7 +55,7 @@ const isPinned = isPinnedPost(entry.data);
     {hasCover && <div class="optical-card-blur-band hidden md:block pointer-events-none" aria-hidden="true"></div>}
     <div class="optical-card-text-scrim hidden md:block pointer-events-none" aria-hidden="true"></div>
 
-    <div class:list={["optical-card-content relative z-10 pl-6 md:pl-9 pr-6 md:pr-4 pt-5 md:pt-7 pb-6 flex-1 flex flex-col justify-between w-full", hasCover ? "md:w-[70%]" : "md:w-[78%]"]}>
+    <div class:list={["optical-card-content relative z-10 pl-6 md:pl-9 pr-6 md:pr-6 pt-5 md:pt-7 pb-6 flex-1 flex flex-col justify-between w-full", hasCover ? "md:w-[58%]" : "md:w-[78%]"]}>
         <div>
             <a href={url} data-transition-title={title}
                class="transition group w-full block font-bold mb-3 text-3xl text-90
@@ -64,23 +64,27 @@ const isPinned = isPinnedPost(entry.data);
             optical-post-title-beam
             before:absolute before:top-8.75 before:left-4.5 before:hidden md:before:block
             ">
-                {isPinned && (
-                    <span
-                        class="relative -top-[0.08em] inline-block whitespace-nowrap text-[0.56em] leading-none align-middle font-black tracking-[0.18em] text-accent-solid uppercase"
-                    >
-                        {i18n(I18nKey.pinned)}
+                <span class="flex items-start gap-1">
+                    <span class="line-clamp-2 min-w-0">
+                        {isPinned && (
+                            <span
+                                class="relative -top-[0.08em] inline-block whitespace-nowrap text-[0.56em] leading-none align-middle font-black tracking-[0.18em] text-accent-solid uppercase"
+                            >
+                                {i18n(I18nKey.pinned)}
+                            </span>
+                        )}
+                        {title}
                     </span>
-                )}
-                {title}
-                <Icon is:inline class="inline icon-32 text-primary md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
-                <Icon is:inline class="text-primary icon-32 transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
+                    <Icon is:inline class="inline shrink-0 icon-32 text-primary md:hidden translate-y-0.5" name="material-symbols:chevron-right-rounded" ></Icon>
+                    <Icon is:inline class="text-primary shrink-0 icon-32 transition hidden md:inline translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
+                </span>
             </a>
 
             <!-- metadata -->
             <PostMetadata published={published} updated={updated} tags={tags} category={category} hideTagsForMobile={true} hideUpdateDate={true} class="mb-4"></PostMetadata>
 
             <!-- description -->
-            <div class:list={["transition text-75 mb-3.5 pr-4", {"line-clamp-2 md:line-clamp-1": !description}]}>
+            <div class="transition text-75 mb-3.5 pr-4 line-clamp-2">
                 { description || remarkPluginFrontmatter.excerpt }
             </div>
         </div>
@@ -103,7 +107,12 @@ const isPinned = isPinnedPost(entry.data);
         <div class="optical-card-focus-mark hidden md:flex items-center justify-center pointer-events-none">
             <Icon is:inline name="material-symbols:chevron-right-rounded" class="text-xl" />
         </div>
-        <div class="optical-card-cover-media w-full h-full">
+        <div class="optical-card-cover-media optical-card-cover-mirror hidden md:block pointer-events-none" aria-hidden="true">
+            <ImageWrapper src={resolvedCoverImage} alt="" position="left center"
+                      class="w-full h-full">
+            </ImageWrapper>
+        </div>
+        <div class="optical-card-cover-media optical-card-cover-real w-full h-full">
             <ImageWrapper src={resolvedCoverImage} alt="Cover Image of the Post"
                       class="w-full h-full">
             </ImageWrapper>

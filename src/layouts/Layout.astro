@@ -142,13 +142,18 @@ const canonicalUrl =
 
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		{resolvedFavicons.map(favicon => (
-			<link rel="icon"
-				  href={resolveFaviconHref(favicon.src)}
-				  sizes={favicon.sizes}
-				  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
-			/>
-		))}
+		{resolvedFavicons.map(favicon => {
+			const resolvedHref = resolveFaviconHref(favicon.src);
+			const isSvg = resolvedHref.split("?")[0].toLowerCase().endsWith(".svg");
+			return (
+				<link rel="icon"
+					  href={resolvedHref}
+					  type={isSvg ? "image/svg+xml" : undefined}
+					  sizes={favicon.sizes}
+					  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
+				/>
+			);
+		})}
 
 		<Font cssVariable="--font-roboto" preload />
 		<Font cssVariable="--font-jetbrains-mono" />

@@ -269,13 +269,13 @@ siteConfig:
 #### `siteConfig.favicon`
 
 - 作用：自定义 favicon 列表。
-- 规则：留空数组表示继续使用内置默认 favicon。
+- 规则：留空数组表示继续使用内置主蓝底矢量 SVG Favicon。
 
 #### `siteConfig.favicon[].src`
 
 - 作用：图标路径。
 - 建议：写外部站点根目录 `<siteRoot>/assets/` 下的稳定路径，例如 `assets/favicon/icon.svg`。
-- 注意：`init-site` 默认会创建 `assets/favicon/icon.svg` 作为替换占位符。留空数组则继续使用 FangYuan 内置默认 favicon。
+- 注意：`init-site` 默认会创建 `assets/favicon/icon.svg` 作为替换占位符。留空数组则继续使用 FangYuan 内置默认 SVG Favicon。
 
 #### `siteConfig.favicon[].theme`
 
@@ -406,10 +406,10 @@ siteConfig:
 
 #### `profileConfig.avatar`
 
-- 作用：头像图片路径。
+- 作用：侧栏主图 / 作者头像路径。
 - 路径规则：和 `siteConfig.banner.src` 一致。
-- 安全本地写法：`assets/images/avatar.svg`。`init-site` 默认会创建这个替换占位符。
-- 注意：FangYuan 当前没有独立 logo 配置项；这里是侧栏作者头像，不是 favicon。
+- 安全本地写法：`assets/images/avatar.svg`（`init-site` 默认创建占位图；不配置外部覆盖时展示内置多彩光学版 `demo-avatar.svg`）。
+- 注意：FangYuan 没有单独的全局 logo 配置项；这里是侧栏作者展示图，站点标签页图标请配在 `siteConfig.favicon`。
 
 #### `profileConfig.name`
 
