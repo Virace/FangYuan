@@ -200,7 +200,7 @@ for (const [source, destination, deep] of [
 }
 
 test("the footer-constrained sidebar keeps its position across the scroll jump", async ({ page }) => {
-	await page.setViewportSize({ width: 1280, height: 540 });
+	await page.setViewportSize({ width: 1280, height: 360 });
 	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);
 	const jump = await page.locator("main a:has(.post-nav-title)").first().evaluate(async (link: HTMLAnchorElement) => {
 		await document.fonts.ready;
@@ -220,6 +220,7 @@ test("the footer-constrained sidebar keeps its position across the scroll jump",
 		throw new Error("The article did not exercise a deep scroll jump");
 	});
 	expect(Math.abs(jump.start.y - jump.max)).toBeLessThan(1);
+	expect(jump.start.top).toBeLessThan(0);
 	expect(jump.before.top).toBeLessThan(0);
 	expect(Math.abs(jump.after.top - jump.before.top)).toBeLessThan(1);
 	await expect(page.locator(".optical-transition-veil")).toHaveCount(0);
