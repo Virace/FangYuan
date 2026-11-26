@@ -52,23 +52,23 @@ const linkEffect = config.linkEffect ?? "expand";
                     <a rel="me" aria-label={item.name} href={item.url} target="_blank" class="btn-regular profile-social-btn-lift rounded-lg h-10 w-10 active:scale-90">
                         <span class="profile-social-lift-track" aria-hidden="true">
                             <span class="profile-social-lift-slot">
-                                <Icon name={item.icon} class="text-2xl"></Icon>
+                                <Icon is:inline name={item.icon} class="text-2xl"></Icon>
                             </span>
                             <span class="profile-social-lift-slot profile-social-lift-slot-glow">
-                                <Icon name={item.icon} class="text-2xl"></Icon>
+                                <Icon is:inline name={item.icon} class="text-2xl"></Icon>
                             </span>
                         </span>
                     </a>
                 ) : (
                     <a rel="me" aria-label={item.name} href={item.url} target="_blank" class="btn-regular profile-social-btn-expand rounded-lg h-10 active:scale-95">
-                        <Icon name={item.icon} class="profile-social-icon text-xl shrink-0" aria-hidden="true"></Icon>
+                        <Icon is:inline name={item.icon} class="profile-social-icon text-xl shrink-0" aria-hidden="true"></Icon>
                         <span class="profile-social-label" aria-hidden="true">{item.name}</span>
                     </a>
                 )
             )}
             {config.links.length == 1 && <a rel="me" aria-label={config.links[0].name} href={config.links[0].url} target="_blank"
                                             class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95">
-                <Icon name={config.links[0].icon} class="text-2xl"></Icon>
+                <Icon is:inline name={config.links[0].icon} class="text-2xl"></Icon>
                 {config.links[0].name}
             </a>}
         </div>

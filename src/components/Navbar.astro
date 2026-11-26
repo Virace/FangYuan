@@ -105,7 +105,7 @@ const hasDualLogo = Boolean(
                 >
                     <div class="flex items-center">
                         {l.name}
-                        {l.external && <Icon name="fa6-solid:arrow-up-right-from-square" class="text-sm transition -translate-y-px ml-1 text-20"></Icon>}
+                        {l.external && <Icon is:inline name="fa6-solid:arrow-up-right-from-square" class="text-sm transition -translate-y-px ml-1 text-20"></Icon>}
                     </div>
                 </a>;
             })}
@@ -116,14 +116,14 @@ const hasDualLogo = Boolean(
             </div>
             {!siteConfig.themeColor.fixed && (
                     <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
-                        <Icon name="material-symbols:palette-outline" class="text-xl"></Icon>
+                        <Icon is:inline name="material-symbols:palette-outline" class="text-xl"></Icon>
                     </button>
             )}
             <div>
                 <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
             </div>
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:hidden!" id="nav-menu-switch">
-                <Icon name="material-symbols:menu-rounded" class="text-xl"></Icon>
+                <Icon is:inline name="material-symbols:menu-rounded" class="text-xl"></Icon>
             </button>
         </div>
         <NavMenuPanel links={links}></NavMenuPanel>

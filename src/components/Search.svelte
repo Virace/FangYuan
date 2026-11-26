@@ -1,7 +1,6 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import Icon from "@iconify/svelte";
 import { url } from "@utils/permalink/urls.ts";
 import { onMount } from "svelte";
 import { siteConfig } from "@/config";
@@ -168,7 +167,7 @@ $: hasActiveKeyword = Boolean(keywordDesktop.trim() || keywordMobile.trim());
 
 <!-- search bar for desktop view -->
 <div id="search-bar" class="search-field-shell relative hidden lg:flex items-center h-11 mr-2 rounded-lg">
-    <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
+    <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"><path fill="currentColor" d="m19.6 21l-6.3-6.3q-.75.6-1.725.95T9.5 16q-2.725 0-4.612-1.888T3 9.5t1.888-4.612T9.5 3t4.613 1.888T16 9.5q0 1.1-.35 2.075T14.7 13.3l6.3 6.3zM9.5 14q1.875 0 3.188-1.312T14 9.5t-1.312-3.187T9.5 5T6.313 6.313T5 9.5t1.313 3.188T9.5 14"/></svg>
     <input
            aria-label={i18n(I18nKey.search)}
            placeholder="{i18n(I18nKey.search)}"
@@ -179,7 +178,7 @@ $: hasActiveKeyword = Boolean(keywordDesktop.trim() || keywordMobile.trim());
     />
     {#if keywordDesktop}
         <button type="button" on:click={clearDesktopKeyword} aria-label={clearSearchLabel} class="search-clear-btn right-2">
-            <Icon icon="material-symbols:close-rounded" class="text-sm"></Icon>
+            <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" class="text-sm"><path fill="currentColor" d="m12 13.4l-4.9 4.9q-.275.275-.7.275t-.7-.275t-.275-.7t.275-.7l4.9-4.9l-4.9-4.9q-.275-.275-.275-.7t.275-.7t.7-.275t.7.275l4.9 4.9l4.9-4.9q.275-.275.7-.275t.7.275t.275.7t-.275.7L13.4 12l4.9 4.9q.275.275.275.7t-.275.7t-.7.275t-.7-.275z"/></svg>
         </button>
     {/if}
 </div>
@@ -187,7 +186,7 @@ $: hasActiveKeyword = Boolean(keywordDesktop.trim() || keywordMobile.trim());
 <!-- toggle btn for phone/tablet view -->
 <button on:click={togglePanel} aria-label="Search Panel" id="search-switch"
         class="btn-plain scale-animation lg:hidden! rounded-lg w-11 h-11 active:scale-90">
-    <Icon icon="material-symbols:search" class="text-xl"></Icon>
+    <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" class="text-xl"><path fill="currentColor" d="m19.6 21l-6.3-6.3q-.75.6-1.725.95T9.5 16q-2.725 0-4.612-1.888T3 9.5t1.888-4.612T9.5 3t4.613 1.888T16 9.5q0 1.1-.35 2.075T14.7 13.3l6.3 6.3zM9.5 14q1.875 0 3.188-1.312T14 9.5t-1.312-3.187T9.5 5T6.313 6.313T5 9.5t1.313 3.188T9.5 14"/></svg>
 </button>
 
 <!-- search panel -->
@@ -195,7 +194,7 @@ $: hasActiveKeyword = Boolean(keywordDesktop.trim() || keywordMobile.trim());
 
     <!-- search bar inside panel for phone/tablet -->
     <div id="search-bar-inside" class="search-field-shell flex relative lg:hidden items-center h-11 rounded-xl">
-        <Icon icon="material-symbols:search" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"></Icon>
+        <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" class="absolute text-xl pointer-events-none ml-3 transition my-auto text-30"><path fill="currentColor" d="m19.6 21l-6.3-6.3q-.75.6-1.725.95T9.5 16q-2.725 0-4.612-1.888T3 9.5t1.888-4.612T9.5 3t4.613 1.888T16 9.5q0 1.1-.35 2.075T14.7 13.3l6.3 6.3zM9.5 14q1.875 0 3.188-1.312T14 9.5t-1.312-3.187T9.5 5T6.313 6.313T5 9.5t1.313 3.188T9.5 14"/></svg>
         <input
                aria-label={i18n(I18nKey.search)}
                placeholder="{i18n(I18nKey.search)}"
@@ -205,7 +204,7 @@ $: hasActiveKeyword = Boolean(keywordDesktop.trim() || keywordMobile.trim());
         />
         {#if keywordMobile}
             <button type="button" on:click={clearMobileKeyword} aria-label={clearSearchLabel} class="search-clear-btn right-2.5">
-                <Icon icon="material-symbols:close-rounded" class="text-sm"></Icon>
+                <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" class="text-sm"><path fill="currentColor" d="m12 13.4l-4.9 4.9q-.275.275-.7.275t-.7-.275t-.275-.7t.275-.7l4.9-4.9l-4.9-4.9q-.275-.275-.275-.7t.275-.7t.7-.275t.7.275l4.9 4.9l4.9-4.9q.275-.275.7-.275t.7.275t.275.7t-.275.7L13.4 12l4.9 4.9q.275.275.275.7t-.275.7t-.7.275t-.7-.275z"/></svg>
             </button>
         {/if}
     </div>
@@ -242,13 +241,13 @@ $: hasActiveKeyword = Boolean(keywordDesktop.trim() || keywordMobile.trim());
                         {@html item.excerpt}
                     </div>
                 </div>
-                <Icon icon="material-symbols:chevron-right-rounded" class="transition text-lg shrink-0 text-muted group-hover:text-accent-solid group-hover:translate-x-0.5"></Icon>
+                <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" class="transition text-lg shrink-0 text-muted group-hover:text-accent-solid group-hover:translate-x-0.5"><path fill="currentColor" d="M12.6 12L8.7 8.1q-.275-.275-.275-.7t.275-.7t.7-.275t.7.275l4.6 4.6q.15.15.213.325t.062.375t-.062.375t-.213.325l-4.6 4.6q-.275.275-.7.275t-.7-.275t-.275-.7t.275-.7z"/></svg>
             </a>
         {/each}
     {:else if hasActiveKeyword && !isSearching}
         <div class="py-6 px-4 text-center space-y-1.5">
             <div class="optical-chip-static w-9 h-9 mx-auto rounded-xl grid place-items-center text-accent-solid">
-                <Icon icon="material-symbols:search" class="text-lg"></Icon>
+                <svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" class="text-lg"><path fill="currentColor" d="m19.6 21l-6.3-6.3q-.75.6-1.725.95T9.5 16q-2.725 0-4.612-1.888T3 9.5t1.888-4.612T9.5 3t4.613 1.888T16 9.5q0 1.1-.35 2.075T14.7 13.3l6.3 6.3zM9.5 14q1.875 0 3.188-1.312T14 9.5t-1.312-3.187T9.5 5T6.313 6.313T5 9.5t1.313 3.188T9.5 14"/></svg>
             </div>
             <div class="text-xs font-semibold text-75">{emptySearchTitle}</div>
             <div class="text-xs text-muted">{emptySearchHint}</div>

@@ -60,7 +60,6 @@
     "@iconify-json/fa6-regular": "^1.2.4",
     "@iconify-json/fa6-solid": "^1.2.4",
     "@iconify-json/material-symbols": "^1.2.98",
-    "@iconify/svelte": "^5.2.4",
     "@swup/astro": "^1.8.0",
     "@tailwindcss/typography": "^0.5.20",
     "astro": "7.4.10",
