@@ -323,7 +323,6 @@ onDestroy(() => {
 										compact={true}
 										variant="popover"
 										bind:captchaValue
-										stacked={true}
 										autoFocusCaptchaInput={true}
 										captchaState={captchaState}
 										captchaBusy={captchaBusy}

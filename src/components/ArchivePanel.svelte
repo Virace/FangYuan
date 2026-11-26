@@ -117,7 +117,7 @@ onMount(() => {
 
                         <div
                                 class="archive-title-col text-left font-bold
-                     group-hover:translate-x-1 transition-all group-hover:text-accent-foreground
+                     group-hover:translate-x-1 transition-[transform,color] group-hover:text-accent-foreground
                      text-75 pr-8 whitespace-nowrap text-ellipsis overflow-hidden"
                         >
                             {post.data.title}
@@ -170,7 +170,7 @@ onMount(() => {
                         <!-- post title -->
                         <div
                                 class="archive-title-col text-left font-bold
-                     group-hover:translate-x-1 transition-all group-hover:text-accent-foreground
+                     group-hover:translate-x-1 transition-[transform,color] group-hover:text-accent-foreground
                      text-75 pr-8 whitespace-nowrap text-ellipsis overflow-hidden"
                         >
                             {post.data.title}

@@ -1441,8 +1441,12 @@ test("page like should retry with captcha on the same button", async ({
 			)
 			.first()
 			.boundingBox();
-		expect((inputBox?.y ?? 0) - (imageBox?.y ?? 0)).toBeGreaterThan(30);
-		expect((inputBox?.x ?? 0) - (imageBox?.x ?? 0)).toBeLessThan(8);
+		const imageCenterY = (imageBox?.y ?? 0) + (imageBox?.height ?? 0) / 2;
+		const inputCenterY = (inputBox?.y ?? 0) + (inputBox?.height ?? 0) / 2;
+		expect(Math.abs(inputCenterY - imageCenterY)).toBeLessThan(8);
+		expect(inputBox?.x ?? 0).toBeGreaterThan(
+			(imageBox?.x ?? 0) + (imageBox?.width ?? 0),
+		);
 		expect(
 			(imageBox?.y ?? 0) - ((promptBox?.y ?? 0) + (promptBox?.height ?? 0)),
 		).toBeGreaterThan(8);

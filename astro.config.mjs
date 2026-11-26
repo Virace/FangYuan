@@ -490,43 +490,6 @@ function externalSiteAssetDevServerPlugin() {
 	};
 }
 
-// Tailwind Typography 生成的 [class~="not-prose"] / [class~="lead"] 属性选择器在 <html>/<body> 切换类时会触发全文档样式重算。
-function optimizeTypographyNotProseSelectorPlugin() {
-	const pattern = /\[class~=(?:["']|\\["'])?(not-prose|lead)(?:["']|\\["'])?\]/g;
-	const replaceSelectors = (source) => source.replace(pattern, ".$1");
-	return {
-		name: "fangyuan-optimize-not-prose-selector",
-		enforce: "pre",
-		transform(code, id) {
-			const cleanId = id.split("?", 1)[0];
-			if (!cleanId.endsWith(".css") || !pattern.test(code)) {
-				return null;
-			}
-			pattern.lastIndex = 0;
-			return {
-				code: replaceSelectors(code),
-				map: null,
-			};
-		},
-		generateBundle(_options, bundle) {
-			for (const asset of Object.values(bundle)) {
-				if (asset.type !== "asset" || !asset.fileName.endsWith(".css")) {
-					continue;
-				}
-				const source =
-					typeof asset.source === "string"
-						? asset.source
-						: Buffer.from(asset.source).toString("utf8");
-				if (!pattern.test(source)) {
-					continue;
-				}
-				pattern.lastIndex = 0;
-				asset.source = replaceSelectors(source);
-			}
-		},
-	};
-}
-
 const qingyanDevProxyTarget = resolveQingYanDevProxyTarget(astroCommand);
 const useQingYanMock = isQingYanMockTarget(qingyanDevProxyTarget);
 const qingyanDevProxy =
@@ -765,7 +728,6 @@ export default defineConfig({
 			externalSiteAssetPlugin(),
 			externalSiteAssetDevServerPlugin(),
 			tailwindcss(),
-			optimizeTypographyNotProseSelectorPlugin(),
 			...(qingyanDevProxyMiddlewarePlugin
 				? [qingyanDevProxyMiddlewarePlugin]
 				: []),

@@ -12,9 +12,9 @@ import { getContentRouteManifest } from "../utils/content-routes";
 import { resolveConfigAssetUrl } from "../utils/image-source";
 import { resolveNavbarLinks } from "../utils/navbar-links";
 import { getArchivePath, url } from "../utils/permalink/urls";
-import LightDarkSwitch from "./LightDarkSwitch.svelte";
+import LightDarkSwitch from "./LightDarkSwitch.astro";
 import Search from "./Search.svelte";
-import DisplaySettings from "./widget/DisplaySettings.svelte";
+import DisplaySettings from "./widget/DisplaySettings.astro";
 import NavMenuPanel from "./widget/NavMenuPanel.astro";
 
 const className = Astro.props.class;
@@ -120,36 +120,19 @@ const hasDualLogo = Boolean(
                     </button>
             )}
             <div>
-                <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
+                <LightDarkSwitch></LightDarkSwitch>
             </div>
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:hidden!" id="nav-menu-switch">
                 <Icon is:inline name="material-symbols:menu-rounded" class="text-xl"></Icon>
             </button>
         </div>
         <NavMenuPanel links={links}></NavMenuPanel>
-        <DisplaySettings client:only="svelte"></DisplaySettings>
+        <DisplaySettings></DisplaySettings>
     </div>
 </div>
 
 <script>
-function switchTheme() {
-    if (localStorage.theme === 'dark') {
-        document.documentElement.classList.remove('dark');
-        localStorage.theme = 'light';
-    } else {
-        document.documentElement.classList.add('dark');
-        localStorage.theme = 'dark';
-    }
-}
-
 function loadButtonScript() {
-    let switchBtn = document.getElementById("scheme-switch");
-    if (switchBtn) {
-        switchBtn.onclick = function () {
-            switchTheme()
-        };
-    }
-
     let settingBtn = document.getElementById("display-settings-switch");
     if (settingBtn) {
         settingBtn.onclick = function () {
