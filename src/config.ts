@@ -65,6 +65,7 @@ export const pageFeedbackConfig: SiteConfiguration["pageFeedbackConfig"] =
 export const configImageBaseRoots: Readonly<{
 	banner: "site" | "src";
 	lensInsert: "site" | "src";
+	logo: "site" | "src";
 	avatar: "site" | "src";
 	favicon: "site" | "src";
 	reward: "site" | "src";
@@ -73,6 +74,7 @@ export const configImageBaseRoots: Readonly<{
 	lensInsert: externalSiteConfig?.siteConfig?.banner?.optics?.insert
 		? "site"
 		: "src",
+	logo: externalSiteConfig?.siteConfig?.logo ? "site" : "src",
 	avatar: externalSiteConfig?.profileConfig?.avatar ? "site" : "src",
 	favicon: externalSiteConfig?.siteConfig?.favicon ? "site" : "src",
 	reward: externalSiteConfig?.pageFeedbackConfig?.reward?.options

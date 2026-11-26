@@ -293,6 +293,7 @@ const ticks = Array.from(
 	.spill-frame { position: absolute; inset: auto 0 100%; height: var(--optics-height); }
 	.beam-pulses-layer {
 		position: absolute; inset: 0 0 auto; width: 100%; height: calc(100% + var(--spill-height));
+		overflow: hidden;
 		pointer-events: none; visibility: hidden;
 		mask-image: linear-gradient(to bottom, black calc(100% - var(--spill-height)), rgb(0 0 0 / .55) calc(100% - var(--spill-height) * .62), transparent);
 	}

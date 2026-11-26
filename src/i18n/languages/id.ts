@@ -96,6 +96,7 @@ export const id: Translation = {
 	[Key.systemMode]: "Sistem",
 
 	[Key.more]: "Lainnya",
+	[Key.less]: "Ringkas",
 
 	[Key.author]: "Penulis",
 	[Key.publishedAt]: "Diterbitkan pada",

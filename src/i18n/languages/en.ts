@@ -97,6 +97,7 @@ export const en: Translation = {
 	[Key.systemMode]: "System",
 
 	[Key.more]: "More",
+	[Key.less]: "Less",
 
 	[Key.author]: "Author",
 	[Key.publishedAt]: "Published at",

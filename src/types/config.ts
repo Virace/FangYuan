@@ -68,6 +68,22 @@ export type NotificationConfig = {
 	newestOnTop: boolean;
 };
 
+export type SiteLogoConfig =
+	| string
+	| {
+			light?: string;
+			dark?: string;
+			alt?: string;
+			showTitle?: boolean;
+	  };
+
+export type ProfileLinkEffect = "expand" | "lift";
+
+export type TagWidgetConfig = {
+	showHash: boolean;
+	showCount: boolean;
+};
+
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
@@ -113,7 +129,9 @@ export type SiteConfig = {
 		descriptionLines: 1 | 2 | 3;
 	};
 	notifications: NotificationConfig;
+	tags: TagWidgetConfig;
 
+	logo?: SiteLogoConfig | null;
 	favicon: Favicon[];
 	permalink: PermalinkConfig;
 };
@@ -171,6 +189,7 @@ export type ProfileConfig = {
 	avatar?: string;
 	name: string;
 	bio?: string;
+	linkEffect?: ProfileLinkEffect;
 	links: {
 		name: string;
 		url: string;

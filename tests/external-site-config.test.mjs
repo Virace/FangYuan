@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { resolveSiteConfiguration } from "../src/site-configuration.ts";
 import { loadExternalSiteConfigYaml } from "../src/utils/site-source/external-config.ts";
 
 test("loadExternalSiteConfigYaml parses a valid site.config.yaml", async (t) => {
@@ -340,4 +341,119 @@ test("loadExternalSiteConfigYaml rejects legacy page feedback rewardOptions", as
 	);
 
 	assert.throws(() => loadExternalSiteConfigYaml(configPath), /rewardOptions/);
+});
+
+test("loadExternalSiteConfigYaml and resolveSiteConfiguration support siteConfig.logo and profileConfig.linkEffect", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-config-"));
+	const configPath = path.join(tempRoot, "site.config.yaml");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	await writeFile(
+		configPath,
+		`siteConfig:
+  logo:
+    light: assets/images/logo-light.svg
+    dark: assets/images/logo-dark.svg
+    alt: Custom Brand
+    showTitle: false
+profileConfig:
+  linkEffect: lift
+`,
+		"utf8",
+	);
+
+	const loaded = loadExternalSiteConfigYaml(configPath);
+	assert.deepEqual(loaded?.siteConfig?.logo, {
+		light: "assets/images/logo-light.svg",
+		dark: "assets/images/logo-dark.svg",
+		alt: "Custom Brand",
+		showTitle: false,
+	});
+	assert.equal(loaded?.profileConfig?.linkEffect, "lift");
+
+	const resolved = resolveSiteConfiguration(loaded);
+	assert.deepEqual(resolved.siteConfig.logo, {
+		light: "assets/images/logo-light.svg",
+		dark: "assets/images/logo-dark.svg",
+		alt: "Custom Brand",
+		showTitle: false,
+	});
+	assert.equal(resolved.profileConfig.linkEffect, "lift");
+
+	await writeFile(
+		configPath,
+		`siteConfig:
+  logo: assets/images/logo.svg
+profileConfig:
+  linkEffect: expand
+`,
+		"utf8",
+	);
+	const stringLogoResolved = resolveSiteConfiguration(
+		loadExternalSiteConfigYaml(configPath),
+	);
+	assert.equal(stringLogoResolved.siteConfig.logo, "assets/images/logo.svg");
+	assert.equal(stringLogoResolved.profileConfig.linkEffect, "expand");
+
+	await writeFile(
+		configPath,
+		`siteConfig:
+  logo:
+    showTitle: false
+`,
+		"utf8",
+	);
+	assert.throws(() => loadExternalSiteConfigYaml(configPath), /light or dark/);
+
+	await writeFile(
+		configPath,
+		`profileConfig:
+  linkEffect: bounce
+`,
+		"utf8",
+	);
+	assert.throws(() => loadExternalSiteConfigYaml(configPath), /linkEffect/);
+});
+
+test("loadExternalSiteConfigYaml and resolveSiteConfiguration support siteConfig.tags defaults and overrides", async (t) => {
+	const tempRoot = await mkdtemp(path.join(os.tmpdir(), "fangyuan-config-"));
+	const configPath = path.join(tempRoot, "site.config.yaml");
+	t.after(async () => {
+		await rm(tempRoot, { recursive: true, force: true });
+	});
+
+	const defaults = resolveSiteConfiguration(null);
+	assert.deepEqual(defaults.siteConfig.tags, {
+		showHash: false,
+		showCount: false,
+	});
+
+	await writeFile(
+		configPath,
+		`siteConfig:
+  tags:
+    showHash: true
+    showCount: true
+`,
+		"utf8",
+	);
+	const overridden = resolveSiteConfiguration(
+		loadExternalSiteConfigYaml(configPath),
+	);
+	assert.deepEqual(overridden.siteConfig.tags, {
+		showHash: true,
+		showCount: true,
+	});
+
+	await writeFile(
+		configPath,
+		`siteConfig:
+  tags:
+    unknownFlag: true
+`,
+		"utf8",
+	);
+	assert.throws(() => loadExternalSiteConfigYaml(configPath), /unknownFlag/);
 });

@@ -14,20 +14,6 @@ function drawGlow(
 	ctx.drawImage(image, x - radius, y - radius, radius * 2, radius * 2);
 }
 
-function fitTitle(ctx: CanvasRenderingContext2D, title: string, width: number) {
-	if (ctx.measureText(title).width <= width) return title;
-	const letters = Array.from(title);
-	let low = 0;
-	let high = letters.length;
-	while (low < high) {
-		const mid = Math.ceil((low + high) / 2);
-		if (ctx.measureText(`${letters.slice(0, mid).join("")}…`).width <= width)
-			low = mid;
-		else high = mid - 1;
-	}
-	return `${letters.slice(0, low).join("")}…`;
-}
-
 function traceSurface(
 	ctx: CanvasRenderingContext2D,
 	w: number,
@@ -62,11 +48,6 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 	const texturesForHue = createRainTextureCache();
 	let materials: RainTextures["materials"] = [];
 	let tails: RainTextures["tails"] = [];
-	let eyebrowFont = "";
-	let titleFont = "";
-	let measured = "";
-	let measuredWidth = 0;
-	let caption = "";
 	let lastPhase: TransitionFrameState["phase"] | undefined;
 	let surfaceFraction = 1;
 	let entryFraction = 1;
@@ -75,8 +56,6 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 		prepare({ width, height, startVisibleHeight }) {
 			const styles = getComputedStyle(document.body);
 			const hue = Number.parseFloat(styles.getPropertyValue("--hue")) || 0;
-			eyebrowFont = `600 11px ${styles.fontFamily}`;
-			titleFont = `600 16px ${styles.fontFamily}`;
 			({ materials, tails } = texturesForHue(hue));
 			const count =
 				innerWidth < 1024
@@ -96,7 +75,6 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 					? Math.min(1, startVisibleHeight / height)
 					: 1;
 			entryFraction = surfaceFraction = startRatio + 0.08;
-			measuredWidth = -1;
 		},
 		render(ctx, state) {
 			const {
@@ -211,26 +189,8 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 					ctx.stroke();
 				}
 			}
+			// 主栏居中与整站视口中心存在偏置，且各页高度不一导致纵向重心不稳，本版本暂不绘制中央文字印记（保留 state.imprint 契约以便后续复用）
 			ctx.globalAlpha = 1;
-			ctx.textAlign = "center";
-			ctx.font = eyebrowFont;
-			if ("letterSpacing" in ctx) {
-				ctx.letterSpacing = "0.18em";
-			}
-			ctx.fillStyle = isDark ? "rgba(176,228,242,.74)" : "rgba(30,45,62,.58)";
-			ctx.fillText(state.imprint.eyebrow, cx, cy - 13);
-			if ("letterSpacing" in ctx) {
-				ctx.letterSpacing = "0px";
-			}
-			ctx.font = titleFont;
-			if (measured !== state.imprint.title || measuredWidth !== w) {
-				measured = state.imprint.title;
-				measuredWidth = w;
-				caption = fitTitle(ctx, measured, Math.max(0, w - 64));
-			}
-			ctx.fillStyle = isDark ? "rgba(244,248,255,.92)" : "rgba(22,32,46,.86)";
-			ctx.fillText(caption, cx, cy + 12);
-			ctx.drawImage(ink.underline, cx - 68, cy + 24, 136, 1.5);
 			ctx.restore();
 			if (wave) {
 				ctx.save();

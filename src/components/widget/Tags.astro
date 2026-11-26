@@ -1,5 +1,6 @@
 ---
 
+import { siteConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import { getTagList } from "../../utils/content/posts";
@@ -12,6 +13,15 @@ const tags = await getTagList();
 const COLLAPSED_HEIGHT = "7.5rem";
 
 const isCollapsed = tags.length >= 20;
+const counts = tags.map((tag) => tag.count);
+const hasCountSpread =
+	counts.length >= 20 && Math.max(...counts) > Math.min(...counts);
+const getTagTier = (count: number): "hot" | "normal" | "quiet" => {
+	if (!hasCountSpread) return "normal";
+	if (count >= 4) return "hot";
+	if (count === 1) return "quiet";
+	return "normal";
+};
 
 interface Props {
 	class?: string;
@@ -20,10 +30,16 @@ interface Props {
 const className = Astro.props.class;
 const style = Astro.props.style;
 ---
-<WidgetLayout name={i18n(I18nKey.tags)} id="tags" isCollapsed={isCollapsed} collapsedHeight={COLLAPSED_HEIGHT} class={className} style={style}>
+<WidgetLayout name={i18n(I18nKey.tags)} id="tags" count={tags.length} isCollapsed={isCollapsed} collapsedHeight={COLLAPSED_HEIGHT} expandedMaxHeight="19rem" class={className} style={style}>
     <div class="flex gap-1.5 flex-wrap">
         {tags.map(t => (
-            <ButtonTag href={getTagUrl(t.name)} label={`View all posts with the ${t.name.trim()} tag`}>
+            <ButtonTag
+                href={getTagUrl(t.name)}
+                label={`View all posts with the ${t.name.trim()} tag`}
+                showHash={siteConfig.tags.showHash}
+                count={siteConfig.tags.showCount ? t.count : undefined}
+                tier={getTagTier(t.count)}
+            >
                 {t.name.trim()}
             </ButtonTag>
         ))}

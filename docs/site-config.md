@@ -266,6 +266,23 @@ siteConfig:
 - 支持值：整数 `1`、`2`、`3`，默认 `1`。
 - 作用范围：所有页面中的 GitHub 仓库卡片，构建快照和浏览器刷新共用同一设置。
 
+#### `siteConfig.tags.showHash`
+
+- 作用：是否在侧栏标签芯片前显示 `#` 符号。
+- 默认值：`false`（默认不显示）。
+
+#### `siteConfig.tags.showCount`
+
+- 作用：是否在侧栏标签芯片右侧显示该标签关联的文章数量角标。
+- 默认值：`false`（默认不显示）。
+
+#### `siteConfig.logo`
+
+- 作用：自定义导航栏左上角品牌 Logo；留空或设为 `null` 时继续使用 FangYuan 内置标志。
+- 写法：
+  - 单路径字符串：例如 `assets/images/logo.svg`（亮暗模式共用同一张图）。
+  - 对象写法：支持 `light`（亮色模式图片）、`dark`（暗色模式图片）、`alt`（图片替代文本）与 `showTitle`（默认 `true`；设为 `false` 时隐藏导航栏站点标题文本）。
+
 #### `siteConfig.favicon`
 
 - 作用：自定义 favicon 列表。
@@ -409,7 +426,7 @@ siteConfig:
 - 作用：侧栏主图 / 作者头像路径。
 - 路径规则：和 `siteConfig.banner.src` 一致。
 - 安全本地写法：`assets/images/avatar.svg`（`init-site` 默认创建占位图；不配置外部覆盖时展示内置多彩光学版 `demo-avatar.svg`）。
-- 注意：FangYuan 没有单独的全局 logo 配置项；这里是侧栏作者展示图，站点标签页图标请配在 `siteConfig.favicon`。
+- 注意：这里是侧栏作者展示图；导航栏品牌标志请配在 `siteConfig.logo`，站点标签页图标请配在 `siteConfig.favicon`。
 
 #### `profileConfig.name`
 
@@ -418,6 +435,13 @@ siteConfig:
 #### `profileConfig.bio`
 
 - 作用：作者简介。
+
+#### `profileConfig.linkEffect`
+
+- 作用：配置个人展示卡片底部社交按钮的悬停动效（仅在多于 1 个社交链接时生效，构建期固定）。
+- 支持值：
+  - `expand`（默认）：胶囊横向舒展，悬停或聚焦时展开平台名称，溢出自动折行并限制单按钮最大宽度。
+  - `lift`：固定方圆尺寸，悬停或聚焦时双层图标垂直升降置换为高亮态。
 
 #### `profileConfig.links`
 

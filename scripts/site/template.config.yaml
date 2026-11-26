@@ -82,6 +82,23 @@ siteConfig:
     # 新消息是否在已有消息上方出现；与基准位置独立，false 表示在下方追加。
     newestOnTop: false
 
+  # 侧栏标签芯片显示开关。
+  tags:
+    # 是否在标签文字前显示 # 符号（默认关闭）。
+    showHash: false
+    # 是否在标签右侧显示文章数量角标（默认关闭）。
+    showCount: false
+
+  # 导航栏品牌 Logo。
+  # 留空（null）表示使用 FangYuan 内置默认品牌标志。
+  # 也可简写为单个路径字符串（如 assets/images/logo.svg），或按亮/暗主题分开配置：
+  # logo:
+  #   light: assets/images/logo-light.svg
+  #   dark: assets/images/logo-dark.svg
+  #   alt: 站点 Logo
+  #   showTitle: true
+  logo: null
+
   # favicon 列表。
   # 替换位置：assets/favicon/icon.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
   # 留空数组表示继续使用内置默认 favicon 配置。
@@ -207,7 +224,7 @@ profileConfig:
   # 替换位置：assets/images/avatar.svg，初始化脚本会创建这个占位图；直接替换同名文件即可。
   # 安全本地写法：assets/images/avatar.svg，图片放在外部站点根目录 assets/ 下。
   # CDN 写法：https://cdn.example.com/avatar.png，不会被本地构建打包或校验。
-  # 注意：FangYuan 当前没有独立 logo 配置项；这里是侧栏作者头像，不是 favicon。
+  # 这里是侧栏作者头像；导航栏品牌图标请配在 siteConfig.logo，标签页图标请配在 siteConfig.favicon。
   avatar: assets/images/avatar.svg
 
   # 作者显示名。
@@ -215,6 +232,11 @@ profileConfig:
 
   # 作者简介。
   bio: {{PROFILE_BIO}}
+
+  # 资料卡底部社交按钮动效（构建期固定），只支持 expand 或 lift：
+  # - expand：悬停时横向展开显示平台名称（按钮较多时自动折行，不会溢出卡片）
+  # - lift：保持紧凑方圆尺寸，悬停时双层图标垂直升降切换
+  linkEffect: expand
 
   # 个人链接列表。
   # 一旦显式填写，会整体替换默认数组，不会逐项合并。

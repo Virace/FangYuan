@@ -101,6 +101,7 @@ export const es: Translation = {
 	[Key.systemMode]: "Sistema",
 
 	[Key.more]: "Más",
+	[Key.less]: "Menos",
 
 	[Key.author]: "Autor",
 	[Key.publishedAt]: "Publicado el",

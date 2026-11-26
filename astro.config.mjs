@@ -347,6 +347,12 @@ function collectExternalSiteAssetReferences() {
 			addExternalSiteAssetReference(references, prism || banner?.optics?.insert || banner?.src);
 		}
 	}
+	if (typeof siteConfig?.logo === "string") {
+		addExternalSiteAssetReference(references, siteConfig.logo);
+	} else if (siteConfig?.logo && typeof siteConfig.logo === "object") {
+		addExternalSiteAssetReference(references, siteConfig.logo.light);
+		addExternalSiteAssetReference(references, siteConfig.logo.dark);
+	}
 	for (const favicon of siteConfig?.favicon ?? []) {
 		addExternalSiteAssetReference(references, favicon.src);
 	}
