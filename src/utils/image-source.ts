@@ -89,6 +89,10 @@ function assertExternalAssetReference(value: string): string {
 	return normalizedValue;
 }
 
+export function resolveExternalAssetFile(value: string): string {
+	return toExternalAssetPath(assertExternalAssetReference(value));
+}
+
 function toPublicFilePath(value: string): string {
 	if (isPublicAlias(value)) {
 		return path.join(publicRoot, value.slice("public/".length));

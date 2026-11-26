@@ -161,12 +161,77 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 
 #### `siteConfig.banner.src`
 
-- 作用：横幅图片路径。
+- 当 `optics.prism` 和 `optics.insert` 均留空时，填写 `src` 会显示整幅横图，可配置图片位置和署名。省略 `src` 或留空则显示内置交互透镜。
+- 白色入射光穿过镜片后展开成渐变光谱。桌面移动鼠标可以改变观察角度，连续点击入射光会发出多道独立脉冲。手形光标张开时可抓住光束，绕镜片拖动会带动远端光带弯曲，松手后光路在选定方向收直。手机支持连续轻点，开启「减少动态效果」时显示静帧。
+- 使用内置透镜时，顶图和正文留白共享细颗粒渐变。亮色从灰蓝过渡到页面底色，暗色从石墨色过渡到深色底。圆形光斑随桌面指针移动，经过顶图与正文的边界时在两种亮度之间渐变。滚动时光斑淡出，停稳后在指针当前位置恢复。指针位于页脚时光斑保持隐藏。触屏和「减少动态效果」模式使用静态背景。自定义图片横幅沿用纯色页面背景。
 - 路径规则：
   - `assets/images/banner.svg`：推荐。指向外部站点根目录 `assets/images/banner.svg`，会作为本地图片输入参与构建。
   - `https://cdn.example.com/banner.webp`：可用。远程图片会原样透传，不会被本地构建打包或校验。
   - `/favicon/icon.png` 或 `public/favicon/icon.png`：不是 external site 的资源目录，也不会从 FangYuan 仓库 `public/` 复制旧占位资源。
 - 建议：站点自有横幅优先放在外部站点根目录 `<siteRoot>/assets/`，不要依赖临时构建产物路径。`init-site` 默认会创建 `assets/images/banner.svg` 作为替换占位符。
+
+#### `siteConfig.banner.optics.insert`
+
+填写一张图片即可在交互透镜的玻璃下放入图案。图片居中等比缩放，透明区域透出镜片底色。图案随镜片倾斜，表面保留反光，点击入射光时脉冲会扫亮图案。建议用透明 SVG、PNG 或 WebP。
+
+```yaml
+siteConfig:
+  banner:
+    enable: true
+    src: assets/images/banner.png
+    optics:
+      insert: assets/images/mark.svg
+```
+
+在透镜模式下，`insert` 优先于 `src`；清空夹层配置就会恢复横图。图片路径遵循上面的横幅资源规则。
+
+#### `siteConfig.banner.optics.prism`
+
+用一张透明底素材替换整个分光元件。将素材放进外部站点的 `assets/`，例如：
+
+```yaml
+siteConfig:
+  banner:
+    enable: true
+    optics:
+      prism: assets/images/prism.svg
+```
+
+例如，把下面的不对称三角形保存为站点的 `assets/images/prism.svg`。构建后拖动左侧白光，可以看到入射点和彩光出口分别沿三角形的两条边移动。
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="248" height="248" viewBox="-124 -124 248 248">
+  <path d="M-96 -72L104 0 -64 90Z" fill="#7abfe2" fill-opacity=".7"/>
+</svg>
+```
+
+图案会等比居中。画布中心是光轴，两束光分别从中心向相反方向找到主体边缘；拖动光束后会沿新方向重新取点。素材应让光轴落在连续的主体内，实体区域的不透明度至少为 50%。可以用 SVG 绘制切面和侧壁，或使用透明 PNG、WebP。构建时从本地素材取样，页面内只需按角度插值。
+
+需要随观察角度露出不同侧边时，可以给各层使用同尺寸、同中心的透明画布：
+
+```yaml
+siteConfig:
+  banner:
+    enable: true
+    optics:
+      prism:
+        face: assets/images/prism.svg
+        spacer: assets/images/prism-spacer.svg
+        guides:
+          - [[8, 12], [26, 33], [35, 36], [81, 90]]
+        back: assets/images/prism-back.svg
+        crown: diamond
+```
+
+`face` 决定光束的入射和出射边缘。`back` 是后座，`spacer` 位于后座与正面之间，两者均可省略。`crown: diamond` 会在光轴上方嵌入带立体切面的菱形晶体，反光随视角移动。省略 `crown` 时仅显示配置的素材层。
+
+可选的 `guides` 在中层绘制导光刻槽。每条槽用至少两个 `[x, y]` 点描述，由中心向外排列。坐标以 248 × 248 的棱镜画布中心为原点，向右、向下为正。光束转向槽尾时，刻槽逐渐亮起，亮线末端随视角接到正面的实际出口。
+
+点击入射光时，同一道脉冲会扫过正面的玻璃，在中层透出青光，并在后座的切边留下稍晚的暖色反光。这些反应由主题按图层绘制，换图即可沿用。换成其他形状时，如果希望导光线贴合新图案的刻纹，需要在 `guides` 里标出新路径。轮廓取样只决定进出光的位置。
+
+外部站点通过素材和 `site.config.yaml` 定义中央件。当前构建入口只挂载主题内的 `OpticalBanner.astro`，外部仓库里的 Astro 或 Svelte 组件没有对应的注册入口。
+
+桌面和触屏都可以按住光束转向，开启「减少动态效果」时显示静帧。同时配置时，显示顺序为 `prism`、`insert`、`src`、主题默认透镜。移除 `prism` 即可恢复之前的样式。
 
 #### `siteConfig.banner.position`
 
@@ -195,16 +260,46 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 - 作用：目录最大层级。
 - 支持值：`1`、`2`、`3`
 
+#### `siteConfig.githubCard.descriptionLines`
+
+- 作用：GitHub 仓库卡片简介最多显示的行数，超出部分显示省略号，原始简介保留完整。
+- 支持值：整数 `1`、`2`、`3`，默认 `1`。
+- 作用范围：所有页面中的 GitHub 仓库卡片，构建快照和浏览器刷新共用同一设置。
+
+#### `siteConfig.notifications`
+
+- 作用：控制全局通知队列的停靠位置与排列顺序，详见 `docs/notifications.md`。
+- 支持字段：
+  - `position`：`top`（默认，位于导航栏下方）或 `bottom`（位于视口底部及可见页脚上方）。
+  - `newestOnTop`：`false`（默认，新消息追加在既有队列之后）或 `true`（新消息占据基准边缘槽位）。
+
+#### `siteConfig.tags.showHash`
+
+- 作用：是否在侧栏标签芯片前显示 `#` 符号。
+- 默认值：`false`（默认不显示）。
+
+#### `siteConfig.tags.showCount`
+
+- 作用：是否在侧栏标签芯片右侧显示该标签关联的文章数量角标。
+- 默认值：`false`（默认不显示）。
+
+#### `siteConfig.logo`
+
+- 作用：自定义导航栏左上角品牌 Logo；留空或设为 `null` 时继续使用 FangYuan 内置标志。
+- 写法：
+  - 单路径字符串：例如 `assets/images/logo.svg`（亮暗模式共用同一张图）。
+  - 对象写法：支持 `light`（亮色模式图片）、`dark`（暗色模式图片）、`alt`（图片替代文本）与 `showTitle`（默认 `true`；设为 `false` 时隐藏导航栏站点标题文本）。
+
 #### `siteConfig.favicon`
 
 - 作用：自定义 favicon 列表。
-- 规则：留空数组表示继续使用内置默认 favicon。
+- 规则：留空数组表示继续使用内置主蓝底矢量 SVG Favicon。
 
 #### `siteConfig.favicon[].src`
 
 - 作用：图标路径。
 - 建议：写外部站点根目录 `<siteRoot>/assets/` 下的稳定路径，例如 `assets/favicon/icon.svg`。
-- 注意：`init-site` 默认会创建 `assets/favicon/icon.svg` 作为替换占位符。留空数组则继续使用 FangYuan 内置默认 favicon。
+- 注意：`init-site` 默认会创建 `assets/favicon/icon.svg` 作为替换占位符。留空数组则继续使用 FangYuan 内置默认 SVG Favicon。
 
 #### `siteConfig.favicon[].theme`
 
@@ -284,6 +379,17 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 - 支持值：`asc`、`desc`
 - 冲突提醒：站点整体排序仍会先考虑 `sticky` 层级，再应用这里的字段和方向。
 
+#### `siteConfig.taxonomySort`
+
+- 作用：控制侧栏及归档上下文中分类与标签的排序规则。
+- `categories` 支持字段：
+  - `key`：`name`（默认）或 `count`。
+  - `order`：`asc`（默认）或 `desc`。
+  - `uncategorizedPosition`：`sorted`（默认，“未分类”参与排序）或 `last`（固定排在末尾）。
+- `tags` 支持字段：
+  - `key`：`name`（默认）或 `count`。
+  - `order`：`asc`（默认）或 `desc`。
+
 ### `navBarI18n`
 
 - 作用：导航文案映射表。
@@ -335,10 +441,10 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 
 #### `profileConfig.avatar`
 
-- 作用：头像图片路径。
+- 作用：侧栏主图 / 作者头像路径。
 - 路径规则：和 `siteConfig.banner.src` 一致。
-- 安全本地写法：`assets/images/avatar.svg`。`init-site` 默认会创建这个替换占位符。
-- 注意：FangYuan 当前没有独立 logo 配置项；这里是侧栏作者头像，不是 favicon。
+- 安全本地写法：`assets/images/avatar.svg`（`init-site` 默认创建占位图；不配置外部覆盖时展示内置多彩光学版 `demo-avatar.svg`）。
+- 注意：这里是侧栏作者展示图；导航栏品牌标志请配在 `siteConfig.logo`，站点标签页图标请配在 `siteConfig.favicon`。
 
 #### `profileConfig.name`
 
@@ -347,6 +453,13 @@ node scripts/site/update-site.js --site-root ../my-site --apply
 #### `profileConfig.bio`
 
 - 作用：作者简介。
+
+#### `profileConfig.linkEffect`
+
+- 作用：配置个人展示卡片底部社交按钮的悬停动效（仅在多于 1 个社交链接时生效，构建期固定）。
+- 支持值：
+  - `expand`（默认）：胶囊横向舒展，悬停或聚焦时展开平台名称，溢出自动折行并限制单按钮最大宽度。
+  - `lift`：固定方圆尺寸，悬停或聚焦时双层图标垂直升降置换为高亮态。
 
 #### `profileConfig.links`
 

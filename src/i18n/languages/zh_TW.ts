@@ -2,6 +2,10 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const zh_TW: Translation = {
+	[Key.noticeRegion]: "全站通知",
+	[Key.noticePinned]: "優先保留",
+	[Key.engagementLoadFailed]: "互動資訊載入失敗，請稍後再試。",
+	[Key.commentsCaptchaRefreshFailed]: "驗證碼重新整理失敗，請重試。",
 	[Key.home]: "首頁",
 	[Key.about]: "關於",
 	[Key.archive]: "彙整",
@@ -82,6 +86,7 @@ export const zh_TW: Translation = {
 	[Key.systemMode]: "跟隨系統",
 
 	[Key.more]: "更多",
+	[Key.less]: "收起",
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "發佈於",
@@ -94,5 +99,6 @@ export const zh_TW: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"如果這篇內容對你有幫助，歡迎透過下方渠道支持作者。",
 	[Key.pageFeedbackClose]: "關閉",
+	[Key.tableOfContents]: "目錄",
 	[Key.license]: "許可協議",
 };

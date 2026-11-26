@@ -1,12 +1,10 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import type { AutoDismissTone } from "@utils/browser/notice";
 import type { CommentCaptchaState } from "@utils/comments/provider";
 import { onDestroy } from "svelte";
 import { fade, scale, slide } from "svelte/transition";
 import type { CanonicalComment, CommentVoteChoice } from "@/types/comment";
-import InlineFeedbackNotice from "../misc/InlineFeedbackNotice.svelte";
 import InlineCommentCaptcha from "./InlineCommentCaptcha.svelte";
 
 export let comment: CanonicalComment;
@@ -14,7 +12,6 @@ export let activeReplyParentId: string | null = null;
 export let activeCaptchaCommentId: string | null = null;
 export let activeCaptchaVoteChoice: CommentVoteChoice | null = null;
 export let activeVoteConfirmCommentId: string | null = null;
-export let activeCommentNoticeId: string | null = null;
 export let depth = 1;
 export let maxDepth = 3;
 export let supportsVote = false;
@@ -25,8 +22,6 @@ export let captchaBusy = false;
 export let captchaValue = "";
 export let captchaError = "";
 export let captchaPrompt = "";
-export let commentNoticeMessage = "";
-export let commentNoticeTone: AutoDismissTone = "info";
 export let onVote: ((commentId: string, choice: "up" | "down") => void) | null =
 	null;
 export let onConfirmVote:
@@ -174,8 +169,6 @@ $: showAvatarImage = Boolean(avatarKey && failedAvatarKey !== avatarKey);
 $: showVoteConfirm =
 	comment.id === activeVoteConfirmCommentId && pendingVoteChoice !== null;
 $: voteDisabled = Boolean(comment.viewerVote) || voteBusy;
-$: showCommentNotice =
-	comment.id === activeCommentNoticeId && commentNoticeMessage.length > 0;
 $: showCommentCaptchaUp =
 	comment.id === activeCaptchaCommentId &&
 	activeCaptchaVoteChoice === "up" &&
@@ -195,38 +188,48 @@ $: showCommentCaptchaDown =
 		{#if comment.author.avatarUrl && showAvatarImage}
 			<img
 				alt={comment.author.name}
-				class="h-10 w-10 rounded-full object-cover"
+				class="comment-avatar shrink-0 rounded-full object-cover"
+				class:h-9={depth === 1}
+				class:w-9={depth === 1}
+				class:h-7={depth > 1}
+				class:w-7={depth > 1}
 				src={comment.author.avatarUrl}
 				on:error={() => {
 					failedAvatarKey = avatarKey;
 				}}
 			/>
 		{:else}
-			<div class="flex h-10 w-10 items-center justify-center rounded-full bg-btn-plain-bg-hover text-sm font-semibold text-primary">
+			<div
+				class="comment-avatar flex shrink-0 items-center justify-center rounded-full text-xs font-bold text-accent-foreground"
+				class:h-9={depth === 1}
+				class:w-9={depth === 1}
+				class:h-7={depth > 1}
+				class:w-7={depth > 1}
+			>
 				{comment.author.name.slice(0, 1).toUpperCase()}
 			</div>
 		{/if}
 
 		<div class="min-w-0 flex-1">
 			<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-				<span class="font-semibold text-90">{comment.author.name}</span>
+				<span class="text-sm font-semibold text-90">{comment.author.name}</span>
 				{#if comment.author.badge?.label}
 					<span class="comment-author-badge">{comment.author.badge.label}</span>
 				{/if}
-				<span class="text-xs text-50">{formatCommentDate(comment.createdAt)}</span>
+				<span class="text-xs font-mono tabular-nums text-muted">{formatCommentDate(comment.createdAt)}</span>
 				{#if comment.status !== "approved"}
-					<span class="rounded-full bg-soft-contrast px-2 py-0.5 text-xs text-50">
+					<span class="optical-chip-static rounded-md px-2 py-0.5 text-xs text-muted">
 						{i18n(I18nKey.commentsModerationNotice)}
 					</span>
 				{/if}
 			</div>
 
-			<div class="comment-body mt-2 text-sm leading-7 text-75">
+			<div class="comment-body mt-1.5 text-sm leading-7 text-75">
 				{@html comment.content.html}
 			</div>
 
 			{#if depth < maxDepth || supportsVote}
-				<div class="comment-actions-shell mt-3">
+				<div class="comment-actions-shell mt-2.5">
 					<div class="comment-actions">
 						{#if depth < maxDepth}
 							<button
@@ -235,9 +238,15 @@ $: showCommentCaptchaDown =
 								type="button"
 								on:click={triggerReply}
 							>
-								{activeReplyParentId === comment.id
-									? i18n(I18nKey.commentsCancelReply)
-									: i18n(I18nKey.commentsReply)}
+								<svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+									<path d="M9 14 4 9l5-5" />
+									<path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11" />
+								</svg>
+								<span>
+									{activeReplyParentId === comment.id
+										? i18n(I18nKey.commentsCancelReply)
+										: i18n(I18nKey.commentsReply)}
+								</span>
 							</button>
 						{/if}
 
@@ -252,7 +261,9 @@ $: showCommentCaptchaDown =
 								disabled={voteDisabled}
 								on:click={() => onVote?.(comment.id, "up")}
 							>
-								<span aria-hidden="true">👍</span>
+								<svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+									<path d="M7 10v11H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h3Zm0 0 4.2-7.1a1.5 1.5 0 0 1 2.7.9V8h5.2a2 2 0 0 1 2 2.3l-1.2 8A2 2 0 0 1 17.9 20H7" />
+								</svg>
 								<span class="comment-action-count">{comment.voteUp}</span>
 							</button>
 
@@ -331,7 +342,9 @@ $: showCommentCaptchaDown =
 								disabled={voteDisabled}
 								on:click={() => onVote?.(comment.id, "down")}
 							>
-								<span aria-hidden="true">👎</span>
+								<svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+									<path d="M17 14V3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-3Zm0 0-4.2 7.1a1.5 1.5 0 0 1-2.7-.9V16H4.9a2 2 0 0 1-2-2.3l1.2-8A2 2 0 0 1 6.1 4H17" />
+								</svg>
 								<span class="comment-action-count">{comment.voteDown}</span>
 							</button>
 
@@ -404,14 +417,6 @@ $: showCommentCaptchaDown =
 				</div>
 			{/if}
 
-			<InlineFeedbackNotice
-				message={showCommentNotice ? commentNoticeMessage : ""}
-				tone={commentNoticeTone}
-				compact={true}
-				duration={180}
-				className="mt-3"
-			/>
-
 			{#if depth < maxDepth && comment.children.length > 0}
 				<div class="comment-children mt-4 space-y-3">
 					{#each comment.children as child (child.id)}
@@ -421,7 +426,6 @@ $: showCommentCaptchaDown =
 							activeCaptchaCommentId={activeCaptchaCommentId}
 							activeCaptchaVoteChoice={activeCaptchaVoteChoice}
 							activeVoteConfirmCommentId={activeVoteConfirmCommentId}
-							activeCommentNoticeId={activeCommentNoticeId}
 							depth={depth + 1}
 							maxDepth={maxDepth}
 							supportsVote={supportsVote}
@@ -432,8 +436,6 @@ $: showCommentCaptchaDown =
 							bind:captchaValue
 							captchaError={captchaError}
 							captchaPrompt={captchaPrompt}
-							commentNoticeMessage={commentNoticeMessage}
-							commentNoticeTone={commentNoticeTone}
 							onVote={onVote}
 							onConfirmVote={onConfirmVote}
 							onCancelVoteConfirm={onCancelVoteConfirm}

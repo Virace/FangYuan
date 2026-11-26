@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { unified } from "@astrojs/markdown-remark";
+import { satteri, satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
 import svelte from "@astrojs/svelte";
 import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-sections";
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
@@ -9,15 +9,6 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
-import rehypeComponents from "rehype-components"; /* Render the custom directive content */
-import rehypeKatex from "rehype-katex";
-import rehypeSlug from "rehype-slug";
-import remarkDirective from "remark-directive"; /* Handle directives */
-import remarkDirectiveRehype from "remark-directive-rehype";
-import remarkGithubAdmonitionsToDirectives from "remark-github-admonitions-to-directives";
-import remarkMath from "remark-math";
-import remarkSectionize from "remark-sectionize";
 import { parse as parseYaml } from "yaml";
 import { resolveSiteBuildPaths } from "./scripts/site/build-paths.mjs";
 import {
@@ -27,14 +18,27 @@ import {
 } from "./src/default-config.ts";
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
+import { githubCardBuildIntegration } from "./src/plugins/github-card-build.mjs";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
 import { BilibiliVideoComponent } from "./src/plugins/rehype-component-bilibili-video.mjs";
-import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
+import { satteriGithubCard } from "./src/plugins/rehype-component-github-card.mjs";
 import { LinkCardComponent } from "./src/plugins/rehype-component-link-card.mjs";
 import { LinkGridComponent } from "./src/plugins/rehype-component-link-grid.mjs";
-import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
-import { remarkExpressiveMarkdown } from "./src/plugins/remark-expressive-markdown.js";
-import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
+import {
+	satteriComponents,
+	satteriDirectives,
+} from "./src/plugins/satteri-directives.mjs";
+import { satteriHeadingAnchors } from "./src/plugins/satteri-heading-anchors.mjs";
+import { satteriKatex } from "./src/plugins/satteri-katex.mjs";
+import { satteriMetadata } from "./src/plugins/satteri-metadata.mjs";
+import { satteriSectionize } from "./src/plugins/satteri-sectionize.mjs";
+import { satteriSmartDashes } from "./src/plugins/satteri-smart-dashes.mjs";
+import {
+	satteriTableWrap,
+	satteriTaskListLabels,
+} from "./src/plugins/satteri-table-wrap.mjs";
+import { studioIntegration } from "./src/plugins/studio-integration.mjs";
+import { contentRoutesIntegration } from "./src/plugins/studio-routes-integration.mjs";
 import { clearContentRouteManifestCache } from "./src/utils/content-routes.ts";
 import { resolveAstroBuildConfig } from "./src/utils/permalink/materialization.ts";
 import { resolveFangYuanRoot } from "./src/utils/project-root.ts";
@@ -47,6 +51,7 @@ import {
 	isQingYanMockTarget,
 } from "./src/utils/qingyan/mock-api.mjs";
 import { externalSiteAssetDevPrefix } from "./src/utils/site-source/assets.ts";
+import { normalizeAstroContentImageImporterQuery } from "./src/utils/site-source/content-image-importer.ts";
 import { resolveSiteSourceContext } from "./src/utils/site-source/context.ts";
 import { createDevStaticAssetMiddleware } from "./src/utils/site-source/dev-static-assets.mjs";
 import {
@@ -55,7 +60,6 @@ import {
 	registerExternalSiteDevWatch,
 } from "./src/utils/site-source/dev-watch.mjs";
 import { resolveDevWatchIgnoredPatterns } from "./src/utils/site-source/dev-watch-ignore.mjs";
-import { normalizeAstroContentImageImporterQuery } from "./src/utils/site-source/content-image-importer.ts";
 import { loadExternalSiteConfigYaml } from "./src/utils/site-source/external-config.ts";
 import {
 	normalizeConfiguredBase,
@@ -73,6 +77,12 @@ const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
+const isConfiguredLightCodeTheme = /(?:light|latte|dawn|day)/i.test(
+	expressiveCodeConfig.theme,
+);
+const expressiveCodeThemes = isConfiguredLightCodeTheme
+	? [expressiveCodeConfig.theme, "github-dark"]
+	: ["github-light", expressiveCodeConfig.theme];
 const fangyuanRoot = resolveFangYuanRoot();
 process.env.FANGYUAN_ROOT = fangyuanRoot;
 const siteSourceContext = resolveSiteSourceContext({ fangyuanRoot });
@@ -207,7 +217,7 @@ function resolveExternalSiteAssetImport(id) {
 			? normalizedId
 			: isExternalSiteAsset(normalizedId)
 				? path.resolve(externalSiteRoot, normalizedId)
-			: null;
+				: null;
 	if (!absoluteImportPath) {
 		return null;
 	}
@@ -326,7 +336,23 @@ function collectExternalSiteAssetReferences() {
 	const footerConfig = externalSiteConfig?.footerConfig;
 	const pageFeedbackConfig = externalSiteConfig?.pageFeedbackConfig;
 
-	addExternalSiteAssetReference(references, siteConfig?.banner?.src);
+	if (siteConfig?.banner?.enable !== false) {
+		const banner = siteConfig?.banner;
+		const prism = banner?.optics?.prism;
+		if (prism && typeof prism === "object") {
+			for (const asset of [prism.face, prism.back, prism.spacer]) {
+				addExternalSiteAssetReference(references, asset);
+			}
+		} else {
+			addExternalSiteAssetReference(references, prism || banner?.optics?.insert || banner?.src);
+		}
+	}
+	if (typeof siteConfig?.logo === "string") {
+		addExternalSiteAssetReference(references, siteConfig.logo);
+	} else if (siteConfig?.logo && typeof siteConfig.logo === "object") {
+		addExternalSiteAssetReference(references, siteConfig.logo.light);
+		addExternalSiteAssetReference(references, siteConfig.logo.dark);
+	}
 	for (const favicon of siteConfig?.favicon ?? []) {
 		addExternalSiteAssetReference(references, favicon.src);
 	}
@@ -479,6 +505,9 @@ const qingyanMockPlugin =
 
 // https://astro.build/config
 export default defineConfig({
+	...(process.env.FANGYUAN_STUDIO === "1"
+		? { devToolbar: { enabled: false } }
+		: {}),
 	...(siteUrl ? { site: siteUrl } : {}),
 	...(siteBuildPaths.outDir ? { outDir: siteBuildPaths.outDir } : {}),
 	...(siteBuildPaths.cacheDir ? { cacheDir: siteBuildPaths.cacheDir } : {}),
@@ -565,7 +594,10 @@ export default defineConfig({
 			}
 		: {}),
 	integrations: [
+		contentRoutesIntegration(),
+		...(process.env.FANGYUAN_STUDIO === "1" ? [studioIntegration()] : []),
 		externalSiteDevWatchIntegration(),
+		githubCardBuildIntegration(),
 		swup({
 			theme: false,
 			animationClass: "transition-swup-", // see https://swup.js.org/options/#animationselector
@@ -582,14 +614,17 @@ export default defineConfig({
 		}),
 		icon({
 			include: {
-				"preprocess: vitePreprocess(),": ["*"],
+				"material-symbols": ["*"],
 				"fa6-brands": ["*"],
 				"fa6-regular": ["*"],
 				"fa6-solid": ["*"],
 			},
 		}),
 		expressiveCode({
-			themes: [expressiveCodeConfig.theme, expressiveCodeConfig.theme],
+			themes: expressiveCodeThemes,
+			useDarkModeMediaQuery: false,
+			themeCssSelector: (theme) =>
+				theme.type === "dark" ? ".dark" : "[data-code-theme='light']",
 			plugins: [
 				pluginCollapsibleSections(),
 				pluginLineNumbers(),
@@ -612,6 +647,10 @@ export default defineConfig({
 				codeFontFamily:
 					"var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
 				codeLineHeight: "1.5rem",
+				lineNumbers: {
+					foreground: "var(--codeblock-line-number)",
+					highlightForeground: "var(--codeblock-line-number-highlight)",
+				},
 				frames: {
 					editorBackground: "var(--codeblock-bg)",
 					terminalBackground: "var(--codeblock-bg)",
@@ -620,8 +659,8 @@ export default defineConfig({
 					editorActiveTabBackground: "none",
 					editorActiveTabIndicatorBottomColor: "var(--primary)",
 					editorActiveTabIndicatorTopColor: "none",
-					editorTabBarBorderBottomColor: "var(--codeblock-topbar-bg)",
-					terminalTitlebarBorderBottomColor: "none",
+					editorTabBarBorderBottomColor: "var(--codeblock-border)",
+					terminalTitlebarBorderBottomColor: "var(--codeblock-border)",
 				},
 				textMarkers: {
 					delHue: 0,
@@ -636,59 +675,40 @@ export default defineConfig({
 		svelte(),
 	],
 	markdown: {
-		processor: unified({
-			remarkPlugins: [
-				remarkMath,
-				remarkReadingTime,
-				remarkExcerpt,
-				remarkGithubAdmonitionsToDirectives,
-				remarkDirective,
-				remarkExpressiveMarkdown,
-				remarkDirectiveRehype,
-				remarkSectionize,
+		processor: satteri({
+			features: {
+				directive: true,
+				math: true,
+				smartPunctuation: { dashes: false },
+			},
+			mdastPlugins: [
+				satteriSmartDashes,
+				satteriMetadata,
+				satteriDirectives,
+				satteriSectionize,
 			],
-			rehypePlugins: [
-				rehypeKatex,
-				rehypeSlug,
-				[
-					rehypeComponents,
-					{
-						components: {
-							bilibili: BilibiliVideoComponent,
-							github: GithubCardComponent,
-							"link-card": LinkCardComponent,
-							"link-grid": LinkGridComponent,
-							note: (x, y) => AdmonitionComponent(x, y, "note"),
-							tip: (x, y) => AdmonitionComponent(x, y, "tip"),
-							important: (x, y) => AdmonitionComponent(x, y, "important"),
-							caution: (x, y) => AdmonitionComponent(x, y, "caution"),
-							warning: (x, y) => AdmonitionComponent(x, y, "warning"),
-						},
-					},
-				],
-				[
-					rehypeAutolinkHeadings,
-					{
-						behavior: "append",
-						properties: {
-							className: ["anchor"],
-						},
-						content: {
-							type: "element",
-							tagName: "span",
-							properties: {
-								className: ["anchor-icon"],
-								"data-pagefind-ignore": true,
-							},
-							children: [
-								{
-									type: "text",
-									value: "#",
-								},
-							],
-						},
-					},
-				],
+			hastPlugins: [
+				satteriKatex,
+				satteriHeadingIdsPlugin(),
+				satteriGithubCard,
+				satteriComponents({
+					bilibili: BilibiliVideoComponent,
+					"link-card": LinkCardComponent,
+					"link-grid": LinkGridComponent,
+					note: (properties, children) =>
+						AdmonitionComponent(properties, children, "note"),
+					tip: (properties, children) =>
+						AdmonitionComponent(properties, children, "tip"),
+					important: (properties, children) =>
+						AdmonitionComponent(properties, children, "important"),
+					caution: (properties, children) =>
+						AdmonitionComponent(properties, children, "caution"),
+					warning: (properties, children) =>
+						AdmonitionComponent(properties, children, "warning"),
+				}),
+				satteriHeadingAnchors,
+				satteriTableWrap,
+				satteriTaskListLabels,
 			],
 		}),
 	},
@@ -739,16 +759,9 @@ export default defineConfig({
 					},
 				}),
 		build: {
-			rollupOptions: {
-				onwarn(warning, warn) {
-					// temporarily suppress this warning
-					if (
-						warning.message.includes("is dynamically imported by") &&
-						warning.message.includes("but also statically imported by")
-					) {
-						return;
-					}
-					warn(warning);
+			rolldownOptions: {
+				checks: {
+					ineffectiveDynamicImport: false,
 				},
 			},
 		},

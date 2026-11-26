@@ -1,5 +1,4 @@
 ---
-import { Icon } from "astro-icon/components";
 import { licenseConfig, profileConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
@@ -9,40 +8,107 @@ interface Props {
 	title: string;
 	url: string;
 	pubDate: Date;
-	class: string;
+	class?: string;
 }
 
-const { title, pubDate, url: postUrl } = Astro.props;
-const className = Astro.props.class;
+const { title, pubDate, url: postUrl, class: className = "" } = Astro.props;
 const profileConf = profileConfig;
 const licenseConf = licenseConfig;
+
+type LicenseBadgeKind = "cc" | "mit" | "gpl" | "apache" | "bsd" | "copyright";
+
+function resolveLicenseBadgeKind(
+	name: string,
+	licenseUrl: string,
+): LicenseBadgeKind {
+	const raw = `${name} ${licenseUrl}`.toLowerCase();
+	if (
+		raw.includes("creative commons") ||
+		raw.includes("creativecommons") ||
+		/\bcc\b|cc[-_\s]/.test(raw)
+	) {
+		return "cc";
+	}
+	if (/\bmit\b|\/mit\b/.test(raw)) {
+		return "mit";
+	}
+	if (/\b[al]?gpl\b|copyleft|gnu\.org\/licenses/.test(raw)) {
+		return "gpl";
+	}
+	if (raw.includes("apache")) {
+		return "apache";
+	}
+	if (/\bbsd\b/.test(raw)) {
+		return "bsd";
+	}
+	return "copyright";
+}
+
+const licenseBadgeKind = resolveLicenseBadgeKind(
+	licenseConf.name,
+	licenseConf.url,
+);
 ---
-<div class={`relative transition overflow-hidden bg-license-block-bg py-5 px-6 ${className}`}>
-    <div class="transition font-bold text-75">
-        {title}
+<div class={`license-optical-card relative transition overflow-hidden py-5 px-6 ${className}`}>
+    <div class="relative z-10">
+        <div class="transition font-bold text-75">
+            {title}
+        </div>
+        <a href={postUrl} class="link text-accent-foreground text-sm break-all inline-block mt-0.5">
+            {postUrl}
+        </a>
+        <div class="flex flex-wrap gap-x-6 gap-y-2 mt-2.5">
+            <div>
+                <div class="transition text-muted text-sm">{i18n(I18nKey.author)}</div>
+                <div class="transition text-75 line-clamp-2">{profileConf.name}</div>
+            </div>
+            <div>
+                <div class="transition text-muted text-sm">{i18n(I18nKey.publishedAt)}</div>
+                <div class="transition text-75 line-clamp-2">{formatDateToYYYYMMDD(pubDate)}</div>
+            </div>
+            <div class="inline-grid w-fit gap-1">
+                <div class="transition text-muted text-sm">{i18n(I18nKey.license)}</div>
+                <a
+                    href={licenseConf.url}
+                    target="_blank"
+                    class="link inline-block min-w-full text-center text-accent-foreground line-clamp-2"
+                >
+                    {licenseConf.name}
+                </a>
+            </div>
+        </div>
     </div>
-    <a href={postUrl} class="link text-primary">
-        {postUrl}
-    </a>
-    <div class="flex gap-6 mt-2">
-        <div>
-            <div class="transition text-30 text-sm">{i18n(I18nKey.author)}</div>
-            <div class="transition text-75 line-clamp-2">{profileConf.name}</div>
-        </div>
-        <div>
-            <div class="transition text-30 text-sm">{i18n(I18nKey.publishedAt)}</div>
-            <div class="transition text-75 line-clamp-2">{formatDateToYYYYMMDD(pubDate)}</div>
-        </div>
-        <div class="inline-grid w-fit gap-1">
-            <div class="transition text-30 text-sm">{i18n(I18nKey.license)}</div>
-            <a
-                href={licenseConf.url}
-                target="_blank"
-                class="link inline-block min-w-full text-center text-primary line-clamp-2"
-            >
-                {licenseConf.name}
-            </a>
-        </div>
-    </div>
-    <Icon name="fa6-brands:creative-commons" class="transition text-[15rem] absolute pointer-events-none right-6 top-1/2 -translate-y-1/2 text-5"></Icon>
+    <svg
+        class="license-protocol-watermark"
+        viewBox="0 0 64 64"
+        fill="none"
+        aria-hidden="true"
+    >
+        <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="3.2" />
+        {licenseBadgeKind === "cc" && (
+            <g stroke="currentColor" stroke-width="3.4" stroke-linecap="round">
+                <path d="M29.5 24.5a8.5 8.5 0 1 0 0 15" />
+                <path d="M46.5 24.5a8.5 8.5 0 1 0 0 15" />
+            </g>
+        )}
+        {licenseBadgeKind === "mit" && (
+            <g stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M32 16v30M22 46h20M18 24h28" />
+                <path d="M18 24l-4.5 9.5a5 5 0 0 0 9 0L18 24Z" />
+                <path d="M46 24l-4.5 9.5a5 5 0 0 0 9 0L46 24Z" />
+            </g>
+        )}
+        {licenseBadgeKind === "gpl" && (
+            <path d="M24.5 23.5a11.5 11.5 0 1 1 0 17" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+        )}
+        {licenseBadgeKind === "apache" && (
+            <path d="M43 19c-9 2-17 9-21 19l-3 7 7-3c10-4 17-12 19-21l-2-2Zm-14 14L20 42" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+        )}
+        {licenseBadgeKind === "bsd" && (
+            <path d="M32 16l13 5.5v10.5c0 8.5-5.5 14.5-13 17-7.5-2.5-13-8.5-13-17V21.5L32 16Z" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round" />
+        )}
+        {licenseBadgeKind === "copyright" && (
+            <path d="M39.5 23.5a11.5 11.5 0 1 0 0 17" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+        )}
+    </svg>
 </div>

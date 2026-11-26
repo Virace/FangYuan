@@ -3,6 +3,7 @@ import type { I18nKey as I18nKeyType } from "@i18n/i18nKey";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { type AutoDismissTone, getAutoDismissMs } from "@utils/browser/notice";
+import { getPageNoticeScope, showNotice } from "@utils/browser/notifications";
 import {
 	type CommenterProfile,
 	clearCommenterProfile,
@@ -77,20 +78,9 @@ type PendingVoteAction = {
 
 type PendingAction = PendingCommentAction | PendingVoteAction | null;
 
-type ComposerNotice = {
-	message: string;
-	tone: AutoDismissTone;
-} | null;
-
 type ReplyTarget = {
 	authorName: string;
 	avatarUrl?: string | null;
-} | null;
-
-type CommentNotice = {
-	commentId: string;
-	message: string;
-	tone: AutoDismissTone;
 } | null;
 
 type FangYuanDebugWindow = Window & {
@@ -105,6 +95,7 @@ export let maxDepth = 3;
 export let qingyan: QingYanClientConfig | null = null;
 
 const qingyanClient = getQingYanClient(qingyan);
+const pageScope = getPageNoticeScope();
 
 let capability: CommentCapability | null = null;
 let commentForm: CommentForm | null = null;
@@ -123,15 +114,16 @@ let currentSortBy: CommentSortBy = DEFAULT_COMMENT_SORT_BY;
 let currentOffset = 0;
 let totalRootCount = 0;
 let activeReplyTarget: ReplyTarget = null;
-let composerNotice: ComposerNotice = null;
-let commentNotice: CommentNotice = null;
-let composerNoticeTimer: ReturnType<typeof setTimeout> | null = null;
-let commentNoticeTimer: ReturnType<typeof setTimeout> | null = null;
 let captchaFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
+let refreshBeamTimer: ReturnType<typeof setTimeout> | null = null;
 let voteBusyCommentId: string | null = null;
 let pendingVoteTarget: VoteConfirmTarget = null;
 let pendingAction: PendingAction = null;
 let captchaValue = "";
+let pendingSortBy: CommentSortBy | null = null;
+let isRefreshingList = false;
+let showSlowRefreshBeam = false;
+let threadRevision = 0;
 const defaultAllowedFields: CommentAuthorField[] = [
 	"nickname",
 	"email",
@@ -155,12 +147,7 @@ $: activeCaptchaVoteChoice =
 	pendingAction.commentId === activeCaptchaTarget.commentId
 		? pendingAction.choice
 		: null;
-$: activeCommentNoticeId = commentNotice?.commentId ?? null;
 $: activeVoteConfirmCommentId = pendingVoteTarget?.commentId ?? null;
-$: composerNoticeMessage = composerNotice?.message ?? "";
-$: composerNoticeTone = composerNotice?.tone ?? "info";
-$: commentNoticeMessage = commentNotice?.message ?? "";
-$: commentNoticeTone = commentNotice?.tone ?? "info";
 $: pendingVoteChoice = pendingVoteTarget?.choice ?? null;
 $: supportsVote = capability?.supportsVote ?? false;
 $: supportsCaptcha = capability?.supportsCaptcha ?? false;
@@ -179,7 +166,7 @@ $: showComposerCaptcha =
 	supportsCaptcha &&
 	activeCaptchaTarget?.kind === "composer" &&
 	Boolean(captchaState?.required);
-$: showCommentLoadingOverlay = loading && comments.length > 0;
+$: displaySortBy = pendingSortBy ?? currentSortBy;
 $: showCommentInitialSkeleton = loading && comments.length === 0 && !capability;
 $: showCommentEmptyState = comments.length === 0 && capability?.enabled;
 $: showCommentSection = loading || capability?.enabled === true;
@@ -193,20 +180,6 @@ function logCommentError(context: string, error: unknown) {
 	console.error(`[comments] ${context}`, error);
 }
 
-function clearComposerNoticeTimer() {
-	if (composerNoticeTimer) {
-		clearTimeout(composerNoticeTimer);
-		composerNoticeTimer = null;
-	}
-}
-
-function clearCommentNoticeTimer() {
-	if (commentNoticeTimer) {
-		clearTimeout(commentNoticeTimer);
-		commentNoticeTimer = null;
-	}
-}
-
 function clearCaptchaFeedbackTimer() {
 	if (captchaFeedbackTimer) {
 		clearTimeout(captchaFeedbackTimer);
@@ -214,30 +187,18 @@ function clearCaptchaFeedbackTimer() {
 	}
 }
 
-function setComposerNotice(message: string, tone: AutoDismissTone) {
-	composerNotice = { message, tone };
-	clearComposerNoticeTimer();
-	composerNoticeTimer = setTimeout(
-		() => {
-			composerNotice = null;
-		},
-		getAutoDismissMs(message, tone),
-	);
-}
-
-function setCommentNotice(
-	commentId: string,
+function showActionNotice(
 	message: string,
 	tone: AutoDismissTone,
+	key = `comment-result:${tone}`,
 ) {
-	commentNotice = { commentId, message, tone };
-	clearCommentNoticeTimer();
-	commentNoticeTimer = setTimeout(
-		() => {
-			commentNotice = null;
-		},
-		getAutoDismissMs(message, tone),
-	);
+	showNotice({
+		message,
+		tone,
+		priority: tone === "error" ? "important" : "normal",
+		scope: pageScope,
+		key,
+	});
 }
 
 function clearCaptchaFeedback() {
@@ -290,29 +251,8 @@ function getReplyTarget(
 	return null;
 }
 
-function clearActionNotices() {
-	composerNotice = null;
-	commentNotice = null;
-	clearComposerNoticeTimer();
-	clearCommentNoticeTimer();
-}
-
-function setTargetedNotice(
-	target: CaptchaTarget,
-	message: string,
-	tone: AutoDismissTone,
-) {
-	if (target?.kind === "comment") {
-		setCommentNotice(target.commentId, message, tone);
-		return;
-	}
-
-	setComposerNotice(message, tone);
-}
-
 function clearVoteTransientState() {
 	pendingVoteTarget = null;
-	clearActionNotices();
 }
 
 function resetCaptchaFlow() {
@@ -338,8 +278,6 @@ function updateCommentDebugHook() {
 			captchaState,
 			captchaPrompt,
 			captchaError,
-			composerNotice,
-			commentNotice,
 			viewer,
 			retryPendingAction: () => void handleSubmitCaptchaAction(),
 			refreshCaptcha: () => void handleRefreshCaptcha(),
@@ -465,11 +403,12 @@ async function promptForCaptcha(
 		await revealCaptchaTarget(target);
 	} catch (error) {
 		logCommentError("prepare captcha prompt failed", error);
-		setTargetedNotice(
-			target,
-			toCommentErrorMessage(error, I18nKey.commentsLoadFailed),
-			"error",
+		const message = toCommentErrorMessage(
+			error,
+			I18nKey.commentsCaptchaRefreshFailed,
 		);
+		if (captchaState) setCaptchaError(message);
+		else showActionNotice(message, "error", "captcha-prepare");
 	}
 }
 
@@ -504,16 +443,38 @@ async function loadInitialState() {
 		}
 	} catch (error) {
 		logCommentError("load comments failed", error);
+		showActionNotice(
+			i18n(I18nKey.engagementLoadFailed),
+			"error",
+			"engagement-bootstrap",
+		);
 	} finally {
 		loading = false;
 	}
+}
+
+function clearRefreshBeamTimer() {
+	if (!refreshBeamTimer) {
+		return;
+	}
+	clearTimeout(refreshBeamTimer);
+	refreshBeamTimer = null;
 }
 
 async function loadComments(nextOptions?: {
 	sortBy?: CommentSortBy;
 	offset?: number;
 }) {
+	const hasExistingComments = comments.length > 0;
 	loading = true;
+	clearRefreshBeamTimer();
+	isRefreshingList = hasExistingComments;
+	showSlowRefreshBeam = false;
+	if (hasExistingComments) {
+		refreshBeamTimer = setTimeout(() => {
+			showSlowRefreshBeam = true;
+		}, 140);
+	}
 
 	try {
 		if (!qingyanClient) {
@@ -543,9 +504,20 @@ async function loadComments(nextOptions?: {
 		currentOffset = threadPage.pagination.offset;
 		totalRootCount = threadPage.pagination.rootCount;
 		comments = applyPersistedViewerVotes(postKey, threadPage.comments);
+		if (hasExistingComments) {
+			threadRevision += 1;
+		}
 	} catch (error) {
 		logCommentError("load comments failed", error);
+		showActionNotice(
+			i18n(I18nKey.commentsLoadFailed),
+			"error",
+			"comments-load",
+		);
 	} finally {
+		clearRefreshBeamTimer();
+		isRefreshingList = false;
+		showSlowRefreshBeam = false;
 		loading = false;
 	}
 }
@@ -577,7 +549,9 @@ async function handleRefreshCaptcha() {
 		captchaValue = "";
 	} catch (error) {
 		logCommentError("refresh captcha failed", error);
-		setCaptchaError(toCommentErrorMessage(error, I18nKey.commentsLoadFailed));
+		setCaptchaError(
+			toCommentErrorMessage(error, I18nKey.commentsCaptchaRefreshFailed),
+		);
 	} finally {
 		captchaBusy = false;
 	}
@@ -596,17 +570,22 @@ async function handleSubmitCaptchaAction() {
 $: updateCommentDebugHook();
 
 async function handleSortChange(sortBy: CommentSortBy) {
-	if (sortBy === currentSortBy) {
+	if (sortBy === currentSortBy || pendingSortBy === sortBy) {
 		return;
 	}
 
 	activeReplyParentId = null;
 	resetCaptchaFlow();
 	clearVoteTransientState();
-	await loadComments({
-		sortBy,
-		offset: 0,
-	});
+	pendingSortBy = sortBy;
+	try {
+		await loadComments({
+			sortBy,
+			offset: 0,
+		});
+	} finally {
+		pendingSortBy = null;
+	}
 }
 
 async function handlePageChange(offset: number) {
@@ -700,7 +679,7 @@ async function handleSubmit(
 		activeReplyParentId = null;
 		qingyanClient.invalidateBootstrap(postKey);
 		resetCaptchaFlow();
-		setComposerNotice(
+		showActionNotice(
 			result.comment.status === "approved"
 				? i18n(I18nKey.commentsSubmitSuccess)
 				: i18n(I18nKey.commentsModerationNotice),
@@ -721,7 +700,7 @@ async function handleSubmit(
 				await revealCaptchaTarget({ kind: "composer" });
 			} else {
 				logCommentError("submit comment failed", error);
-				setComposerNotice(message, "error");
+				showActionNotice(message, "error");
 			}
 		}
 		return false;
@@ -789,7 +768,7 @@ async function submitVote(commentId: string, choice: CommentVoteChoice) {
 				await revealCaptchaTarget({ kind: "comment", commentId });
 			} else {
 				logCommentError("vote comment failed", error);
-				setCommentNotice(commentId, message, "error");
+				showActionNotice(message, "error", `comment-vote:${commentId}`);
 			}
 		}
 	} finally {
@@ -840,9 +819,8 @@ onMount(() => {
 });
 
 onDestroy(() => {
-	clearComposerNoticeTimer();
-	clearCommentNoticeTimer();
 	clearCaptchaFeedbackTimer();
+	clearRefreshBeamTimer();
 	if (import.meta.env.DEV && typeof window !== "undefined") {
 		const nextDebug = {
 			...((window as FangYuanDebugWindow).__FANGYUAN_QINGYAN_DEBUG__ ?? {}),
@@ -855,68 +833,48 @@ onDestroy(() => {
 
 {#if showCommentSection}
 	<section
-		class="card-base mt-4 px-6 md:px-9 pt-6 pb-6 relative w-full"
+		class="card-base panel-edge mt-4 px-6 md:px-9 pt-6 pb-6 relative w-full"
 		data-post-title={postTitle}
 	>
-		<CommentHeader count={countCommentsInTree(comments)} loading={loading} />
-
-		{#if capability?.enabled}
-			<div class="mb-5 flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
-				<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-					<button
-						type="button"
-						class="comment-sort-tab"
-						class:link-underline={currentSortBy !== "date_desc"}
-						class:comment-sort-tab-active={currentSortBy === "date_desc"}
-						class:comment-sort-tab-idle={currentSortBy !== "date_desc"}
-						disabled={currentSortBy === "date_desc"}
-						aria-pressed={currentSortBy === "date_desc"}
-						on:click={() => void handleSortChange("date_desc")}
+		<CommentHeader count={countCommentsInTree(comments)} loading={loading}>
+			<div slot="actions">
+				{#if capability?.enabled}
+					<div
+						class="comment-sort-segmented optical-chip-static inline-grid grid-cols-2 rounded-lg text-xs"
+						data-active-index={displaySortBy === "date_asc" ? "1" : "0"}
 					>
-						{i18n(I18nKey.commentsSortNewest)}
-					</button>
-					<button
-						type="button"
-						class="comment-sort-tab"
-						class:link-underline={currentSortBy !== "date_asc"}
-						class:comment-sort-tab-active={currentSortBy === "date_asc"}
-						class:comment-sort-tab-idle={currentSortBy !== "date_asc"}
-						disabled={currentSortBy === "date_asc"}
-						aria-pressed={currentSortBy === "date_asc"}
-						on:click={() => void handleSortChange("date_asc")}
-					>
-						{i18n(I18nKey.commentsSortOldest)}
-					</button>
-				</div>
-
-				{#if totalRootCount > pageSize}
-					<div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-50">
+						<span class="comment-sort-thumb" aria-hidden="true"></span>
 						<button
 							type="button"
-							class="link-underline disabled:pointer-events-none disabled:opacity-40"
-							disabled={!hasPreviousPage}
-							on:click={() => void handlePageChange(currentOffset - pageSize)}
+							class="comment-sort-tab"
+							class:comment-sort-tab-active={displaySortBy === "date_desc"}
+							class:comment-sort-tab-idle={displaySortBy !== "date_desc"}
+							disabled={currentSortBy === "date_desc"}
+							aria-pressed={currentSortBy === "date_desc"}
+							on:click={() => void handleSortChange("date_desc")}
 						>
-							{i18n(I18nKey.commentsPaginationPrevious)}
+							{i18n(I18nKey.commentsSortNewest)}
 						</button>
-						<span>
-							{i18n(I18nKey.commentsPaginationStatus)} {currentPage} / {totalPages}
-						</span>
 						<button
 							type="button"
-							class="link-underline disabled:pointer-events-none disabled:opacity-40"
-							disabled={!hasNextPage}
-							on:click={() => void handlePageChange(currentOffset + pageSize)}
+							class="comment-sort-tab"
+							class:comment-sort-tab-active={displaySortBy === "date_asc"}
+							class:comment-sort-tab-idle={displaySortBy !== "date_asc"}
+							disabled={currentSortBy === "date_asc"}
+							aria-pressed={currentSortBy === "date_asc"}
+							on:click={() => void handleSortChange("date_asc")}
 						>
-							{i18n(I18nKey.commentsPaginationNext)}
+							{i18n(I18nKey.commentsSortOldest)}
 						</button>
 					</div>
 				{/if}
 			</div>
-		{/if}
+		</CommentHeader>
+
+		<div class="optical-hairline mb-5" aria-hidden="true"></div>
 
 		<div
-			class="comments-content-shell mt-5 space-y-5"
+			class="comments-content-shell space-y-5"
 			aria-busy={loading}
 		>
 			<CommentComposer
@@ -933,8 +891,6 @@ onDestroy(() => {
 				bind:captchaValue
 				captchaError={captchaError}
 				captchaPrompt={captchaPrompt}
-				noticeMessage={composerNoticeMessage}
-				noticeTone={composerNoticeTone}
 				replyParentId={activeReplyParentId}
 				replyTarget={activeReplyTarget}
 				submitting={submitting}
@@ -952,42 +908,65 @@ onDestroy(() => {
 			{:else if comments.length > 0}
 				<div
 					class="comments-content-stack"
+					class:comments-content-updating={isRefreshingList}
 					in:fade={{ duration: contentTransitionDuration }}
 					out:fade={{ duration: contentTransitionDuration }}
 				>
-					<CommentList
-						comments={comments}
-						activeReplyParentId={activeReplyParentId}
-						activeCaptchaCommentId={activeCaptchaCommentId}
-						activeCaptchaVoteChoice={activeCaptchaVoteChoice}
-						activeVoteConfirmCommentId={activeVoteConfirmCommentId}
-						activeCommentNoticeId={activeCommentNoticeId}
-						maxDepth={maxDepth}
-						supportsVote={supportsVote}
-						voteBusy={Boolean(voteBusyCommentId)}
-						pendingVoteChoice={pendingVoteChoice}
-						captchaState={captchaState}
-						captchaBusy={captchaBusy}
-						bind:captchaValue
-						captchaError={captchaError}
-						captchaPrompt={captchaPrompt}
-						commentNoticeMessage={commentNoticeMessage}
-						commentNoticeTone={commentNoticeTone}
-						onVote={handleVote}
-						onConfirmVote={handleConfirmVote}
-						onCancelVoteConfirm={handleCancelVoteConfirm}
-						onReply={handleReply}
-						onRefreshCaptcha={handleRefreshCaptcha}
-						onSubmitCaptcha={handleSubmitCaptchaAction}
-					/>
+					{#if showSlowRefreshBeam}
+						<div class="comment-refresh-beam" aria-hidden="true"></div>
+					{/if}
 
-					{#if showCommentLoadingOverlay}
-						<div
-							class="comment-loading-overlay"
-							in:fade={{ duration: contentTransitionDuration }}
-							out:fade={{ duration: contentTransitionDuration }}
-						>
-							<div class="comment-thread-skeleton"></div>
+					{#key threadRevision}
+						<div class="comment-stream-frame">
+							<CommentList
+								comments={comments}
+								activeReplyParentId={activeReplyParentId}
+								activeCaptchaCommentId={activeCaptchaCommentId}
+								activeCaptchaVoteChoice={activeCaptchaVoteChoice}
+								activeVoteConfirmCommentId={activeVoteConfirmCommentId}
+								maxDepth={maxDepth}
+								supportsVote={supportsVote}
+								voteBusy={Boolean(voteBusyCommentId)}
+								pendingVoteChoice={pendingVoteChoice}
+								captchaState={captchaState}
+								captchaBusy={captchaBusy}
+								bind:captchaValue
+								captchaError={captchaError}
+								captchaPrompt={captchaPrompt}
+								onVote={handleVote}
+								onConfirmVote={handleConfirmVote}
+								onCancelVoteConfirm={handleCancelVoteConfirm}
+								onReply={handleReply}
+								onRefreshCaptcha={handleRefreshCaptcha}
+								onSubmitCaptcha={handleSubmitCaptchaAction}
+							/>
+						</div>
+					{/key}
+
+					{#if totalRootCount > pageSize}
+						<div class="optical-hairline mt-2 mb-4" aria-hidden="true"></div>
+						<div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+							<span class="tabular-nums text-muted">
+								{i18n(I18nKey.commentsPaginationStatus)} {currentPage} / {totalPages}
+							</span>
+							<div class="inline-flex items-center gap-1.5">
+								<button
+									type="button"
+									class="comment-action disabled:pointer-events-none disabled:opacity-40"
+									disabled={!hasPreviousPage}
+									on:click={() => void handlePageChange(currentOffset - pageSize)}
+								>
+									{i18n(I18nKey.commentsPaginationPrevious)}
+								</button>
+								<button
+									type="button"
+									class="comment-action optical-chip-static disabled:pointer-events-none disabled:opacity-40"
+									disabled={!hasNextPage}
+									on:click={() => void handlePageChange(currentOffset + pageSize)}
+								>
+									{i18n(I18nKey.commentsPaginationNext)}
+								</button>
+							</div>
 						</div>
 					{/if}
 				</div>
@@ -997,7 +976,13 @@ onDestroy(() => {
 					in:fade={{ duration: contentTransitionDuration }}
 					out:fade={{ duration: contentTransitionDuration }}
 				>
-					<p class="text-sm text-50">{i18n(I18nKey.commentsEmpty)}</p>
+					<div class="optical-chip-static w-10 h-10 mx-auto rounded-xl grid place-items-center text-accent-solid" aria-hidden="true">
+						<svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M21 12a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1L3 21l1.5-5.3A8.5 8.5 0 1 1 21 12Z" />
+							<path d="M8.5 12h.01M12 12h.01M15.5 12h.01" />
+						</svg>
+					</div>
+					<p class="text-xs font-medium text-muted">{i18n(I18nKey.commentsEmpty)}</p>
 				</div>
 			{/if}
 		</div>

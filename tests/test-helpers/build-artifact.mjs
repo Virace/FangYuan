@@ -19,8 +19,12 @@ const astroGeneratedRoot = path.join(repoRoot, ".astro");
 const testBuildsRoot = path.join(repoRoot, ".temp", "test-builds");
 const staleRunAgeMs = 24 * 60 * 60 * 1000;
 const buildTimeoutMs = 5 * 60 * 1000;
+const githubPreload = new URL("./github-fetch.mjs", import.meta.url).href;
+const shouldKeepArtifacts = process.env.FANGYUAN_TEST_KEEP_ARTIFACTS === "1";
 
 const isolatedEnvironmentKeys = [
+	"GITHUB_TOKEN",
+	"FANGYUAN_TEST_GITHUB_FIXTURE",
 	"FANGYUAN_BUILD_CACHE_DIR",
 	"FANGYUAN_BUILD_OUT_DIR",
 	"FANGYUAN_BASE",
@@ -72,6 +76,8 @@ function createChildEnvironment(scenario, extraEnv) {
 
 	Object.assign(env, {
 		CI: "1",
+		NODE_OPTIONS:
+			`${process.env.NODE_OPTIONS ?? ""} --import=${githubPreload}`.trim(),
 		...extraEnv,
 		FANGYUAN_BUILD_CACHE_DIR: scenario.cacheDir,
 		FANGYUAN_BUILD_OUT_DIR: scenario.outDir,
@@ -112,13 +118,14 @@ function runBuildCommand(scenario, extraEnv) {
 
 export async function createBuildRun(t) {
 	await mkdir(testBuildsRoot, { recursive: true });
-	await pruneStaleRuns();
+	if (!shouldKeepArtifacts) await pruneStaleRuns();
 
 	const runRoot = await mkdtemp(path.join(testBuildsRoot, "run-"));
 	const scenarios = new Map();
 	let buildCount = 0;
 
 	t.after(async () => {
+		if (shouldKeepArtifacts) return;
 		await rm(runRoot, { recursive: true, force: true });
 		await rm(astroGeneratedRoot, { recursive: true, force: true });
 		try {
@@ -136,7 +143,11 @@ export async function createBuildRun(t) {
 
 	async function createScenario(name, { siteMode = "external" } = {}) {
 		assert.match(name, /^[a-z0-9-]+$/);
-		assert.equal(scenarios.has(name), false, `Duplicate build scenario: ${name}`);
+		assert.equal(
+			scenarios.has(name),
+			false,
+			`Duplicate build scenario: ${name}`,
+		);
 		assert.ok(
 			siteMode === "external" || siteMode === "internal",
 			`Unsupported site mode: ${siteMode}`,
@@ -169,7 +180,7 @@ export async function createBuildRun(t) {
 
 	function buildScenario(
 		scenario,
-		{ expectFailure = false, env: extraEnv = {} } = {},
+		{ expectFailure = false, env: extraEnv = {}, rebuild = false } = {},
 	) {
 		assert.equal(
 			scenarios.get(scenario.name),
@@ -177,7 +188,7 @@ export async function createBuildRun(t) {
 			`Unknown build scenario: ${scenario.name}`,
 		);
 		assert.equal(
-			scenario.built,
+			scenario.built && !rebuild,
 			false,
 			`Build scenario "${scenario.name}" can only be executed once`,
 		);

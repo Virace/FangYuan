@@ -1,6 +1,113 @@
 .custom-md h1 {
-    font-size: 1.875rem;
-    line-height: 2.25rem;
+	font-size: 1.875rem;
+	line-height: 2.25rem;
+}
+
+.custom-md h2:not(#footnote-label) {
+	position: relative;
+	padding-bottom: 0.45rem;
+}
+
+.custom-md h2:not(#footnote-label)::after {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		color-mix(in oklch, var(--primary) 34%, var(--line-divider)) 0%,
+		var(--line-divider) 46%,
+		transparent 90%
+	);
+	pointer-events: none;
+}
+
+.custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref])) {
+	position: relative;
+	z-index: 0;
+	margin: -0.25rem;
+	padding: 0.25rem 0.25rem calc(0.25rem - 1px);
+	border-radius: 0;
+	border-bottom: 1px solid transparent;
+	background-color: transparent;
+	color: var(--accent-foreground);
+	font-weight: 500;
+	text-decoration-line: underline;
+	text-decoration-style: solid;
+	text-decoration-thickness: 1px;
+	text-decoration-color: color-mix(in oklch, var(--accent-foreground) 44%, transparent);
+	text-underline-offset: 4px;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+	transition:
+		color 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref]))::before {
+	content: "";
+	position: absolute;
+	inset: 0.12rem 0.02rem 0.04rem;
+	z-index: -1;
+	border-radius: 0.32rem;
+	background: transparent;
+	opacity: 0;
+	transform: scale(0.96);
+	transition:
+		transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+		background-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref])):hover::before,
+.custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref])):focus-visible::before {
+	background-color: color-mix(in oklch, var(--primary) 9%, transparent);
+	opacity: 1;
+	transform: scale(1);
+}
+
+.dark .custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref])):hover::before,
+.dark .custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref])):focus-visible::before {
+	background-color: color-mix(in oklch, var(--primary) 15%, transparent);
+}
+
+.custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref])):active::before {
+	background-color: color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+.custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref])):hover,
+.custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref])):active,
+.custom-md a:not(.no-styling):where(:not([data-footnote-ref]):not([data-footnote-backref])):focus-visible {
+	background: transparent;
+	border-bottom-color: currentcolor;
+	text-decoration: none;
+	text-decoration-color: transparent;
+	outline: none;
+}
+
+/* 站外链接右侧光学方向角标 */
+.custom-md a:is([href^="http://"], [href^="https://"]):not(.no-styling):where(:not(.anchor):not([data-footnote-ref]):not([data-footnote-backref]))::after {
+	content: "";
+	display: inline-block;
+	width: 0.76em;
+	height: 0.76em;
+	margin-left: 0.18em;
+	vertical-align: 0.08em;
+	background-color: currentcolor;
+	opacity: 0.58;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round' d='M7 17L17 7M9 7h8v8'/%3E%3C/svg%3E") center / contain no-repeat;
+	transition:
+		opacity 0.18s ease,
+		transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.custom-md a:is([href^="http://"], [href^="https://"]):not(.no-styling):where(:not(.anchor):not([data-footnote-ref]):not([data-footnote-backref])):hover::after,
+.custom-md a:is([href^="http://"], [href^="https://"]):not(.no-styling):where(:not(.anchor):not([data-footnote-ref]):not([data-footnote-backref])):focus-visible::after {
+	opacity: 1;
+	transform: translate(1.5px, -1.5px);
 }
 
 .custom-md h1 .anchor,
@@ -9,19 +116,21 @@
 .custom-md h4 .anchor,
 .custom-md h5 .anchor,
 .custom-md h6 .anchor {
-    margin: -0.125rem 0 0 -0.125rem;
-    margin-left: 0.2ch;
-    padding: 0.125rem;
-    opacity: 0;
-    user-select: none;
-    text-decoration: none !important;
-    transition:
-        color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+	display: inline;
+	margin: -0.125rem -0.125rem -0.125rem 0.2ch;
+	padding: 0.125rem;
+	border-bottom-color: transparent;
+	border-radius: 0.375rem;
+	opacity: 0;
+	user-select: none;
+	text-decoration: none !important;
+	transition:
+		color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+		background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+		border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+		opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+		transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .custom-md h1 .anchor .anchor-icon,
@@ -30,7 +139,7 @@
 .custom-md h4 .anchor .anchor-icon,
 .custom-md h5 .anchor .anchor-icon,
 .custom-md h6 .anchor .anchor-icon {
-    margin-inline: 0.45ch !important;
+	margin-inline: 0.45ch !important;
 }
 
 .custom-md h1:hover .anchor,
@@ -38,241 +147,559 @@
 .custom-md h3:hover .anchor,
 .custom-md h4:hover .anchor,
 .custom-md h5:hover .anchor,
-.custom-md h6:hover .anchor {
-    opacity: 1 !important;
+.custom-md h6:hover .anchor,
+.custom-md h1 .anchor:focus-visible,
+.custom-md h2 .anchor:focus-visible,
+.custom-md h3 .anchor:focus-visible,
+.custom-md h4 .anchor:focus-visible,
+.custom-md h5 .anchor:focus-visible,
+.custom-md h6 .anchor:focus-visible {
+	opacity: 1 !important;
 }
 
-.custom-md a:not(.no-styling) {
-    position: relative;
-    z-index: 0;
-    margin: -0.25rem;
-    padding: 0.25rem 0.25rem calc(0.25rem - 1px);
-    border-radius: 0.375rem;
-    border-bottom: 1px dashed transparent;
-    background-color: transparent;
-    color: var(--primary);
-    font-weight: 500;
-    text-decoration-line: underline;
-    text-decoration-style: dashed;
-    text-decoration-thickness: 1px;
-    text-decoration-color: var(--link-underline);
-    text-underline-offset: 4px;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    transition:
-        color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+.custom-md h1 .anchor:hover,
+.custom-md h2 .anchor:hover,
+.custom-md h3 .anchor:hover,
+.custom-md h4 .anchor:hover,
+.custom-md h5 .anchor:hover,
+.custom-md h6 .anchor:hover,
+.custom-md h1 .anchor:active,
+.custom-md h2 .anchor:active,
+.custom-md h3 .anchor:active,
+.custom-md h4 .anchor:active,
+.custom-md h5 .anchor:active,
+.custom-md h6 .anchor:active {
+	background: var(--md-chip-bg);
+	border-bottom-color: transparent;
+	box-shadow: inset 0 0 0 1px var(--md-chip-border);
 }
 
-.custom-md a:not(.no-styling)::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    background-color: transparent;
-    transform: scale(0.85);
-    transition:
-        transform 0.15s ease-out,
-        background-color 0.15s ease-out,
-        opacity 0.15s ease-out;
+.custom-md h1 .anchor:hover::before,
+.custom-md h2 .anchor:hover::before,
+.custom-md h3 .anchor:hover::before,
+.custom-md h4 .anchor:hover::before,
+.custom-md h5 .anchor:hover::before,
+.custom-md h6 .anchor:hover::before {
+	background-color: transparent;
+	opacity: 0;
 }
 
-.custom-md a:not(.no-styling):hover::before {
-    background-color: var(--btn-plain-bg-hover);
-    transform: scale(1);
+/* 脚注角标与脚注区 */
+.custom-md sup,
+.custom-md sub {
+	line-height: 0;
 }
 
-.custom-md a:not(.no-styling):active::before {
-    background-color: var(--btn-plain-bg-active);
+.custom-md sup {
+	vertical-align: super;
+	font-size: 0.72em;
+	margin-inline: 0.14em;
 }
 
-.custom-md a:not(.no-styling):hover,
-.custom-md a:not(.no-styling):active {
-    background: var(--btn-plain-bg-hover);
-    border-bottom-color: currentcolor;
-    text-decoration: none;
-    text-decoration-color: transparent;
+.custom-md sup a[data-footnote-ref] {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.25rem;
+	height: 1.12rem;
+	padding: 0 0.28rem;
+	border-radius: 0.34rem;
+	border: 1px solid var(--md-chip-border);
+	background: var(--md-chip-bg);
+	color: var(--accent-foreground);
+	font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	text-decoration: none;
+	transition:
+		background-color 0.16s ease,
+		border-color 0.16s ease,
+		box-shadow 0.16s ease;
 }
 
-.custom-md h1 .anchor,
-.custom-md h2 .anchor,
-.custom-md h3 .anchor,
-.custom-md h4 .anchor,
-.custom-md h5 .anchor,
-.custom-md h6 .anchor {
-    display: inline;
-    margin: -0.125rem -0.125rem -0.125rem 0.2ch;
-    padding: 0.125rem;
+.custom-md sup a[data-footnote-ref]:hover,
+.custom-md sup a[data-footnote-ref]:focus-visible {
+	background: var(--md-chip-hover-bg);
+	border-color: var(--md-chip-hover-border);
+	box-shadow: 0 0 0 2px color-mix(in oklch, var(--primary) 18%, transparent);
+	outline: none;
 }
 
+.custom-md section[data-footnotes],
+.custom-md .footnotes {
+	position: relative;
+	margin-top: 2.25rem;
+	padding-top: 1.25rem;
+	font-size: 0.875rem;
+	line-height: 1.65;
+	color: color-mix(in oklch, var(--tw-prose-body) 84%, transparent);
+}
+
+.custom-md section[data-footnotes]::before,
+.custom-md .footnotes::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		color-mix(in oklch, var(--primary) 34%, var(--line-divider)),
+		var(--line-divider) 52%,
+		transparent
+	);
+}
+
+.custom-md #footnote-label {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	margin: 0 0 0.75rem;
+	padding: 0;
+	font-size: 0.78rem;
+	font-weight: 650;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in oklch, var(--tw-prose-headings) 64%, transparent);
+}
+
+.custom-md #footnote-label::before {
+	content: "";
+	width: 0.38rem;
+	height: 0.38rem;
+	border-radius: 2px;
+	border: 1.5px solid var(--accent-solid);
+	opacity: 0.78;
+	flex-shrink: 0;
+}
+
+.custom-md section[data-footnotes] ol,
+.custom-md .footnotes ol {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 0.4rem;
+	counter-reset: fy-footnote;
+}
+
+.custom-md section[data-footnotes] li,
+.custom-md .footnotes li {
+	counter-increment: fy-footnote;
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 0.6rem;
+	align-items: baseline;
+	margin: 0;
+	padding: 0.45rem 0.65rem;
+	border-radius: 0.625rem;
+	border: 1px solid transparent;
+	scroll-margin-top: 5.5rem;
+	transition:
+		background-color 0.22s ease,
+		border-color 0.22s ease;
+}
+
+.custom-md section[data-footnotes] li::before,
+.custom-md .footnotes li::before {
+	content: counter(fy-footnote);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.25rem;
+	height: 1.18rem;
+	padding: 0 0.25rem;
+	border-radius: 0.34rem;
+	border: 1px solid var(--md-chip-border);
+	background: var(--md-chip-bg);
+	color: var(--accent-foreground);
+	font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 0.72rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+.custom-md section[data-footnotes] li:target,
+.custom-md .footnotes li:target {
+	background: color-mix(in oklch, var(--primary) 12%, var(--md-slot-bg));
+	border-color: var(--md-chip-hover-border);
+	color: var(--tw-prose-headings);
+}
+
+.custom-md section[data-footnotes] li p,
+.custom-md .footnotes li p {
+	margin: 0;
+}
+
+.custom-md section[data-footnotes] li p + p,
+.custom-md .footnotes li p + p {
+	margin-top: 0.45rem;
+}
+
+.custom-md a[data-footnote-backref] {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: 0.4rem;
+	padding: 0.04rem 0.36rem;
+	border-radius: 0.32rem;
+	border: 1px solid var(--md-chip-border);
+	background: var(--md-chip-bg);
+	color: var(--accent-foreground);
+	font-size: 0.78em;
+	line-height: 1.3;
+	text-decoration: none;
+	transition:
+		background-color 0.16s ease,
+		border-color 0.16s ease;
+}
+
+.custom-md a[data-footnote-backref]:hover,
+.custom-md a[data-footnote-backref]:focus-visible {
+	background: var(--md-chip-hover-bg);
+	border-color: var(--md-chip-hover-border);
+	outline: none;
+}
+
+/* 光学表格容器与排版 */
+.custom-md .md-table-scroll {
+	margin: 1.25rem 0;
+	overflow-x: auto;
+	border-radius: 0.875rem;
+	border: 1px solid var(--md-slot-border);
+	background: var(--md-slot-bg);
+	box-shadow: var(--md-slot-inset);
+}
+
+.custom-md .md-table-scroll > table {
+	width: 100%;
+	margin: 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	font-variant-numeric: tabular-nums;
+}
+
+.custom-md table:not(.md-table-scroll > table) {
+	width: 100%;
+	margin: 1.25rem 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	border-radius: 0.875rem;
+	border: 1px solid var(--md-slot-border);
+	background: var(--md-slot-bg);
+	box-shadow: var(--md-slot-inset);
+	overflow: hidden;
+	font-size: 0.875rem;
+	line-height: 1.55;
+	font-variant-numeric: tabular-nums;
+}
+
+.custom-md table thead {
+	border-bottom: 0;
+}
+
+.custom-md table thead th {
+	padding: 0.72rem 0.95rem;
+	font-size: 0.8rem;
+	font-weight: 650;
+	letter-spacing: 0.02em;
+	color: var(--tw-prose-headings);
+	background: var(--md-table-head-bg);
+	border-bottom: 1px solid var(--optical-card-border);
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.custom-md table tbody td {
+	padding: 0.68rem 0.95rem;
+	border-bottom: 1px solid var(--line-divider);
+	color: var(--tw-prose-body);
+	vertical-align: middle;
+	transition: background-color 0.14s ease;
+}
+
+.custom-md table tbody tr {
+	border-bottom: 0;
+}
+
+.custom-md table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.custom-md table tbody tr:hover td {
+	background: var(--md-table-row-hover);
+}
+
+/* 行内代码与按键 */
 .custom-md code {
-    overflow: hidden;
-    padding: 0.125rem 0.25rem;
-    border-radius: 0.375rem;
-    background-color: var(--inline-code-bg);
-    color: var(--inline-code-color);
-    font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    counter-reset: line;
+	font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.custom-md :not(pre) > code {
+	padding: 0.08rem 0.34rem;
+	margin-inline: 0.06rem;
+	border-radius: 0.3rem;
+	border: 1px solid var(--md-inline-code-border);
+	background-color: var(--md-inline-code-bg);
+	color: var(--md-inline-code-fg);
+	font-size: 0.86em;
+	font-weight: 500;
 }
 
 .custom-md code::before,
 .custom-md code::after {
-    content: none;
+	content: none;
 }
 
-.custom-md code span.line::before {
-    display: inline-block;
-    width: 1rem;
-    margin-right: 1rem;
-    color: rgb(255 255 255 / 0.25);
-    content: counter(line);
-    counter-increment: line;
-    direction: rtl;
+.custom-md kbd {
+	display: inline-block;
+	padding: 0.12rem 0.42rem;
+	border-radius: 0.4rem;
+	border: 1px solid var(--optical-card-border);
+	background: var(--md-slot-bg);
+	color: var(--tw-prose-headings);
+	font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 0.78em;
+	font-weight: 600;
+	line-height: 1.3;
+	box-shadow:
+		0 1.5px 0 var(--line-color),
+		var(--md-slot-inset);
 }
 
-.custom-md code span.line:last-child:empty,
-.custom-md code span.line:last-child:has(> span:empty:only-child) {
-    display: none;
+.custom-md del {
+	color: color-mix(in oklch, var(--tw-prose-body) 64%, transparent);
+	text-decoration-color: color-mix(in oklch, var(--tw-prose-body) 42%, transparent);
 }
 
+.custom-md input[type="checkbox"] {
+	accent-color: var(--accent-solid);
+	border-radius: 0.25rem;
+	margin-right: 0.45rem;
+}
+
+/* 代码块光学复制按钮（无 backdrop-filter，避免多代码块页合成层卡顿） */
 .custom-md .copy-btn {
-    all: initial;
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 0.5rem;
-    background-color: oklch(0.45 0.01 var(--hue));
-    box-shadow:
-        0 10px 15px -3px rgb(0 0 0 / 0.5),
-        0 4px 6px -4px rgb(0 0 0 / 0.5);
-    cursor: pointer;
-    opacity: 0;
-    font-size: 0.875rem;
-    transition: all 0.15s ease-in-out;
+	all: initial;
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.95rem;
+	height: 1.95rem;
+	border-radius: 0.48rem;
+	border: 1px solid var(--codeblock-btn-border);
+	background-color: var(--codeblock-btn-bg);
+	box-shadow: 0 2px 8px -4px rgb(15 23 42 / 0.22);
+	cursor: var(--cursor-link, pointer);
+	opacity: 0;
+	font-size: 0.875rem;
+	transition:
+		opacity 0.16s ease,
+		background-color 0.16s ease,
+		border-color 0.16s ease,
+		transform 0.16s ease;
 }
 
 .custom-md .copy-btn:hover {
-    background-color: oklch(0.50 0.01 var(--hue));
+	background-color: var(--codeblock-btn-hover-bg);
+	border-color: var(--md-chip-hover-border);
 }
 
 .custom-md .copy-btn:active {
-    background-color: oklch(0.55 0.01 var(--hue));
-    transform: scale(0.9);
+	transform: scale(0.92);
 }
 
-.dark .custom-md .copy-btn {
-    background-color: oklch(0.30 0.02 var(--hue));
+.custom-md .copy-btn.success {
+	background-color: color-mix(in oklch, var(--admonitions-color-tip) 18%, var(--codeblock-btn-bg));
+	border-color: color-mix(in oklch, var(--admonitions-color-tip) 55%, transparent);
 }
 
-.dark .custom-md .copy-btn:hover {
-    background-color: oklch(0.35 0.03 var(--hue));
+.custom-md .frame:hover .copy-btn,
+.custom-md .copy-btn:focus-visible {
+	opacity: 1;
 }
 
-.dark .custom-md .copy-btn:active {
-    background-color: oklch(0.40 0.03 var(--hue));
-}
-
-.custom-md .frame:hover .copy-btn {
-    opacity: 1;
+.custom-md .copy-btn:focus-visible {
+	outline: none;
+	box-shadow: var(--focus-ring-shadow);
 }
 
 .custom-md .copy-btn-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 1rem;
-    height: 1rem;
-    fill: white;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    transition:
-        color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 1rem;
+	height: 1rem;
+	fill: var(--codeblock-btn-fg);
+	pointer-events: none;
+	transform: translate(-50%, -50%);
+	transition: opacity 0.15s ease;
 }
 
 .custom-md .copy-btn .copy-icon {
-    opacity: 1;
-    fill: white;
-}
-
-.dark .custom-md .copy-btn .copy-icon {
-    fill: rgb(255 255 255 / 0.75);
+	opacity: 1;
+	fill: var(--codeblock-btn-fg);
 }
 
 .custom-md .copy-btn.success .copy-icon {
-    opacity: 0;
-    fill: var(--deep-text);
+	opacity: 0;
 }
 
 .custom-md .copy-btn .success-icon {
-    opacity: 0;
-    fill: white;
+	opacity: 0;
+	fill: var(--admonitions-color-tip);
 }
 
 .custom-md .copy-btn.success .success-icon {
-    opacity: 1;
+	opacity: 1;
 }
 
 .custom-md .expressive-code {
-    margin-block: 1rem;
+	margin-block: 1.15rem;
+	contain: layout style;
 }
 
 .custom-md .expressive-code ::selection {
-    background-color: var(--codeblock-selection);
+	background-color: var(--codeblock-selection);
 }
 
 .custom-md ul li::marker,
 .custom-md ol li::marker {
-    color: var(--primary);
+	color: var(--accent-solid);
 }
 
+/* 普通引用块（排除提示块） */
 .custom-md blockquote {
-    position: relative;
-    border-color: transparent;
-    font-style: normal;
-    font-weight: inherit;
+	position: relative;
+	border-color: transparent;
+	font-style: normal;
+	font-weight: inherit;
 }
 
-.custom-md blockquote::before {
-    content: "";
-    position: absolute;
-    left: -0.25rem;
-    display: block;
-    width: 0.25rem;
-    height: 100%;
-    border-radius: 9999px;
-    background-color: var(--btn-regular-bg);
-    transition:
-        color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+.custom-md blockquote:not(.admonition) {
+	margin: 1.2rem 0;
+	padding: 0.6rem 1rem 0.6rem 1.2rem;
+	border-left: 0;
+	border-radius: 0 0.75rem 0.75rem 0;
+	background: linear-gradient(
+		90deg,
+		color-mix(in oklch, var(--primary) 5.5%, transparent),
+		transparent 76%
+	);
+}
+
+.dark .custom-md blockquote:not(.admonition) {
+	background: linear-gradient(
+		90deg,
+		color-mix(in oklch, var(--primary) 8%, transparent),
+		transparent 76%
+	);
+}
+
+.custom-md blockquote:not(.admonition)::before {
+	content: "";
+	position: absolute;
+	top: 0.25rem;
+	bottom: 0.25rem;
+	left: 0;
+	display: block;
+	width: 2.5px;
+	border-radius: 9999px;
+	background: linear-gradient(
+		180deg,
+		var(--accent-solid),
+		color-mix(in oklch, var(--primary) 30%, transparent)
+	);
+	box-shadow: 0 0 9px var(--toc-rail-glow);
+}
+
+.custom-md blockquote:not(.admonition) > :first-child {
+	margin-top: 0;
+}
+
+.custom-md blockquote:not(.admonition) > :last-child {
+	margin-bottom: 0;
 }
 
 .custom-md blockquote p::before,
 .custom-md blockquote p::after {
-    content: none;
+	content: none;
 }
 
-.custom-md .katex-display-container {
-    max-width: 100%;
-    margin: 1em 0;
-    overflow-x: auto;
+.custom-md .katex-display {
+	position: relative;
+	max-width: 100%;
+	padding: 0.5rem 0.75rem;
+	border-radius: 0.75rem;
+	border: 1px solid var(--md-slot-border);
+	background: var(--md-slot-bg);
+	box-shadow: var(--md-slot-inset);
+}
+
+.custom-md .katex-display > .katex {
+	overflow-x: auto;
+	padding-block: 0.125em;
+}
+
+.custom-md .katex-display > .katex > .katex-html {
+	width: max-content;
+	min-width: 100%;
+}
+
+.custom-md img,
+#post-cover img {
+    cursor: zoom-in;
+}
+
+.custom-md spoiler {
+	display: inline;
+	padding: 0.06rem 0.4rem;
+	border-radius: 0.4rem;
+	border: 1px solid var(--md-slot-border);
+	background:
+		repeating-linear-gradient(
+			-45deg,
+			color-mix(in oklch, var(--deep-text) 11%, transparent) 0 3px,
+			color-mix(in oklch, var(--primary) 11%, transparent) 3px 6px
+		),
+		var(--md-slot-bg);
+	color: transparent;
+	text-shadow: 0 0 9px color-mix(in oklch, var(--deep-text) 42%, transparent);
+	cursor: var(--cursor-link, pointer);
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+	transition:
+		background 0.22s ease,
+		border-color 0.22s ease,
+		color 0.22s ease,
+		text-shadow 0.22s ease;
+}
+
+.custom-md spoiler * {
+	color: inherit;
+	transition: color 0.22s ease, opacity 0.22s ease;
+}
+
+.custom-md spoiler:not(:hover):not(:focus-visible):not([data-revealed="true"]) * {
+	color: transparent;
+	opacity: 0.18;
+}
+
+.custom-md spoiler:hover,
+.custom-md spoiler:focus-visible,
+.custom-md spoiler[data-revealed="true"] {
+	background: color-mix(in oklch, var(--primary) 8%, var(--md-slot-bg));
+	border-color: var(--md-chip-border);
+	color: inherit;
+	text-shadow: none;
+	outline: none;
 }

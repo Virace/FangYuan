@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const es: Translation = {
+	[Key.noticeRegion]: "Notificaciones",
+	[Key.noticePinned]: "Aviso prioritario",
+	[Key.engagementLoadFailed]:
+		"No se pudo cargar la información de interacción. Inténtalo más tarde.",
+	[Key.commentsCaptchaRefreshFailed]:
+		"No se pudo actualizar el captcha. Inténtalo de nuevo.",
 	[Key.home]: "Inicio",
 	[Key.about]: "Sobre mí",
 	[Key.archive]: "Archivo",
@@ -95,6 +101,7 @@ export const es: Translation = {
 	[Key.systemMode]: "Sistema",
 
 	[Key.more]: "Más",
+	[Key.less]: "Menos",
 
 	[Key.author]: "Autor",
 	[Key.publishedAt]: "Publicado el",
@@ -108,5 +115,6 @@ export const es: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"Si esta publicación te ayudó, puedes apoyar al autor a través de los canales de abajo.",
 	[Key.pageFeedbackClose]: "Cerrar",
+	[Key.tableOfContents]: "Índice",
 	[Key.license]: "Licencia",
 };

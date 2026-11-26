@@ -68,7 +68,7 @@
     - button "Copy code":
       - img
       - img
-  - paragraph: 这样复制和粘贴会更方便。你也可以额外给围栏代码块标记语言，让 Pandoc 执行语法高亮：
+  - paragraph: 这样复制和粘贴会更方便。你也可以额外给围栏代码块标记语言，启用语法高亮：
   - figure:
     - text: python
     - code: "/import time # 快一点，开始数到十！ for i in range\\(\\d+\\): # （不过别太快） time\\.sleep\\(0\\.5\\) print\\(i\\)/"
@@ -114,28 +114,73 @@
       - link "1":
         - /url: "#user-content-fn-1"
     - text: 。
-  - paragraph: 表格可以这样写：
-  - paragraph: 尺码 材质 颜色
-  - separator
-  - paragraph: /9 皮革 棕色 \d+ 麻布 原色 \d+ 玻璃 透明/
-  - paragraph: 表：鞋子、尺码以及材质
-  - paragraph: 上面这一行就是表格标题。Pandoc 还支持多行表格：
-  - separator
-  - paragraph: 关键词 文本
-  - separator
-  - paragraph: 红色 日落、苹果，以及 其他偏红的 东西。
-  - paragraph: 绿色 树叶、草地、青蛙， 还有那些当绿色 并不轻松的东西。
-  - separator
+  - paragraph: 表格可以使用标准 GFM 管道语法，并通过冒号控制各列对齐方式：
+  - table:
+    - rowgroup:
+      - row "尺码 材质 颜色":
+        - columnheader "尺码"
+        - columnheader "材质"
+        - columnheader "颜色"
+    - rowgroup:
+      - row "9 皮革 棕色":
+        - cell "9"
+        - cell "皮革"
+        - cell "棕色"
+      - row /\d+ 麻布 原色/:
+        - cell /\d+/
+        - cell "麻布"
+        - cell "原色"
+      - row /\d+ 玻璃 透明/:
+        - cell /\d+/
+        - cell "玻璃"
+        - cell "透明"
+  - paragraph:
+    - text: 也可以在单元格里组合
+    - strong: 加粗
+    - text: 、
+    - code: 行内代码
+    - text: 与较长说明，窄屏下容器会自动提供横向滚动：
+  - table:
+    - rowgroup:
+      - row "语法类型 写法示例 说明":
+        - columnheader "语法类型"
+        - columnheader "写法示例"
+        - columnheader "说明"
+    - rowgroup:
+      - row "删除线 ~~已过时内容~~ 渲染为 已过时内容，适合标注修订":
+        - cell "删除线"
+        - cell "~~已过时内容~~":
+          - code: ~~已过时内容~~
+        - cell "渲染为 已过时内容，适合标注修订":
+          - text: ""
+          - deletion: 已过时内容
+          - text: ""
+      - row "快捷键 <kbd>Ctrl</kbd> + <kbd>K</kbd> 渲染为 Ctrl + K ，适合操作指南":
+        - cell "快捷键"
+        - cell "<kbd>Ctrl</kbd> + <kbd>K</kbd>":
+          - code: <kbd>Ctrl</kbd> + <kbd>K</kbd>
+        - cell "渲染为 Ctrl + K ，适合操作指南"
+      - 'row "行内代码 `pnpm dev` 渲染为 pnpm dev，突出命令或标识符"':
+        - cell "行内代码"
+        - 'cell "`pnpm dev`"':
+          - code: "`pnpm dev`"
+        - cell "渲染为 pnpm dev，突出命令或标识符":
+          - text: ""
+          - code: pnpm dev
+          - text: ""
   - paragraph: 接下来是一条分隔线。
   - separator
-  - paragraph: 下面是一个定义列表：
-  - paragraph:
-    - text: "苹果 : 适合拿来做苹果酱。 橙子 : 典型的柑橘类水果。 番茄 : 英文 tomato 里没有多余的"
-    - code: e
-    - text: 。
-  - paragraph: 这里的正文同样缩进 4 个空格。（如果你想让版面更松一些，可以在每组术语和定义之间加一个空行。）
-  - paragraph: 下面是一个“行块”：
-  - paragraph: "| 第一行 | 第二行 | 第三行"
+  - paragraph: 下面是一个任务列表（GFM Task List）：
+  - list:
+    - listitem:
+      - checkbox "基础段落、标题与嵌套列表" [checked] [disabled]
+      - text: 基础段落、标题与嵌套列表
+    - listitem:
+      - checkbox "标准 GFM 表格与自动横向滚动容器" [checked] [disabled]
+      - text: 标准 GFM 表格与自动横向滚动容器
+    - listitem:
+      - checkbox "待补充的更多写作样例" [disabled]
+      - text: 待补充的更多写作样例
   - paragraph: 图片也可以这样写：
   - paragraph:
     - text: 行内数学公式可以这样写：
@@ -155,7 +200,7 @@
         - text: 这里是脚注内容。
         - link "Back to reference 1":
           - /url: "#user-content-fnref-1"
-          - text: ""
+          - text: ↩
   - paragraph: 支持这篇文章
   - button "请作者喝杯咖啡"
   - text: Markdown 示例
@@ -164,8 +209,11 @@
   - text: /作者 FangYuan 发布于 \d+-\d+-\d+ 许可协议/
   - link "MIT":
     - /url: https://opensource.org/license/mit
-  - img
   - link "FangYuan 简明指南":
     - /url: /guide/
     - img
     - text: ""
+  - link "用小标题组织文章目录":
+    - /url: /article-outline/
+    - text: ""
+    - img

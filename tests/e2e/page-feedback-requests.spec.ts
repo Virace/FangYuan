@@ -28,20 +28,27 @@ async function waitForRewardRequests(counts: RewardRequestCounts, expected: numb
 		.toBe(expected);
 }
 
-test("reward tabs request each QR image once when switching", async ({ page }) => {
+test("reward projection lazy-loads both QR images once across reopen", async ({
+	page,
+}) => {
 	const counts = await watchRewardImageRequests(page);
 
 	await page.goto("/markdown/");
-	await page.getByRole("button", { name: "请作者喝杯咖啡" }).click();
+	expect(collectRewardImageRequests(counts)).toBe(0);
+
+	const trigger = page.getByRole("button", { name: "请作者喝杯咖啡" });
+	await trigger.click();
 	await expect(page.getByRole("dialog")).toBeVisible();
 	await expect(page.getByRole("img", { name: "微信打赏二维码" })).toBeVisible();
-	await waitForRewardRequests(counts, 1);
-
-	await page.getByRole("button", { name: "支付宝" }).click();
 	await expect(page.getByRole("img", { name: "支付宝打赏二维码" })).toBeVisible();
 	await waitForRewardRequests(counts, 2);
 
-	await page.getByRole("button", { name: "微信" }).click();
+	await page.mouse.click(10, 10);
+	await expect(page.getByRole("dialog")).toBeHidden();
+
+	await trigger.click();
+	await expect(page.getByRole("dialog")).toBeVisible();
 	await expect(page.getByRole("img", { name: "微信打赏二维码" })).toBeVisible();
+	await expect(page.getByRole("img", { name: "支付宝打赏二维码" })).toBeVisible();
 	await waitForRewardRequests(counts, 2);
 });

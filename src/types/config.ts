@@ -7,6 +7,16 @@ export type AliasValidationMode = "error" | "normalize";
 export type UpdatedDateMode = "manual" | "git" | "filesystem" | "none";
 export type UpdatedDateFallback = "none" | "filesystem";
 
+export type OpticalPrismConfig =
+	| string
+	| {
+			face: string;
+			back?: string;
+			spacer?: string;
+			guides?: [number, number][][];
+			crown?: "diamond";
+	  };
+
 export type PostPatternRule = {
 	match: string;
 	pattern: string;
@@ -53,6 +63,27 @@ export type PermalinkConfig = {
 	updatedDateFallback: UpdatedDateFallback;
 };
 
+export type NotificationConfig = {
+	position: "top" | "bottom";
+	newestOnTop: boolean;
+};
+
+export type SiteLogoConfig =
+	| string
+	| {
+			light?: string;
+			dark?: string;
+			alt?: string;
+			showTitle?: boolean;
+	  };
+
+export type ProfileLinkEffect = "expand" | "lift";
+
+export type TagWidgetConfig = {
+	showHash: boolean;
+	showCount: boolean;
+};
+
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
@@ -82,6 +113,7 @@ export type SiteConfig = {
 	banner: {
 		enable: boolean;
 		src: string;
+		optics?: { insert?: string; prism?: OpticalPrismConfig };
 		position?: "top" | "center" | "bottom";
 		credit: {
 			enable: boolean;
@@ -93,7 +125,13 @@ export type SiteConfig = {
 		enable: boolean;
 		depth: 1 | 2 | 3;
 	};
+	githubCard: {
+		descriptionLines: 1 | 2 | 3;
+	};
+	notifications: NotificationConfig;
+	tags: TagWidgetConfig;
 
+	logo?: SiteLogoConfig | null;
 	favicon: Favicon[];
 	permalink: PermalinkConfig;
 };
@@ -151,6 +189,7 @@ export type ProfileConfig = {
 	avatar?: string;
 	name: string;
 	bio?: string;
+	linkEffect?: ProfileLinkEffect;
 	links: {
 		name: string;
 		url: string;

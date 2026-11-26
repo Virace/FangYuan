@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const tr: Translation = {
+	[Key.noticeRegion]: "Bildirimler",
+	[Key.noticePinned]: "Öncelikli bildirim",
+	[Key.engagementLoadFailed]:
+		"Etkileşim bilgileri yüklenemedi. Lütfen daha sonra tekrar deneyin.",
+	[Key.commentsCaptchaRefreshFailed]:
+		"Doğrulama kodu yenilenemedi. Lütfen tekrar deneyin.",
 	[Key.home]: "Anasayfa",
 	[Key.about]: "Hakkında",
 	[Key.archive]: "Arşiv",
@@ -93,6 +99,7 @@ export const tr: Translation = {
 	[Key.systemMode]: "Sistem",
 
 	[Key.more]: "Daha Fazla",
+	[Key.less]: "Daha Az",
 
 	[Key.author]: "Yazar",
 	[Key.publishedAt]: "Yayınlanma:",
@@ -106,5 +113,6 @@ export const tr: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"Bu yazı işine yaradıysa aşağıdaki kanallar üzerinden yazarı destekleyebilirsin.",
 	[Key.pageFeedbackClose]: "Kapat",
+	[Key.tableOfContents]: "İçindekiler",
 	[Key.license]: "Lisans",
 };

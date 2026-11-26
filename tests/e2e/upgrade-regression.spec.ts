@@ -6,6 +6,46 @@ import {
 	installConsoleErrorCollector,
 } from "./support/site-fixtures";
 
+test("reloading with classic scrollbars keeps the page aligned before scripts load", async ({
+	playwright, baseURL,
+}) => {
+	const browser = await playwright.chromium.launch({
+		ignoreDefaultArgs: ["--hide-scrollbars"],
+		args: ["--disable-features=OverlayScrollbar"],
+	});
+	try {
+		const page = await browser.newPage({
+			baseURL, forcedColors: "active", viewport: { width: 1440, height: 900 },
+		});
+		await gotoAndWaitForApp(page, SITE_ROUTES.home);
+		const readLayout = () => page.locator("#main-grid").evaluate(grid => ({
+			gutter: innerWidth - document.documentElement.clientWidth,
+			left: grid.getBoundingClientRect().left,
+		}));
+		expect((await readLayout()).gutter).toBeGreaterThan(0);
+		await page.emulateMedia({ forcedColors: "none" });
+		await expect.poll(async () => (await readLayout()).gutter).toBe(0);
+		const settled = await readLayout();
+
+		const scripts = Promise.withResolvers<void>();
+		await page.route("**/*", async route => {
+			if (route.request().resourceType() === "script") await scripts.promise;
+			await route.fallback();
+		});
+		try {
+			await page.reload({ waitUntil: "commit" });
+			await expect(page.locator("main")).toBeVisible();
+			expect(await readLayout()).toEqual(settled);
+		} finally {
+			scripts.resolve();
+		}
+		await page.waitForLoadState("load");
+		expect(await readLayout()).toEqual(settled);
+	} finally {
+		await browser.close();
+	}
+});
+
 test("cross-template swup route flow stays stable", async ({ page }) => {
 	const consoleErrors = installConsoleErrorCollector(page);
 
@@ -89,7 +129,7 @@ test("markdown inline links do not expand paragraph height on hover", async ({ p
 	expect(hovered.paragraphHeight).toBe(before.paragraphHeight);
 });
 
-test("markdown inline links keep dashed underline on hover", async ({ page }) => {
+test("markdown inline links keep solid underline on hover", async ({ page }) => {
 	await gotoAndWaitForApp(page, SITE_ROUTES.postComplex);
 	await disableMotion(page);
 
@@ -124,7 +164,7 @@ test("markdown inline links keep dashed underline on hover", async ({ page }) =>
 	expect(hoveredStyle.textDecorationLine).toBe("none");
 	expect(hoveredStyle.textDecorationStyle).toBe("solid");
 	expect(hoveredStyle.borderBottomWidth).toBe("1px");
-	expect(hoveredStyle.borderBottomStyle).toBe("dashed");
+	expect(hoveredStyle.borderBottomStyle).toBe("solid");
 	expect(hoveredStyle.borderBottomColor).toBe(hoveredStyle.color);
 });
 

@@ -9,6 +9,11 @@
 - `update-site-config.js`：读取、备份并写回外部 `site.config.yaml` 迁移结果
 - `update-site-config-migrations.js`：维护 `site.config.yaml` 的版本化迁移规则
 - `template.config.yaml`：面向用户维护的外部站点配置模板
+- `sync-content-routes.mjs`：审阅并同步已有稳定 ID 的路径登记；默认仅展示，`--write` 后写入，`--recover` 完成中断的同步，详见 `content-routes.md`
+- `build-site.mjs` / `build-paths.mjs`：`pnpm build*` 的统一构建入口与输出/缓存路径解析
+- `update-site-backup.js`：`update-site --apply` 写入前按原相对路径创建时间戳备份
+- `migrate-content-frontmatter.js`：内容 frontmatter 批量迁移辅助脚本
+- `studio-settings.mjs`：FangYuanStudio 站点设置读写桥接脚本
 
 ## `scripts/qingyan`
 
@@ -21,6 +26,8 @@
 - `new-post.js`：在 `src/content/posts/` 下创建 Markdown 文章脚手架
 - `generate-pagination-test-posts.js`：生成可随时删除的分页测试文章
 
-## `scripts/wp-migration`
+## `scripts/cloudflare`
 
-- WordPress WXR 审计与转换辅助脚本
+- `demo-deploy.mjs`：Cloudflare demo 环境检查、构建、预览与部署包装（`smoke` / `dev` / `deploy`）
+- `demo-smoke.mjs`：针对部署后 demo 页面的可用性与接口冒烟校验
+- `process-runner.mjs`：Cloudflare 部署与校验命令的子进程执行辅助

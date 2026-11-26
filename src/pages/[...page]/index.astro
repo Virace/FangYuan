@@ -22,7 +22,7 @@ const { route } = Astro.props as {
 };
 const page =
 	route.kind === "pagination" ? (route.page as Page<PostEntry>) : null;
-const len = page?.data.length ?? 0;
+const postCount = page?.data.length ?? 0;
 ---
 
 {route.kind === "pagination" && page && (
@@ -32,7 +32,7 @@ const len = page?.data.length ?? 0;
 		<Pagination
 			class="mx-auto onload-animation"
 			page={page}
-			style={`animation-delay: calc(var(--content-delay) + ${len * 50}ms)`}
+			style={`animation-delay: calc(var(--content-delay) + ${postCount * 50}ms)`}
 		></Pagination>
 	</MainGridLayout>
 )}

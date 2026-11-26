@@ -177,6 +177,79 @@ test("desktop toc updates hash when first heading is clicked", async ({ page }) 
 		.toBe(href);
 });
 
+test("narrow desktop switches toc to translucent inside dock and opens on hover", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await prepareStablePage(page, SITE_ROUTES.postBasic);
+
+	await page.evaluate(() => window.scrollTo({ top: 1200, behavior: "instant" }));
+	const tocWrapper = page.locator("#toc-wrapper");
+	await expect(tocWrapper).not.toHaveClass(/toc-hide/);
+	await expect(tocWrapper).toHaveAttribute("data-toc-layout", "inside");
+
+	const trigger = page.locator(".toc-dock-trigger");
+	await expect(trigger).toBeVisible();
+	const idleOpacity = Number(await readComputedStyleValue(trigger, "opacity"));
+	expect(idleOpacity).toBeGreaterThan(0.45);
+	expect(idleOpacity).toBeLessThan(0.65);
+
+	const dockGeometry = await page.evaluate(() => {
+		const post = document.getElementById("post-container")!.getBoundingClientRect();
+		const dock = document.querySelector(".toc-dock-trigger")!.getBoundingClientRect();
+		return { postRight: post.right, dockRight: dock.right };
+	});
+	expect(dockGeometry.dockRight).toBeLessThanOrEqual(dockGeometry.postRight + 1);
+
+	await trigger.hover();
+	const panel = page.locator("#toc-nav-panel");
+	const firstTocLink = page.locator("#toc a").first();
+	await expect(firstTocLink).toBeVisible();
+	const backdropFilter = await readComputedStyleValue(panel, "backdrop-filter");
+	expect(backdropFilter).toContain("blur(");
+
+	const href = await firstTocLink.getAttribute("href");
+	if (!href) {
+		throw new Error("Expected first TOC link to have an href.");
+	}
+	await firstTocLink.click();
+
+	await expect
+		.poll(async () => page.evaluate(() => decodeURIComponent(location.hash)))
+		.toBe(href);
+
+	// 桌面端点击后鼠标仍在浮窗内，浮窗保持展开；移出区域后再关闭
+	await expect(panel).toBeVisible();
+	await page.mouse.move(40, 40);
+	await expect(panel).not.toBeVisible();
+});
+
+test("mobile toc popover keeps over half of viewport operable and closes on scrim tap", async ({
+	page,
+}) => {
+	await page.setViewportSize(VIEWPORTS.mobile);
+	await prepareStablePage(page, SITE_ROUTES.postBasic);
+
+	await page.evaluate(() => window.scrollTo({ top: 1200, behavior: "instant" }));
+	const tocWrapper = page.locator("#toc-wrapper");
+	await expect(tocWrapper).not.toHaveClass(/toc-hide/);
+	await expect(tocWrapper).toHaveAttribute("data-toc-layout", "inside");
+
+	const trigger = page.locator(".toc-dock-trigger");
+	await expect(trigger).toBeVisible();
+	await trigger.click();
+	await expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+	const panel = page.locator("#toc-nav-panel");
+	await expect(panel).toBeVisible();
+	const panelWidth = await panel.evaluate((el) => el.getBoundingClientRect().width);
+	expect(panelWidth).toBeLessThanOrEqual(VIEWPORTS.mobile.width * 0.48 + 1);
+
+	await page.mouse.click(36, 220);
+	await expect(trigger).toHaveAttribute("aria-expanded", "false");
+	await expect(panel).not.toBeVisible();
+});
+
 test("spec page does not render toc entries by default", async ({ page }) => {
 	await page.setViewportSize({ width: 1600, height: 900 });
 	await prepareStablePage(page, SITE_ROUTES.about);

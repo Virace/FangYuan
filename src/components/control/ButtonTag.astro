@@ -4,10 +4,32 @@ interface Props {
 	dot?: boolean;
 	href?: string;
 	label?: string;
+	showHash?: boolean;
+	count?: number;
+	tier?: "hot" | "normal" | "quiet";
 }
-const { dot, href, label }: Props = Astro.props;
+const {
+	dot,
+	href,
+	label,
+	showHash = false,
+	count,
+	tier = "normal",
+}: Props = Astro.props;
 ---
-<a href={href} aria-label={label} class="btn-regular h-8 text-sm px-3 rounded-lg">
-    {dot && <div class="h-1 w-1 bg-btn-content dark:bg-card-bg transition rounded-md mr-2"></div>}
-    <slot></slot>
+<a
+	href={href}
+	aria-label={label}
+	class:list={[
+		"btn-regular optical-tag-chip h-8 text-sm px-2.5 rounded-lg",
+		{
+			"optical-tag-hot": tier === "hot",
+			"optical-tag-quiet": tier === "quiet",
+		},
+	]}
+>
+    {dot && <div class="h-1 w-1 bg-btn-content dark:bg-card-bg transition rounded-md mr-2" aria-hidden="true"></div>}
+    {!dot && showHash && <span class="optical-tag-hash" aria-hidden="true">#</span>}
+    <span class="optical-tag-name"><slot></slot></span>
+    {count !== undefined && <span class="optical-tag-count" data-count={count} aria-hidden="true"></span>}
 </a>

@@ -14,13 +14,41 @@ export let categories: string[] = [];
 export let sortedPosts: PostForList[] = [];
 export let showPinnedInTimeline = true;
 
-const params = new URLSearchParams(window.location.search);
-tags = params.has("tag") ? params.getAll("tag") : [];
-categories = params.has("category") ? params.getAll("category") : [];
-const uncategorized = params.get("uncategorized");
+function filterArchivePosts(
+	posts: PostForList[],
+	nextTags: string[],
+	nextCategories: string[],
+	uncategorized: string | null,
+): PostForList[] {
+	let filteredPosts: PostForList[] = posts;
 
-let groups: ArchivePostGroup[] = [];
-let pinnedPosts: PostForList[] = [];
+	if (nextTags.length > 0) {
+		filteredPosts = filteredPosts.filter(
+			(post) =>
+				Array.isArray(post.data.tags) &&
+				post.data.tags.some((tag) => nextTags.includes(tag)),
+		);
+	}
+
+	if (nextCategories.length > 0) {
+		filteredPosts = filteredPosts.filter(
+			(post) =>
+				post.data.category && nextCategories.includes(post.data.category),
+		);
+	}
+
+	if (uncategorized) {
+		filteredPosts = filteredPosts.filter((post) => !post.data.category);
+	}
+
+	return filteredPosts;
+}
+
+const initialGroups = buildArchivePostGroups(sortedPosts, {
+	showPinnedInTimeline,
+});
+let groups: ArchivePostGroup[] = initialGroups.yearGroups;
+let pinnedPosts: PostForList[] = initialGroups.pinnedPosts;
 
 function formatDate(date: Date) {
 	const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -32,27 +60,22 @@ function formatTag(tagList: string[]) {
 	return tagList.map((t) => `#${t}`).join(" ");
 }
 
-onMount(async () => {
-	let filteredPosts: PostForList[] = sortedPosts;
+onMount(() => {
+	const params = new URLSearchParams(window.location.search);
+	tags = params.has("tag") ? params.getAll("tag") : [];
+	categories = params.has("category") ? params.getAll("category") : [];
+	const uncategorized = params.get("uncategorized");
 
-	if (tags.length > 0) {
-		filteredPosts = filteredPosts.filter(
-			(post) =>
-				Array.isArray(post.data.tags) &&
-				post.data.tags.some((tag) => tags.includes(tag)),
-		);
+	if (tags.length === 0 && categories.length === 0 && !uncategorized) {
+		return;
 	}
 
-	if (categories.length > 0) {
-		filteredPosts = filteredPosts.filter(
-			(post) => post.data.category && categories.includes(post.data.category),
-		);
-	}
-
-	if (uncategorized) {
-		filteredPosts = filteredPosts.filter((post) => !post.data.category);
-	}
-
+	const filteredPosts = filterArchivePosts(
+		sortedPosts,
+		tags,
+		categories,
+		uncategorized,
+	);
 	const archiveGroups = buildArchivePostGroups(filteredPosts, {
 		showPinnedInTimeline,
 	});
@@ -61,7 +84,7 @@ onMount(async () => {
 });
 </script>
 
-<div class="card-base px-8 py-6">
+<div class="card-base panel-edge px-8 py-6">
     {#if pinnedPosts.length > 0}
         <div>
             <div class="flex flex-row w-full items-center h-15">
@@ -70,11 +93,10 @@ onMount(async () => {
                 </div>
                 <div class="archive-side-col">
                     <div
-                            class="h-3 w-3 bg-transparent rounded-full outline outline-primary mx-auto
-                  -outline-offset-2 z-50"
+                            class="h-2.5 w-2.5 bg-transparent rounded-full border-2 border-accent-solid mx-auto z-50"
                     ></div>
                 </div>
-                <div class="archive-main-col transition text-left text-50">
+                <div class="archive-main-col transition text-left text-muted">
                     {pinnedPosts.length} {i18n(pinnedPosts.length === 1 ? I18nKey.postCount : I18nKey.postsCount)}
                 </div>
             </div>
@@ -82,27 +104,20 @@ onMount(async () => {
             {#each pinnedPosts as post}
                 <a
                         href={getPostUrlByEntry({ id: post.slug, data: post.data })}
-                        aria-label={post.data.title}
                         class="group btn-plain block! h-10 w-full rounded-lg"
                 >
                     <div class="flex flex-row justify-start items-center h-full">
-                        <div class="archive-side-col transition text-sm text-right text-50">
+                        <div class="archive-side-col transition text-sm text-right text-muted">
                             {formatDate(post.data.published)}
                         </div>
 
                         <div class="archive-side-col relative dash-line h-full flex items-center">
-                            <div
-                                    class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
-                       bg-archive-dot group-hover:bg-primary outline-4 z-50
-                       outline-card-bg
-                       group-hover:outline-btn-plain-bg-hover
-                       group-active:outline-btn-plain-bg-active"
-                            ></div>
+                            <div class="archive-rail-dot mx-auto z-50"></div>
                         </div>
 
                         <div
                                 class="archive-title-col text-left font-bold
-                     group-hover:translate-x-1 transition-all group-hover:text-primary
+                     group-hover:translate-x-1 transition-[transform,color] group-hover:text-accent-foreground
                      text-75 pr-8 whitespace-nowrap text-ellipsis overflow-hidden"
                         >
                             {post.data.title}
@@ -110,7 +125,7 @@ onMount(async () => {
 
                         <div
                                 class="hidden archive-tags-col text-left text-sm transition
-                     whitespace-nowrap text-ellipsis overflow-hidden text-30"
+                     whitespace-nowrap text-ellipsis overflow-hidden text-muted"
                         >
                             {formatTag(post.data.tags)}
                         </div>
@@ -128,11 +143,10 @@ onMount(async () => {
                 </div>
                 <div class="archive-side-col">
                     <div
-                            class="h-3 w-3 bg-transparent rounded-full outline outline-primary mx-auto
-                  -outline-offset-2 z-50"
+                            class="h-2.5 w-2.5 bg-transparent rounded-full border-2 border-accent-solid mx-auto z-50"
                     ></div>
                 </div>
-                <div class="archive-main-col transition text-left text-50">
+                <div class="archive-main-col transition text-left text-muted">
                     {group.posts.length} {i18n(group.posts.length === 1 ? I18nKey.postCount : I18nKey.postsCount)}
                 </div>
             </div>
@@ -140,30 +154,23 @@ onMount(async () => {
             {#each group.posts as post}
                 <a
                         href={getPostUrlByEntry({ id: post.slug, data: post.data })}
-                        aria-label={post.data.title}
                         class="group btn-plain block! h-10 w-full rounded-lg"
                 >
                     <div class="flex flex-row justify-start items-center h-full">
                         <!-- date -->
-                        <div class="archive-side-col transition text-sm text-right text-50">
+                        <div class="archive-side-col transition text-sm text-right text-muted">
                             {formatDate(post.data.published)}
                         </div>
 
                         <!-- dot and line -->
                         <div class="archive-side-col relative dash-line h-full flex items-center">
-                            <div
-                                    class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
-                       bg-archive-dot group-hover:bg-primary outline-4 z-50
-                       outline-card-bg
-                       group-hover:outline-btn-plain-bg-hover
-                       group-active:outline-btn-plain-bg-active"
-                            ></div>
+                            <div class="archive-rail-dot mx-auto z-50"></div>
                         </div>
 
                         <!-- post title -->
                         <div
                                 class="archive-title-col text-left font-bold
-                     group-hover:translate-x-1 transition-all group-hover:text-primary
+                     group-hover:translate-x-1 transition-[transform,color] group-hover:text-accent-foreground
                      text-75 pr-8 whitespace-nowrap text-ellipsis overflow-hidden"
                         >
                             {post.data.title}
@@ -172,7 +179,7 @@ onMount(async () => {
                         <!-- tag list -->
                         <div
                                 class="hidden archive-tags-col text-left text-sm transition
-                     whitespace-nowrap text-ellipsis overflow-hidden text-30"
+                     whitespace-nowrap text-ellipsis overflow-hidden text-muted"
                         >
                             {formatTag(post.data.tags)}
                         </div>

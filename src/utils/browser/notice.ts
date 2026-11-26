@@ -1,4 +1,4 @@
-export type AutoDismissTone = "success" | "error" | "info";
+export type AutoDismissTone = "success" | "error" | "info" | "warning";
 
 const noticeProfiles: Record<
 	AutoDismissTone,
@@ -15,6 +15,12 @@ const noticeProfiles: Record<
 		perCharMs: 55,
 		minMs: 3400,
 		maxMs: 8200,
+	},
+	warning: {
+		baseMs: 5200,
+		perCharMs: 65,
+		minMs: 6000,
+		maxMs: 10000,
 	},
 	error: {
 		baseMs: 4200,

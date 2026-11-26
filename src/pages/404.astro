@@ -1,26 +1,40 @@
 ---
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getArchivePath, url } from "@utils/permalink/urls";
+import { Icon } from "astro-icon/components";
 
 const pageTitle = "页面未找到";
 ---
 
 <MainGridLayout title={pageTitle} description="请求的页面不存在或已经移动。">
-	<section class="card-base rounded-panel px-6 py-10 text-center md:px-10 md:py-14">
-		<p class="mb-3 text-sm font-bold tracking-normal text-primary">404</p>
-		<h1 class="text-3xl font-bold text-90 md:text-4xl">{pageTitle}</h1>
-		<p class="mx-auto mt-4 max-w-xl text-base leading-7 text-50">
-			请求的页面不存在，或内容已经移动到新的地址。
+	<section class="card-base panel-edge rounded-panel relative overflow-hidden px-6 py-9 text-left md:px-10 md:py-12">
+		<div class="pointer-events-none absolute -right-2 -top-5 select-none text-[6.5rem] font-black leading-none tracking-tighter text-accent-solid opacity-[0.07] md:text-[8.5rem]" aria-hidden="true">
+			404
+		</div>
+
+		<span class="optical-chip-static mb-5 inline-flex items-center gap-2 rounded-md px-2.5 py-1 font-mono text-xs font-semibold text-accent-foreground">
+			<span class="optical-status-dot" aria-hidden="true"></span>
+			<span>STATUS 404</span>
+		</span>
+
+		<h1 class="optical-post-title-beam relative pl-4 text-3xl font-bold text-90 md:text-4xl before:absolute before:left-0 before:top-2 md:before:top-2.5">
+			{pageTitle}
+		</h1>
+
+		<p class="mt-4 max-w-xl text-sm leading-7 text-muted md:text-base">
+			请求的页面不存在，或内容已经移动到新的地址。你可以返回首页继续浏览，或从归档中查找对应文章。
 		</p>
-		<div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-			<a class="btn-card h-11 rounded-lg px-5 font-bold text-primary" href={url("/")}>
-				返回主页
+
+		<div class="optical-hairline my-7" aria-hidden="true"></div>
+
+		<div class="flex flex-wrap items-center gap-3">
+			<a class="optical-btn-primary" href={url("/")}>
+				<Icon is:inline name="material-symbols:home-outline-rounded" class="text-lg" />
+				<span>返回主页</span>
 			</a>
-			<a
-				class="btn-card h-11 rounded-lg px-5 font-bold text-primary"
-				href={url(getArchivePath())}
-			>
-				查看归档
+			<a class="optical-btn-secondary" href={url(getArchivePath())}>
+				<Icon is:inline name="material-symbols:inventory-2-outline-rounded" class="text-lg" />
+				<span>查看归档</span>
 			</a>
 		</div>
 	</section>

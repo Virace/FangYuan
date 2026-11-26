@@ -7,6 +7,8 @@ import type { ResolvedTocConfig } from "@utils/toc-config";
 import type { ImageMetadata, MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
+import OpticalBackdrop from "../components/misc/OpticalBackdrop.astro";
+import OpticalBanner from "../components/misc/OpticalBanner.astro";
 import TOC from "../components/widget/TOC.astro";
 import { configImageBaseRoots, siteConfig } from "../config";
 import {
@@ -14,7 +16,11 @@ import {
 	BANNER_HEIGHT_EXTEND,
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "../constants/constants";
-import { resolveConfigImage } from "../utils/image-source";
+import {
+	resolveConfigAssetUrl,
+	resolveConfigImage,
+} from "../utils/image-source";
+import { resolveOpticalPrism } from "../utils/prism-profile";
 import Layout from "./Layout.astro";
 
 interface Props {
@@ -40,13 +46,26 @@ const {
 	resolvedToc,
 	enablePhotoSwipe = false,
 } = Astro.props;
-const hasBannerCredit =
-	siteConfig.banner.enable && siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
-const bannerSource = await resolveConfigImage(
-	siteConfig.banner.src,
-	configImageBaseRoots.banner,
-);
+const prism = siteConfig.banner.enable
+	? await resolveOpticalPrism(siteConfig.banner.optics?.prism)
+	: undefined;
+const insertSrc =
+	siteConfig.banner.enable && !prism
+		? await resolveConfigAssetUrl(
+				siteConfig.banner.optics?.insert,
+				configImageBaseRoots.lensInsert,
+			)
+		: undefined;
+const bannerSource =
+	siteConfig.banner.enable && !insertSrc && !prism
+		? await resolveConfigImage(
+				siteConfig.banner.src,
+				configImageBaseRoots.banner,
+			)
+		: undefined;
+const hasBannerCredit =
+	siteConfig.banner.enable && bannerSource && siteConfig.banner.credit.enable;
 
 const mainPanelTop = siteConfig.banner.enable
 	? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
@@ -64,18 +83,18 @@ const mainPanelTop = siteConfig.banner.enable
 </div>
 
 <!-- Banner -->
-{siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
-    <ImageWrapper id="banner" alt="Banner image of the blog" class:list={["object-cover h-full transition duration-700 opacity-0 scale-105"]}
+{siteConfig.banner.enable && !bannerSource && <OpticalBackdrop />}
+{siteConfig.banner.enable && <div id="banner-wrapper" class:list={["absolute z-10 w-full transition-transform duration-700", { "overflow-hidden": bannerSource }]} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
+    {bannerSource ? <ImageWrapper id="banner" alt="Banner image of the blog" class:list={["object-cover h-full transition duration-700 opacity-0 scale-105"]}
                   src={bannerSource} position={siteConfig.banner.position}
-    >
-    </ImageWrapper>
+    /> : <OpticalBanner insertSrc={insertSrc} prism={prism} />}
 </div>}
 
 <!-- Main content -->
 <div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
-    <div class="relative page-shell pointer-events-auto">
-        <div id="main-grid" class="transition duration-700 w-full left-0 right-0 layout-main-grid
+    <div class="relative page-shell">
+        <div id="main-grid" class="pointer-events-auto transition-transform duration-700 w-full left-0 right-0 layout-main-grid
     mx-auto page-shell-gutter"
         >
             <!-- Banner image credit -->
@@ -85,9 +104,9 @@ const mainPanelTop = siteConfig.banner.enable
                          class:list={["group onload-animation transition-[background-color,padding-right,opacity,color] absolute flex justify-center items-center rounded-full " +
                           "px-3 right-4 -top-13 bg-black/60 hover:bg-black/70 h-9", {"hover:pr-9 active:bg-black/80": hasBannerLink}]}
                     >
-                        <Icon class="text-white/75 text-xl mr-1" name="material-symbols:copyright-outline-rounded" ></Icon>
+                        <Icon is:inline class="text-white/75 text-xl mr-1" name="material-symbols:copyright-outline-rounded" ></Icon>
                         <div class="text-white/75 text-xs">{siteConfig.banner.credit.text}</div>
-                        <Icon class:list={["transition absolute text-banner-credit-accent right-4 text-xs opacity-0",
+                        <Icon is:inline class:list={["transition absolute text-banner-credit-accent right-4 text-xs opacity-0",
                             {"group-hover:opacity-100": hasBannerLink}]}
                               name="fa6-solid:arrow-up-right-from-square">
                         </Icon>
@@ -95,7 +114,7 @@ const mainPanelTop = siteConfig.banner.enable
                     : <div id="banner-credit"
                            class="group onload-animation transition-[background-color,opacity,color] absolute flex justify-center items-center rounded-full px-3 right-4 -top-13 bg-black/60 h-9"
                     >
-                        <Icon class="text-white/75 text-xl mr-1" name="material-symbols:copyright-outline-rounded" ></Icon>
+                        <Icon is:inline class="text-white/75 text-xl mr-1" name="material-symbols:copyright-outline-rounded" ></Icon>
                         <div class="text-white/75 text-xs">{siteConfig.banner.credit.text}</div>
                     </div>
                 )
@@ -108,7 +127,7 @@ const mainPanelTop = siteConfig.banner.enable
 				id="swup-container"
 				data-swup-announcement={title}
 				data-enable-photoswipe={enablePhotoSwipe}
-				class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden"
+				class="transition-swup-fade col-span-2 lg:col-span-1 min-w-0"
 			>
 				<div id="content-wrapper" class="onload-animation">
 					<!-- the overflow-hidden here prevent long text break the layout-->
@@ -126,21 +145,23 @@ const mainPanelTop = siteConfig.banner.enable
     </div>
 </div>
 
-<!-- The things that should be under the banner, only the TOC for now -->
-<div class="absolute w-full z-0 hidden 2xl:block">
+<!-- TOC layer: outside rail when room allows, inside-article translucent dock when narrow -->
+<div id="toc-layer" class="toc-layer absolute w-full pointer-events-none">
     <div class="relative page-shell">
         <!-- TOC component -->
-        <div id="toc-wrapper" class:list={["hidden lg:block transition absolute top-0 toc-rail items-center",
-            {"toc-hide": siteConfig.banner.enable}]}
+        <div
+            id="toc-wrapper"
+            class:list={[
+                "toc-wrapper transition",
+                { "toc-hide": siteConfig.banner.enable },
+            ]}
         >
-            <div id="toc-inner-wrapper" class="fixed top-14 toc-scroll-region overflow-y-scroll overflow-x-hidden hide-scrollbar">
+            <div id="toc-inner-wrapper" class="toc-inner-wrapper">
 				{resolvedToc?.enable
-					? <div id="toc" class="w-full h-full transition-swup-fade ">
-						<div class="h-8 w-full"></div>
+					? <div id="toc" class="toc-slot transition-swup-fade">
 						<TOC headings={headings} depth={resolvedToc.depth}></TOC>
-						<div class="h-8 w-full"></div>
 					</div>
-					: <div id="toc"></div>}
+					: <div id="toc" class="toc-slot"></div>}
             </div>
         </div>
     </div>

@@ -15,16 +15,22 @@ function normalizeYesNo(value, defaultValue) {
 	return defaultValue
 }
 
-export function normalizeInitSiteAnswers(raw) {
+export function normalizeInitSiteAnswers(rawAnswers) {
 	return {
-		siteTitle: raw.siteTitle.trim() || "My Site",
-		siteSubtitle: raw.siteSubtitle.trim() || "My subtitle",
-		profileName: raw.profileName.trim() || "Your Name",
-		profileBio: raw.profileBio.trim() || "Write something here.",
-		qingyanSiteKey: raw.qingyanSiteKey.trim() || "fangyuan",
-		qingyanDevProxyTarget: raw.qingyanDevProxyTarget.trim() || null,
-		includeFrontmatterConfig: normalizeYesNo(raw.includeFrontmatterConfig, true),
-		includeVSCodeConfig: normalizeYesNo(raw.includeVSCodeConfig, true),
+		siteTitle: rawAnswers.siteTitle.trim() || "My Site",
+		siteSubtitle: rawAnswers.siteSubtitle.trim() || "My subtitle",
+		profileName: rawAnswers.profileName.trim() || "Your Name",
+		profileBio: rawAnswers.profileBio.trim() || "Write something here.",
+		qingyanSiteKey: rawAnswers.qingyanSiteKey.trim() || "fangyuan",
+		qingyanDevProxyTarget: rawAnswers.qingyanDevProxyTarget.trim() || null,
+		includeFrontmatterConfig: normalizeYesNo(
+			rawAnswers.includeFrontmatterConfig,
+			true,
+		),
+		includeVSCodeConfig: normalizeYesNo(
+			rawAnswers.includeVSCodeConfig,
+			true,
+		),
 	}
 }
 
@@ -33,26 +39,28 @@ export async function promptInitSiteOptions() {
 		throw new Error("init-site interactive mode requires a TTY.")
 	}
 
-	const rl = readline.createInterface({ input, output })
+	const readlineInterface = readline.createInterface({ input, output })
 
 	try {
 		return normalizeInitSiteAnswers({
-			siteTitle: await rl.question("Site title: "),
-			siteSubtitle: await rl.question("Site subtitle: "),
-			profileName: await rl.question("Profile name: "),
-			profileBio: await rl.question("Profile bio (optional): "),
-			qingyanSiteKey: await rl.question("QingYan site key [fangyuan]: "),
-			qingyanDevProxyTarget: await rl.question(
+			siteTitle: await readlineInterface.question("Site title: "),
+			siteSubtitle: await readlineInterface.question("Site subtitle: "),
+			profileName: await readlineInterface.question("Profile name: "),
+			profileBio: await readlineInterface.question("Profile bio (optional): "),
+			qingyanSiteKey: await readlineInterface.question(
+				"QingYan site key [fangyuan]: ",
+			),
+			qingyanDevProxyTarget: await readlineInterface.question(
 				"Local QingYan proxy target [http://localhost:4401 or blank]: ",
 			),
-			includeFrontmatterConfig: await rl.question(
+			includeFrontmatterConfig: await readlineInterface.question(
 				"Create Front Matter CMS config? [Y/n]: ",
 			),
-			includeVSCodeConfig: await rl.question(
+			includeVSCodeConfig: await readlineInterface.question(
 				"Create VS Code recommendations/settings? [Y/n]: ",
 			),
 		})
 	} finally {
-		rl.close()
+		readlineInterface.close()
 	}
 }

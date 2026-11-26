@@ -15,7 +15,7 @@ Please keep each pull request focused on a single purpose. Avoid mixing unrelate
 
 Please use the [Conventional Commits](https://www.conventionalcommits.org/) format for your commit messages whenever possible. This keeps our history clear and consistent.
 
-Use `develop` as the normal integration target. `main` is reserved for release-ready state.
+Branch from `develop` for new features and open pull requests against it. Release fixes, the package version, and the changelog are finalized on `develop`. Maintainers then open a pull request from `develop` to `main` and tag the merge commit after the mainline checks pass. See [the project standard](PROJECT_STANDARD.md) for versioning.
 
 Before submitting code, run the checks that match your change:
 
@@ -27,7 +27,7 @@ pnpm lint
 pnpm build
 ```
 
-For behavior changes, also run the relevant Node or Playwright tests. `pnpm test:node` runs the fast Node unit suite with the test runner's default file-level concurrency. Use `pnpm test:build` only when the change touches build integration behavior. It prepares five successful artifacts and three expected failures with isolated output/cache directories, reuses each successful artifact across its assertions, and serializes only artifact preparation because Astro still writes a shared generated `.astro/` directory. Font assets come from the installed `@fontsource` packages through Astro's local provider, so builds must not depend on CDN access or a prewarmed download cache.
+For behavior changes, also run the relevant Node or Playwright tests. `pnpm test` is the default fast entry and delegates to the Node behavior suite with the test runner's default file-level concurrency. Use `pnpm test:build` when the change touches build integration behavior. It prepares six successful artifacts and three expected failures with isolated output/cache directories, reuses each successful artifact across its assertions, and serializes only artifact preparation because Astro still writes a shared generated `.astro/` directory. It also verifies GitHub snapshot refresh and fallback across repeated builds that reuse the content cache. `pnpm test:system` combines the fast suite, build matrix, and core browser regression for system-level changes; visual snapshots remain a separate `pnpm test:e2e:visual` gate. Font assets come from the installed `@fontsource` packages through Astro's local provider, so builds must not depend on CDN access or a prewarmed download cache.
 
 If `pnpm lint` reports fixable Biome diagnostics, run:
 

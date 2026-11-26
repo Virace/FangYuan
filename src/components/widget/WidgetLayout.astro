@@ -6,51 +6,122 @@ import { i18n } from "../../i18n/translation";
 interface Props {
 	id: string;
 	name?: string;
+	count?: number;
 	isCollapsed?: boolean;
 	collapsedHeight?: string;
+	expandedMaxHeight?: string;
 	class?: string;
 	style?: string;
 }
-const { id, name, isCollapsed, collapsedHeight, style } = Astro.props;
+const {
+	id,
+	name,
+	count,
+	isCollapsed,
+	collapsedHeight = "7.5rem",
+	expandedMaxHeight = "19rem",
+	style,
+} = Astro.props;
 const className = Astro.props.class;
+const moreLabel = i18n(I18nKey.more);
+const lessLabel = i18n(I18nKey.less);
 ---
-<widget-layout data-id={id} data-is-collapsed={String(isCollapsed)} class={"pb-4 card-base " + className} style={style}>
-    <div class="font-bold transition text-lg text-panel-title relative ml-8 mt-4 mb-2
-        before:w-1 before:h-4 before:rounded-md before:bg-primary
-        before:absolute before:-left-4 before:top-[5.5px]">{name}</div>
-    <div id={id} class:list={["collapse-wrapper px-4 overflow-hidden", {"collapsed": isCollapsed}]}>
+<widget-layout
+	data-id={id}
+	data-is-collapsed={String(Boolean(isCollapsed))}
+	data-more-label={moreLabel}
+	data-less-label={lessLabel}
+	class={"pb-4 card-base panel-edge " + (className ?? "")}
+	style={style}
+>
+    <div class="widget-title-bar font-bold transition text-base text-panel-title mx-4 mt-4 mb-2.5">
+        <span class="optical-panel-beam" aria-hidden="true"></span>
+        <span>{name}</span>
+        {count !== undefined && <span class="widget-title-count" aria-hidden="true">{count}</span>}
+    </div>
+    <div
+        id={id}
+        style={`--collapsedHeight: ${collapsedHeight}; --expandedMaxHeight: ${expandedMaxHeight};`}
+        class:list={["collapse-wrapper optical-widget-scroll px-4", { "collapsed": isCollapsed }]}
+    >
         <slot></slot>
     </div>
-    {isCollapsed && <div class="expand-btn px-4 -mb-2">
-        <button class="btn-plain rounded-lg w-full h-9">
-            <div class="text-primary flex items-center justify-center gap-2 -translate-x-2">
-                <Icon name="material-symbols:more-horiz" class="icon-28"></Icon> {i18n(I18nKey.more)}
+    {isCollapsed && <div class="expand-btn px-4 pt-1.5 -mb-2">
+        <button
+            type="button"
+            class="btn-plain widget-expand-btn rounded-lg w-full h-9"
+            aria-expanded="false"
+            aria-controls={id}
+        >
+            <div class="text-primary flex items-center justify-center gap-1.5 text-sm font-medium">
+                <Icon is:inline name="material-symbols:keyboard-arrow-up-rounded" class="widget-expand-icon text-xl" aria-hidden="true"></Icon>
+                <span class="widget-expand-text">{moreLabel}</span>
             </div>
         </button>
     </div>}
 </widget-layout>
-
-<style define:vars={{ collapsedHeight }}>
-    .collapsed {
-        height: var(--collapsedHeight);
-    }
-</style>
 
 <script>
     class WidgetLayout extends HTMLElement {
         constructor() {
             super();
 
-            if (this.dataset.isCollapsed !== "true")
+            if (this.dataset.isCollapsed !== "true" || this.dataset.bound === "true")
                 return;
 
             const id = this.dataset.id;
-            const btn = this.querySelector('.expand-btn');
-            const wrapper = this.querySelector(`#${id}`)
-            btn!.addEventListener('click', () => {
-                wrapper!.classList.remove('collapsed');
-                btn!.classList.add('hidden');
-            })
+            const btn = this.querySelector<HTMLButtonElement>(".widget-expand-btn");
+            const textEl = this.querySelector<HTMLElement>(".widget-expand-text");
+            const wrapper = id ? this.querySelector<HTMLElement>(`#${id}`) : null;
+            if (!btn || !wrapper) return;
+
+            this.dataset.bound = "true";
+            const moreLabel = this.dataset.moreLabel ?? "";
+            const lessLabel = this.dataset.lessLabel ?? "";
+            const reducedMotion = window.matchMedia(
+                "(prefers-reduced-motion: reduce)",
+            );
+            let scrollTimer = 0;
+
+            const syncScrollable = () => {
+                if (!wrapper.classList.contains("is-expanded")) return;
+                const needsScroll =
+                    wrapper.scrollHeight > wrapper.clientHeight + 1;
+                wrapper.classList.toggle("is-scrollable", needsScroll);
+            };
+
+            wrapper.addEventListener("transitionend", (event) => {
+                if (
+                    event.target !== wrapper ||
+                    event.propertyName !== "max-height"
+                ) {
+                    return;
+                }
+                window.clearTimeout(scrollTimer);
+                syncScrollable();
+            });
+
+            btn.addEventListener("click", () => {
+                window.clearTimeout(scrollTimer);
+                const isExpanded = wrapper.classList.contains("is-expanded");
+                const nextExpanded = !isExpanded;
+                wrapper.classList.remove("is-scrollable");
+                wrapper.classList.toggle("collapsed", !nextExpanded);
+                wrapper.classList.toggle("is-expanded", nextExpanded);
+                btn.setAttribute("aria-expanded", String(nextExpanded));
+                if (textEl) {
+                    textEl.textContent = nextExpanded ? lessLabel : moreLabel;
+                }
+                if (!nextExpanded) {
+                    wrapper.scrollTop = 0;
+                    return;
+                }
+                if (reducedMotion.matches) {
+                    requestAnimationFrame(syncScrollable);
+                } else {
+                    scrollTimer = window.setTimeout(syncScrollable, 320);
+                }
+            });
         }
     }
 

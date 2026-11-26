@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const id: Translation = {
+	[Key.noticeRegion]: "Notifikasi",
+	[Key.noticePinned]: "Pemberitahuan prioritas",
+	[Key.engagementLoadFailed]:
+		"Informasi interaksi gagal dimuat. Coba lagi nanti.",
+	[Key.commentsCaptchaRefreshFailed]:
+		"Gagal memperbarui captcha. Silakan coba lagi.",
 	[Key.home]: "Beranda",
 	[Key.about]: "Tentang",
 	[Key.archive]: "Arsip",
@@ -90,6 +96,7 @@ export const id: Translation = {
 	[Key.systemMode]: "Sistem",
 
 	[Key.more]: "Lainnya",
+	[Key.less]: "Ringkas",
 
 	[Key.author]: "Penulis",
 	[Key.publishedAt]: "Diterbitkan pada",
@@ -102,5 +109,6 @@ export const id: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"Jika postingan ini membantu Anda, Anda dapat mendukung penulis melalui kanal di bawah ini.",
 	[Key.pageFeedbackClose]: "Tutup",
+	[Key.tableOfContents]: "Daftar Isi",
 	[Key.license]: "Lisensi",
 };

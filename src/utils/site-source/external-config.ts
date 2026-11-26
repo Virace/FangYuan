@@ -19,13 +19,24 @@ export type ExternalSiteConfigYaml = {
 	fangyuanConfigVersion?: number;
 	siteConfig?: Omit<
 		Partial<SiteConfig>,
-		"themeColor" | "banner" | "toc" | "permalink" | "postSort" | "taxonomySort"
+		| "themeColor"
+		| "banner"
+		| "toc"
+		| "githubCard"
+		| "notifications"
+		| "tags"
+		| "permalink"
+		| "postSort"
+		| "taxonomySort"
 	> & {
 		themeColor?: Partial<SiteConfig["themeColor"]>;
 		banner?: Omit<Partial<SiteConfig["banner"]>, "credit"> & {
 			credit?: Partial<SiteConfig["banner"]["credit"]>;
 		};
 		toc?: Partial<SiteConfig["toc"]>;
+		githubCard?: Partial<SiteConfig["githubCard"]>;
+		notifications?: Partial<SiteConfig["notifications"]>;
+		tags?: Partial<SiteConfig["tags"]>;
 		permalink?: Partial<SiteConfig["permalink"]> & {
 			postPatternRules?: SiteConfig["permalink"]["postPatternRules"];
 		};
@@ -124,7 +135,7 @@ const rewardOptionSchema = z
 	})
 	.strict();
 
-const externalSiteConfigSchema: z.ZodTypeAny = z
+const externalSiteConfigSchema = z
 	.object({
 		fangyuanConfigVersion: z.number().int().nonnegative().optional(),
 		siteConfig: z
@@ -160,6 +171,30 @@ const externalSiteConfigSchema: z.ZodTypeAny = z
 					.object({
 						enable: z.boolean().optional(),
 						src: z.string().optional(),
+						optics: z
+							.object({
+								insert: z.string().trim().optional(),
+								prism: z
+									.union([
+										z.string().trim(),
+										z
+											.object({
+												face: z.string().trim().min(1),
+												back: z.string().trim().optional(),
+												spacer: z.string().trim().optional(),
+												guides: z
+													.array(
+														z.array(z.tuple([z.number(), z.number()])).min(2),
+													)
+													.optional(),
+												crown: z.literal("diamond").optional(),
+											})
+											.strict(),
+									])
+									.optional(),
+							})
+							.strict()
+							.optional(),
 						position: z.enum(["top", "center", "bottom"]).optional(),
 						credit: z
 							.object({
@@ -178,6 +213,44 @@ const externalSiteConfigSchema: z.ZodTypeAny = z
 						depth: tocDepthSchema.optional(),
 					})
 					.strict()
+					.optional(),
+				githubCard: z
+					.object({
+						descriptionLines: z.number().int().min(1).max(3).optional(),
+					})
+					.strict()
+					.optional(),
+				notifications: z
+					.object({
+						position: z.enum(["top", "bottom"]).optional(),
+						newestOnTop: z.boolean().optional(),
+					})
+					.strict()
+					.optional(),
+				tags: z
+					.object({
+						showHash: z.boolean().optional(),
+						showCount: z.boolean().optional(),
+					})
+					.strict()
+					.optional(),
+				logo: z
+					.union([
+						z.string().trim().min(1),
+						z
+							.object({
+								light: z.string().trim().min(1).optional(),
+								dark: z.string().trim().min(1).optional(),
+								alt: z.string().optional(),
+								showTitle: z.boolean().optional(),
+							})
+							.strict()
+							.refine(
+								(value) => Boolean(value.light || value.dark),
+								"siteConfig.logo must specify light or dark",
+							),
+					])
+					.nullable()
 					.optional(),
 				favicon: z
 					.array(
@@ -246,6 +319,7 @@ const externalSiteConfigSchema: z.ZodTypeAny = z
 				avatar: z.string().optional(),
 				name: z.string().optional(),
 				bio: z.string().optional(),
+				linkEffect: z.enum(["expand", "lift"]).optional(),
 				links: z
 					.array(
 						z
@@ -328,6 +402,20 @@ export function loadExternalSiteConfigYaml(
 	}
 
 	const source = fs.readFileSync(configPath, "utf8");
-	const parsed = parse(source) ?? {};
-	return externalSiteConfigSchema.parse(parsed) as ExternalSiteConfigYaml;
+	return parseExternalSiteConfig(source);
+}
+
+export function parseExternalSiteConfig(
+	source: string,
+): ExternalSiteConfigYaml {
+	return externalSiteConfigSchema.parse(
+		parse(source) ?? {},
+	) as ExternalSiteConfigYaml;
+}
+
+export function describeExternalSiteConfigSchema(): object {
+	return z.toJSONSchema(externalSiteConfigSchema, {
+		io: "input",
+		unrepresentable: "any",
+	});
 }

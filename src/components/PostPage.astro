@@ -8,7 +8,7 @@ const page = Astro.props.page as { data: PostEntry[] };
 let delay = 0;
 const interval = 50;
 ---
-<div class="transition flex flex-col rounded-panel bg-card-bg py-1 md:py-0 md:bg-transparent md:gap-4 mb-4">
+<div class="transition flex flex-col rounded-panel max-md:panel-edge bg-card-bg py-1 md:py-0 md:bg-transparent md:gap-4 mb-4">
     {page.data.map((entry: PostEntry) => (
         <PostCard
                 entry={entry}
@@ -21,7 +21,7 @@ const interval = 50;
                 image={entry.data.image}
                 description={entry.data.description}
                 draft={entry.data.draft}
-                class:list="onload-animation"
+                class:list="onload-animation dark:max-md:bg-transparent! md:panel-edge"
                 style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
         ></PostCard>
     ))}

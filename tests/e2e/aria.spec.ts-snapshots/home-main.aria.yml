@@ -187,6 +187,33 @@
   - link "Markdown 示例":
     - /url: /markdown/
     - img
+  - link "用小标题组织文章目录":
+    - /url: /article-outline/
+    - text: ""
+    - img
+  - img
+  - text: /\d+-\d+-\d+/
+  - img
+  - link "View all posts in the 示例 category":
+    - /url: /archive/?category=%E7%A4%BA%E4%BE%8B
+    - text: ""
+  - img
+  - link "View all posts with the Markdown tag":
+    - /url: /archive/?tag=Markdown
+    - text: ""
+  - text: /
+  - link "View all posts with the 写作 tag":
+    - /url: /archive/?tag=%E5%86%99%E4%BD%9C
+    - text: ""
+  - text: /通过两级小标题演示文章目录与段落锚点。 \d+ 字 \| 1 分钟/
+  - link "用小标题组织文章目录":
+    - /url: /article-outline/
+    - img
   - img
   - text: "1"
-  - img
+  - link "Page 2":
+    - /url: /page/2/
+    - text: ""
+  - link "Next Page":
+    - /url: /page/2/
+    - img

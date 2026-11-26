@@ -5,7 +5,15 @@ import {
 	LIGHT_MODE,
 } from "@constants/constants.ts";
 import { expressiveCodeConfig } from "@/config";
+import dot from "@/theme-assets/icons/cursor-dot.svg?raw";
+import darkDot from "@/theme-assets/icons/cursor-dot-dark.svg?raw";
+import link from "@/theme-assets/icons/cursor-link.svg?raw";
+import grab from "@/theme-assets/icons/optics-grab.svg?raw";
+import grabbing from "@/theme-assets/icons/optics-grabbing.svg?raw";
 import type { LIGHT_DARK_MODE } from "@/types/config";
+
+const cursorTemplates = { dot, "dot-dark": darkDot, link, grab, grabbing };
+let cursorHue: number | undefined;
 
 export function getDefaultHue(): number {
 	const fallback = "250";
@@ -20,11 +28,18 @@ export function getHue(): number {
 
 export function setHue(hue: number): void {
 	localStorage.setItem("hue", String(hue));
-	const r = document.querySelector(":root") as HTMLElement;
-	if (!r) {
-		return;
+	const style = document.documentElement.style;
+	style.setProperty("--hue", String(hue));
+	if (cursorHue === hue) return;
+	const accent = `oklch(0.78 0.13 ${hue})`;
+	for (const [name, svg] of Object.entries(cursorTemplates)) {
+		const image = encodeURIComponent(svg.replaceAll("currentColor", accent));
+		style.setProperty(
+			`--cursor-${name}-image`,
+			`url("data:image/svg+xml,${image}")`,
+		);
 	}
-	r.style.setProperty("--hue", String(hue));
+	cursorHue = hue;
 }
 
 export function applyThemeToDocument(theme: LIGHT_DARK_MODE): void {

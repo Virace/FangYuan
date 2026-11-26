@@ -45,7 +45,7 @@ export const defaultSiteConfig: SiteConfig = {
 	},
 	banner: {
 		enable: true,
-		src: "assets/images/demo-banner.png", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
+		src: "",
 		position: "center", // 等价于 object-position，只支持 "top" | "center" | "bottom"
 		credit: {
 			enable: false, // 是否显示横幅图片署名
@@ -57,6 +57,19 @@ export const defaultSiteConfig: SiteConfig = {
 		enable: true, // 是否在文章页右侧显示目录
 		depth: 2, // 目录最大层级，只支持 1 | 2 | 3
 	},
+	githubCard: {
+		descriptionLines: 1, // 仓库简介最多显示 1 / 2 / 3 行，超出部分显示省略号
+	},
+	notifications: {
+		position: "top", // 队列基准位于导航栏下方；bottom 则在视口底部及可见页脚上方留白
+		newestOnTop: false, // 新消息在已有消息下方；true 则在上方，与基准位置独立
+	},
+	tags: {
+		showHash: false, // 是否在侧栏标签芯片前显示 # 符号
+		showCount: false, // 是否在侧栏标签芯片内显示文章数量角标
+	},
+	// 导航栏品牌 Logo：留空使用内置 FangYuan 标志；支持单路径字符串或 { light, dark, alt, showTitle }
+	logo: null,
 	favicon: [
 		// 留空时使用默认 favicon
 		// {
@@ -144,9 +157,10 @@ export const defaultNavBarConfig: NavBarConfig = {
 };
 
 export const defaultProfileConfig: ProfileConfig = {
-	avatar: "assets/images/demo-avatar.png", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
+	avatar: "assets/images/demo-avatar.svg", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
 	name: "FangYuan",
 	bio: "在清晰结构与柔和表达之间，打磨一个长期演进的个人站点。",
+	linkEffect: "expand", // 构建期固定的社交按钮动效：expand（胶囊横向舒展）| lift（双层图标垂直置换）
 	links: [
 		{
 			name: "GitHub",

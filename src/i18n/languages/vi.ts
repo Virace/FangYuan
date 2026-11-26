@@ -2,6 +2,12 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const vi: Translation = {
+	[Key.noticeRegion]: "Thông báo",
+	[Key.noticePinned]: "Thông báo ưu tiên",
+	[Key.engagementLoadFailed]:
+		"Không thể tải thông tin tương tác. Vui lòng thử lại sau.",
+	[Key.commentsCaptchaRefreshFailed]:
+		"Không thể làm mới mã xác minh. Vui lòng thử lại.",
 	[Key.home]: "Trang chủ",
 	[Key.about]: "Giới thiệu",
 	[Key.archive]: "Kho bài",
@@ -91,6 +97,7 @@ export const vi: Translation = {
 	[Key.systemMode]: "Hệ thống",
 
 	[Key.more]: "Thêm",
+	[Key.less]: "Thu gọn",
 
 	[Key.author]: "Tác giả",
 	[Key.publishedAt]: "Đăng vào lúc",
@@ -104,5 +111,6 @@ export const vi: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"Nếu bài viết này hữu ích với bạn, hãy ủng hộ tác giả qua các kênh bên dưới.",
 	[Key.pageFeedbackClose]: "Đóng",
+	[Key.tableOfContents]: "Mục lục",
 	[Key.license]: "Giấy phép bản quyền",
 };

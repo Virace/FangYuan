@@ -2,6 +2,13 @@
 
 本文件约束当前仓库内的后续分支与集成流程。
 
+## 每轮入口
+
+- 修改代码、配置、测试或项目文档前，先读取 `PROJECT_STANDARD.md`。
+- 产品边界、硬约束和模块设计分别以 `PRODUCT.md`、`PROJECT_CONSTRAINTS.md`、`PROJECT_DESIGN.md` 为准。
+- 本文件保留 FangYuan 的细化执行规则；目录内存在更具体的 `AGENTS.md` 时，局部规则优先。
+- 实际命令、测试分层和交付门禁统一以 `PROJECT_STANDARD.md` 为入口，`package.json` 为命令事实源。
+
 ## 项目技术形态
 
 - 当前项目是 `Astro + TypeScript + Svelte` 的静态站点仓库。
@@ -20,9 +27,8 @@
 
 1. 日常开发默认在 `develop` 基础上创建子分支，不直接在 `main` 上开发。
 2. 子分支完成开发后，先向 `develop` 发起 PR。
-3. `develop` 主要承担日常集成职责；远端自动校验默认不以它为门禁，本地提交前验证优先在这里完成。
-4. 若存在预发布分支，则从 `develop` 合入或择需补修到预发布分支，先做临时上线验证。
-5. 预发布验证通过后再同步到 `main`；若当轮没有预发布分支，则由用户明确决定是否直接从 `develop` 收口到 `main`。
+3. 发布前的小修、`package.json` 版本号及 `CHANGELOG.md` 在 `develop` 收口。需要预发布验证时，从 `develop` 生成候选版本，并将验收后的修复同步回 `develop`。
+4. 正式发布时，确认 `develop` 上的版本与变更日志后，从 `develop` 向 `main` 提 PR。主线校验通过后以 merge commit 合入，并在该提交上打正式标签、创建 GitHub Release。版本号规则见 `PROJECT_STANDARD.md`。
 
 ## 执行约束
 
@@ -106,7 +112,7 @@
 
 ### 文件命名
 
-- Astro / Svelte 组件文件使用 `PascalCase`，例如 `Navbar.astro`、`Search.svelte`、`DisplaySettings.svelte`。
+- Astro / Svelte 组件文件使用 `PascalCase`，例如 `Navbar.astro`、`Search.svelte`、`PostFeedback.svelte`。
 - 工具、常量、插件文件使用描述性文件名，现状以 `kebab-case` 为主，例如：
   - `content-utils.ts`
   - `url-utils.ts`
@@ -193,6 +199,6 @@
 - 与文章强绑定的图片资源优先和文章 Markdown 同目录共置，例如 `src/content/posts/<slug>/cover.jpeg`。
 - `public/` 不再作为默认静态资源发布入口；favicon、打赏二维码等默认走 `src/assets/` 或外部 `<siteRoot>/assets/`，公安备案图标等主题固定资源默认走 `src/theme-assets/`。
 - 样式以 Tailwind utility class 为主，配合 `src/styles/` 下的全局 CSS / Stylus 文件；新增样式时优先复用现有变量和样式入口，不新开重复主题系统。
-- 对 `client:only="svelte"` island 中在 Swup 切页后仍必须稳定生效的 UI 行为，关键样式不要放在组件局部 `<style>` 中；应下沉到 `src/styles/main.css` 或其他全局样式入口。
+- 对 `client:only="svelte"` island 中在 Swup 切页后仍必须稳定生效的 UI 行为，关键样式不要放在组件局部 `<style>` 中；应下沉到 `src/styles/modules/` 等全局样式入口。
 - 这条规则尤其适用于 `dialog/modal/drawer/popover` 这类依赖 `dialog[open]`、`::backdrop`、动画类名、定位类名的交互；若关键样式只存在于组件局部作用域，Swup 路由切换后可能出现“弹层跑到左上角、动画丢失、backdrop 失效”这类回归。
 - 组件局部 `<style>` 只适合不影响跨页交互稳定性的局部装饰；涉及切页后仍要复用的关键布局、定位、状态和过渡样式，默认走全局样式并补回归验证。

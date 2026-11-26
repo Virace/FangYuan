@@ -1,0 +1,387 @@
+---
+import spectrumTexture from "../../theme-assets/optics/spectrum.webp";
+import {
+	prismSize,
+	type ResolvedOpticalPrism,
+} from "../../utils/prism-profile";
+import { projectDiamond } from "./optical-diamond";
+import { projectOptics, projectPrismGuide } from "./optical-projection";
+import { projectSpectrum } from "./optical-spectrum";
+
+interface Props {
+	insertSrc?: string;
+	prism?: ResolvedOpticalPrism;
+}
+
+const { insertSrc, prism } = Astro.props;
+const rest = projectOptics(0, 0, prism?.profile);
+const spectrum = projectSpectrum();
+const inletWidth = prism ? 4430 : 4400;
+const inletRibbon = "M-4400 -11H0V11H-4400Z";
+const ticks = Array.from(
+	{ length: 41 },
+	(_, index) =>
+		`M${(index - 20) * 4} -96v${index === 20 ? 7 : index % 5 === 0 ? 4.5 : 2}`,
+).join(" ");
+---
+
+<optical-banner id="banner" aria-hidden="true" data-prism-profile={prism?.profile.join(",")}>
+	<div class="optics-viewport">
+		<div class="optics-stage">
+			<svg class="optics" viewBox="-240 -165 480 330" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<linearGradient id="optics-inlet" x1="0" y1="0" x2="0" y2="1">
+						<stop stop-color="#7ab8ee" stop-opacity="0" /><stop offset=".23" stop-color="#75bddb" stop-opacity=".13" />
+						<stop offset=".37" stop-color="#abe4f4" stop-opacity=".62" /><stop offset=".47" stop-color="#e3fffb" stop-opacity=".96" />
+						<stop offset=".54" stop-color="#fff9e8" /><stop offset=".63" stop-color="#ffe9d4" stop-opacity=".72" />
+						<stop offset=".77" stop-color="#e8b9c8" stop-opacity=".15" /><stop offset="1" stop-color="#e8bccd" stop-opacity="0" />
+					</linearGradient>
+					<linearGradient id="optics-pulse-inlet" x1="0" y1="0" x2="0" y2="1">
+						<stop stop-color="#b495ff" stop-opacity="0" /><stop offset=".3" stop-color="#d5a9ff" stop-opacity=".46" />
+						<stop offset=".50" stop-color="#dfc6ff" /><stop offset=".69" stop-color="#d5b3ff" stop-opacity=".56" />
+						<stop offset="1" stop-color="#bf96fd" stop-opacity="0" />
+					</linearGradient>
+					<linearGradient id="optics-plate" x1="0" y1="0" x2="1" y2=".9">
+						<stop stop-color="#83eaf5" stop-opacity=".38" /><stop offset=".22" stop-color="#1c4761" stop-opacity=".33" />
+						<stop offset=".65" stop-color="#182339" stop-opacity=".74" /><stop offset=".87" stop-color="#a24c9a" stop-opacity=".25" />
+						<stop offset="1" stop-color="#efb4ff" stop-opacity=".42" />
+					</linearGradient>
+					<linearGradient id="optics-metal" x1=".1" y1="0" x2=".9" y2="1">
+						<stop stop-color="#e2ffff" /><stop offset=".18" stop-color="#58ccdc" />
+						<stop offset=".31" stop-color="#213449" /><stop offset=".51" stop-color="#7796b0" />
+						<stop offset=".61" stop-color="#263344" /><stop offset=".85" stop-color="#e09ff0" /><stop offset="1" stop-color="#ffddd5" />
+					</linearGradient>
+					<radialGradient id="optics-glass" cx=".35" cy=".24" r=".86">
+						<stop stop-color="#477c89" /><stop offset=".29" stop-color="#12354c" /><stop offset=".57" stop-color="#101629" />
+						<stop offset=".79" stop-color="#21182e" /><stop offset=".92" stop-color="#60416b" /><stop offset="1" stop-color="#203344" />
+					</radialGradient>
+					<linearGradient id="optics-through-glass" x1="0" x2="0" y1="0" y2="1">
+						<stop stop-color="#ae8fff" stop-opacity="0" /><stop offset=".25" stop-color="#bca9ff" stop-opacity=".58" />
+						<stop offset=".46" stop-color="#e2faff" /><stop offset=".55" stop-color="#fff7df" />
+						<stop offset=".73" stop-color="#ffcead" stop-opacity=".65" /><stop offset="1" stop-color="#fca1bb" stop-opacity="0" />
+					</linearGradient>
+					<svg id="optics-slice" width="1" height="1" viewBox="0 0 240 192" preserveAspectRatio="none" overflow="hidden">
+						<image href={spectrumTexture.src} width="240" height="384" style="y: var(--spectrum-row, 0px)" />
+					</svg>
+					<path id="optics-envelope" d={spectrum.envelope} vector-effect="non-scaling-stroke" />
+					<radialGradient id="optics-glint">
+						<stop stop-color="#f4ffff" stop-opacity=".98" /><stop offset=".22" stop-color="#8cfaff" stop-opacity=".6" />
+						<stop offset=".64" stop-color="#3ebee7" stop-opacity=".15" /><stop offset="1" stop-color="#3ebee7" stop-opacity="0" />
+					</radialGradient>
+					<radialGradient id="optics-flare">
+						<stop stop-color="#fffdf2" /><stop offset=".18" stop-color="#fff0d4" stop-opacity=".87" />
+						<stop offset=".48" stop-color="#ffcdcb" stop-opacity=".34" /><stop offset="1" stop-color="#d9acfb" stop-opacity="0" />
+					</radialGradient>
+					<linearGradient id="optics-pulse">
+						<stop stop-color="white" stop-opacity="0" /><stop offset=".64" stop-color="white" stop-opacity=".55" />
+						<stop offset=".85" stop-color="white" /><stop offset="1" stop-color="white" stop-opacity="0" />
+					</linearGradient>
+					<rect id="optics-packet" x="-64" y="-240" width="76" height="480" fill="url(#optics-pulse)" />
+					<mask id="optics-wave" maskUnits="userSpaceOnUse" x="-240" y="-240" width="480" height="480" style="mask-type: alpha" />
+					{prism ? <>
+						<linearGradient id="optics-inlet-fade" gradientUnits="userSpaceOnUse" x1="0" x2="30">
+							<stop stop-color="white"/><stop offset=".16" stop-color="white" stop-opacity=".94"/>
+							<stop offset=".55" stop-color="white" stop-opacity=".49"/><stop offset="1" stop-color="white" stop-opacity="0"/>
+						</linearGradient>
+						<mask id="optics-inlet-blend" maskUnits="userSpaceOnUse" x="-4400" y="-32" width={inletWidth} height="64" style="mask-type: alpha">
+							<rect x="-4400" y="-32" width={inletWidth} height="64" fill="url(#optics-inlet-fade)" />
+						</mask>
+						<image id="optics-prism" x={-prismSize/2} y={-prismSize/2} width={prismSize} height={prismSize} href={prism.src} preserveAspectRatio="xMidYMid meet" />
+						<mask id="optics-prism-mask" maskUnits="userSpaceOnUse" x={-prismSize/2} y={-prismSize/2} width={prismSize} height={prismSize} style="mask-type: alpha">
+							<use href="#optics-prism" />
+						</mask>
+						{prism.back && !prism.backEdge && <filter id="optics-back-rim" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+							<feMorphology in="SourceAlpha" operator="erode" radius="2.5" result="inside" />
+							<feComposite in="SourceAlpha" in2="inside" operator="out" />
+						</filter>}
+					</> : <>
+					<rect id="optics-frame" x="-102" y="-102" width="204" height="204" rx="8" />
+					<clipPath id="optics-plate-clip"><use href="#optics-frame" /></clipPath>
+					<g id="optics-ruler">
+						<path d={ticks} stroke="#a9f6ff" opacity=".68" stroke-width=".8" />
+						<path d="M-96 -83v-13h13" stroke="#a9d8df" stroke-width="1.2" />
+						<circle cx="-90" cy="-90" r="1.7" stroke="#d5eff4" opacity=".78" />
+					</g>
+					<g id="optics-traces" stroke-width="1.1">
+						<path d="M-80 -89h24l6 6h16m-38 -11h21l6 6h21" />
+						<circle cx="-32" cy="-83" r="2.2" /><circle cx="-22" cy="-88" r="1.8" />
+					</g>
+					<g id="optics-mount">
+						<circle cx="87" cy="-87" r="4.5" fill="#142832" stroke="#92b5bc" stroke-width="1.2" />
+						<path d="m85 -85 4 -4" stroke="#a2c5c8" />
+						<path d="M22 -98h11m5 0h11m5 0h11" stroke="#77a3af" stroke-width="2.6" stroke-linecap="round" />
+					</g>
+					<clipPath id="optics-aperture"><circle r="76" /></clipPath>
+					</>}
+					{insertSrc && <>
+						<image id="optics-insert" href={insertSrc} x="-63" y="-63" width="126" height="126" preserveAspectRatio="xMidYMid meet" />
+						<mask id="optics-insert-alpha" maskUnits="userSpaceOnUse" x="-76" y="-76" width="152" height="152" style="mask-type: alpha">
+							<use href="#optics-insert" />
+						</mask>
+					</>}
+				</defs>
+
+				{(!prism || prism.back) && <g data-plane="back" transform={rest.back}>
+					{prism ? <image id="optics-prism-back" href={prism.back} x={-prismSize/2} y={-prismSize/2} width={prismSize} height={prismSize} /> : <>
+						<use href="#optics-frame" fill="#0b1e33" fill-opacity=".86" stroke="#598596" stroke-width="2.4" />
+						<rect x="-97" y="-97" width="194" height="194" rx="6" stroke="#83c5cf" stroke-opacity=".28" />
+						{[0, 90, 180, 270].map(angle => <use href="#optics-mount" transform={`rotate(${angle})`} />)}
+					</>}
+					<mask id="optics-back-edge" maskUnits="userSpaceOnUse" x={-prismSize/2} y={-prismSize/2} width={prismSize} height={prismSize} style="mask-type: alpha">
+						{prism?.backEdge ? <image href={prism.backEdge} x={-prismSize/2} y={-prismSize/2} width={prismSize} height={prismSize} /> : prism ? <use href="#optics-prism-back" filter="url(#optics-back-rim)" /> : <use href="#optics-frame" stroke="white" stroke-width="2.5" />}
+					</mask>
+					<g class="pulse-light" mask="url(#optics-back-edge)">
+						<g data-orbit><g transform="translate(-36 0)"><circle r="220" fill="#ffb79e" mask="url(#optics-wave)" /></g></g>
+					</g>
+				</g>}
+				{(!prism || prism.spacer || prism.guides?.length) ? <g data-plane={prism ? "frame" : "spacer"} transform={prism ? rest.frame : rest.spacer}>
+					{!prism && <>
+						<use href="#optics-frame" fill="#252336" fill-opacity=".59" stroke="#a193b7" stroke-width="1.5" />
+						<rect x="-98" y="-98" width="196" height="196" rx="6" stroke="#b6a3cc" stroke-opacity=".32" />
+						<g stroke="#d49ad8"><g id="optics-trace-set">{[0, 90, 180, 270].map(angle => <use href="#optics-traces" transform={`rotate(${angle})`} />)}</g></g>
+					</>}
+					{prism?.spacer && <image id="optics-prism-spacer" href={prism.spacer} x={-prismSize/2} y={-prismSize/2} width={prismSize} height={prismSize} />}
+					{prism?.guides?.map((points, index) => {
+						const guide = projectPrismGuide(points, 0, rest);
+						const id = `optics-guide-${index}`;
+						return <g data-prism-guide fill="none" stroke-linejoin="round" stroke-linecap="round" pointer-events="none">
+							<defs>
+								<polyline id={`optics-groove-${index}`} points={points.map(point => point.join(",")).join(" ")} />
+								<path id={id} d={guide.path} />
+							</defs>
+							<use href={`#optics-groove-${index}`} stroke="#a2cbd6" stroke-width="1.2" opacity=".65" />
+							<g data-guide-light opacity={guide.opacity}>
+								<use href={`#${id}`} stroke="#37dff3" stroke-width="6.5" opacity=".42" />
+								<use href={`#${id}`} stroke="#42f3f6" stroke-width="3.1" />
+								<use href={`#${id}`} stroke="#e9ffff" stroke-width="1.2" />
+							</g>
+						</g>;
+					})}
+					<mask id="optics-spacer-tracks" maskUnits="userSpaceOnUse" x={-prismSize/2} y={-prismSize/2} width={prismSize} height={prismSize} style="mask-type: alpha">
+						{prism?.spacer && <use href="#optics-prism-spacer" opacity=".34" />}
+						{prism?.guides?.map((_, index) => <use href={`#optics-groove-${index}`} stroke="white" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />)}
+						{!prism && <g stroke="white"><use href="#optics-frame" stroke-width="1.6" /><use href="#optics-trace-set" /></g>}
+					</mask>
+					<g class="pulse-light" mask="url(#optics-spacer-tracks)">
+						<g data-orbit><g transform="translate(-14 0)"><circle r="200" fill="#8cfff0" mask="url(#optics-wave)" /></g></g>
+					</g>
+				</g> : null}
+				{prism ? <g data-plane="lens" transform={rest.lens}>
+					<use href="#optics-prism" />
+					<g mask="url(#optics-prism-mask)">
+						<g data-plane="glint" transform={rest.glint}>
+							<ellipse cx="-18" cy="-21" rx="52" ry="15" transform="rotate(-39 -18 -21)" fill="url(#optics-glint)" opacity=".65" />
+						</g>
+						<g class="pulse-light" data-orbit>
+							<circle r="174" fill="#d9f7ff" opacity=".47" mask="url(#optics-wave)" />
+						</g>
+					</g>
+				</g> : <>
+				<g data-plane="frame" transform={rest.frame}>
+					<use href="#optics-frame" fill="url(#optics-plate)" stroke="url(#optics-metal)" stroke-width="1.8" />
+					{[0, 90, 180, 270].map(angle => <use href="#optics-ruler" transform={`rotate(${angle})`} />)}
+					<g class="pulse-light" clip-path="url(#optics-plate-clip)">
+						<g data-orbit><circle r="150" fill="#e0f7ff" opacity=".23" mask="url(#optics-wave)" /></g>
+					</g>
+				</g>
+				<g data-plane="barrel" transform={rest.barrel}>
+					<circle r="84" fill="#101729" stroke="url(#optics-metal)" stroke-width="3" />
+					<circle r="81.5" stroke="#63808f" stroke-width="4" stroke-dasharray=".65 2.4" />
+				</g>
+				<g data-plane="lens" transform={rest.lens}>
+					<circle r="80" fill="url(#optics-glass)" stroke="url(#optics-metal)" stroke-width="3.2" />
+					<circle r="74.5" stroke="#81b3c5" stroke-opacity=".46" stroke-width=".7" />
+					<g clip-path="url(#optics-aperture)">
+						{insertSrc && <>
+							<use href="#optics-insert" opacity=".86" />
+							<g class="pulse-light" mask="url(#optics-insert-alpha)">
+								<g data-orbit>
+									<circle r="76" fill="#d6faff" opacity=".75" mask="url(#optics-wave)" />
+								</g>
+							</g>
+						</>}
+						<g data-plane="glint" transform={rest.glint}>
+							<ellipse cx="-29" cy="-41" rx="59" ry="27" transform="rotate(-27 -29 -41)" fill="url(#optics-glint)" />
+							<path d="M-92 4Q-52 -78 48 -65Q-43 -89 -85 -31Z" fill="#b6ffff" opacity=".55" />
+							<path d="M-69 61Q-4 55 85 -41Q43 24 -4 49T-64 67Z" fill="#ca96ff" opacity=".36" />
+						</g>
+					</g>
+				</g>
+				</>}
+				<g id="optics-light-plane" data-plane="lens" transform={rest.lens} class="light-plane">
+					<g data-orbit>
+						<g id="optics-beams">
+							<g data-plane="incoming" transform={rest.incoming} opacity="var(--inlet-opacity, 1)">
+								<g mask={prism ? "url(#optics-inlet-blend)" : undefined}>
+									<rect x="-4400" y="-32" width={inletWidth} height="64" fill="url(#optics-inlet)" opacity=".12" />
+									<rect x="-4400" y="-19" width={inletWidth} height="38" fill="url(#optics-inlet)" />
+								</g>
+								<ellipse rx={prism ? 13 : 22} ry={prism ? 8 : 15} fill="url(#optics-glint)" opacity={prism ? .46 : 1} />
+							</g>
+							{prism ? <g data-counter-orbit>
+								<g mask="url(#optics-prism-mask)">
+									<g data-orbit>
+										<g data-plane="transmission" transform={rest.transmission}>
+											<path d="M0 0Q.12 -8 .32 -8T1.04 -15V15Q.7 8 .35 8T0 0Z" fill="url(#optics-through-glass)" />
+											<path d="M.28 -2 .66 -3 1 5 .71 1Z" fill="#eae7ff" opacity=".46" />
+											<path d="m.48 1 .28 1 .24 7-.31-5Z" fill="#c391fa" opacity=".38" />
+										</g>
+									</g>
+								</g>
+							</g> : <g clip-path="url(#optics-aperture)">
+								<ellipse cx="-57" rx="37" ry="15" fill="url(#optics-glint)" opacity=".56" />
+								<ellipse cx="65" rx="42" ry="23" fill="url(#optics-flare)" opacity=".62" />
+								<path d="M-79 -13Q-8 -12 81 -15V14Q-10 9 -79 13Z" fill="url(#optics-through-glass)" />
+							</g>}
+							<g data-plane="outgoing" transform={rest.outgoing}>
+								{spectrum.segments.map(transform => <use data-spectrum-segment href="#optics-slice" transform={transform} />)}
+								<ellipse cx="1" rx="29" ry="18" fill="url(#optics-flare)" />
+							</g>
+						</g>
+						<path class="beam-handle" data-plane="incoming" transform={rest.incoming} d={inletRibbon} />
+						<g data-plane="outgoing" transform={rest.outgoing}>
+							<use class="beam-handle" href="#optics-envelope" />
+						</g>
+					</g>
+				</g>
+				{prism?.crown === "diamond" && <g data-plane="lens" transform={rest.lens} pointer-events="none" stroke="#def4ff" stroke-width=".48" stroke-opacity=".43" stroke-linejoin="round">
+					{projectDiamond(rest.relief).map(facet => <polygon data-diamond-facet {...facet} />)}
+				</g>}
+			</svg>
+		</div>
+		<svg class="beam-light" width="116" height="116" viewBox="-58 -58 116 116" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<g data-plane="lens" transform={rest.lens}><use data-orbit href="#optics-beams" /></g>
+		</svg>
+	</div>
+	<div class="optics-spill" inert>
+		<div class="spill-frame">
+			<div class="optics-stage">
+				<svg class="optics" viewBox="-240 -165 480 330" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<use href="#optics-light-plane" />
+				</svg>
+			</div>
+		</div>
+	</div>
+	<div class="beam-pulses-layer">
+		<div class="beam-pulses-frame">
+			<div class="optics-stage beam-pulses-stage">
+				<canvas class="beam-pulses" width="1" height="1"></canvas>
+			</div>
+		</div>
+	</div>
+</optical-banner>
+
+<style>
+	optical-banner {
+		--optics-height: var(--banner-height);
+		--spill-height: clamp(3rem, 9vh, 6rem);
+		position: absolute;
+		inset: auto 0 0;
+		display: block;
+		height: var(--optics-height);
+		touch-action: pan-y pinch-zoom;
+	}
+	.optics-viewport { position: absolute; inset: 0; overflow: hidden; }
+	.optics-spill {
+		position: absolute;
+		inset: 100% 0 auto;
+		height: var(--spill-height);
+		overflow: hidden;
+		pointer-events: none;
+		mask-image: linear-gradient(to bottom, #000, rgb(0 0 0 / .92) 12%, rgb(0 0 0 / .55) 38%, rgb(0 0 0 / .18) 66%, rgb(0 0 0 / .035) 86%, transparent);
+	}
+	.spill-frame { position: absolute; inset: auto 0 100%; height: var(--optics-height); }
+	.beam-pulses-layer {
+		position: absolute; inset: 0 0 auto; width: 100%; height: calc(100% + var(--spill-height));
+		overflow: hidden;
+		pointer-events: none; visibility: hidden;
+		mask-image: linear-gradient(to bottom, black calc(100% - var(--spill-height)), rgb(0 0 0 / .55) calc(100% - var(--spill-height) * .62), transparent);
+	}
+	optical-banner[data-pulsing] .beam-pulses-layer { visibility: visible; }
+	.beam-pulses-frame { position: absolute; inset: 0 0 var(--spill-height); }
+	.beam-pulses-stage { contain: none; }
+	.beam-pulses {
+		position: absolute;
+		inset: 0 0 calc(var(--spill-height) * -1);
+		width: 100%;
+		height: calc(100% + var(--spill-height));
+		pointer-events: none;
+	}
+	.optics-stage { position: absolute; inset: 0; pointer-events: none; }
+	.optics {
+		position: absolute;
+		top: calc(50% + 8px);
+		left: 46%;
+		height: clamp(85px, calc(100% - 6rem), 520px);
+		width: auto;
+		aspect-ratio: 480 / 330;
+		overflow: visible;
+		transform: translate(-50%, -50%);
+		pointer-events: none;
+	}
+	.beam-light { opacity: 0; transition: opacity 160ms ease-out; }
+	[data-lit] .beam-light { opacity: 1; }
+	.beam-light {
+		position: absolute;
+		top: 0;
+		left: 0;
+		overflow: hidden;
+		pointer-events: none;
+		mask-image: radial-gradient(circle closest-side, rgb(0 0 0 / .46), transparent);
+		--spectrum-row: -192px;
+		--inlet-opacity: .48;
+		mix-blend-mode: screen;
+	}
+	.pulse-light {
+		pointer-events: none;
+		display: var(--pulse-display, none);
+	}
+	optical-banner[data-pulsing] { --pulse-display: inline; }
+	@media (prefers-reduced-motion: no-preference) {
+		.beam-handle {
+			stroke: transparent;
+			stroke-width: 18;
+			vector-effect: non-scaling-stroke;
+			pointer-events: all;
+			cursor: var(--cursor-grab, grab);
+		}
+		[data-prism-profile] .optics-viewport .optics { touch-action: none; }
+		[data-dragging], [data-dragging] .beam-handle {
+			cursor: var(--cursor-grabbing, grabbing);
+		}
+	}
+	@media (min-width: 1024px) {
+		:global(body.lg\:is-home) optical-banner { --optics-height: var(--banner-height-home); }
+		@supports (scale: calc(1px / 1px)) {
+			optical-banner { --optics-height: var(--banner-height-home); }
+			.optics-stage {
+				--expanded: clamp(85px, calc(var(--banner-height-home) - 6rem), 520px);
+				--compact: clamp(85px, calc(var(--banner-height) - 6rem), 520px);
+				--zoom: calc(var(--expanded) / var(--compact));
+				inset: auto 0;
+				top: calc(50% + 8px);
+				height: max(calc(var(--banner-height) + 16px), calc((var(--banner-height-home) + 16px) / var(--zoom)));
+				contain: paint;
+				transform-origin: 46% 50%;
+				transform: translateY(calc(-50% + (var(--banner-height-home) - var(--banner-height)) / 2)) scale(1);
+			}
+			.optics { height: var(--compact); top: 50%; }
+			.spill-frame .optics-stage,
+			.beam-pulses-stage { contain: none; }
+			:global(body.lg\:is-home) .optics-stage { transform: translateY(-50%) scale(var(--zoom)); }
+			@media (prefers-reduced-motion: no-preference) {
+				.optics-stage { transition: transform 700ms cubic-bezier(.4,0,.2,1); }
+			}
+		}
+	}
+	@media (max-width: 600px) {
+		.optics { left: 44%; height: clamp(90px, calc(100% - 5.5rem), 185px); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.beam-light { display: none; }
+	}
+</style>
+
+<script>
+	import "./optical-banner-interaction";
+</script>

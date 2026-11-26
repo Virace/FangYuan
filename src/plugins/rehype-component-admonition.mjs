@@ -18,16 +18,12 @@ export function AdmonitionComponent(properties, children, type) {
 			'Invalid admonition directive. (Admonition directives must be of block type ":::note{name="name"} <content> :::")',
 		);
 
-	let label = null;
-	if (properties?.["has-directive-label"]) {
-		label = children[0]; // The first child is the label
-		// biome-ignore lint/style/noParameterAssign: <check later>
-		children = children.slice(1);
-		label.tagName = "div"; // Change the tag <p> to <div>
-	}
+	const hasLabel = Boolean(properties?.["has-directive-label"]);
+	const label = hasLabel ? { ...children[0], tagName: "div" } : null;
+	const body = hasLabel ? children.slice(1) : children;
 
 	return h("blockquote", { class: `admonition bdm-${type}` }, [
 		h("span", { class: "bdm-title" }, label ? label : type.toUpperCase()),
-		...children,
+		...body,
 	]);
 }

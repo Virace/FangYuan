@@ -11,7 +11,7 @@ draft: false
 
 ## GitHub 仓库卡片
 
-可以在文章里插入链接到 GitHub 仓库的动态卡片。页面加载时，会自动从 GitHub API 拉取仓库信息。
+可以在文章里插入 GitHub 仓库卡片。初始页面会显示仓库入口和可用的构建快照，随后在后台刷新信息；API 暂时不可用时会保留已有内容。
 
 ::github{repo="Fabrizz/MMM-OnSpotify"}
 

@@ -1,0 +1,849 @@
+.widget-title-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.widget-title-bar::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    margin-left: 0.2rem;
+    background: linear-gradient(90deg, var(--line-divider), transparent);
+}
+
+.widget-title-count {
+    order: 2;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid var(--optical-chip-border);
+    background-color: var(--optical-chip-bg);
+    color: var(--btn-plain-content);
+    opacity: 0.72;
+    flex-shrink: 0;
+}
+
+.profile-optical-topline {
+    position: absolute;
+    left: 1.5rem;
+    right: 1.5rem;
+    top: 0;
+    height: 1.5px;
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0.78;
+    background: linear-gradient(90deg, transparent, var(--accent-solid), transparent);
+}
+
+.profile-avatar-sheen {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.profile-avatar-sheen::after {
+    content: "";
+    position: absolute;
+    inset: -30%;
+    width: 55%;
+    background: linear-gradient(108deg, transparent, rgb(255 255 255 / 0.34), transparent);
+    transform: translateX(-140%) skewX(-18deg);
+    transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.profile-avatar-link:hover .profile-avatar-sheen::after,
+.profile-avatar-link:focus-visible .profile-avatar-sheen::after {
+    transform: translateX(260%) skewX(-18deg);
+}
+
+.profile-avatar-img,
+.profile-avatar-img img {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.profile-avatar-link:hover .profile-avatar-img,
+.profile-avatar-link:focus-visible .profile-avatar-img {
+    transform: scale(1.03);
+}
+
+.profile-about-pill {
+    position: absolute;
+    left: 50%;
+    bottom: 0.625rem;
+    z-index: 30;
+    padding: 0.28rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.1;
+    white-space: nowrap;
+    pointer-events: none;
+    background-color: var(--float-panel-glass-bg);
+    border: 1px solid var(--optical-glass-hover-border);
+    color: var(--accent-foreground);
+    box-shadow: var(--optical-glass-hover-shadow);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transform: translate(-50%, 0.375rem);
+    transition:
+        opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.profile-avatar-link:hover .profile-about-pill,
+.profile-avatar-link:focus-visible .profile-about-pill {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.profile-optical-rule {
+    width: 5rem;
+    height: 1px;
+    margin-inline: auto;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in oklch, var(--accent-solid) 48%, var(--line-divider)),
+        transparent
+    );
+    transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.profile-optical-card:hover .profile-optical-rule {
+    width: 7.25rem;
+}
+
+.profile-social-links {
+    max-width: 100%;
+}
+
+.profile-social-btn-expand {
+    width: auto;
+    min-width: 2.5rem;
+    max-width: min(10.5rem, 100%);
+    padding-inline: 0.5625rem;
+    gap: 0;
+    overflow: hidden;
+    transition:
+        padding-inline 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+        gap 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+        color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.profile-social-label {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+    transition:
+        max-width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.2s ease;
+}
+
+.profile-social-btn-expand:hover,
+.profile-social-btn-expand:focus-visible {
+    padding-inline: 0.75rem;
+    gap: 0.375rem;
+}
+
+.profile-social-btn-expand:hover .profile-social-label,
+.profile-social-btn-expand:focus-visible .profile-social-label {
+    max-width: 6.75rem;
+    opacity: 1;
+}
+
+.profile-social-btn-lift {
+    overflow: hidden;
+    position: relative;
+    align-items: flex-start;
+    padding: 0;
+}
+
+.profile-social-lift-track {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 2.5rem;
+    transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.profile-social-lift-slot {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-social-lift-slot-glow {
+    color: var(--accent-solid);
+    filter: drop-shadow(0 0 6px var(--toc-rail-glow));
+}
+
+.profile-social-btn-lift:hover .profile-social-lift-track,
+.profile-social-btn-lift:focus-visible .profile-social-lift-track {
+    transform: translateY(-2.5rem);
+}
+
+.optical-cat-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 2.5rem;
+    padding: 0 0.5rem 0 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: var(--btn-plain-content);
+    transition:
+        color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.optical-cat-row:hover,
+.optical-cat-row:focus-visible {
+    color: var(--accent-foreground);
+    background-color: var(--optical-glass-hover-bg);
+    border-color: var(--optical-glass-hover-border);
+    box-shadow: var(--optical-glass-hover-shadow);
+}
+
+.optical-cat-row:active {
+    background-color: var(--optical-glass-active-bg);
+}
+
+.optical-cat-row:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-shadow), var(--optical-glass-hover-shadow);
+}
+
+.optical-cat-beam {
+    position: absolute;
+    left: 0.25rem;
+    width: 2.5px;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: var(--toc-rail-track);
+    pointer-events: none;
+    transition:
+        height 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.optical-cat-row:hover .optical-cat-beam,
+.optical-cat-row:focus-visible .optical-cat-beam {
+    height: 1.05rem;
+    background: var(--accent-solid);
+    box-shadow: 0 0 8px var(--toc-rail-glow);
+}
+
+.optical-cat-leader {
+    flex: 1;
+    min-width: 0.75rem;
+    height: 1px;
+    margin-inline: 0.5rem;
+    background: linear-gradient(90deg, transparent, var(--line-divider) 35%, var(--line-divider) 75%, transparent);
+    opacity: 0.65;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+}
+
+.optical-cat-row:hover .optical-cat-leader,
+.optical-cat-row:focus-visible .optical-cat-leader {
+    opacity: 1;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in oklch, var(--accent-solid) 30%, var(--line-divider)),
+        transparent
+    );
+}
+
+.optical-cat-count {
+    min-width: 1.75rem;
+    height: 1.5rem;
+    padding-inline: 0.45rem;
+    border-radius: 999px;
+    border: 1px solid var(--optical-chip-border);
+    background-color: var(--optical-chip-bg);
+    color: var(--btn-plain-content);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition:
+        color 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.optical-cat-row:hover .optical-cat-count,
+.optical-cat-row:focus-visible .optical-cat-count {
+    color: var(--accent-foreground);
+    border-color: var(--optical-chip-hover-border);
+    background-color: var(--optical-chip-hover-bg);
+}
+
+.optical-tag-chip {
+    gap: 0.3rem;
+    transition:
+        opacity 0.18s ease,
+        color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.optical-tag-hash {
+    color: var(--accent-solid);
+    opacity: 0.56;
+    font-size: 0.85em;
+    font-weight: 600;
+    transition: opacity 0.18s ease;
+}
+
+.btn-regular:hover .optical-tag-hash,
+.btn-regular:focus-visible .optical-tag-hash {
+    opacity: 1;
+}
+
+.optical-tag-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.15rem;
+    height: 1.05rem;
+    padding-inline: 0.3rem;
+    margin-left: 0.05rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in oklch, var(--btn-plain-content) 76%, transparent);
+    background-color: color-mix(in oklch, var(--deep-text) 5.5%, transparent);
+    transition:
+        color 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.optical-tag-count::after {
+    content: attr(data-count);
+}
+
+:root.dark .optical-tag-count {
+    background-color: rgb(255 255 255 / 0.08);
+}
+
+.optical-tag-chip:hover .optical-tag-count,
+.optical-tag-chip:focus-visible .optical-tag-count {
+    color: var(--accent-foreground);
+    background-color: color-mix(in oklch, var(--primary) 16%, transparent);
+}
+
+.optical-tag-hot {
+    border-color: color-mix(in oklch, var(--accent-solid) 30%, var(--optical-chip-border));
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.14),
+        0 0 10px -5px var(--toc-rail-glow);
+    font-weight: 500;
+}
+
+.optical-tag-hot .optical-tag-count {
+    color: var(--accent-foreground);
+    background-color: color-mix(in oklch, var(--primary) 14%, transparent);
+}
+
+.optical-tag-quiet {
+    opacity: 0.74;
+}
+
+.optical-tag-quiet:hover,
+.optical-tag-quiet:focus-visible {
+    opacity: 1;
+}
+
+.optical-post-nav {
+    box-shadow:
+        inset 0 0 0 1px var(--optical-card-border),
+        inset 0 1px 0 var(--optical-card-rim-highlight),
+        var(--optical-card-shadow);
+}
+
+.optical-post-nav:hover {
+    box-shadow:
+        inset 0 0 0 1px var(--optical-glass-hover-border),
+        var(--optical-glass-hover-shadow);
+}
+
+.optical-post-nav-arrow {
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), color 0.18s ease;
+}
+
+.optical-post-nav:hover .optical-post-nav-arrow-prev {
+    transform: translateX(-2px);
+}
+
+.optical-post-nav:hover .optical-post-nav-arrow-next {
+    transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .optical-post-nav:hover .optical-post-nav-arrow-prev,
+    .optical-post-nav:hover .optical-post-nav-arrow-next {
+        transform: none;
+    }
+}
+
+.optical-post-card {
+    isolation: isolate;
+    contain: layout style paint;
+}
+
+@media (min-width: 768px) {
+    .optical-post-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 25;
+        border-radius: inherit;
+        box-shadow: inset 0 0 0 1px var(--optical-card-border);
+        pointer-events: none;
+        transition: box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .optical-post-card:hover::before {
+        box-shadow: inset 0 0 0 1px var(--optical-glass-hover-border);
+    }
+}
+
+.optical-post-card::after {
+    content: "";
+    position: absolute;
+    inset: -35% -40%;
+    width: 42%;
+    z-index: 20;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in oklch, var(--optical-card-sheen) 55%, transparent) 32%,
+        var(--optical-card-sheen) 50%,
+        color-mix(in oklch, var(--optical-card-sheen) 48%, transparent) 68%,
+        transparent 100%
+    );
+    opacity: 0;
+    transform: translate3d(-120%, -8%, 0) rotate(24deg);
+}
+
+@keyframes optical-card-sheen-sweep {
+    0% {
+        opacity: 0;
+        transform: translate3d(-120%, -8%, 0) rotate(24deg);
+    }
+    22% {
+        opacity: 0.92;
+    }
+    76% {
+        opacity: 0.72;
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(340%, 8%, 0) rotate(24deg);
+    }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .optical-post-card:hover::after {
+        animation: optical-card-sheen-sweep 760ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+}
+
+.optical-post-title-beam::before {
+    width: 2.5px;
+    height: 1.125rem;
+    border-radius: 999px;
+    background: linear-gradient(
+        180deg,
+        var(--accent-solid),
+        color-mix(in oklch, var(--primary) 35%, transparent)
+    );
+    box-shadow: 0 0 8px var(--toc-rail-glow);
+    transition: box-shadow 0.24s ease, filter 0.24s ease;
+}
+
+.optical-post-card:hover .optical-post-title-beam::before {
+    box-shadow: 0 0 12px 1px var(--toc-rail-glow);
+    filter: brightness(1.08);
+}
+
+.optical-card-cover-media {
+    filter: saturate(0.95) brightness(0.97);
+    mask-image: linear-gradient(
+        to bottom,
+        #000 58%,
+        rgb(0 0 0 / 0.55) 84%,
+        transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        #000 58%,
+        rgb(0 0 0 / 0.55) 84%,
+        transparent 100%
+    );
+    transition: filter 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark .optical-card-cover-media {
+    filter: saturate(0.94) brightness(0.94);
+}
+
+.optical-post-card:hover .optical-card-cover-media {
+    filter: saturate(1.12) brightness(1.06);
+}
+
+@media (min-width: 768px) {
+    .optical-card-cover-media {
+        mask-image: none;
+        -webkit-mask-image: none;
+    }
+
+    .optical-card-cover-mirror {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -20%;
+        width: 60%;
+        overflow: hidden;
+    }
+
+    .optical-card-cover-mirror img {
+        object-position: left center !important;
+        transform: scaleX(-1);
+    }
+
+    .optical-card-cover-real {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 40%;
+        width: 60%;
+        overflow: hidden;
+    }
+
+    .optical-card-cover-real img {
+        object-position: left center !important;
+    }
+}
+
+.optical-card-blur-band {
+    position: absolute;
+    inset: 0 36% 0 0;
+    z-index: 1;
+    backdrop-filter: blur(22px) saturate(135%);
+    -webkit-backdrop-filter: blur(22px) saturate(135%);
+    mask-image: linear-gradient(
+        94deg,
+        #000 0%,
+        #000 46%,
+        rgb(0 0 0 / 0.85) 66%,
+        rgb(0 0 0 / 0.35) 84%,
+        transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+        94deg,
+        #000 0%,
+        #000 46%,
+        rgb(0 0 0 / 0.85) 66%,
+        rgb(0 0 0 / 0.35) 84%,
+        transparent 100%
+    );
+}
+
+.optical-card-text-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(
+        94deg,
+        color-mix(in oklch, var(--optical-card-surface) 97%, transparent) 0%,
+        color-mix(in oklch, var(--optical-card-surface) 94%, transparent) 24%,
+        color-mix(in oklch, var(--optical-card-surface) 82%, transparent) 42%,
+        color-mix(in oklch, var(--optical-card-surface) 48%, transparent) 56%,
+        color-mix(in oklch, var(--optical-card-surface) 14%, transparent) 70%,
+        transparent 84%
+    );
+}
+
+.optical-card-focus-mark {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 10;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.28);
+    background: rgb(15 23 42 / 0.58);
+    color: rgb(255 255 255 / 0.92);
+    opacity: 0;
+    transition:
+        opacity 240ms cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 240ms ease,
+        box-shadow 240ms ease;
+}
+
+.optical-card-focus-mark svg {
+    transform: translateX(0.0625rem);
+}
+
+.optical-post-card:hover .optical-card-focus-mark,
+.optical-card-cover-link:focus-visible .optical-card-focus-mark {
+    opacity: 0.94;
+    border-color: rgb(255 255 255 / 0.48);
+    box-shadow: 0 4px 16px -4px rgb(0 0 0 / 0.45);
+}
+
+.optical-page-shell {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background-color: var(--optical-card-surface);
+    box-shadow:
+        inset 0 0 0 1px var(--optical-card-border),
+        var(--optical-card-shadow);
+}
+
+.optical-page-shell .btn-card {
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+    background-color: transparent;
+    box-shadow: none;
+    transition:
+        color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.optical-page-shell .btn-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background-color: transparent;
+    box-shadow: none;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        left 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+        right 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+        border-radius 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.18s ease;
+}
+
+.optical-page-shell .btn-card:hover {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.optical-page-shell .btn-card:hover::before {
+    opacity: 1;
+    background-color: var(--optical-glass-hover-bg);
+    box-shadow:
+        inset 0 0 0 1px var(--optical-glass-hover-border),
+        var(--optical-glass-hover-shadow);
+}
+
+.optical-page-shell .btn-card:active {
+    background-color: transparent;
+}
+
+.optical-page-shell .btn-card:active::before {
+    opacity: 1;
+    background-color: var(--optical-glass-active-bg);
+}
+
+.optical-page-shell .btn-card:focus-visible {
+    z-index: 3;
+    box-shadow: var(--focus-ring-shadow);
+}
+
+.optical-page-current {
+    position: relative;
+    z-index: 2;
+    background-color: color-mix(in oklch, var(--accent-solid) 14%, var(--optical-card-surface));
+    color: var(--accent-foreground);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in oklch, var(--accent-solid) 52%, transparent),
+        0 6px 16px -8px var(--toc-rail-glow);
+}
+
+/* 积木咬合态：当前页保持完整圆角置于上层，相邻悬停页的背景层向内伸入其圆角下方填满凹角缝 */
+.optical-page-shell .optical-page-current + .btn-card:hover:not(:active)::before {
+    left: -0.55rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow:
+        inset 0 1px 0 var(--optical-glass-hover-border),
+        inset 0 -1px 0 var(--optical-glass-hover-border),
+        inset -1px 0 0 var(--optical-glass-hover-border),
+        var(--optical-glass-hover-shadow);
+}
+
+.optical-page-shell .btn-card:hover:not(:active):has(+ .optical-page-current)::before {
+    right: -0.55rem;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    box-shadow:
+        inset 0 1px 0 var(--optical-glass-hover-border),
+        inset 0 -1px 0 var(--optical-glass-hover-border),
+        inset 1px 0 0 var(--optical-glass-hover-border),
+        var(--optical-glass-hover-shadow);
+}
+
+.archive-rail-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 999px;
+    background-color: var(--optical-card-surface);
+    border: 1.5px solid color-mix(in oklch, var(--accent-solid) 62%, var(--line-color));
+    transition:
+        width 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        height 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.group:hover .archive-rail-dot,
+.group:focus-visible .archive-rail-dot {
+    width: 0.1875rem;
+    height: 1.05rem;
+    border-color: transparent;
+    background-color: var(--accent-solid);
+    box-shadow: 0 0 10px 1px var(--toc-rail-glow);
+}
+
+.collapse-wrapper {
+    position: relative;
+    overflow: hidden;
+    transition: max-height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.collapse-wrapper.collapsed {
+    max-height: var(--collapsedHeight);
+}
+
+.collapse-wrapper.collapsed::after {
+    content: "";
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0;
+    height: 2.25rem;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent, var(--optical-card-surface) 92%);
+}
+
+.collapse-wrapper.is-expanded {
+    max-height: var(--expandedMaxHeight, 19rem);
+}
+
+.collapse-wrapper.is-expanded.is-scrollable {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: calc(1rem - 10px);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+    .optical-widget-scroll {
+        scrollbar-width: none;
+    }
+
+    .optical-widget-scroll.is-expanded.is-scrollable {
+        padding-right: 0.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in oklch, var(--accent-solid) 26%, var(--toc-rail-track)) transparent;
+    }
+}
+
+.optical-widget-scroll::-webkit-scrollbar {
+    width: 10px;
+}
+
+.optical-widget-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.optical-widget-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    border-left: 1px solid transparent;
+    border-right: 4px solid transparent;
+    background-clip: padding-box;
+    background-color: color-mix(in oklch, var(--accent-solid) 24%, var(--toc-rail-track));
+    transition: background-color 0.2s ease;
+}
+
+.optical-widget-scroll:hover::-webkit-scrollbar-thumb,
+.optical-widget-scroll:focus-within::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--accent-solid) 46%, var(--toc-rail-track));
+}
+
+.widget-expand-icon {
+    transform: rotate(180deg);
+    transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.widget-expand-btn[aria-expanded="true"] .widget-expand-icon {
+    transform: rotate(0deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .collapse-wrapper,
+    .widget-expand-icon,
+    .profile-avatar-sheen::after,
+    .profile-avatar-img,
+    .profile-avatar-img img,
+    .profile-about-pill,
+    .profile-optical-rule,
+    .profile-social-btn-expand,
+    .profile-social-label,
+    .profile-social-lift-track {
+        transition: none;
+    }
+
+    .profile-avatar-link:hover .profile-avatar-sheen::after,
+    .profile-avatar-link:focus-visible .profile-avatar-sheen::after {
+        transform: translateX(-140%) skewX(-18deg);
+    }
+
+    .profile-avatar-link:hover .profile-avatar-img,
+    .profile-avatar-link:focus-visible .profile-avatar-img {
+        transform: none;
+    }
+}

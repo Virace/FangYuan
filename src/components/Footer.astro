@@ -21,26 +21,28 @@ const policeRecordUrl = getFooterPoliceRecordUrl();
 const policeEmblemSrc = policeEmblem.src;
 ---
 
-<div class="transition my-10 border-t border-dashed border-footer-divider"></div>
-<div class="transition border-dashed border-footer-divider rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
-    <div class="transition text-50 text-sm text-center">
+<div class="optical-divider my-8" aria-hidden="true">
+    <span class="optical-divider-focus"></span>
+</div>
+<div class="transition rounded-2xl mb-8 flex flex-col items-center justify-center px-6">
+    <div class="transition text-60 text-sm text-center">
         &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. ALL RIGHTS RESERVED.
         {siteConfig.site ? (
 			<Fragment>
 				{" / "}
-				<a class="transition link text-primary font-medium" target="_blank" href={url('rss.xml')}>RSS</a> /
-				<a class="transition link text-primary font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a>
+				<a class="transition link text-btn-content font-medium" target="_blank" href={url('rss.xml')}>RSS</a> /
+				<a class="transition link text-btn-content font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a>
 			</Fragment>
 		) : null}
 		<br>
-        Built with
-        <a class="transition link text-primary font-medium" target="_blank" href="https://astro.build">Astro</a>  
-        &
-		<a class="transition link text-primary font-medium" target="_blank" href="https://github.com/Virace/FangYuan">FangYuan (mod by Fuwari)</a>
+        Built with{" "}
+        <a class="transition link text-btn-content font-medium" target="_blank" href="https://astro.build">Astro</a>
+        {" & "}
+		<a class="transition link text-btn-content font-medium" target="_blank" href="https://github.com/Virace/FangYuan">FangYuan (mod by Fuwari)</a>
     </div>
 
 	{hasCustomHtml && (
-		<div class="transition text-50 text-sm text-center mt-3">
+		<div class="transition text-60 text-sm text-center mt-2.5">
 			{customHtmlIsMarkup ? (
 				<Fragment set:html={customHtml}></Fragment>
 			) : (
@@ -50,16 +52,16 @@ const policeEmblemSrc = policeEmblem.src;
 	)}
 
 	{(icpRecord !== "" || policeRecord !== "") && (
-		<div class="transition text-50 text-sm text-center mt-3 flex flex-col items-center gap-y-2">
+		<div class="transition text-60 text-sm text-center mt-2.5 flex flex-col items-center gap-y-1.5">
 			{icpRecord !== "" && (
-				<a class="transition link text-primary font-medium" target="_blank" rel="noreferrer" href={getFooterIcpUrl()}>
+				<a class="transition link text-btn-content font-medium" target="_blank" rel="noreferrer" href={getFooterIcpUrl()}>
 					{icpRecord}
 				</a>
 			)}
 			{policeRecord !== "" && (
 				policeRecordUrl ? (
 					<a
-						class="transition link text-primary font-medium inline-flex items-center gap-2"
+						class="transition link text-btn-content font-medium inline-flex items-center gap-2"
 						target="_blank"
 						rel="noreferrer"
 						href={policeRecordUrl}
@@ -77,3 +79,9 @@ const policeEmblemSrc = policeEmblem.src;
 		</div>
 	)}
 </div>
+
+<style>
+	:global(html:not(.dark)) a.link {
+		color: color-mix(in oklab, var(--btn-content) 88%, #192b3d);
+	}
+</style>

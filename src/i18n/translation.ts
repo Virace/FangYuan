@@ -17,7 +17,7 @@ export type Translation = {
 
 const defaultTranslation = en;
 
-const map: { [key: string]: Translation } = {
+const translationByLocale: Record<string, Translation> = {
 	es: es,
 	en: en,
 	en_us: en,
@@ -45,7 +45,7 @@ const builtInNavKeyAliases: Record<string, I18nKey> = {
 };
 
 export function getTranslation(lang: string): Translation {
-	return map[lang.toLowerCase()] || defaultTranslation;
+	return translationByLocale[lang.toLowerCase()] || defaultTranslation;
 }
 
 export function i18n(key: I18nKey): string {

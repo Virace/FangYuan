@@ -3,6 +3,10 @@ const I18nKey = {
 	about: "about",
 	archive: "archive",
 	search: "search",
+	noticeRegion: "noticeRegion",
+	noticePinned: "noticePinned",
+	engagementLoadFailed: "engagementLoadFailed",
+	commentsCaptchaRefreshFailed: "commentsCaptchaRefreshFailed",
 
 	tags: "tags",
 	categories: "categories",
@@ -79,6 +83,7 @@ const I18nKey = {
 	systemMode: "systemMode",
 
 	more: "more",
+	less: "less",
 
 	author: "author",
 	publishedAt: "publishedAt",
@@ -90,6 +95,7 @@ const I18nKey = {
 	pageFeedbackRewardTitle: "pageFeedbackRewardTitle",
 	pageFeedbackRewardDescription: "pageFeedbackRewardDescription",
 	pageFeedbackClose: "pageFeedbackClose",
+	tableOfContents: "tableOfContents",
 	license: "license",
 } as const;
 
