@@ -1,154 +1,232 @@
+/* 五类语义提示块（光学滤色槽位，亮/暗独立色系） */
+.custom-md blockquote.admonition {
+	position: relative;
+	margin: 1.15rem 0;
+	padding: 0.92rem 1.15rem 0.92rem 1.32rem;
+	border: 1px solid var(--admonition-border);
+	border-radius: 0.875rem;
+	background: var(--admonition-bg);
+	box-shadow: var(--md-slot-inset);
+	overflow: hidden;
+}
+
+.custom-md blockquote.admonition::before {
+	content: "";
+	position: absolute;
+	top: 0.72rem;
+	bottom: 0.72rem;
+	left: 0.45rem;
+	display: block;
+	width: 2.5px;
+	border-radius: 9999px;
+	background: linear-gradient(
+		180deg,
+		var(--admonition-fg),
+		color-mix(in oklch, var(--admonition-fg) 32%, transparent)
+	);
+	box-shadow: 0 0 12px color-mix(in oklch, var(--admonition-fg) var(--md-admonition-glow-alpha), transparent);
+}
+
 .custom-md blockquote.admonition .bdm-title {
 	display: flex;
 	align-items: center;
-	margin-bottom: -0.9rem;
-	font-weight: bold;
+	margin: 0 0 0.4rem;
+	font-size: 0.875rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	line-height: 1.45;
+	color: var(--admonition-fg);
 }
 
-.custom-md blockquote.admonition .bdm-title:before {
+.custom-md blockquote.admonition .bdm-title::before {
 	content: " ";
 	display: inline-block;
+	flex-shrink: 0;
 	font-size: inherit;
 	overflow: visible;
-	margin-right: 0.6rem;
-	height: 1em;
-	width: 1em;
-	vertical-align: -0.126em;
+	margin-right: 0.52rem;
+	height: 1.05em;
+	width: 1.05em;
+	background: var(--admonition-fg);
 	mask-size: contain;
 	mask-position: center;
 	mask-repeat: no-repeat;
-	transform: translateY(-0.0625rem);
+	transform: translateY(-0.04rem);
 }
 
-.custom-md blockquote.admonition.bdm-tip .bdm-title {
-	color: var(--admonitions-color-tip);
+.custom-md blockquote.admonition .bdm-title + * {
+	margin-top: 0;
 }
 
-.custom-md blockquote.admonition.bdm-tip .bdm-title:before {
-	background: var(--admonitions-color-tip);
+.custom-md blockquote.admonition > :last-child {
+	margin-bottom: 0;
+}
+
+.custom-md blockquote.admonition.bdm-tip {
+	--admonition-fg: var(--admonitions-color-tip);
+	--admonition-bg: var(--md-admonition-tip-bg);
+	--admonition-border: var(--md-admonition-tip-border);
+}
+
+.custom-md blockquote.admonition.bdm-tip .bdm-title::before {
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' version='1.1' width='16' height='16' aria-hidden='true'%3E%3Cpath d='M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z'%3E%3C/path%3E%3C/svg%3E");
 }
 
-.custom-md blockquote.admonition.bdm-tip:before {
-	background: var(--admonitions-color-tip);
+.custom-md blockquote.admonition.bdm-note {
+	--admonition-fg: var(--admonitions-color-note);
+	--admonition-bg: var(--md-admonition-note-bg);
+	--admonition-border: var(--md-admonition-note-border);
 }
 
-.custom-md blockquote.admonition.bdm-note .bdm-title {
-	color: var(--admonitions-color-note);
+.custom-md blockquote.admonition.bdm-note .bdm-title::before {
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' version='1.1' width='16' height='16' aria-hidden='true'%3E%3Cpath d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'%3E%3C/path%3E%3C/svg%3E");
 }
 
-.custom-md blockquote.admonition.bdm-note .bdm-title:before {
-	background: var(--admonitions-color-note);
-	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' version='1.1' width='16' height='16' aria-hidden='true'%3E%3Cpath fill='var(--admonitions-color-tip)' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'%3E%3C/path%3E%3C/svg%3E");
+.custom-md blockquote.admonition.bdm-important {
+	--admonition-fg: var(--admonitions-color-important);
+	--admonition-bg: var(--md-admonition-important-bg);
+	--admonition-border: var(--md-admonition-important-border);
 }
 
-.custom-md blockquote.admonition.bdm-note:before {
-	background: var(--admonitions-color-note);
-}
-
-.custom-md blockquote.admonition.bdm-important .bdm-title {
-	color: var(--admonitions-color-important);
-}
-
-.custom-md blockquote.admonition.bdm-important .bdm-title:before {
-	background: var(--admonitions-color-important);
+.custom-md blockquote.admonition.bdm-important .bdm-title::before {
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' version='1.1' width='16' height='16' aria-hidden='true'%3E%3Cpath d='M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z'%3E%3C/path%3E%3C/svg%3E");
 }
 
-.custom-md blockquote.admonition.bdm-important:before {
-	background: var(--admonitions-color-important);
+.custom-md blockquote.admonition.bdm-warning {
+	--admonition-fg: var(--admonitions-color-warning);
+	--admonition-bg: var(--md-admonition-warning-bg);
+	--admonition-border: var(--md-admonition-warning-border);
 }
 
-.custom-md blockquote.admonition.bdm-warning .bdm-title {
-	color: var(--admonitions-color-warning);
-}
-
-.custom-md blockquote.admonition.bdm-warning .bdm-title:before {
-	background: var(--admonitions-color-warning);
+.custom-md blockquote.admonition.bdm-warning .bdm-title::before {
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' version='1.1' width='16' height='16' aria-hidden='true'%3E%3Cpath d='M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z'%3E%3C/path%3E%3C/svg%3E");
 }
 
-.custom-md blockquote.admonition.bdm-warning:before {
-	background: var(--admonitions-color-warning);
+.custom-md blockquote.admonition.bdm-caution {
+	--admonition-fg: var(--admonitions-color-caution);
+	--admonition-bg: var(--md-admonition-caution-bg);
+	--admonition-border: var(--md-admonition-caution-border);
 }
 
-.custom-md blockquote.admonition.bdm-caution .bdm-title {
-	color: var(--admonitions-color-caution);
-}
-
-.custom-md blockquote.admonition.bdm-caution .bdm-title:before {
-	background: var(--admonitions-color-caution);
+.custom-md blockquote.admonition.bdm-caution .bdm-title::before {
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' version='1.1' width='16' height='16' aria-hidden='true'%3E%3Cpath d='M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'%3E%3C/path%3E%3C/svg%3E");
-}
-
-.custom-md blockquote.admonition.bdm-caution:before {
-	background: var(--admonitions-color-caution);
 }
 
 .custom-md img {
 	border-radius: 0.75rem;
 }
 
+.custom-md img:not(.lc-logo):not(.gc-avatar) {
+	border: 1px solid var(--md-slot-border);
+}
+
+/* 行内高亮 :hl（平贴文本荧光带，亮/暗独立色系，去按钮边框感） */
 .custom-md mark.md-highlight {
-	padding: 0.125rem 0.375rem;
-	border-radius: 0.375rem;
-	background: var(--btn-regular-bg);
-	color: inherit;
+	--hl-accent: var(--admonitions-color-note);
+	--hl-bg: var(--md-hl-note-bg);
+	--hl-fg: var(--md-hl-note-fg);
+	padding: 0.04rem 0.28rem;
+	border-radius: 0.24rem;
+	background: var(--hl-bg);
+	color: var(--hl-fg);
+	font-weight: 500;
+	box-shadow: inset 0 -1.5px 0 color-mix(in oklch, var(--hl-accent) 48%, transparent);
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+}
+
+.dark .custom-md mark.md-highlight {
+	box-shadow: inset 0 -1.5px 0 color-mix(in oklch, var(--hl-accent) 56%, transparent);
 }
 
 .custom-md mark.md-highlight.tone-note {
-	background: color-mix(in srgb, var(--admonitions-color-note) 18%, transparent);
+	--hl-accent: var(--admonitions-color-note);
+	--hl-bg: var(--md-hl-note-bg);
+	--hl-fg: var(--md-hl-note-fg);
 }
 
 .custom-md mark.md-highlight.tone-tip {
-	background: color-mix(in srgb, var(--admonitions-color-tip) 18%, transparent);
+	--hl-accent: var(--admonitions-color-tip);
+	--hl-bg: var(--md-hl-tip-bg);
+	--hl-fg: var(--md-hl-tip-fg);
 }
 
 .custom-md mark.md-highlight.tone-important {
-	background: color-mix(
-		in srgb,
-		var(--admonitions-color-important) 18%,
-		transparent
-	);
+	--hl-accent: var(--admonitions-color-important);
+	--hl-bg: var(--md-hl-important-bg);
+	--hl-fg: var(--md-hl-important-fg);
 }
 
 .custom-md mark.md-highlight.tone-warning {
-	background: color-mix(
-		in srgb,
-		var(--admonitions-color-warning) 20%,
-		transparent
-	);
+	--hl-accent: var(--admonitions-color-warning);
+	--hl-bg: var(--md-hl-warning-bg);
+	--hl-fg: var(--md-hl-warning-fg);
 }
 
 .custom-md mark.md-highlight.tone-caution {
-	background: color-mix(
-		in srgb,
-		var(--admonitions-color-caution) 18%,
+	--hl-accent: var(--admonitions-color-caution);
+	--hl-bg: var(--md-hl-caution-bg);
+	--hl-fg: var(--md-hl-caution-fg);
+}
+
+/* Aside 补充块（纯圆角光学槽位） */
+.custom-md aside.md-aside {
+	position: relative;
+	margin: 1.15rem 0;
+	padding: 0.9rem 1.15rem 0.9rem 1.25rem;
+	border: 1px solid var(--md-slot-border);
+	border-radius: 0.875rem;
+	background: var(--md-slot-bg);
+	box-shadow: var(--md-slot-inset);
+	color: color-mix(in oklch, var(--tw-prose-body) 88%, transparent);
+	font-size: 0.94em;
+}
+
+.custom-md aside.md-aside::before {
+	content: "";
+	position: absolute;
+	top: 0.85rem;
+	bottom: 0.85rem;
+	left: 0.48rem;
+	width: 1.5px;
+	border-radius: 9999px;
+	background: linear-gradient(
+		180deg,
+		color-mix(in oklch, var(--accent-solid) 48%, var(--meta-divider)),
 		transparent
 	);
 }
 
-.custom-md aside.md-aside {
-	margin: 1rem 0;
-	padding: 0.875rem 1rem;
-	border-left: 0.25rem solid var(--meta-divider);
-	border-radius: 0.75rem;
-	background: var(--btn-regular-bg);
-	color: var(--tw-prose-body);
-	font-size: 0.95em;
+.custom-md aside.md-aside > :first-child {
+	margin-top: 0;
 }
 
+.custom-md aside.md-aside > :last-child {
+	margin-bottom: 0;
+}
+
+/* Fold 折叠块（光学玻璃槽位，展开平滑抬升） */
 .custom-md .md-fold {
-	margin: 1rem 0;
-	border: 1px solid color-mix(in srgb, var(--line-divider) 78%, transparent);
-	border-radius: 1rem;
-	background: var(--license-block-bg);
+	margin: 1.15rem 0;
+	border: 1px solid var(--md-slot-border);
+	border-radius: 0.875rem;
+	background: var(--md-slot-bg);
 	overflow: hidden;
-	box-shadow: 0 1.25rem 2.5rem -2rem color-mix(in srgb, var(--primary) 28%, transparent);
+	box-shadow: var(--md-slot-inset);
 	transition:
 		border-color 0.2s ease,
 		background-color 0.2s ease,
 		box-shadow 0.2s ease;
+}
+
+.custom-md .md-fold:hover {
+	border-color: var(--optical-card-border);
+}
+
+.custom-md .md-fold:has(> .md-fold-toggle:checked) {
+	background: color-mix(in oklch, var(--primary) 4%, var(--optical-card-surface));
+	border-color: var(--md-slot-hover-border);
+	box-shadow: var(--md-slot-hover-shadow);
 }
 
 .custom-md .md-fold-toggle {
@@ -165,12 +243,11 @@
 }
 
 .custom-md .md-fold-toggle:checked ~ .md-fold-summary {
-	border-color: color-mix(in srgb, var(--primary) 22%, var(--line-divider));
-	background: color-mix(in srgb, var(--primary) 5%, transparent);
+	background: transparent;
 }
 
 .custom-md .md-fold-toggle:focus-visible + .md-fold-summary {
-	outline: 2px solid color-mix(in srgb, var(--primary) 42%, transparent);
+	outline: 2px solid color-mix(in oklch, var(--primary) 46%, transparent);
 	outline-offset: -2px;
 }
 
@@ -178,19 +255,19 @@
 	display: block;
 	cursor: var(--cursor-link, pointer);
 	position: relative;
-	padding: 0.95rem 3rem 0.95rem 2.8rem;
-	font-weight: 700;
+	padding: 0.9rem 3rem 0.9rem 2.75rem;
+	font-weight: 650;
 	color: var(--tw-prose-headings);
 	user-select: none;
 	-webkit-user-select: none;
 	-webkit-touch-callout: none;
 	touch-action: manipulation;
 	-webkit-tap-highlight-color: transparent;
-	transition: background-color 0.2s ease;
+	transition: background-color 0.18s ease, color 0.18s ease;
 }
 
 .custom-md .md-fold-summary:hover {
-	background: color-mix(in srgb, var(--primary) 3%, transparent);
+	background: color-mix(in oklch, var(--primary) 4%, transparent);
 }
 
 .custom-md .md-fold-summary::before,
@@ -199,13 +276,20 @@
 	position: absolute;
 	top: 50%;
 	display: inline-block;
-	background-color: currentColor;
+	background-color: color-mix(in oklch, var(--tw-prose-headings) 64%, transparent);
 	mask-size: contain;
 	mask-position: center;
 	mask-repeat: no-repeat;
 	transition:
-		transform 0.22s ease,
+		transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+		background-color 0.2s ease,
 		opacity 0.2s ease;
+}
+
+.custom-md .md-fold-toggle:checked + .md-fold-summary::before,
+.custom-md .md-fold-toggle:checked + .md-fold-summary::after {
+	background-color: var(--accent-solid);
+	opacity: 1;
 }
 
 .custom-md .md-fold-summary::before {
@@ -213,7 +297,7 @@
 	width: 1rem;
 	height: 1rem;
 	transform: translateY(-50%);
-	opacity: 0.78;
+	opacity: 0.82;
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.75 1A1.75 1.75 0 0 0 2 2.75v10.5C2 14.216 2.784 15 3.75 15h8.5c.966 0 1.75-.784 1.75-1.75V5.81a1.75 1.75 0 0 0-.513-1.237L10.427 1.51A1.75 1.75 0 0 0 9.19 1Zm5.44 1.5v2.25c0 .138.112.25.25.25h2.25ZM3.5 2.75c0-.138.112-.25.25-.25H7.69v2.5c0 .966.784 1.75 1.75 1.75h3.06v6.5a.25.25 0 0 1-.25.25h-8.5a.25.25 0 0 1-.25-.25Z'/%3E%3C/svg%3E");
 }
 
@@ -260,29 +344,44 @@
 
 .custom-md .md-fold-toggle:checked + .md-fold-summary::after {
 	transform: translateY(-50%) rotate(180deg);
-	opacity: 0.9;
 }
 
 .custom-md .md-fold-body {
 	display: grid;
 	grid-template-rows: 0fr;
-	transition: grid-template-rows 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+	transition: grid-template-rows 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .custom-md .md-fold-body-inner {
+	position: relative;
 	min-height: 0;
 	overflow: hidden;
 	padding: 0 1.05rem;
-	border-top: 1px solid transparent;
 	opacity: 0;
-	transform: translateY(-0.45rem);
+	transform: translateY(-0.4rem);
 	will-change: opacity, transform;
 	transition:
 		padding 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-		border-top-color 0.2s ease,
 		opacity 0.18s ease,
 		transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 	color: var(--tw-prose-body);
+}
+
+.custom-md .md-fold-body-inner::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 1.05rem;
+	left: 1.05rem;
+	height: 1px;
+	opacity: 0;
+	background: linear-gradient(
+		90deg,
+		color-mix(in oklch, var(--primary) 34%, var(--line-divider)),
+		var(--line-divider) 65%,
+		transparent
+	);
+	transition: opacity 0.2s ease;
 }
 
 .custom-md .md-fold-toggle:checked ~ .md-fold-body {
@@ -290,15 +389,17 @@
 }
 
 .custom-md .md-fold-toggle:checked ~ .md-fold-body > .md-fold-body-inner {
-	padding: 0.95rem 1.05rem 1.05rem;
-	border-top: 1px solid color-mix(in srgb, var(--line-divider) 74%, transparent);
+	padding: 0.92rem 1.05rem 1.05rem;
 	opacity: 1;
 	transform: translateY(0);
 	transition:
 		padding 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-		border-top-color 0.2s ease,
 		opacity 0.2s ease 0.03s,
 		transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.custom-md .md-fold-toggle:checked ~ .md-fold-body > .md-fold-body-inner::before {
+	opacity: 1;
 }
 
 .custom-md .md-fold-body-inner > :first-child {
@@ -310,17 +411,26 @@
 }
 
 .custom-md hr {
-	border-color: var(--line-divider);
-	border-style: dashed;
+	border: none;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		var(--line-divider) 24%,
+		color-mix(in oklch, var(--primary) 28%, var(--line-divider)) 50%,
+		var(--line-divider) 76%,
+		transparent
+	);
 }
 
 .custom-md iframe {
-	border-radius: 0.75rem;
+	border-radius: 0.875rem;
 	margin-left: auto;
 	margin-right: auto;
 	max-width: 100%;
 }
 
+/* Bilibili 媒体容器 */
 .custom-md figure.md-bilibili {
 	margin: 1.25rem 0;
 }
@@ -330,44 +440,86 @@
 	width: 100%;
 	aspect-ratio: 16 / 9;
 	height: auto;
-	border: 0;
-	background: var(--license-block-bg);
+	border: 1px solid var(--md-slot-border);
+	background: var(--md-slot-bg);
+	box-shadow: var(--optical-card-shadow);
 }
 
 .custom-md figure.md-bilibili figcaption {
-	margin-top: 0.5rem;
-	color: var(--tw-prose-body);
-	font-size: 0.875rem;
+	margin-top: 0.55rem;
+	color: color-mix(in oklch, var(--tw-prose-body) 72%, transparent);
+	font-size: 0.8125rem;
 	text-align: center;
-	opacity: 0.78;
 }
 
+/* 外链卡片与网格（光学棱镜卡片：对角扫光 + 悬浮抬升 + 元素联动） */
 .custom-md .md-link-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
 	gap: 0.875rem;
-	margin: 1rem 0;
+	margin: 1.15rem 0;
 }
 
 .custom-md a.card-link {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
 	display: grid;
 	grid-template-columns: 3rem minmax(0, 1fr);
 	gap: 0.875rem;
 	align-items: center;
 	min-height: 5rem;
-	margin: 0.75rem 0;
-	padding: 0.875rem 1rem;
-	border: 1px solid color-mix(in srgb, var(--line-divider) 78%, transparent);
-	border-radius: 0.75rem;
-	background: var(--license-block-bg);
+	margin: 0.85rem 0;
+	padding: 0.875rem 2.5rem 0.875rem 1rem;
+	border: 1px solid var(--md-slot-border);
+	border-radius: 0.875rem;
+	background: var(--md-slot-bg);
+	box-shadow: var(--md-slot-inset);
 	color: var(--tw-prose-body);
 	text-decoration-line: none;
 	text-decoration-thickness: 0;
 	transition:
-		border-color 0.18s ease,
-		background-color 0.18s ease,
-		box-shadow 0.18s ease,
-		transform 0.18s ease;
+		border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+		background-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+		box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.custom-md a.card-link::before {
+	content: "";
+	position: absolute;
+	inset: -45% -40%;
+	width: 44%;
+	z-index: 2;
+	pointer-events: none;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		color-mix(in oklch, var(--optical-card-sheen) 58%, transparent) 30%,
+		var(--optical-card-sheen) 50%,
+		color-mix(in oklch, var(--optical-card-sheen) 52%, transparent) 70%,
+		transparent 100%
+	);
+	opacity: 0;
+	transform: translate3d(-130%, -8%, 0) rotate(24deg);
+}
+
+.custom-md a.card-link::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	right: 0.9rem;
+	z-index: 3;
+	width: 1rem;
+	height: 1rem;
+	background-color: color-mix(in oklch, var(--tw-prose-body) 46%, transparent);
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round' d='M7 17L17 7M9 7h8v8'/%3E%3C/svg%3E") center / contain no-repeat;
+	transform: translateY(-50%);
+	opacity: 0.62;
+	transition:
+		background-color 0.22s ease,
+		opacity 0.22s ease,
+		transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .custom-md .md-link-grid a.card-link {
@@ -375,16 +527,25 @@
 	height: 100%;
 }
 
-.custom-md a.card-link:hover {
-	border-color: color-mix(in srgb, var(--primary) 32%, var(--line-divider));
-	background: var(--btn-regular-bg-hover);
-	box-shadow: 0 1rem 2rem -1.5rem color-mix(in srgb, var(--primary) 45%, transparent);
-	transform: translateY(-1px);
+.custom-md a.card-link:hover,
+.custom-md a.card-link:focus-visible {
+	border-color: var(--md-slot-hover-border);
+	background: var(--md-slot-hover-bg);
+	box-shadow: var(--md-card-hover-shadow);
+	transform: translateY(-3px);
+	outline: none;
+}
+
+.custom-md a.card-link:hover::after,
+.custom-md a.card-link:focus-visible::after {
+	background-color: var(--accent-foreground);
+	opacity: 1;
+	transform: translate(3px, calc(-50% - 3px)) scale(1.16);
 }
 
 .custom-md a.card-link:active {
-	background: var(--btn-regular-bg-active);
-	transform: translateY(0) scale(0.99);
+	background: var(--optical-glass-active-bg);
+	transform: translateY(-1px) scale(0.985);
 }
 
 .custom-md a.card-link .lc-media {
@@ -400,17 +561,29 @@
 	width: 3rem;
 	height: 3rem;
 	border-radius: 0.75rem;
+	border: 1px solid var(--md-chip-border);
 	object-fit: cover;
-	background: var(--btn-regular-bg);
+	background: var(--md-chip-bg);
+	transition:
+		transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 0.22s ease,
+		box-shadow 0.22s ease;
+}
+
+.custom-md a.card-link:hover .lc-logo,
+.custom-md a.card-link:focus-visible .lc-logo {
+	border-color: var(--md-chip-hover-border);
+	box-shadow: 0 6px 14px -6px color-mix(in oklch, var(--primary) 42%, transparent);
+	transform: scale(1.08) rotate(-3deg);
 }
 
 .custom-md a.card-link .lc-logo-fallback {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--btn-content);
+	color: var(--accent-foreground);
 	font-weight: 700;
-	background: color-mix(in srgb, var(--primary) 18%, var(--license-block-bg));
+	background: var(--md-chip-bg);
 }
 
 .custom-md a.card-link .lc-logo-github {
@@ -421,8 +594,8 @@
 
 .custom-md a.card-link .lc-logo-github::before {
 	content: "";
-	width: 2rem;
-	height: 2rem;
+	width: 1.75rem;
+	height: 1.75rem;
 	mask-size: contain;
 	mask-position: center;
 	mask-repeat: no-repeat;
@@ -431,67 +604,183 @@
 .custom-md a.card-link .lc-body {
 	display: flex;
 	flex-direction: column;
-	gap: 0.25rem;
+	gap: 0.22rem;
 	min-width: 0;
 }
 
 .custom-md a.card-link .lc-title {
 	overflow: hidden;
 	color: var(--tw-prose-headings);
-	font-weight: 700;
+	font-weight: 650;
 	line-height: 1.35;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	transition:
+		color 0.2s ease,
+		transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.custom-md a.card-link:hover .lc-title,
+.custom-md a.card-link:focus-visible .lc-title {
+	color: var(--accent-foreground);
+	transform: translateX(2px);
 }
 
 .custom-md a.card-link .lc-description {
 	display: -webkit-box;
 	overflow: hidden;
-	color: var(--tw-prose-body);
-	font-size: 0.92rem;
+	color: color-mix(in oklch, var(--tw-prose-body) 80%, transparent);
+	font-size: 0.875rem;
 	line-height: 1.45;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
-	opacity: 0.82;
 }
 
+/* GitHub 仓库卡片（光学棱镜卡片：扫光 + 悬浮 + 左侧发光刻度） */
 a.card-github {
 	display: block;
-	background: var(--license-block-bg);
 	position: relative;
-	margin: 0.5rem 0;
-	padding: 1.1rem 1.5rem;
-	color: var(--tw-prose-body);
+	isolation: isolate;
+	overflow: hidden;
+	margin: 1rem 0;
+	padding: 1.1rem 1.4rem;
+	border: 1px solid var(--md-slot-border);
 	border-radius: var(--radius-large);
+	background: var(--md-slot-bg);
+	box-shadow: var(--md-slot-inset);
+	color: var(--tw-prose-body);
 	text-decoration-thickness: 0;
 	text-decoration-line: none;
+	transition:
+		border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+		background-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+		box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-a.card-github:hover {
-	background-color: var(--btn-regular-bg-hover);
+a.card-github::before {
+	content: "";
+	position: absolute;
+	inset: -45% -40%;
+	width: 42%;
+	z-index: 2;
+	pointer-events: none;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		color-mix(in oklch, var(--optical-card-sheen) 58%, transparent) 30%,
+		var(--optical-card-sheen) 50%,
+		color-mix(in oklch, var(--optical-card-sheen) 52%, transparent) 70%,
+		transparent 100%
+	);
+	opacity: 0;
+	transform: translate3d(-130%, -8%, 0) rotate(24deg);
+}
+
+a.card-github::after {
+	content: "";
+	position: absolute;
+	top: 0.85rem;
+	bottom: 0.85rem;
+	left: 0.35rem;
+	width: 2.5px;
+	border-radius: 9999px;
+	background: linear-gradient(
+		180deg,
+		var(--accent-solid),
+		color-mix(in oklch, var(--primary) 30%, transparent)
+	);
+	box-shadow: 0 0 10px var(--toc-rail-glow);
+	opacity: 0;
+	transform: scaleY(0.45);
+	transition:
+		opacity 0.24s ease,
+		transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+a.card-github:hover,
+a.card-github:focus-visible {
+	border-color: var(--md-slot-hover-border);
+	background: var(--md-slot-hover-bg);
+	box-shadow: var(--md-card-hover-shadow);
+	transform: translateY(-3px);
+	outline: none;
+}
+
+a.card-github:hover::after,
+a.card-github:focus-visible::after {
+	opacity: 1;
+	transform: scaleY(1);
 }
 
 a.card-github:hover .gc-titlebar {
-	color: var(--btn-content);
+	color: var(--accent-foreground);
+}
+
+a.card-github:hover .gc-avatar {
+	border-color: var(--md-chip-hover-border);
+	transform: scale(1.1);
+}
+
+a.card-github:hover .github-logo {
+	transform: scale(1.14) rotate(6deg);
+}
+
+a.card-github:hover .github-logo::before {
+	background-color: var(--accent-foreground);
+	opacity: 1;
 }
 
 a.card-github:hover .gc-stars,
 a.card-github:hover .gc-forks,
 a.card-github:hover .gc-license,
+a.card-github:hover .gc-language {
+	color: var(--tw-prose-headings);
+	border-color: var(--md-chip-hover-border);
+	background: var(--md-chip-hover-bg);
+	transform: translateY(-1px);
+}
+
 a.card-github:hover .gc-description {
 	color: var(--tw-prose-headings);
 }
 
-a.card-github:hover .gc-stars:before,
-a.card-github:hover .gc-forks:before,
-a.card-github:hover .gc-license:before,
-a.card-github:hover .gc-description:before {
-	background-color: var(--tw-prose-headings);
+a.card-github:hover .gc-stars::before,
+a.card-github:hover .gc-forks::before,
+a.card-github:hover .gc-license::before {
+	background-color: var(--accent-foreground);
 }
 
 a.card-github:active {
-	scale: 0.98;
-	background-color: var(--btn-regular-bg-active);
+	background: var(--optical-glass-active-bg);
+	transform: translateY(-1px) scale(0.985);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+	.custom-md a.card-link:hover::before,
+	a.card-github:hover::before {
+		animation: optical-card-sheen-sweep 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.custom-md a.card-link:hover,
+	.custom-md a.card-link:focus-visible,
+	.custom-md a.card-link:active,
+	a.card-github:hover,
+	a.card-github:focus-visible,
+	a.card-github:active,
+	.custom-md a.card-link:hover .lc-logo,
+	.custom-md a.card-link:hover .lc-title,
+	.custom-md a.card-link:hover::after,
+	a.card-github:hover .gc-avatar,
+	a.card-github:hover .github-logo,
+	a.card-github:hover .gc-stars,
+	a.card-github:hover .gc-forks,
+	a.card-github:hover .gc-license,
+	a.card-github:hover .gc-language {
+		transform: none;
+	}
 }
 
 a.card-github .gc-titlebar {
@@ -499,9 +788,9 @@ a.card-github .gc-titlebar {
 	align-items: center;
 	justify-content: space-between;
 	gap: 0.75rem;
-	margin-bottom: 0.5rem;
+	margin-bottom: 0.45rem;
 	color: var(--tw-prose-headings);
-	font-size: 1.25rem;
+	font-size: 1.15rem;
 	font-weight: 500;
 }
 
@@ -512,17 +801,19 @@ a.card-github .gc-titlebar .gc-titlebar-left {
 }
 
 a.card-github .gc-titlebar .gc-repo {
-	font-weight: bold;
+	font-weight: 700;
 	overflow-wrap: anywhere;
 }
 
 a.card-github .gc-titlebar .gc-owner {
-	font-weight: 300;
+	font-weight: 400;
+	opacity: 0.78;
 	display: inline;
 }
 
 a.card-github .gc-titlebar .gc-divider {
-	margin: 0 0.4rem;
+	margin: 0 0.35rem;
+	opacity: 0.45;
 }
 
 a.card-github .gc-titlebar .gc-avatar {
@@ -531,8 +822,9 @@ a.card-github .gc-titlebar .gc-avatar {
 	width: 1.5rem;
 	height: 1.5rem;
 	margin: 0 0.5rem 0 0;
-	vertical-align: -0.2em;
-	background-color: var(--primary);
+	vertical-align: -0.22em;
+	background-color: var(--md-chip-bg);
+	border: 1px solid var(--md-chip-border);
 	background-size: cover;
 	object-fit: cover;
 	flex-shrink: 0;
@@ -541,11 +833,11 @@ a.card-github .gc-titlebar .gc-avatar {
 
 a.card-github .gc-description {
 	display: -webkit-box;
-	margin-bottom: 0.7rem;
-	font-size: 1rem;
-	font-weight: 300;
-	line-height: 1.5rem;
-	color: var(--tw-prose-body);
+	margin-bottom: 0.75rem;
+	font-size: 0.9375rem;
+	font-weight: 400;
+	line-height: 1.55;
+	color: color-mix(in oklch, var(--tw-prose-body) 84%, transparent);
 	overflow-wrap: anywhere;
 	overflow: hidden;
 	-webkit-box-orient: vertical;
@@ -555,68 +847,70 @@ a.card-github .gc-description {
 a.card-github .gc-infobar {
 	display: flex;
 	flex-flow: row wrap;
-	gap: 0.5rem 1.5rem;
+	gap: 0.45rem 0.55rem;
 	color: var(--tw-prose-body);
 	width: fit-content;
-}
-
-a.card-github .gc-language {
-	font-size: 0.875rem;
 }
 
 a.card-github .gc-stars,
 a.card-github .gc-forks,
 a.card-github .gc-license,
-a.card-github .github-logo {
+a.card-github .gc-language {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.16rem 0.52rem;
+	border-radius: 0.45rem;
+	border: 1px solid var(--md-chip-border);
+	background: var(--md-chip-bg);
+	font-size: 0.8rem;
 	font-weight: 500;
-	font-size: 0.875rem;
-	opacity: 0.9;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.35;
 }
 
-a.card-github .gc-stars:before,
-a.card-github .gc-forks:before,
-a.card-github .gc-license:before,
-a.card-github .github-logo:before {
+a.card-github .gc-stars::before,
+a.card-github .gc-forks::before,
+a.card-github .gc-license::before,
+a.card-github .github-logo::before {
 	content: " ";
 	display: inline-block;
-	height: 1.3em;
-	width: 1.3em;
-	margin-right: 0.4rem;
-	vertical-align: -0.24em;
+	height: 1.15em;
+	width: 1.15em;
+	margin-right: 0.35rem;
 	font-size: inherit;
-	background-color: var(--tw-prose-body);
+	background-color: color-mix(in oklch, var(--tw-prose-body) 82%, transparent);
 	overflow: visible;
 	mask-size: contain;
 	mask-position: center;
 	mask-repeat: no-repeat;
-	transition-property: background-color, background;
-	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-	transition-duration: 0.15s;
+	transition: background-color 0.16s ease;
 }
 
-a.card-github .gc-stars:before {
+a.card-github .gc-stars::before {
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' aria-hidden='true' height='16' viewBox='0 0 16 16' version='1.1' width='16'%3E%3Cpath d='M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Zm0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41L8 2.694Z'%3E%3C/path%3E%3C/svg%3E");
 }
 
-a.card-github .gc-license:before {
-	margin-right: 0.5rem;
+a.card-github .gc-license::before {
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' aria-hidden='true' height='16' viewBox='0 0 16 16' version='1.1' width='16'%3E%3Cpath d='M8.75.75V2h.985c.304 0 .603.08.867.231l1.29.736c.038.022.08.033.124.033h2.234a.75.75 0 0 1 0 1.5h-.427l2.111 4.692a.75.75 0 0 1-.154.838l-.53-.53.529.531-.001.002-.002.002-.006.006-.006.005-.01.01-.045.04c-.21.176-.441.327-.686.45C14.556 10.78 13.88 11 13 11a4.498 4.498 0 0 1-2.023-.454 3.544 3.544 0 0 1-.686-.45l-.045-.04-.016-.015-.006-.006-.004-.004v-.001a.75.75 0 0 1-.154-.838L12.178 4.5h-.162c-.305 0-.604-.079-.868-.231l-1.29-.736a.245.245 0 0 0-.124-.033H8.75V13h2.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1 0-1.5h2.5V3.5h-.984a.245.245 0 0 0-.124.033l-1.289.737c-.265.15-.564.23-.869.23h-.162l2.112 4.692a.75.75 0 0 1-.154.838l-.53-.53.529.531-.001.002-.002.002-.006.006-.016.015-.045.04c-.21.176-.441.327-.686.45C4.556 10.78 3.88 11 3 11a4.498 4.498 0 0 1-2.023-.454 3.544 3.544 0 0 1-.686-.45l-.045-.04-.016-.015-.006-.006-.004-.004v-.001a.75.75 0 0 1-.154-.838L2.178 4.5H1.75a.75.75 0 0 1 0-1.5h2.234a.249.249 0 0 0 .125-.033l1.288-.737c.265-.15.564-.23.869-.23h.984V.75a.75.75 0 0 1 1.5 0Zm2.945 8.477c.285.135.718.273 1.305.273s1.02-.138 1.305-.273L13 6.327Zm-10 0c.285.135.718.273 1.305.273s1.02-.138 1.305-.273L3 6.327Z'%3E%3C/path%3E%3C/svg%3E");
 }
 
-a.card-github .gc-forks:before {
+a.card-github .gc-forks::before {
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' aria-hidden='true' height='16' viewBox='0 0 16 16' version='1.1' width='16'%3E%3Cpath d='M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0ZM5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Zm6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z'%3E%3C/path%3E%3C/svg%3E");
 }
 
 a.card-github .github-logo {
 	font-size: 1.25rem;
 	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
 }
 
-a.card-github .github-logo:before,
+a.card-github .github-logo::before,
 .custom-md a.card-link .lc-logo-github::before {
 	background-color: var(--tw-prose-headings);
 	margin-right: 0;
-	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='31' height='32' viewBox='0 0 496 512'%3E%3Cpath fill='%23a1f7cb' d='M165.9 397.4c0 2-2.3 3.6-5.2 3.6c-3.3.3-5.6-1.3-5.6-3.6c0-2 2.3-3.6 5.2-3.6c3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9c2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9c.3 2 2.9 3.3 5.9 2.6c2.9-.7 4.9-2.6 4.6-4.6c-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2c12.8 2.3 17.3-5.6 17.3-12.1c0-6.2-.3-40.4-.3-61.4c0 0-70 15-84.7-29.8c0 0-11.4-29.1-27.8-36.6c0 0-22.9-15.7 1.6-15.4c0 0 24.9 2 38.6 25.8c21.9 38.6 58.6 27.5 72.9 20.9c2.3-16 8.8-27.1 16-33.7c-55.9-6.2-112.3-14.3-112.3-110.5c0-27.5 7.6-41.3 23.6-58.9c-2.6-6.5-11.1-33.3 2.6-67.9c20.9-6.5 69 27 69 27c20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27c13.7 34.7 5.2 61.4 2.6 67.9c16 17.7 25.8 31.5 25.8 58.9c0 96.5-58.9 104.2-114.8 110.5c9.2 7.9 17 22.9 17 46.4c0 33.7-.3 75.4-.3 83.6c0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252C496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2c1.6 1.6 3.9 2.3 5.2 1c1.3-1 1-3.3-.7-5.2c-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9c1.6 1 3.6.7 4.3-.7c.7-1.3-.3-2.9-2.3-3.9c-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2c2.3 2.3 5.2 2.6 6.5 1c1.3-1.3.7-4.3-1.3-6.2c-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9c1.6 2.3 4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2c-1.4-2.3-4-3.3-5.6-2'/%3E%3C/svg%3E");
+	opacity: 0.84;
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='31' height='32' viewBox='0 0 496 512'%3E%3Cpath d='M165.9 397.4c0 2-2.3 3.6-5.2 3.6c-3.3.3-5.6-1.3-5.6-3.6c0-2 2.3-3.6 5.2-3.6c3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9c2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9c.3 2 2.9 3.3 5.9 2.6c2.9-.7 4.9-2.6 4.6-4.6c-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2c12.8 2.3 17.3-5.6 17.3-12.1c0-6.2-.3-40.4-.3-61.4c0 0-70 15-84.7-29.8c0 0-11.4-29.1-27.8-36.6c0 0-22.9-15.7 1.6-15.4c0 0 24.9 2 38.6 25.8c21.9 38.6 58.6 27.5 72.9 20.9c2.3-16 8.8-27.1 16-33.7c-55.9-6.2-112.3-14.3-112.3-110.5c0-27.5 7.6-41.3 23.6-58.9c-2.6-6.5-11.1-33.3 2.6-67.9c20.9-6.5 69 27 69 27c20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27c13.7 34.7 5.2 61.4 2.6 67.9c16 17.7 25.8 31.5 25.8 58.9c0 96.5-58.9 104.2-114.8 110.5c9.2 7.9 17 22.9 17 46.4c0 33.7-.3 75.4-.3 83.6c0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252C496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2c1.6 1.6 3.9 2.3 5.2 1c1.3-1 1-3.3-.7-5.2c-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9c1.6 1 3.6.7 4.3-.7c.7-1.3-.3-2.9-2.3-3.9c-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2c2.3 2.3 5.2 2.6 6.5 1c1.3-1.3.7-4.3-1.3-6.2c-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9c1.6 2.3 4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2c-1.4-2.3-4-3.3-5.6-2'/%3E%3C/svg%3E");
 }
 
 a.card-github .gc-status {
@@ -626,7 +920,7 @@ a.card-github .gc-status {
 	margin-top: 0.7rem;
 	font-size: 0.8125rem;
 	line-height: 1.65;
-	color: var(--tw-prose-body);
+	color: color-mix(in oklch, var(--tw-prose-body) 78%, transparent);
 }
 
 a.card-github .gc-status-icon {
@@ -648,15 +942,18 @@ a.card-github .gc-titlebar .gc-avatar[hidden] {
 	display: none;
 }
 
-.card-github,
 .gc-description,
 .gc-titlebar,
 .gc-stars,
 .gc-forks,
 .gc-license,
+.gc-language,
 .gc-avatar,
 .github-logo {
-	transition-property: all;
-	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-	transition-duration: 0.15s;
+	transition:
+		color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+		background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }

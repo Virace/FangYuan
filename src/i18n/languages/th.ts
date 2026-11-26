@@ -88,6 +88,7 @@ export const th: Translation = {
 	[Key.systemMode]: "ตามระบบ",
 
 	[Key.more]: "ดูเพิ่ม",
+	[Key.less]: "ย่อลง",
 
 	[Key.author]: "ผู้เขียน",
 	[Key.publishedAt]: "เผยแพร่เมื่อ",
@@ -100,5 +101,6 @@ export const th: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"หากบทความนี้เป็นประโยชน์ คุณสามารถสนับสนุนผู้เขียนผ่านช่องทางด้านล่างได้",
 	[Key.pageFeedbackClose]: "ปิด",
+	[Key.tableOfContents]: "สารบัญ",
 	[Key.license]: "สัญญาอนุญาต",
 };

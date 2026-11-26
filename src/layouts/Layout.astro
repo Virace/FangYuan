@@ -142,13 +142,18 @@ const canonicalUrl =
 
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		{resolvedFavicons.map(favicon => (
-			<link rel="icon"
-				  href={resolveFaviconHref(favicon.src)}
-				  sizes={favicon.sizes}
-				  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
-			/>
-		))}
+		{resolvedFavicons.map(favicon => {
+			const resolvedHref = resolveFaviconHref(favicon.src);
+			const isSvg = resolvedHref.split("?")[0].toLowerCase().endsWith(".svg");
+			return (
+				<link rel="icon"
+					  href={resolvedHref}
+					  type={isSvg ? "image/svg+xml" : undefined}
+					  sizes={favicon.sizes}
+					  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
+				/>
+			);
+		})}
 
 		<Font cssVariable="--font-roboto" preload />
 		<Font cssVariable="--font-jetbrains-mono" />
@@ -339,7 +344,7 @@ function setClickOutsideToClose(panelId: string, ignoredElementIds: string[]) {
 				return;
 			}
 		}
-		panelElement!.classList.add("float-panel-closed");
+		panelElement?.classList.add("float-panel-closed");
 	});
 }
 setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
@@ -440,22 +445,15 @@ const backToTopButton = document.getElementById('back-to-top-btn');
 const tableOfContentsElement = document.getElementById('toc-wrapper');
 const navbarElement = document.getElementById('navbar-wrapper')
 function scrollFunction() {
+	const scrollTop = window.scrollY;
 	const bannerScrollThreshold = window.innerHeight * (BANNER_HEIGHT / 100)
 
 	if (backToTopButton) {
-		if (document.body.scrollTop > bannerScrollThreshold || document.documentElement.scrollTop > bannerScrollThreshold) {
-			backToTopButton.classList.remove('hide')
-		} else {
-			backToTopButton.classList.add('hide')
-		}
+		backToTopButton.classList.toggle('hide', scrollTop <= bannerScrollThreshold)
 	}
 
 	if (isBannerEnabled && tableOfContentsElement) {
-		if (document.body.scrollTop > bannerScrollThreshold || document.documentElement.scrollTop > bannerScrollThreshold) {
-			tableOfContentsElement.classList.remove('toc-hide')
-		} else {
-			tableOfContentsElement.classList.add('toc-hide')
-		}
+		tableOfContentsElement.classList.toggle('toc-hide', scrollTop <= bannerScrollThreshold)
 	}
 
 	if (!isBannerEnabled) return
@@ -468,21 +466,17 @@ function scrollFunction() {
 			activeBannerHeightPercent = BANNER_HEIGHT_HOME
 		}
 		const navbarHideThreshold = window.innerHeight * (activeBannerHeightPercent / 100) - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16
-		if (document.body.scrollTop >= navbarHideThreshold || document.documentElement.scrollTop >= navbarHideThreshold) {
-			navbarElement.classList.add('navbar-hidden')
-		} else {
-			navbarElement.classList.remove('navbar-hidden')
-		}
+		navbarElement.classList.toggle('navbar-hidden', scrollTop >= navbarHideThreshold)
 	}
 }
-window.onscroll = scrollFunction
+window.addEventListener('scroll', scrollFunction, { passive: true })
 
-window.onresize = () => {
+window.addEventListener('resize', () => {
 	// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
 	let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
 	offset = offset - offset % 4;
 	document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
-}
+}, { passive: true })
 
 </script>
 

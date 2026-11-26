@@ -11,13 +11,13 @@ FangYuan 是 Astro 静态站点主题。Astro 负责路由、内容加载、页�
 - `src/components/`：展示组件与 island；组件不拥有内容源选择或固定链接规则。
 - `src/config.ts`：合并默认配置、外部站点配置和公开部署覆盖。
 - `src/content.config.ts`：声明 posts / spec collections 及 frontmatter schema。
+- `src/styles/`：`main.css` 样式清单、`prose.css` 独立正文排版基线与 `modules/` 领域样式模块。
 - `src/utils/content/`：内容排序、日期、分页、归档和 RSS 逻辑。
 - `src/utils/permalink/` 与 `src/utils/content-routes.ts`：固定链接解析、物化方式和路由清单。
 - `src/utils/content-route-history.ts`：纯身份、历史归属和输出冲突校验；`content-route-store.ts` 读取一致的源文件快照并准备登记变化。
 - `src/utils/site-source/`：选择内部或外部站点源，加载配置、内容与资源，并处理开发监听。
 - `src/utils/comments/`、`src/utils/qingyan/`、`src/utils/page-feedback/`：可选 QingYan 能力的客户端契约、状态与适配。
 - `scripts/site/`：初始化、升级、迁移和构建包装。
-- `scripts/wp-migration/`：WordPress WXR 审计与转换。
 - `tests/`：Node 行为测试和真实 Astro 构建产物矩阵。
 - `tests/e2e/`：核心浏览器流程、可访问性和视觉快照。
 
@@ -64,11 +64,11 @@ GitHub 卡片先由内容插件生成基础 HTML，再在 Astro 本轮 HTML 输�
 
 ## 浏览器交互流
 
-静态 HTML 启动后，Svelte island 负责搜索、主题、评论、反馈和局部控制。Swup 更新 `main` 与 TOC 容器；跨页仍必须有效的 dialog、drawer、backdrop、定位和过渡样式由全局样式提供。QingYan 能力由公开配置和 bootstrap 响应启用，关闭时不挂载对应交互面。
+静态 HTML 启动后，Svelte island 负责搜索、归档筛选、全局通知、评论、文章反馈与阅读统计；顶栏明暗切换、主题色滑块、导航与回顶控件由纯 Astro 承载。Swup 更新 `main` 与 TOC 容器；跨页仍必须有效的 dialog、drawer、backdrop、定位和过渡样式由全局样式提供。QingYan 能力由公开配置和 bootstrap 响应启用，关闭时不挂载对应交互面。
 
 页面和块级公式使用原生滚动。在使用传统滚动条的桌面环境中，主题按实际滚动位置显示浮动滑块，并将拖动映射到原生滚动区域。切页时只为新正文重新绑定公式滑块。
 
-常规正向导航由 `src/utils/browser/optical-transition/` 协调。Swup 取页与入幕并行，主栏完全遮蔽后才缩短滚动距离，到顶后允许置换正文。独立于替换容器的固定画布逐帧跟踪主栏；默认的 `liquid-rain` 渲染器通过 `OpticalTransitionRenderer` 接收阶段、几何、滚速与目的页标题。历史导航、锚点和减少动态效果沿用各自的滚动入口。
+常规正向导航由 `src/utils/browser/optical-transition/` 协调。Swup 取页与入幕并行，主栏完全遮蔽后才缩短滚动距离，到顶后允许置换正文。独立于替换容器的固定画布逐帧跟踪主栏；默认的 `liquid-rain` 渲染器通过 `OpticalTransitionRenderer` 接收阶段、几何、滚速与目的页标题。此前曾在光幕中央绘制目的页标题印记与底线，但因主栏与整站中心存在水平偏置、且主页/归档/文章容器高度不一导致纵向重心不稳，当前版本暂时关闭光幕文字印记，仅保留光学流体与光带转场（相关契约仍保留在 `TransitionFrameState["imprint"]`）。历史导航、锚点和减少动态效果沿用各自的滚动入口。
 
 桌面端顶图伸缩时，侧栏的吸顶偏移与内容区位移同步。光幕按侧栏在视口中的实际位置计算回顶起点，使已吸顶的分类和标签保持原位，直到资料卡重新滚入视口。首页与内页使用淡入淡出切换时，侧栏在完全透明时换位。
 
@@ -95,7 +95,6 @@ GitHub 卡片先由内容插件生成基础 HTML，再在 Astro 本轮 HTML 输�
 - posts / spec frontmatter schema。
 - `FANGYUAN_SITE_ROOT`、`FANGYUAN_SITE_MODE`、`FANGYUAN_SITE`、`FANGYUAN_BASE` 及已声明的公开环境变量。
 - QingYan bootstrap、评论、反馈和统计客户端契约。
-- WordPress WXR 输入与转换产物。
 - 静态输出中的永久链接、RSS、sitemap、Pagefind 索引和资源路径。
 
 共享契约发生语义变化时，先更新 schema、迁移策略和行为测试，再调整消费者；不得只在页面层做局部兼容。

@@ -83,6 +83,7 @@ const I18nKey = {
 	systemMode: "systemMode",
 
 	more: "more",
+	less: "less",
 
 	author: "author",
 	publishedAt: "publishedAt",
@@ -94,6 +95,7 @@ const I18nKey = {
 	pageFeedbackRewardTitle: "pageFeedbackRewardTitle",
 	pageFeedbackRewardDescription: "pageFeedbackRewardDescription",
 	pageFeedbackClose: "pageFeedbackClose",
+	tableOfContents: "tableOfContents",
 	license: "license",
 } as const;
 

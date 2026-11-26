@@ -24,6 +24,7 @@ export type ExternalSiteConfigYaml = {
 		| "toc"
 		| "githubCard"
 		| "notifications"
+		| "tags"
 		| "permalink"
 		| "postSort"
 		| "taxonomySort"
@@ -35,6 +36,7 @@ export type ExternalSiteConfigYaml = {
 		toc?: Partial<SiteConfig["toc"]>;
 		githubCard?: Partial<SiteConfig["githubCard"]>;
 		notifications?: Partial<SiteConfig["notifications"]>;
+		tags?: Partial<SiteConfig["tags"]>;
 		permalink?: Partial<SiteConfig["permalink"]> & {
 			postPatternRules?: SiteConfig["permalink"]["postPatternRules"];
 		};
@@ -225,6 +227,31 @@ const externalSiteConfigSchema = z
 					})
 					.strict()
 					.optional(),
+				tags: z
+					.object({
+						showHash: z.boolean().optional(),
+						showCount: z.boolean().optional(),
+					})
+					.strict()
+					.optional(),
+				logo: z
+					.union([
+						z.string().trim().min(1),
+						z
+							.object({
+								light: z.string().trim().min(1).optional(),
+								dark: z.string().trim().min(1).optional(),
+								alt: z.string().optional(),
+								showTitle: z.boolean().optional(),
+							})
+							.strict()
+							.refine(
+								(value) => Boolean(value.light || value.dark),
+								"siteConfig.logo must specify light or dark",
+							),
+					])
+					.nullable()
+					.optional(),
 				favicon: z
 					.array(
 						z
@@ -292,6 +319,7 @@ const externalSiteConfigSchema = z
 				avatar: z.string().optional(),
 				name: z.string().optional(),
 				bio: z.string().optional(),
+				linkEffect: z.enum(["expand", "lift"]).optional(),
 				links: z
 					.array(
 						z

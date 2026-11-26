@@ -96,6 +96,7 @@ export const id: Translation = {
 	[Key.systemMode]: "Sistem",
 
 	[Key.more]: "Lainnya",
+	[Key.less]: "Ringkas",
 
 	[Key.author]: "Penulis",
 	[Key.publishedAt]: "Diterbitkan pada",
@@ -108,5 +109,6 @@ export const id: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"Jika postingan ini membantu Anda, Anda dapat mendukung penulis melalui kanal di bawah ini.",
 	[Key.pageFeedbackClose]: "Tutup",
+	[Key.tableOfContents]: "Daftar Isi",
 	[Key.license]: "Lisensi",
 };

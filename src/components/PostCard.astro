@@ -7,6 +7,7 @@ import { i18n } from "../i18n/translation";
 import { isPinnedPost } from "../utils/content/post-ordering";
 import type { PostEntry } from "../utils/content/posts";
 import { resolveContentImage } from "../utils/image-source";
+import { resolveOpticalCoverPreset } from "../utils/optical-cover-presets";
 import ImageWrapper from "./misc/ImageWrapper.astro";
 import PostMetadata from "./PostMeta.astro";
 
@@ -40,42 +41,52 @@ const className = Astro.props.class;
 
 const hasCover = image !== undefined && image !== null && image !== "";
 
-const coverWidth = "28%";
-
 const { remarkPluginFrontmatter } = await render(entry);
 const resolvedCoverImage = await resolveContentImage(
 	image,
 	entry.filePath?.replace(/\\/g, "/"),
 );
+const fallbackCover = hasCover
+	? null
+	: resolveOpticalCoverPreset(entry.id || url || title);
 const isPinned = isPinnedPost(entry.data);
 ---
-<div class:list={["card-base flex flex-col-reverse md:flex-col w-full rounded-panel overflow-hidden relative", className]} style={style}>
-    <div class:list={["pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full md:w-[calc(100%-52px-12px)]": !hasCover, "w-full md:w-[calc(100%-var(--coverWidth)-12px)]": hasCover}]}>
-        <a href={url} data-transition-title={title}
-           class="transition group w-full block font-bold mb-3 text-3xl text-90
-        hover:text-accent-solid
-        active:text-title-active
-        before:w-1 before:h-5 before:rounded-md before:bg-primary
-        before:absolute before:top-8.75 before:left-4.5 before:hidden md:before:block
-        ">
-            {isPinned && (
-                <span
-                    class="relative -top-[0.08em] inline-block whitespace-nowrap text-[0.56em] leading-none align-middle font-black tracking-[0.18em] text-accent-solid uppercase"
-                >
-                    {i18n(I18nKey.pinned)}
+<div class:list={["card-base optical-post-card flex flex-col-reverse md:flex-col w-full rounded-panel overflow-hidden relative md:min-h-[12.75rem]", className]} style={style}>
+    {hasCover && <div class="optical-card-blur-band hidden md:block pointer-events-none" aria-hidden="true"></div>}
+    <div class="optical-card-text-scrim hidden md:block pointer-events-none" aria-hidden="true"></div>
+
+    <div class:list={["optical-card-content relative z-10 pl-6 md:pl-9 pr-6 md:pr-6 pt-5 md:pt-7 pb-6 flex-1 flex flex-col justify-between w-full", hasCover ? "md:w-[58%]" : "md:w-[78%]"]}>
+        <div>
+            <a href={url} data-transition-title={title}
+               class="transition group w-full block font-bold mb-3 text-3xl text-90
+            hover:text-accent-solid
+            active:text-title-active
+            optical-post-title-beam
+            before:absolute before:top-8.75 before:left-4.5 before:hidden md:before:block
+            ">
+                <span class="flex items-start gap-1">
+                    <span class="line-clamp-2 min-w-0">
+                        {isPinned && (
+                            <span
+                                class="relative -top-[0.08em] inline-block whitespace-nowrap text-[0.56em] leading-none align-middle font-black tracking-[0.18em] text-accent-solid uppercase"
+                            >
+                                {i18n(I18nKey.pinned)}
+                            </span>
+                        )}
+                        {title}
+                    </span>
+                    <Icon is:inline class="inline shrink-0 icon-32 text-primary md:hidden translate-y-0.5" name="material-symbols:chevron-right-rounded" ></Icon>
+                    <Icon is:inline class="text-primary shrink-0 icon-32 transition hidden md:inline translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
                 </span>
-            )}
-            {title}
-            <Icon is:inline class="inline icon-32 text-primary md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
-            <Icon is:inline class="text-primary icon-32 transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
-        </a>
+            </a>
 
-        <!-- metadata -->
-        <PostMetadata published={published} updated={updated} tags={tags} category={category} hideTagsForMobile={true} hideUpdateDate={true} class="mb-4"></PostMetadata>
+            <!-- metadata -->
+            <PostMetadata published={published} updated={updated} tags={tags} category={category} hideTagsForMobile={true} hideUpdateDate={true} class="mb-4"></PostMetadata>
 
-        <!-- description -->
-        <div class:list={["transition text-75 mb-3.5 pr-4", {"line-clamp-2 md:line-clamp-1": !description}]}>
-            { description || remarkPluginFrontmatter.excerpt }
+            <!-- description -->
+            <div class="transition text-75 mb-3.5 pr-4 line-clamp-2">
+                { description || remarkPluginFrontmatter.excerpt }
+            </div>
         </div>
 
         <!-- word count and read time  -->
@@ -92,33 +103,34 @@ const isPinned = isPinnedPost(entry.data);
     </div>
 
     {hasCover && <a href={url} aria-label={title}
-                    class:list={["group",
-                        "max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0",
-                        "md:w-[var(--coverWidth)] relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
-                    ]} >
-        <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
-        <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
-            <Icon is:inline name="material-symbols:chevron-right-rounded"
-                  class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl">
-            </Icon>
+                    class="optical-card-cover-link group block relative h-48 md:h-auto md:inset-0 md:absolute z-0 overflow-hidden" >
+        <div class="optical-card-focus-mark hidden md:flex items-center justify-center pointer-events-none">
+            <Icon is:inline name="material-symbols:chevron-right-rounded" class="text-xl" />
         </div>
-        <ImageWrapper src={resolvedCoverImage} alt="Cover Image of the Post"
-                  class="w-full h-full">
-        </ImageWrapper>
+        <div class="optical-card-cover-media optical-card-cover-mirror hidden md:block pointer-events-none" aria-hidden="true">
+            <ImageWrapper src={resolvedCoverImage} alt="" position="left center"
+                      class="w-full h-full">
+            </ImageWrapper>
+        </div>
+        <div class="optical-card-cover-media optical-card-cover-real w-full h-full">
+            <ImageWrapper src={resolvedCoverImage} alt="Cover Image of the Post"
+                      class="w-full h-full">
+            </ImageWrapper>
+        </div>
     </a>}
 
-    {!hasCover &&
-        <a href={url} aria-label={title} class="hidden! md:flex! btn-regular w-13
-         absolute right-3 top-3 bottom-3 rounded-xl bg-enter-btn-bg
-         hover:bg-enter-btn-bg-hover active:bg-enter-btn-bg-active active:scale-95
-        ">
-            <Icon is:inline name="material-symbols:chevron-right-rounded"
-                  class="transition text-accent-foreground text-4xl mx-auto">
-            </Icon>
+    {!hasCover && fallbackCover && (
+        <a href={url} aria-label={title}
+           class="optical-card-cover-link group block relative h-32 md:h-auto md:inset-0 md:absolute z-0 overflow-hidden">
+            <div class="optical-card-focus-mark hidden md:flex items-center justify-center pointer-events-none">
+                <Icon is:inline name="material-symbols:chevron-right-rounded" class="text-xl" />
+            </div>
+            <div
+                class="optical-card-cover-media w-full h-full"
+                style={`background: ${fallbackCover.background};`}
+                aria-hidden="true"
+            ></div>
         </a>
-    }
+    )}
 </div>
-<div class="transition border-t border-dashed mx-6 border-line-divider last:border-t-0 md:hidden"></div>
-
-<style define:vars={{coverWidth}}>
-</style>
+<div class="optical-hairline mx-6 w-auto! last:hidden md:hidden" aria-hidden="true"></div>

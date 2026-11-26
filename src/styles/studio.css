@@ -9,8 +9,6 @@
 @import "./markdown.css";
 @import "./expressive-code.css";
 
-@source inline("prose prose-base dark:prose-invert max-w-none");
-
 :scope {
 	--font-roboto: "Roboto";
 	--font-jetbrains-mono: "JetBrains Mono Variable";

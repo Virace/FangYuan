@@ -10,19 +10,21 @@ export function pluginLanguageBadge(): ReturnType<typeof definePlugin> {
       [data-language]::before {
         position: absolute;
         z-index: 2;
-        right: 0.5rem;
-        top: 0.5rem;
-        padding: 0.1rem 0.5rem;
+        right: 0.6rem;
+        top: 0.6rem;
+        padding: 0.12rem 0.48rem;
         content: attr(data-language);
         font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 0.75rem;
-        font-weight: bold;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-        color: oklch(0.75 0.1 var(--hue));
-        background: oklch(0.33 0.035 var(--hue));
-        border-radius: 0.5rem;
+        color: var(--accent-foreground);
+        background: var(--codeblock-btn-bg);
+        border: 1px solid var(--codeblock-btn-border);
+        border-radius: 0.42rem;
         pointer-events: none;
-        transition: opacity 0.3s;
+        transition: opacity 0.2s ease;
         opacity: 0;
       }
       .frame:not(.has-title):not(.is-terminal) {

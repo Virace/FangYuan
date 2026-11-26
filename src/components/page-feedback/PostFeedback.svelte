@@ -3,6 +3,7 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getAutoDismissMs } from "@utils/browser/notice";
 import { getPageNoticeScope, showNotice } from "@utils/browser/notifications";
+import { resolveRewardAccent } from "@utils/browser/reward-projection";
 import {
 	CommentCaptchaRequiredError,
 	type CommentCaptchaState,
@@ -50,6 +51,8 @@ let captchaError = "";
 let captchaPrompt = "";
 let captchaValue = "";
 let rewardOpen = false;
+let rewardTriggerEl: HTMLButtonElement | null = null;
+let rewardEmitterEls: Array<HTMLElement | null> = [];
 let captchaState = null as CommentCaptchaState | null;
 let showCaptcha = false;
 let pendingLikeAction = false;
@@ -58,6 +61,8 @@ let captchaFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 $: showLike = enableLike && (capability?.supportsLike ?? false);
 $: showReward = rewardItems.length > 0;
 $: showCard = showLike || showReward;
+$: rewardEmitterOptions =
+	rewardItems.length === 2 ? rewardItems : rewardItems.slice(0, 1);
 
 function clearCaptchaFeedbackTimer() {
 	if (captchaFeedbackTimer) {
@@ -272,86 +277,106 @@ onDestroy(() => {
 </script>
 
 {#if showCard}
-	<section class="card-base mb-6 rounded-panel border border-line-divider px-4 py-4 md:px-6">
-		<div class="flex flex-col">
-			<div class="post-feedback-row">
-				<div class="min-w-0 flex-1">
-					<p class="text-base font-semibold text-90 md:text-lg">
-						{i18n(I18nKey.pageFeedbackRewardTitle)}
-					</p>
-				</div>
+	<section class="post-feedback-section onload-animation">
+		<div class="post-feedback-endmark">
+			<p class="post-feedback-mark-label">
+				<span class="optical-status-dot" aria-hidden="true"></span>
+				<span>{i18n(I18nKey.pageFeedbackRewardTitle)}</span>
+			</p>
+		</div>
 
-				<div class="post-feedback-actions">
-					{#if showLike}
-						<div class="comment-captcha-popover-anchor post-like-anchor">
-							<button
-								type="button"
-								class="btn-card post-feedback-button rounded-full border border-line-divider text-75"
-								class:border-primary={liked}
-								class:text-primary={liked}
-								class:bg-btn-plain-bg-hover={liked}
-								disabled={loading || likeBusy || liked}
-								aria-pressed={liked}
-								on:click={handleLike}
-							>
-								<svg class="post-feedback-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="10" width="4.2" height="10.5" rx="1.4" /><path d="M9.1 20.5V10l3.1-6.1a1.65 1.65 0 0 1 3.1 1.2L14.1 10h4.4a2.2 2.2 0 0 1 2.1 2.8l-1.5 5.7a2.7 2.7 0 0 1-2.6 2H9.1Z" /></svg>
-								<span class="whitespace-nowrap">
-									{liked ? i18n(I18nKey.pageFeedbackLiked) : i18n(I18nKey.pageFeedbackLike)}
-									{" "}
-									{likeCount}
-								</span>
-							</button>
-							{#if celebrating}<span class="post-like-burst" aria-hidden="true">{#each confetti as particle, index}<i style={`--burst-x:${particle.x}px;--burst-y:${particle.y}px;--burst-angle:${particle.angle}deg;--burst-hue:${index * 30};`}></i>{/each}</span>{/if}
+		<div class="post-feedback-dock">
+			{#if showLike}
+				<div class="comment-captcha-popover-anchor post-like-anchor">
+					<button
+						type="button"
+						class="btn-card post-feedback-button post-like-button rounded-full border border-line-divider text-75"
+						class:border-primary={liked}
+						class:text-primary={liked}
+						class:bg-btn-plain-bg-hover={liked}
+						data-liked={liked ? "true" : "false"}
+						disabled={loading || likeBusy || liked}
+						aria-pressed={liked}
+						on:click={handleLike}
+					>
+						<svg class="post-feedback-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="10" width="4.2" height="10.5" rx="1.4" /><path d="M9.1 20.5V10l3.1-6.1a1.65 1.65 0 0 1 3.1 1.2L14.1 10h4.4a2.2 2.2 0 0 1 2.1 2.8l-1.5 5.7a2.7 2.7 0 0 1-2.6 2H9.1Z" /></svg>
+						<span class="whitespace-nowrap">
+							{liked ? i18n(I18nKey.pageFeedbackLiked) : i18n(I18nKey.pageFeedbackLike)}
+							{" "}
+							<span class="post-like-count" class:post-like-count-bump={celebrating}>{likeCount}</span>
+						</span>
+					</button>
+					{#if celebrating}<span class="post-like-burst" aria-hidden="true">{#each confetti as particle, index}<i style={`--burst-x:${particle.x}px;--burst-y:${particle.y}px;--burst-angle:${particle.angle}deg;--burst-hue:${index * 30};`}></i>{/each}</span>{/if}
 
-							{#if showCaptcha && captchaState}
+					{#if showCaptcha && captchaState}
+						<div
+							class="comment-captcha-popover-wrap comment-captcha-popover-wrap-end"
+							data-page-feedback-captcha-target="like"
+						>
+							<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
 								<div
-									class="comment-captcha-popover-wrap comment-captcha-popover-wrap-end"
-									data-page-feedback-captcha-target="like"
+									class="comment-captcha-popover"
+									in:scale={{ duration: 180, start: 0.92, opacity: 0.5 }}
+									out:scale={{ duration: 150, start: 1, opacity: 0.4 }}
 								>
-									<div in:fade={{ duration: 180 }} out:fade={{ duration: 180 }}>
-										<div
-											class="comment-captcha-popover"
-											in:scale={{ duration: 180, start: 0.92, opacity: 0.5 }}
-											out:scale={{ duration: 150, start: 1, opacity: 0.4 }}
-										>
-											<InlineCommentCaptcha
-												compact={true}
-												variant="popover"
-												bind:captchaValue
-												stacked={true}
-												autoFocusCaptchaInput={true}
-												captchaState={captchaState}
-												captchaBusy={captchaBusy}
-												captchaError={captchaError}
-												captchaPrompt={captchaPrompt}
-												onRefreshCaptcha={handleRefreshCaptcha}
-												onSubmitCaptcha={handleLike}
-											/>
-										</div>
-									</div>
+									<InlineCommentCaptcha
+										compact={true}
+										variant="popover"
+										bind:captchaValue
+										autoFocusCaptchaInput={true}
+										captchaState={captchaState}
+										captchaBusy={captchaBusy}
+										captchaError={captchaError}
+										captchaPrompt={captchaPrompt}
+										onRefreshCaptcha={handleRefreshCaptcha}
+										onSubmitCaptcha={handleLike}
+									/>
 								</div>
-							{/if}
+							</div>
 						</div>
 					{/if}
-
-					{#if showReward}
-						<button
-							type="button"
-							class="btn-card post-feedback-button rounded-full border border-line-divider text-75"
-							on:click={() => (rewardOpen = true)}
-						>
-							<svg class="post-feedback-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h12v5.5a5.5 5.5 0 0 1-5.5 5.5h-1A5.5 5.5 0 0 1 4 14.5V9ZM16 10h1.5a3 3 0 0 1 0 6H16M3 22h15M7 3v2M11 2v3M15 3v2" /></svg>
-							<span class="whitespace-nowrap">{i18n(I18nKey.pageFeedbackReward)}</span>
-						</button>
-					{/if}
 				</div>
-			</div>
+			{/if}
+
+			{#if showLike && showReward}
+				<span class="post-feedback-dock-sep" aria-hidden="true"></span>
+			{/if}
+
+			{#if showReward}
+				<button
+					bind:this={rewardTriggerEl}
+					type="button"
+					class="btn-card post-feedback-button reward-trigger rounded-full border border-line-divider text-75"
+					data-open={rewardOpen ? "true" : "false"}
+					aria-haspopup="dialog"
+					on:click={() => (rewardOpen = !rewardOpen)}
+				>
+					<span
+						class="reward-emitter-rim"
+						data-layout={rewardEmitterOptions.length === 2 ? "dual" : "single"}
+						aria-hidden="true"
+					>
+						{#each rewardEmitterOptions as option, index (option.id)}
+							{@const accent = resolveRewardAccent(option.id, option.name)}
+							<span
+								bind:this={rewardEmitterEls[index]}
+								class="reward-emitter-eye"
+								style={`--reward-eye-color:${accent.bright};--reward-eye-main:${accent.main};`}
+							></span>
+						{/each}
+					</span>
+					<svg class="post-feedback-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h12v5.5a5.5 5.5 0 0 1-5.5 5.5h-1A5.5 5.5 0 0 1 4 14.5V9ZM16 10h1.5a3 3 0 0 1 0 6H16M3 22h15M7 3v2M11 2v3M15 3v2" /></svg>
+					<span class="whitespace-nowrap">{i18n(I18nKey.pageFeedbackReward)}</span>
+				</button>
+			{/if}
 		</div>
 	</section>
 
 	<RewardModal
 		open={rewardOpen}
 		options={rewardItems}
+		triggerEl={rewardTriggerEl}
+		emitterEls={rewardEmitterEls}
 		onClose={() => (rewardOpen = false)}
 	/>
 {/if}

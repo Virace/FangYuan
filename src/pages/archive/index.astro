@@ -15,6 +15,6 @@ const sortedPostsList = await getSortedPostsList();
 	<ArchivePanel
 		sortedPosts={sortedPostsList}
 		showPinnedInTimeline={siteConfig.showPinnedInArchiveTimeline}
-		client:only="svelte"
+		client:load
 	></ArchivePanel>
 </MainGridLayout>

@@ -64,6 +64,12 @@ export const defaultSiteConfig: SiteConfig = {
 		position: "top", // 队列基准位于导航栏下方；bottom 则在视口底部及可见页脚上方留白
 		newestOnTop: false, // 新消息在已有消息下方；true 则在上方，与基准位置独立
 	},
+	tags: {
+		showHash: false, // 是否在侧栏标签芯片前显示 # 符号
+		showCount: false, // 是否在侧栏标签芯片内显示文章数量角标
+	},
+	// 导航栏品牌 Logo：留空使用内置 FangYuan 标志；支持单路径字符串或 { light, dark, alt, showTitle }
+	logo: null,
 	favicon: [
 		// 留空时使用默认 favicon
 		// {
@@ -151,9 +157,10 @@ export const defaultNavBarConfig: NavBarConfig = {
 };
 
 export const defaultProfileConfig: ProfileConfig = {
-	avatar: "assets/images/demo-avatar.png", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
+	avatar: "assets/images/demo-avatar.svg", // internal mode 下相对 src/；external mode 下相对 <siteRoot>/
 	name: "FangYuan",
 	bio: "在清晰结构与柔和表达之间，打磨一个长期演进的个人站点。",
+	linkEffect: "expand", // 构建期固定的社交按钮动效：expand（胶囊横向舒展）| lift（双层图标垂直置换）
 	links: [
 		{
 			name: "GitHub",

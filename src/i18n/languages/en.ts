@@ -97,6 +97,7 @@ export const en: Translation = {
 	[Key.systemMode]: "System",
 
 	[Key.more]: "More",
+	[Key.less]: "Less",
 
 	[Key.author]: "Author",
 	[Key.publishedAt]: "Published at",
@@ -110,5 +111,6 @@ export const en: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"If this post helped you, you can support the author through the channels below.",
 	[Key.pageFeedbackClose]: "Close",
+	[Key.tableOfContents]: "Contents",
 	[Key.license]: "License",
 };

@@ -33,6 +33,10 @@ import { satteriKatex } from "./src/plugins/satteri-katex.mjs";
 import { satteriMetadata } from "./src/plugins/satteri-metadata.mjs";
 import { satteriSectionize } from "./src/plugins/satteri-sectionize.mjs";
 import { satteriSmartDashes } from "./src/plugins/satteri-smart-dashes.mjs";
+import {
+	satteriTableWrap,
+	satteriTaskListLabels,
+} from "./src/plugins/satteri-table-wrap.mjs";
 import { studioIntegration } from "./src/plugins/studio-integration.mjs";
 import { contentRoutesIntegration } from "./src/plugins/studio-routes-integration.mjs";
 import { clearContentRouteManifestCache } from "./src/utils/content-routes.ts";
@@ -73,6 +77,12 @@ const expressiveCodeConfig = {
 	...defaultExpressiveCodeConfig,
 	...(loadExternalExpressiveCodeConfig() ?? {}),
 };
+const isConfiguredLightCodeTheme = /(?:light|latte|dawn|day)/i.test(
+	expressiveCodeConfig.theme,
+);
+const expressiveCodeThemes = isConfiguredLightCodeTheme
+	? [expressiveCodeConfig.theme, "github-dark"]
+	: ["github-light", expressiveCodeConfig.theme];
 const fangyuanRoot = resolveFangYuanRoot();
 process.env.FANGYUAN_ROOT = fangyuanRoot;
 const siteSourceContext = resolveSiteSourceContext({ fangyuanRoot });
@@ -337,6 +347,12 @@ function collectExternalSiteAssetReferences() {
 			addExternalSiteAssetReference(references, prism || banner?.optics?.insert || banner?.src);
 		}
 	}
+	if (typeof siteConfig?.logo === "string") {
+		addExternalSiteAssetReference(references, siteConfig.logo);
+	} else if (siteConfig?.logo && typeof siteConfig.logo === "object") {
+		addExternalSiteAssetReference(references, siteConfig.logo.light);
+		addExternalSiteAssetReference(references, siteConfig.logo.dark);
+	}
 	for (const favicon of siteConfig?.favicon ?? []) {
 		addExternalSiteAssetReference(references, favicon.src);
 	}
@@ -598,14 +614,17 @@ export default defineConfig({
 		}),
 		icon({
 			include: {
-				"preprocess: vitePreprocess(),": ["*"],
+				"material-symbols": ["*"],
 				"fa6-brands": ["*"],
 				"fa6-regular": ["*"],
 				"fa6-solid": ["*"],
 			},
 		}),
 		expressiveCode({
-			themes: [expressiveCodeConfig.theme, expressiveCodeConfig.theme],
+			themes: expressiveCodeThemes,
+			useDarkModeMediaQuery: false,
+			themeCssSelector: (theme) =>
+				theme.type === "dark" ? ".dark" : "[data-code-theme='light']",
 			plugins: [
 				pluginCollapsibleSections(),
 				pluginLineNumbers(),
@@ -629,8 +648,8 @@ export default defineConfig({
 					"var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
 				codeLineHeight: "1.5rem",
 				lineNumbers: {
-					foreground: "#8b949e",
-					highlightForeground: "#c9d1d9",
+					foreground: "var(--codeblock-line-number)",
+					highlightForeground: "var(--codeblock-line-number-highlight)",
 				},
 				frames: {
 					editorBackground: "var(--codeblock-bg)",
@@ -640,8 +659,8 @@ export default defineConfig({
 					editorActiveTabBackground: "none",
 					editorActiveTabIndicatorBottomColor: "var(--primary)",
 					editorActiveTabIndicatorTopColor: "none",
-					editorTabBarBorderBottomColor: "var(--codeblock-topbar-bg)",
-					terminalTitlebarBorderBottomColor: "none",
+					editorTabBarBorderBottomColor: "var(--codeblock-border)",
+					terminalTitlebarBorderBottomColor: "var(--codeblock-border)",
 				},
 				textMarkers: {
 					delHue: 0,
@@ -688,6 +707,8 @@ export default defineConfig({
 						AdmonitionComponent(properties, children, "warning"),
 				}),
 				satteriHeadingAnchors,
+				satteriTableWrap,
+				satteriTaskListLabels,
 			],
 		}),
 	},

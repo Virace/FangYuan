@@ -86,6 +86,7 @@ export const zh_TW: Translation = {
 	[Key.systemMode]: "跟隨系統",
 
 	[Key.more]: "更多",
+	[Key.less]: "收起",
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "發佈於",
@@ -98,5 +99,6 @@ export const zh_TW: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"如果這篇內容對你有幫助，歡迎透過下方渠道支持作者。",
 	[Key.pageFeedbackClose]: "關閉",
+	[Key.tableOfContents]: "目錄",
 	[Key.license]: "許可協議",
 };

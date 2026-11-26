@@ -124,7 +124,7 @@ comment: true
 
 ## 标准 Markdown
 
-基础 Markdown 能力由 Astro 的 Sätteri 处理器提供，原生 MDAST / HAST 插件承接阅读信息、指令、公式、标题与代码块扩展。正文区域使用 Tailwind Typography 和 `src/styles/markdown.css`、`src/styles/markdown-extend.css` 做站点样式。
+基础 Markdown 能力由 Astro 的 Sätteri 处理器提供，原生 MDAST / HAST 插件承接阅读信息、指令、公式、标题与代码块扩展。正文区域使用内置的 `src/styles/prose.css` 排版基线与 `src/styles/markdown.css`、`src/styles/markdown-extend.css` 做站点样式。
 
 常用写法：
 
@@ -204,7 +204,7 @@ Markdown 中可以直接写可信 HTML，例如第三方视频 iframe 或简单�
 
 ### 文章封面
 
-文章页 frontmatter 的 `image` 支持以下常见写法：
+文章页 frontmatter 的 `image` 支持以下四种写法：
 
 ```yaml
 image: ./cover.webp
@@ -213,14 +213,17 @@ image: https://cdn.example.com/cover.webp
 image: ""
 ```
 
-含义：
+- `./cover.webp` 或 `../cover.webp`：相对当前 Markdown 文件。推荐和文章放在同一目录下。
+- `assets/...`：外部站点模式下指向 `<siteRoot>/assets/...`；内部模式下相对仓库 `src/`。
+- `https://...`：远程图片原样透传，构建时不下载打包。
+- 空字符串或不填：不配封面。此时列表卡片会自动按文章 ID 分配 12 套内置**纯 CSS 光学渐变背景**（无额外图片请求），文章内页不展示顶部封面图。
 
-- `./cover.webp` 或 `../cover.webp`：相对当前 Markdown 文件。
-- `assets/...`：外部站点模式下指向 `<siteRoot>/assets/...`；内部模式下按本仓 `src/` 下的别名资源解析。
-- `https://...`：远程图片原样透传。
-- 空字符串：没有封面。
+#### 推荐尺寸与构图
 
-最终产物在文章页中是封面图片，在列表页中是卡片右侧或上方图片，并可能参与 Open Graph。
+- **最适配尺寸**：**`1200 × 600`**（**`2:1`** 宽幅；Retina 高清可用 **`1600 × 800`**）。
+- **常见通用尺寸**：手头是 **`16:9`** 图时推荐 **`1280 × 720`**（上限建议不超过 `1600 × 900`）。
+- 为什么是这个范围：文章内页正文宽度约 `800px`，列表卡片右侧实图展示区约 `523 × 220px`，移动端顶图高 `192px`；控制在 `1200–1600px` 宽既能保持高分屏清晰度，又不会白白撑大构建与加载体积。本地图片在构建时会由 Astro 自动压缩并转为 `WebP`。
+- **构图提醒**：桌面端列表卡片左侧 0%–58% 为标题/摘要文字区及渐隐毛玻璃镜像延展区，右侧展示完整实图；**构图居中或略偏右**最稳妥，尽量不要把核心文字或关键图形贴在图片最左 10% 边缘。
 
 ## 数学公式
 
@@ -443,15 +446,7 @@ toc:
 > 这会被转换成 warning 指令。
 ```
 
-当前依赖默认映射里：
-
-- `NOTE` 会转成 `note`
-- `TIP` 会转成 `tip`
-- `WARNING` 会转成 `warning`
-- `IMPORTANT` 会转成 `info`
-- `CAUTION` 会转成 `danger`
-
-FangYuan 当前只注册了 `note`、`tip`、`important`、`warning`、`caution` 这五个提示组件。因此推荐优先使用 `NOTE`、`TIP`、`WARNING`，或者直接使用 FangYuan 的 `:::important`、`:::caution` 指令写法，避免 `IMPORTANT` / `CAUTION` 被转换到未注册组件名。
+`NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION` 这五种 GitHub Alert 均已直接映射到 FangYuan 内置的五个提示组件（`note`、`tip`、`important`、`warning`、`caution`），可按习惯直接书写，或使用等效的 `:::note`、`:::tip`、`:::important`、`:::warning`、`:::caution` 指令写法。
 
 ## 行内高亮
 
@@ -497,7 +492,7 @@ RSS 中也会把这类语法转换成 `<mark>`，并保留 `md-highlight` 和 `t
 <spoiler>会被隐藏 <strong>嘿嘿</strong></spoiler>
 ```
 
-正文样式会让剧透内容默认被遮罩，鼠标悬停时显示。`spoiler` 不是浏览器标准语义标签，只用于站点内展示效果。
+正文样式会让剧透内容默认被遮罩，悬停、聚焦或点击时切换显示。`spoiler` 不是浏览器标准语义标签，只用于站点内展示效果。
 
 ## Aside 补充块
 
@@ -791,6 +786,7 @@ RSS 不会完整执行所有文章页组件。例如 `link-card`、`github`、`b
 
 - `astro.config.mjs`
 - `src/plugins/`
+- `src/styles/prose.css`
 - `src/styles/markdown.css`
 - `src/styles/markdown-extend.css`
 - `src/components/misc/Markdown.astro`

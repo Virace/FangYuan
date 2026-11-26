@@ -28,8 +28,11 @@ export let onRefreshCaptcha: (() => void | Promise<void>) | null = null;
 export let onSubmitCaptcha: (() => void | Promise<void>) | null = null;
 </script>
 
-<div class="space-y-3">
-	{#each comments as comment (comment.id)}
+<div class="comment-list-stream">
+	{#each comments as comment, index (comment.id)}
+		{#if index > 0}
+			<div class="optical-hairline" aria-hidden="true"></div>
+		{/if}
 		<CommentItem
 			comment={comment}
 			activeReplyParentId={activeReplyParentId}

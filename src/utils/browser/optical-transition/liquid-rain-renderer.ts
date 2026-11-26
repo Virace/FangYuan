@@ -14,20 +14,6 @@ function drawGlow(
 	ctx.drawImage(image, x - radius, y - radius, radius * 2, radius * 2);
 }
 
-function fitTitle(ctx: CanvasRenderingContext2D, title: string, width: number) {
-	if (ctx.measureText(title).width <= width) return title;
-	const letters = Array.from(title);
-	let low = 0;
-	let high = letters.length;
-	while (low < high) {
-		const mid = Math.ceil((low + high) / 2);
-		if (ctx.measureText(`${letters.slice(0, mid).join("")}…`).width <= width)
-			low = mid;
-		else high = mid - 1;
-	}
-	return `${letters.slice(0, low).join("")}…`;
-}
-
 function traceSurface(
 	ctx: CanvasRenderingContext2D,
 	w: number,
@@ -62,24 +48,14 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 	const texturesForHue = createRainTextureCache();
 	let materials: RainTextures["materials"] = [];
 	let tails: RainTextures["tails"] = [];
-	let titleFont = "";
-	let measured = "";
-	let measuredWidth = 0;
-	let caption = "";
 	let lastPhase: TransitionFrameState["phase"] | undefined;
 	let surfaceFraction = 1;
 	let entryFraction = 1;
-	const background = document.createElement("canvas");
-	background.width = 256;
-	background.height = 192;
-	let glowLayer: CanvasRenderingContext2D | null = null;
 	return {
 		id: "liquid-rain",
-		prepare({ width, height }) {
-			glowLayer ??= background.getContext("2d", { alpha: false });
+		prepare({ width, height, startVisibleHeight }) {
 			const styles = getComputedStyle(document.body);
 			const hue = Number.parseFloat(styles.getPropertyValue("--hue")) || 0;
-			titleFont = `600 16px ${styles.fontFamily}`;
 			({ materials, tails } = texturesForHue(hue));
 			const count =
 				innerWidth < 1024
@@ -94,8 +70,11 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 				color: i % rainColors.length,
 			}));
 			lastPhase = undefined;
-			entryFraction = surfaceFraction = 1.08;
-			measuredWidth = -1;
+			const startRatio =
+				startVisibleHeight && height > 0
+					? Math.min(1, startVisibleHeight / height)
+					: 1;
+			entryFraction = surfaceFraction = startRatio + 0.08;
 		},
 		render(ctx, state) {
 			const {
@@ -108,8 +87,13 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 			} = state;
 			if (!w || !h) return;
 			const ink = materials[Number(isDark)];
+			const targetH =
+				state.targetVisibleHeight && state.targetVisibleHeight > 0
+					? Math.min(h, state.targetVisibleHeight)
+					: h;
+			const exitRatio = h > 0 ? targetH / h : 1;
 			const cx = w / 2;
-			const cy = h / 2;
+			const cy = targetH / 2;
 			const wave = phase === "entering" || phase === "exiting";
 			const amp = phase === "exiting" ? 15 * (1 - 0.4 * p) : 15;
 			const margin = Math.max(24 / h, 0.08);
@@ -118,7 +102,7 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 			if (phase === "entering")
 				surfaceFraction = -margin + (entryFraction + margin) * (1 - p) ** 2.4;
 			else if (phase === "exiting")
-				surfaceFraction = -margin + (1 + 2 * margin) * p ** 1.3;
+				surfaceFraction = -margin + (exitRatio + 2 * margin) * p ** 1.3;
 			else surfaceFraction = -margin;
 			lastPhase = phase;
 			ctx.clearRect(0, 0, w, h);
@@ -130,39 +114,28 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 				ctx.closePath();
 				ctx.clip();
 			}
-			const glow = glowLayer ?? ctx;
-			if (glowLayer)
-				glowLayer.setTransform(
-					background.width / w,
-					0,
-					0,
-					background.height / h,
-					0,
-					0,
-				);
-			glow.drawImage(ink.base, 0, 0, w, h);
+			ctx.drawImage(ink.base, 0, 0, w, h);
 			drawGlow(
-				glow,
+				ctx,
 				ink.glows[0],
 				w * (0.28 + 0.1 * Math.sin(time * 1.4)),
 				h * (0.34 + 0.12 * Math.cos(time * 1.1)),
 				Math.max(w * 0.48, h * 0.4),
 			);
 			drawGlow(
-				glow,
+				ctx,
 				ink.glows[1],
 				w * (0.72 + 0.08 * Math.cos(time * 1.2)),
 				h * (0.64 - 0.1 * Math.sin(time * 1.3)),
 				Math.max(w * 0.44, h * 0.38),
 			);
 			drawGlow(
-				glow,
+				ctx,
 				ink.glows[2],
 				cx,
 				h * (0.5 - state.scrollNorm * 0.14),
 				Math.max(w * 0.34, h * 0.28),
 			);
-			if (glowLayer) ctx.drawImage(background, 0, 0, w, h);
 			ctx.save();
 			ctx.translate(cx, cy);
 			ctx.rotate(-0.21);
@@ -216,20 +189,8 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 					ctx.stroke();
 				}
 			}
+			// 主栏居中与整站视口中心存在偏置，且各页高度不一导致纵向重心不稳，本版本暂不绘制中央文字印记（保留 state.imprint 契约以便后续复用）
 			ctx.globalAlpha = 1;
-			ctx.textAlign = "center";
-			ctx.font = "600 11px ui-monospace, monospace";
-			ctx.fillStyle = isDark ? "rgba(176,228,242,.72)" : "rgba(30,45,62,.60)";
-			ctx.fillText(state.imprint.eyebrow, cx, cy - 12);
-			ctx.font = titleFont;
-			if (measured !== state.imprint.title || measuredWidth !== w) {
-				measured = state.imprint.title;
-				measuredWidth = w;
-				caption = fitTitle(ctx, measured, Math.max(0, w - 64));
-			}
-			ctx.fillStyle = isDark ? "rgba(244,248,255,.92)" : "rgba(22,32,46,.86)";
-			ctx.fillText(caption, cx, cy + 12);
-			ctx.drawImage(ink.underline, cx - 68, cy + 24, 136, 1.5);
 			ctx.restore();
 			if (wave) {
 				ctx.save();

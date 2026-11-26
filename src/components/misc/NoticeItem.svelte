@@ -94,6 +94,7 @@ function measure(node: HTMLElement) {
 		class="global-notice"
 		data-notice-id={notice.id}
 		data-tone={notice.tone}
+		data-icon={notice.icon ?? notice.tone}
 		data-phase={notice.phase}
 		data-compact={compact}
 		aria-label={notice.message}
@@ -103,17 +104,6 @@ function measure(node: HTMLElement) {
 		on:focusin={() => notices.setPaused(notice.id, "focused", true)}
 		on:focusout={(event) => { if (!card.contains(event.relatedTarget as Node | null)) notices.setPaused(notice.id, "focused", false); }}
 	>
-		{#if notice.priority === "important"}
-			<span class="global-notice-pin" role="img" aria-label={pinnedLabel}>
-				<svg viewBox="0 0 24 28" aria-hidden="true">
-					<ellipse cx="12" cy="23" rx="3.5" ry="1.2" fill="currentColor" opacity=".14" />
-					<path d="M12 12v11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-					<path d="m8 7 1 8h6l1-8Z" fill="currentColor" opacity=".78" />
-					<ellipse cx="12" cy="6.5" rx="6.5" ry="3.6" fill="currentColor" />
-					<ellipse cx="10.5" cy="5.4" rx="2.6" ry=".85" fill="white" opacity=".38" />
-				</svg>
-			</span>
-		{/if}
 		<span class="global-notice-icon" aria-hidden="true">
 			<svg viewBox="0 0 24 24">
 				{#if !notice.icon && notice.tone !== "warning"}<circle cx="12" cy="12" r="9" />{/if}
@@ -122,7 +112,7 @@ function measure(node: HTMLElement) {
 			</svg>
 		</span>
 		<div class="global-notice-text">
-			<p class="global-notice-message">{notice.message}</p>
+			<p class="global-notice-message">{notice.message}{#if notice.priority === "important"}<span class="global-notice-pin" role="img" aria-label={pinnedLabel}><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5 10.5 6 6 10.5 1.5 6Z" fill="currentColor" stroke="none" /></svg></span>{/if}</p>
 			{#if notice.description}<p class="global-notice-description">{notice.description}</p>{/if}
 		</div>
 		<button type="button" class="global-notice-close" aria-label={`${closeLabel}: ${notice.message}`} on:click={() => notices.dismiss(notice.id)}>

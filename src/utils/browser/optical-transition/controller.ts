@@ -14,38 +14,104 @@ function setBannerHome(home: boolean): void {
 	document.body.classList.toggle("lg:is-home", home);
 }
 
+function resolveBannerExtendPx(): number {
+	if (
+		!matchMedia("(min-width: 1024px)").matches ||
+		!document.body.classList.contains("enable-banner")
+	) {
+		return 0;
+	}
+	const raw = getComputedStyle(document.documentElement)
+		.getPropertyValue("--banner-height-extend")
+		.trim();
+	return Number.parseFloat(raw) || 0;
+}
+
+/** 剥离 #main-grid 当前进行中的 translateY，还原基准顶边与当前实际位移。 */
+function resolveMainGridMetrics(main: HTMLElement): {
+	baseTop: number;
+	currentOffsetY: number;
+} {
+	const grid = document.getElementById("main-grid");
+	const currentOffsetY = grid
+		? new DOMMatrixReadOnly(getComputedStyle(grid).transform).m42
+		: 0;
+	return {
+		baseTop: main.getBoundingClientRect().top - currentOffsetY,
+		currentOffsetY,
+	};
+}
+
+function computeVisibleHeights(
+	baseTop: number,
+	currentHome: boolean,
+	targetHome: boolean,
+): { startVisibleHeight: number; targetVisibleHeight: number } {
+	const top = Math.max(0, baseTop);
+	const extend = resolveBannerExtendPx();
+	return {
+		startVisibleHeight: Math.max(
+			0,
+			innerHeight - (top + (currentHome ? extend : 0)),
+		),
+		targetVisibleHeight: Math.max(
+			0,
+			innerHeight - (top + (targetHome ? extend : 0)),
+		),
+	};
+}
+
+function getSiteName(): string {
+	return (
+		document
+			.querySelector<HTMLMetaElement>('meta[property="og:site_name"]')
+			?.content?.trim() || ""
+	);
+}
+
+function isHomeOrPagination(path: string): boolean {
+	return (
+		pathsEqual(path, url("/")) || isHomePaginationPath(path, url("/page/"))
+	);
+}
+
 function getImprint(visit: Visit): TransitionFrameState["imprint"] {
 	const path = new URL(visit.to.url, location.href).pathname;
 	const home = isHome(visit);
+	const homeIndex = isHomeOrPagination(path);
 	const archive = pathsEqual(path, url(getArchivePath()));
 	const about = pathsEqual(path.replace(/\.html$/, ""), url("/about/"));
 	let eyebrow = "ARTICLE";
-	if (home || isHomePaginationPath(path, url("/page/")))
-		eyebrow = "HOME · INDEX";
+	if (homeIndex) eyebrow = "HOME · INDEX";
 	else if (archive) eyebrow = "ARCHIVE";
 	else if (about) eyebrow = "ABOUT";
+	const siteName = getSiteName();
+	if (homeIndex && siteName) return { eyebrow, title: siteName };
 	const link = visit.trigger.el;
-	const title = (
-		link?.getAttribute("data-transition-title") ||
-		link?.getAttribute("aria-label") ||
-		link?.textContent ||
-		""
-	)
+	const explicitTitle =
+		link?.getAttribute("data-transition-title")?.replace(/\s+/g, " ").trim() ||
+		"";
+	const visibleText = (link?.textContent || "").replace(/\s+/g, " ").trim();
+	const ariaLabel = (link?.getAttribute("aria-label") || "")
 		.replace(/\s+/g, " ")
 		.trim();
 	const generic =
 		/^(?:上一篇|下一篇|阅读全文|阅读更多|read more|next|previous)[\s→←»«]*$/i;
-	if (title && !generic.test(title)) return { eyebrow, title };
+	const assistiveLabel =
+		/^(?:view all posts|go to |page \d+$|previous page$|next page$)/i;
+	const title =
+		explicitTitle ||
+		(visibleText && !generic.test(visibleText) ? visibleText : "") ||
+		(ariaLabel && !generic.test(ariaLabel) && !assistiveLabel.test(ariaLabel)
+			? ariaLabel
+			: "");
+	if (title) return { eyebrow, title };
 	const card = link
 		?.closest(".card-base")
 		?.querySelector<HTMLElement>("[data-transition-title]");
-	const siteName =
-		home &&
-		document.querySelector<HTMLMetaElement>('meta[property="og:site_name"]')
-			?.content;
 	return {
 		eyebrow,
-		title: card?.dataset.transitionTitle || siteName || eyebrow,
+		title: card?.dataset.transitionTitle || (home ? siteName : "") || eyebrow,
 	};
 }
 
@@ -148,6 +214,7 @@ export function installOpticalTransition(
 	let duration = 0;
 	let rollStart = 0;
 	let sidebarReturn: Animation | undefined;
+	let scrollGuard: AbortController | undefined;
 	let quick = false;
 	let pulsed = false;
 	let replacedAt = 0;
@@ -157,6 +224,7 @@ export function installOpticalTransition(
 	let fadeVisit: Visit | undefined;
 	const recentSlowVisits: boolean[] = [];
 	let useFade = false;
+	let bannerSyncMode: "none" | "start" | "hold" = "none";
 	const state: TransitionFrameState = {
 		phase: "entering",
 		phaseProgress: 0,
@@ -171,7 +239,28 @@ export function installOpticalTransition(
 		imprint: { eyebrow: "", title: "" },
 	};
 
+	function lockUserScroll() {
+		if (scrollGuard) return;
+		scrollGuard = new AbortController();
+		const blockScroll = (event: Event) => {
+			if (event.cancelable) event.preventDefault();
+		};
+		for (const eventName of ["wheel", "touchmove"] as const) {
+			window.addEventListener(eventName, blockScroll, {
+				capture: true,
+				passive: false,
+				signal: scrollGuard.signal,
+			});
+		}
+	}
+
+	function unlockUserScroll() {
+		scrollGuard?.abort();
+		scrollGuard = undefined;
+	}
+
 	function finish(completed = false) {
+		unlockUserScroll();
 		if (completed && sampleVisit) {
 			if (warmed) {
 				recentSlowVisits.push(slowFrames >= 3);
@@ -191,25 +280,25 @@ export function installOpticalTransition(
 		host = undefined;
 		current = undefined;
 		main = null;
+		bannerSyncMode = "none";
+		const wasActive = document.documentElement.classList.contains(
+			"optical-transition-active",
+		);
 		document.documentElement.classList.remove("optical-transition-active");
+		if (wasActive) {
+			document.dispatchEvent(new Event("fangyuan:optical-transition-end"));
+		}
 	}
 
 	function fade(visit: Visit) {
 		finish();
 		fadeVisit = visit;
 		document.documentElement.classList.add("optical-transition-light");
-		document.documentElement.classList.toggle(
-			"optical-banner-changing",
-			document.body.classList.contains("lg:is-home") !== isHome(visit),
-		);
 	}
 
 	function releaseFade() {
 		if (fadeVisit && !useFade) {
-			document.documentElement.classList.remove(
-				"optical-transition-light",
-				"optical-banner-changing",
-			);
+			document.documentElement.classList.remove("optical-transition-light");
 		}
 		fadeVisit = undefined;
 	}
@@ -235,10 +324,45 @@ export function installOpticalTransition(
 	}
 
 	function hold(visit: Visit, now: number) {
-		phase("holding", now, quick ? 115 : 160);
+		const targetHome = isHome(visit);
+		const currentHome = document.body.classList.contains("lg:is-home");
+		if (
+			main &&
+			host &&
+			!host.isBannerSynced &&
+			resolveBannerExtendPx() > 0 &&
+			currentHome !== targetHome
+		) {
+			bannerSyncMode = "hold";
+			const { baseTop, currentOffsetY } = resolveMainGridMetrics(main);
+			const extend = resolveBannerExtendPx();
+			const { startVisibleHeight, targetVisibleHeight } = computeVisibleHeights(
+				baseTop,
+				currentHome,
+				targetHome,
+			);
+			host.lockToBanner(
+				main,
+				baseTop,
+				currentOffsetY,
+				targetHome ? extend : 0,
+				startVisibleHeight,
+				targetVisibleHeight,
+			);
+			Object.assign(state, host.geometry);
+		}
+		const holdMs =
+			bannerSyncMode === "hold"
+				? 300
+				: bannerSyncMode === "start"
+					? 220
+					: quick
+						? 115
+						: 160;
+		phase("holding", now, holdMs);
 		state.scrollNorm = 0;
 		state.scrollVelocity = 0;
-		setBannerHome(isHome(visit));
+		setBannerHome(targetHome);
 		pulseBanner();
 		permit.resolve();
 	}
@@ -308,12 +432,17 @@ export function installOpticalTransition(
 				break;
 			}
 			case "holding":
-				if (replacedAt && progress === 1)
-					phase(
-						"exiting",
-						Math.max(phaseStart + duration, replacedAt),
-						quick ? 275 : 350,
-					);
+				if (replacedAt && progress === 1) {
+					const exitMs =
+						bannerSyncMode === "hold"
+							? 400
+							: bannerSyncMode === "start"
+								? 340
+								: quick
+									? 275
+									: 350;
+					phase("exiting", Math.max(phaseStart + duration, replacedAt), exitMs);
+				}
 				break;
 			case "exiting":
 				if (progress === 1) return finish(true);
@@ -336,7 +465,6 @@ export function installOpticalTransition(
 		if (eligible && useFade && main) {
 			return fade(visit);
 		}
-		document.documentElement.classList.remove("optical-banner-changing");
 		if (!eligible || !main) {
 			finish();
 			setBannerHome(isHome(visit));
@@ -357,9 +485,31 @@ export function installOpticalTransition(
 		current = visit;
 		replacedAt = 0;
 		quick = scrollY <= 16;
+		const currentHome = document.body.classList.contains("lg:is-home");
+		const targetHome = isHome(visit);
+		const bannerChanging =
+			resolveBannerExtendPx() > 0 && currentHome !== targetHome;
 		state.imprint = getImprint(visit);
 		if (!continuing) {
-			host.sync(main);
+			if (quick && bannerChanging) {
+				bannerSyncMode = "start";
+				const { baseTop, currentOffsetY } = resolveMainGridMetrics(main);
+				const extend = resolveBannerExtendPx();
+				const { startVisibleHeight, targetVisibleHeight } =
+					computeVisibleHeights(baseTop, currentHome, targetHome);
+				host.lockToBanner(
+					main,
+					baseTop,
+					currentOffsetY,
+					targetHome ? extend : 0,
+					startVisibleHeight,
+					targetVisibleHeight,
+				);
+			} else {
+				bannerSyncMode = "none";
+				host.sync(main);
+			}
+			Object.assign(state, host.geometry);
 			try {
 				renderer.prepare({ mainElement: main, ...host.geometry });
 			} catch {
@@ -368,17 +518,34 @@ export function installOpticalTransition(
 			started = previousTime = now;
 			state.scrollNorm = quick ? 0 : 1;
 			state.scrollVelocity = 0;
-			phase("entering", now, quick ? 160 : 205);
-		} else if (state.phase === "exiting") {
-			phase("entering", now, Math.max(32, 160 * state.phaseProgress));
-		} else if (state.phase === "holding") {
-			close(visit, now);
+			phase(
+				"entering",
+				now,
+				bannerSyncMode === "start" ? 240 : quick ? 160 : 205,
+			);
+		} else {
+			if (host.isBannerSynced) {
+				const { baseTop } = resolveMainGridMetrics(main);
+				const extend = resolveBannerExtendPx();
+				const { targetVisibleHeight } = computeVisibleHeights(
+					baseTop,
+					currentHome,
+					targetHome,
+				);
+				host.retargetBanner(targetHome ? extend : 0, targetVisibleHeight);
+			}
+			if (state.phase === "exiting") {
+				phase("entering", now, Math.max(32, 160 * state.phaseProgress));
+			} else if (state.phase === "holding") {
+				close(visit, now);
+			}
 		}
 		visit.animation.selector = false;
 		visit.scroll.animate = false;
+		lockUserScroll();
 		document.documentElement.classList.add("optical-transition-active");
-		if (!isHome(visit)) {
-			setBannerHome(false);
+		if (!targetHome || quick) {
+			setBannerHome(targetHome);
 			pulseBanner();
 		}
 		if (!frame) frame = requestAnimationFrame(draw);
@@ -404,15 +571,20 @@ export function installOpticalTransition(
 	swup.hooks.on("content:replace", (visit) => {
 		if (visit === fadeVisit) {
 			setBannerHome(isHome(visit));
-			const revealed = document.getElementById("swup-container");
-			if (revealed) revealed.dataset.opticalRevealed = "";
+			document.documentElement.style.setProperty("--content-delay", "0ms");
 		}
 		if (visit !== current) return;
 		main = document.getElementById("swup-container");
 		if (!main) return finish();
 		main.dataset.opticalRevealed = "";
+		if (scrollY !== 0) {
+			window.scrollTo({ top: 0, behavior: "instant" });
+		}
+		const targetPath = new URL(visit.to.url, location.href).pathname;
 		state.imprint.title =
-			main.dataset.swupAnnouncement?.trim() || document.title;
+			(isHomeOrPagination(targetPath) ? getSiteName() : "") ||
+			main.dataset.swupAnnouncement?.trim() ||
+			document.title;
 		setBannerHome(isHome(visit));
 		pulseBanner();
 		replacedAt = performance.now();

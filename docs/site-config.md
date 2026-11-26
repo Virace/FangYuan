@@ -266,16 +266,40 @@ siteConfig:
 - 支持值：整数 `1`、`2`、`3`，默认 `1`。
 - 作用范围：所有页面中的 GitHub 仓库卡片，构建快照和浏览器刷新共用同一设置。
 
+#### `siteConfig.notifications`
+
+- 作用：控制全局通知队列的停靠位置与排列顺序，详见 `docs/notifications.md`。
+- 支持字段：
+  - `position`：`top`（默认，位于导航栏下方）或 `bottom`（位于视口底部及可见页脚上方）。
+  - `newestOnTop`：`false`（默认，新消息追加在既有队列之后）或 `true`（新消息占据基准边缘槽位）。
+
+#### `siteConfig.tags.showHash`
+
+- 作用：是否在侧栏标签芯片前显示 `#` 符号。
+- 默认值：`false`（默认不显示）。
+
+#### `siteConfig.tags.showCount`
+
+- 作用：是否在侧栏标签芯片右侧显示该标签关联的文章数量角标。
+- 默认值：`false`（默认不显示）。
+
+#### `siteConfig.logo`
+
+- 作用：自定义导航栏左上角品牌 Logo；留空或设为 `null` 时继续使用 FangYuan 内置标志。
+- 写法：
+  - 单路径字符串：例如 `assets/images/logo.svg`（亮暗模式共用同一张图）。
+  - 对象写法：支持 `light`（亮色模式图片）、`dark`（暗色模式图片）、`alt`（图片替代文本）与 `showTitle`（默认 `true`；设为 `false` 时隐藏导航栏站点标题文本）。
+
 #### `siteConfig.favicon`
 
 - 作用：自定义 favicon 列表。
-- 规则：留空数组表示继续使用内置默认 favicon。
+- 规则：留空数组表示继续使用内置主蓝底矢量 SVG Favicon。
 
 #### `siteConfig.favicon[].src`
 
 - 作用：图标路径。
 - 建议：写外部站点根目录 `<siteRoot>/assets/` 下的稳定路径，例如 `assets/favicon/icon.svg`。
-- 注意：`init-site` 默认会创建 `assets/favicon/icon.svg` 作为替换占位符。留空数组则继续使用 FangYuan 内置默认 favicon。
+- 注意：`init-site` 默认会创建 `assets/favicon/icon.svg` 作为替换占位符。留空数组则继续使用 FangYuan 内置默认 SVG Favicon。
 
 #### `siteConfig.favicon[].theme`
 
@@ -355,6 +379,17 @@ siteConfig:
 - 支持值：`asc`、`desc`
 - 冲突提醒：站点整体排序仍会先考虑 `sticky` 层级，再应用这里的字段和方向。
 
+#### `siteConfig.taxonomySort`
+
+- 作用：控制侧栏及归档上下文中分类与标签的排序规则。
+- `categories` 支持字段：
+  - `key`：`name`（默认）或 `count`。
+  - `order`：`asc`（默认）或 `desc`。
+  - `uncategorizedPosition`：`sorted`（默认，“未分类”参与排序）或 `last`（固定排在末尾）。
+- `tags` 支持字段：
+  - `key`：`name`（默认）或 `count`。
+  - `order`：`asc`（默认）或 `desc`。
+
 ### `navBarI18n`
 
 - 作用：导航文案映射表。
@@ -406,10 +441,10 @@ siteConfig:
 
 #### `profileConfig.avatar`
 
-- 作用：头像图片路径。
+- 作用：侧栏主图 / 作者头像路径。
 - 路径规则：和 `siteConfig.banner.src` 一致。
-- 安全本地写法：`assets/images/avatar.svg`。`init-site` 默认会创建这个替换占位符。
-- 注意：FangYuan 当前没有独立 logo 配置项；这里是侧栏作者头像，不是 favicon。
+- 安全本地写法：`assets/images/avatar.svg`（`init-site` 默认创建占位图；不配置外部覆盖时展示内置多彩光学版 `demo-avatar.svg`）。
+- 注意：这里是侧栏作者展示图；导航栏品牌标志请配在 `siteConfig.logo`，站点标签页图标请配在 `siteConfig.favicon`。
 
 #### `profileConfig.name`
 
@@ -418,6 +453,13 @@ siteConfig:
 #### `profileConfig.bio`
 
 - 作用：作者简介。
+
+#### `profileConfig.linkEffect`
+
+- 作用：配置个人展示卡片底部社交按钮的悬停动效（仅在多于 1 个社交链接时生效，构建期固定）。
+- 支持值：
+  - `expand`（默认）：胶囊横向舒展，悬停或聚焦时展开平台名称，溢出自动折行并限制单按钮最大宽度。
+  - `lift`：固定方圆尺寸，悬停或聚焦时双层图标垂直升降置换为高亮态。
 
 #### `profileConfig.links`
 

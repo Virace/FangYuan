@@ -78,6 +78,10 @@ function mergeSiteConfig(
 			...defaultConfig.notifications,
 			...override.notifications,
 		},
+		tags: {
+			...defaultConfig.tags,
+			...override.tags,
+		},
 		postSort: {
 			...defaultConfig.postSort,
 			...override.postSort,
@@ -92,6 +96,7 @@ function mergeSiteConfig(
 				...override.taxonomySort?.tags,
 			},
 		},
+		logo: override.logo === undefined ? defaultConfig.logo : override.logo,
 		favicon: override.favicon ?? defaultConfig.favicon,
 		permalink: {
 			...defaultConfig.permalink,
@@ -131,6 +136,7 @@ function mergeProfileConfig(
 	return {
 		...defaultConfig,
 		...override,
+		linkEffect: override.linkEffect ?? defaultConfig.linkEffect,
 		links: override.links ?? defaultConfig.links,
 	};
 }

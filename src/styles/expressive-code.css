@@ -1,7 +1,14 @@
 .expressive-code .frame {
-    box-shadow: none !important;
+	border-radius: 0.82rem;
+	border: 1px solid var(--codeblock-border);
+	box-shadow: 0 4px 14px -10px rgb(15 23 42 / 0.22) !important;
+	contain: layout style paint;
+}
+
+.dark .expressive-code .frame {
+	box-shadow: 0 8px 20px -12px rgb(0 0 0 / 0.52) !important;
 }
 
 .expressive-code .title {
-    font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }

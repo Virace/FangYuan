@@ -1,14 +1,20 @@
 ---
 import { Icon } from "astro-icon/components";
-import { navBarConfig, navBarI18n, siteConfig } from "../config";
+import {
+	configImageBaseRoots,
+	navBarConfig,
+	navBarI18n,
+	siteConfig,
+} from "../config";
 import { resolveI18nKey } from "../i18n/translation";
 import { type ResolvedNavBarLink } from "../types/config";
 import { getContentRouteManifest } from "../utils/content-routes";
+import { resolveConfigAssetUrl } from "../utils/image-source";
 import { resolveNavbarLinks } from "../utils/navbar-links";
 import { getArchivePath, url } from "../utils/permalink/urls";
-import LightDarkSwitch from "./LightDarkSwitch.svelte";
+import LightDarkSwitch from "./LightDarkSwitch.astro";
 import Search from "./Search.svelte";
-import DisplaySettings from "./widget/DisplaySettings.svelte";
+import DisplaySettings from "./widget/DisplaySettings.astro";
 import NavMenuPanel from "./widget/NavMenuPanel.astro";
 
 const className = Astro.props.class;
@@ -24,26 +30,82 @@ const links: ResolvedNavBarLink[] = resolveNavbarLinks(
 		? { ...link, url: getArchivePath() }
 		: link,
 );
+
+const rawLogo = siteConfig.logo;
+const logoShowTitle =
+	typeof rawLogo === "object" && rawLogo !== null
+		? (rawLogo.showTitle ?? true)
+		: true;
+const logoAlt =
+	typeof rawLogo === "object" && rawLogo !== null && rawLogo.alt !== undefined
+		? rawLogo.alt
+		: logoShowTitle
+			? ""
+			: siteConfig.title;
+const rawLogoLight =
+	typeof rawLogo === "string" ? rawLogo : (rawLogo?.light ?? rawLogo?.dark);
+const rawLogoDark =
+	typeof rawLogo === "object" && rawLogo !== null
+		? (rawLogo.dark ?? rawLogo.light)
+		: undefined;
+const [logoLightSrc, logoDarkSrc] = await Promise.all([
+	resolveConfigAssetUrl(rawLogoLight, configImageBaseRoots.logo),
+	resolveConfigAssetUrl(rawLogoDark, configImageBaseRoots.logo),
+]);
+const singleLogoSrc = logoLightSrc ?? logoDarkSrc;
+const hasDualLogo = Boolean(
+	logoLightSrc && logoDarkSrc && logoLightSrc !== logoDarkSrc,
+);
 ---
 <div id="navbar" class="relative z-50">
-    <div aria-hidden="true" class="card-base panel-edge pointer-events-none absolute inset-x-0 -top-8 bottom-0 -z-1 rounded-t-none!"></div>
+    <div aria-hidden="true" class="navbar-glass-surface pointer-events-none absolute inset-x-0 -top-8 bottom-0 -z-1"></div>
     <div class:list={[
         className,
         "page-shell h-18 flex items-center justify-between px-4"]}>
-        <a href={url('/')} class="btn-plain scale-animation rounded-lg h-13 px-5 font-bold active:scale-95">
+        <a href={url('/')} aria-label={logoShowTitle ? undefined : (logoAlt || siteConfig.title)} class="btn-plain scale-animation rounded-lg h-13 px-5 font-bold active:scale-95">
             <div class="flex flex-row text-accent-solid items-center text-md">
-                <Icon name="material-symbols:home-outline-rounded" class="icon-28 mb-1 mr-2 text-primary" />
-                {siteConfig.title}
+                {hasDualLogo ? (
+                    <>
+                        <img
+                            src={logoLightSrc}
+                            alt={logoAlt}
+                            aria-hidden={logoShowTitle ? "true" : undefined}
+                            class:list={["fy-brand-logo", "fy-brand-logo-light", { "mr-2": logoShowTitle }]}
+                        />
+                        <img
+                            src={logoDarkSrc}
+                            alt={logoAlt}
+                            aria-hidden={logoShowTitle ? "true" : undefined}
+                            class:list={["fy-brand-logo", "fy-brand-logo-dark", { "mr-2": logoShowTitle }]}
+                        />
+                    </>
+                ) : singleLogoSrc ? (
+                    <img
+                        src={singleLogoSrc}
+                        alt={logoAlt}
+                        aria-hidden={logoShowTitle ? "true" : undefined}
+                        class:list={["fy-brand-logo", { "mr-2": logoShowTitle }]}
+                    />
+                ) : (
+                    <svg class:list={["fy-brand-mark", { "mr-2": logoShowTitle }]} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                        <circle cx="16" cy="7.6" r="4.2" fill="var(--accent-solid)"></circle>
+                        <path class="fy-brand-mark-body" d="M 5.6 12.2 H 11.4 A 6.5 6.5 0 0 0 20.6 12.2 H 26.4 A 2.1 2.1 0 0 1 26.4 16.4 H 5.6 A 2.1 2.1 0 0 1 5.6 12.2 Z"></path>
+                        <path class="fy-brand-mark-body" d="M 11.0 15.8 H 14.8 C 14.8 22.0 11.8 26.4 7.3 28.9 C 6.4 29.4 5.3 29.1 4.8 28.2 C 4.3 27.3 4.6 26.2 5.5 25.7 C 8.9 23.8 11.0 20.5 11.0 15.8 Z"></path>
+                        <path class="fy-brand-mark-body" d="M 12.6 19.3 H 21.6 C 24.8 19.3 27.0 21.4 27.0 24.2 C 27.0 27.0 24.8 29.1 21.6 29.1 H 17.4 C 16.3 29.1 15.5 28.3 15.5 27.2 C 15.5 26.2 16.3 25.4 17.4 25.4 H 21.2 C 22.4 25.4 23.2 24.9 23.2 24.1 C 23.2 23.3 22.4 22.8 21.2 22.8 H 12.6 Z"></path>
+                    </svg>
+                )}
+                {logoShowTitle && siteConfig.title}
             </div>
         </a>
         <div class="hidden md:flex">
             {links.map((l) => {
                 return <a aria-label={l.name} href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
+                          data-nav-link={!l.external ? "true" : undefined}
                           class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95"
                 >
                     <div class="flex items-center">
                         {l.name}
-                        {l.external && <Icon name="fa6-solid:arrow-up-right-from-square" class="text-sm transition -translate-y-px ml-1 text-20"></Icon>}
+                        {l.external && <Icon is:inline name="fa6-solid:arrow-up-right-from-square" class="text-sm transition -translate-y-px ml-1 text-20"></Icon>}
                     </div>
                 </a>;
             })}
@@ -54,40 +116,23 @@ const links: ResolvedNavBarLink[] = resolveNavbarLinks(
             </div>
             {!siteConfig.themeColor.fixed && (
                     <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
-                        <Icon name="material-symbols:palette-outline" class="text-xl"></Icon>
+                        <Icon is:inline name="material-symbols:palette-outline" class="text-xl"></Icon>
                     </button>
             )}
             <div>
-                <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
+                <LightDarkSwitch></LightDarkSwitch>
             </div>
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:hidden!" id="nav-menu-switch">
-                <Icon name="material-symbols:menu-rounded" class="text-xl"></Icon>
+                <Icon is:inline name="material-symbols:menu-rounded" class="text-xl"></Icon>
             </button>
         </div>
         <NavMenuPanel links={links}></NavMenuPanel>
-        <DisplaySettings client:only="svelte"></DisplaySettings>
+        <DisplaySettings></DisplaySettings>
     </div>
 </div>
 
 <script>
-function switchTheme() {
-    if (localStorage.theme === 'dark') {
-        document.documentElement.classList.remove('dark');
-        localStorage.theme = 'light';
-    } else {
-        document.documentElement.classList.add('dark');
-        localStorage.theme = 'dark';
-    }
-}
-
 function loadButtonScript() {
-    let switchBtn = document.getElementById("scheme-switch");
-    if (switchBtn) {
-        switchBtn.onclick = function () {
-            switchTheme()
-        };
-    }
-
     let settingBtn = document.getElementById("display-settings-switch");
     if (settingBtn) {
         settingBtn.onclick = function () {
@@ -109,7 +154,40 @@ function loadButtonScript() {
     }
 }
 
+function normalizeNavPath(pathname: string) {
+    const trimmed = pathname.replace(/\/+$/, "");
+    return trimmed === "" ? "/" : trimmed;
+}
+
+function syncActiveNavLinks() {
+    const currentPath = normalizeNavPath(window.location.pathname);
+    const homePath = normalizeNavPath(import.meta.env.BASE_URL);
+    for (const link of document.querySelectorAll<HTMLAnchorElement>("#navbar a[data-nav-link]")) {
+        const href = link.getAttribute("href");
+        if (!href) continue;
+        try {
+            const targetPath = normalizeNavPath(new URL(href, window.location.origin).pathname);
+            const isHome = targetPath === homePath;
+            const isActive = isHome
+                ? currentPath === targetPath
+                : currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
+            link.classList.toggle("nav-link-active", isActive);
+        } catch {
+            link.classList.remove("nav-link-active");
+        }
+    }
+}
+
 loadButtonScript();
+syncActiveNavLinks();
+
+if (window?.swup?.hooks) {
+    window.swup.hooks.on("page:view", syncActiveNavLinks);
+} else {
+    document.addEventListener("swup:enable", () => {
+        window?.swup?.hooks?.on("page:view", syncActiveNavLinks);
+    });
+}
 </script>
 
 {import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>

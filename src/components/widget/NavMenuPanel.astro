@@ -9,22 +9,29 @@ interface Props {
 
 const links = Astro.props.links;
 ---
-<div id="nav-menu-panel" class:list={["float-panel float-panel-closed absolute transition-all right-4 px-2 py-2"]}>
+<div id="nav-menu-panel" class:list={["float-panel float-panel-closed absolute right-4 w-[13.5rem] p-2 space-y-0.5"]}>
+    <div class="flex items-center justify-between px-2.5 pt-1 pb-1.5" aria-hidden="true">
+        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-muted">
+            <span class="optical-panel-beam" aria-hidden="true"></span>
+            <span>MENU</span>
+        </span>
+    </div>
+    <div class="optical-hairline mb-1" aria-hidden="true"></div>
     {links.map((link) => (
-        <a href={link.external ? link.url : url(link.url)} class="group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-8
-            hover:bg-btn-plain-bg-hover active:bg-btn-plain-bg-active transition
-        "
+        <a href={link.external ? link.url : url(link.url)}
+           data-nav-link={!link.external ? "true" : undefined}
+           class="group optical-menu-item relative flex justify-between items-center min-h-11 pl-4 pr-2.5 rounded-lg"
            target={link.external ? "_blank" : null}
         >
-            <div class="transition text-75 font-bold group-hover:text-primary group-active:text-primary">
+            <span class="optical-nav-menu-label transition text-75 font-semibold group-hover:text-accent-foreground group-active:text-accent-foreground">
                 {link.name}
-            </div>
+            </span>
             {!link.external && <Icon is:inline name="material-symbols:chevron-right-rounded"
-                  class="transition text-xl text-primary"
+                  class="optical-nav-menu-arrow transition text-lg text-muted group-hover:text-accent-solid group-hover:translate-x-0.5"
             >
             </Icon>}
-            {link.external && <Icon name="fa6-solid:arrow-up-right-from-square"
-                  class="transition text-xs text-25 -translate-x-1"
+            {link.external && <Icon is:inline name="material-symbols:arrow-outward-rounded"
+                  class="optical-nav-menu-arrow transition text-base text-muted group-hover:text-accent-solid"
             >
             </Icon>}
         </a>

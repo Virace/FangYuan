@@ -86,7 +86,7 @@ Article ${postNumber}.
 		walk(htmlToHast(html));
 		for (const widget of ["categories", "tags"]) {
 			assert.ok(
-				page.icons.some(icon => icon.widget === widget && icon.name === "material-symbols:more-horiz"),
+				page.icons.some(icon => icon.widget === widget && icon.name === "material-symbols:keyboard-arrow-up-rounded"),
 				`${route}: ${widget} must have a more control`,
 			);
 		}

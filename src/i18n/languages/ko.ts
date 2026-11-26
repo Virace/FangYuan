@@ -98,6 +98,7 @@ export const ko: Translation = {
 	[Key.systemMode]: "시스템 모드",
 
 	[Key.more]: "더 보기",
+	[Key.less]: "접기",
 
 	[Key.author]: "저자",
 	[Key.publishedAt]: "게시일",
@@ -111,5 +112,6 @@ export const ko: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"이 글이 도움이 되었다면 아래 방법으로 작성자를 후원할 수 있습니다.",
 	[Key.pageFeedbackClose]: "닫기",
+	[Key.tableOfContents]: "목차",
 	[Key.license]: "라이선스",
 };

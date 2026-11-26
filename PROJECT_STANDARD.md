@@ -81,7 +81,7 @@ Biome 解析 Markdown frontmatter，但保留代码块、frontmatter 和 HTML �
 - 集合使用复数名；映射表写明键和值的语义，例如 `translationByLocale`。
 - 布尔值优先使用 `is`、`has`、`can`、`should`；现有外部配置契约中的 `enable` 字段保持兼容，不为内部风格破坏 schema。
 - 纯读取使用 `get`，带解析或归一化语义使用 `resolve`、`parse`、`normalize`，合并使用 `merge`，事件回调使用 `handle` 或明确动作名。
-- 允许稳定领域缩写：`API`、`URL`、`HTML`、`CSS`、`DOM`、`RSS`、`TOC`、`WXR`、`ID`、`QR`；其他缩写应在当前模块中清楚且无歧义。
+- 允许稳定领域缩写：`API`、`URL`、`HTML`、`CSS`、`DOM`、`RSS`、`TOC`、`ID`、`QR`；其他缩写应在当前模块中清楚且无歧义。
 - 框架和外部契约名称不得为内部风格而改写，例如 Astro 路由导出的 `GET`、locale 标识 `zh_CN`、frontmatter 字段和 QingYan 请求字段。
 
 公开类型、配置 schema、环境变量和非显然不变量需要说明契约或原因。注释不逐行复述实现、不记录修改过程、不保留失效说明；能由准确命名表达的内容不再写注释。

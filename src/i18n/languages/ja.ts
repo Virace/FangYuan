@@ -99,6 +99,7 @@ export const ja: Translation = {
 	[Key.systemMode]: "システム",
 
 	[Key.more]: "もっと",
+	[Key.less]: "閉じる",
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "公開日",
@@ -112,5 +113,6 @@ export const ja: Translation = {
 	[Key.pageFeedbackRewardDescription]:
 		"この投稿が役に立ったら、下記の方法で作者を支援できます。",
 	[Key.pageFeedbackClose]: "閉じる",
+	[Key.tableOfContents]: "目次",
 	[Key.license]: "ライセンス",
 };
