@@ -124,7 +124,7 @@ comment: true
 
 ## 标准 Markdown
 
-基础 Markdown 能力由 Astro 的 Sätteri 处理器提供，原生 MDAST / HAST 插件承接阅读信息、指令、公式、标题与代码块扩展。正文区域使用 Tailwind Typography 和 `src/styles/markdown.css`、`src/styles/markdown-extend.css` 做站点样式。
+基础 Markdown 能力由 Astro 的 Sätteri 处理器提供，原生 MDAST / HAST 插件承接阅读信息、指令、公式、标题与代码块扩展。正文区域使用内置的 `src/styles/prose.css` 排版基线与 `src/styles/markdown.css`、`src/styles/markdown-extend.css` 做站点样式。
 
 常用写法：
 
@@ -446,15 +446,7 @@ toc:
 > 这会被转换成 warning 指令。
 ```
 
-当前依赖默认映射里：
-
-- `NOTE` 会转成 `note`
-- `TIP` 会转成 `tip`
-- `WARNING` 会转成 `warning`
-- `IMPORTANT` 会转成 `info`
-- `CAUTION` 会转成 `danger`
-
-FangYuan 当前只注册了 `note`、`tip`、`important`、`warning`、`caution` 这五个提示组件。因此推荐优先使用 `NOTE`、`TIP`、`WARNING`，或者直接使用 FangYuan 的 `:::important`、`:::caution` 指令写法，避免 `IMPORTANT` / `CAUTION` 被转换到未注册组件名。
+`NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION` 这五种 GitHub Alert 均已直接映射到 FangYuan 内置的五个提示组件（`note`、`tip`、`important`、`warning`、`caution`），可按习惯直接书写，或使用等效的 `:::note`、`:::tip`、`:::important`、`:::warning`、`:::caution` 指令写法。
 
 ## 行内高亮
 
@@ -500,7 +492,7 @@ RSS 中也会把这类语法转换成 `<mark>`，并保留 `md-highlight` 和 `t
 <spoiler>会被隐藏 <strong>嘿嘿</strong></spoiler>
 ```
 
-正文样式会让剧透内容默认被遮罩，鼠标悬停时显示。`spoiler` 不是浏览器标准语义标签，只用于站点内展示效果。
+正文样式会让剧透内容默认被遮罩，悬停、聚焦或点击时切换显示。`spoiler` 不是浏览器标准语义标签，只用于站点内展示效果。
 
 ## Aside 补充块
 
@@ -794,6 +786,7 @@ RSS 不会完整执行所有文章页组件。例如 `link-card`、`github`、`b
 
 - `astro.config.mjs`
 - `src/plugins/`
+- `src/styles/prose.css`
 - `src/styles/markdown.css`
 - `src/styles/markdown-extend.css`
 - `src/components/misc/Markdown.astro`

@@ -11,6 +11,7 @@ FangYuan 是 Astro 静态站点主题。Astro 负责路由、内容加载、页�
 - `src/components/`：展示组件与 island；组件不拥有内容源选择或固定链接规则。
 - `src/config.ts`：合并默认配置、外部站点配置和公开部署覆盖。
 - `src/content.config.ts`：声明 posts / spec collections 及 frontmatter schema。
+- `src/styles/`：`main.css` 样式清单、`prose.css` 独立正文排版基线与 `modules/` 领域样式模块。
 - `src/utils/content/`：内容排序、日期、分页、归档和 RSS 逻辑。
 - `src/utils/permalink/` 与 `src/utils/content-routes.ts`：固定链接解析、物化方式和路由清单。
 - `src/utils/content-route-history.ts`：纯身份、历史归属和输出冲突校验；`content-route-store.ts` 读取一致的源文件快照并准备登记变化。
@@ -63,7 +64,7 @@ GitHub 卡片先由内容插件生成基础 HTML，再在 Astro 本轮 HTML 输�
 
 ## 浏览器交互流
 
-静态 HTML 启动后，Svelte island 负责搜索、主题、评论、反馈和局部控制。Swup 更新 `main` 与 TOC 容器；跨页仍必须有效的 dialog、drawer、backdrop、定位和过渡样式由全局样式提供。QingYan 能力由公开配置和 bootstrap 响应启用，关闭时不挂载对应交互面。
+静态 HTML 启动后，Svelte island 负责搜索、归档筛选、全局通知、评论、文章反馈与阅读统计；顶栏明暗切换、主题色滑块、导航与回顶控件由纯 Astro 承载。Swup 更新 `main` 与 TOC 容器；跨页仍必须有效的 dialog、drawer、backdrop、定位和过渡样式由全局样式提供。QingYan 能力由公开配置和 bootstrap 响应启用，关闭时不挂载对应交互面。
 
 页面和块级公式使用原生滚动。在使用传统滚动条的桌面环境中，主题按实际滚动位置显示浮动滑块，并将拖动映射到原生滚动区域。切页时只为新正文重新绑定公式滑块。
 

@@ -12,12 +12,22 @@
 
 ---
 
+## 界面预览
+
+| 首页 · 亮色模式 | 首页 · 暗色模式 |
+| :---: | :---: |
+| ![首页亮色预览](docs/assets/previews/home-light.webp) | ![首页暗色预览](docs/assets/previews/home-dark.webp) |
+| **文章排版 · 光学目录与回顶进度环** | **文章尾声 · 光学打赏投影与 QingYan 评论** |
+| ![文章阅读与光学目录预览](docs/assets/previews/article-reading.webp) | ![打赏投影与评论交互预览](docs/assets/previews/article-interaction.webp) |
+
+---
+
 ## 主要特点
 
-- **内容与主题分离**：真实站点的 `site.config.yaml`、Markdown 文章和静态图片放在外部目录（默认 `site/`，也可通过 `FANGYUAN_SITE_ROOT` 指定任意路径），升级主题不碰业务数据。
-- **光学横幅与主题配色**：内置三层方形背板与圆形透镜横幅（可拖动光束、点击脉冲分色），支持 `optics.insert` 嵌标、`optics.prism` 换镜，或切回普通横图；带明暗模式、动态 `--hue` 调色、Swup 切页和 Pagefind 本地搜索。
-- **中文写作与路由控制**：文章与图片可同目录共置；内置提示块、折叠块、高亮、剧透、外链卡片、GitHub 仓库卡片、B 站视频和 KaTeX 公式；支持自定义永久链接与路径迁移后的历史地址跳转。
-- **可选的评论与互动**：评论、点赞、阅读量与打赏能力对接 `QingYan`，未配置或关闭时前端自动隐藏对应区域。
+- **内容与主题分离**：真实站点的 `site.config.yaml`、Markdown 文章和静态图片放在外部目录（默认 `site/`，也可通过 `FANGYUAN_SITE_ROOT` 指定任意路径），升级主题不碰业务数据；配套 `init-site` / `update-site` 与稳定 `contentId` 路由机制。
+- **光学视觉与交互动效**：三层方形背板与圆形透镜横幅（可拖动光束、点击脉冲分色，支持 `optics.insert` 嵌标与 `optics.prism` 分光元件）、磨砂玻璃卡片体系、液态光幕 Swup 切页、宽窄双态光学目录与带滚动进度环的回顶按钮；支持明暗模式、动态 `--hue` 调色及自定义导航栏 Logo。
+- **中文写作与稳定路由**：基于 Astro 7 + Sätteri，文章与图片可同目录共置；内置提示块、折叠块、高亮、剧透、外链卡片、GitHub 仓库快照卡片、B 站视频、KaTeX 公式、Expressive Code 双主题代码块与 Pagefind 本地搜索；支持自定义永久链接与路径迁移后的历史地址自动跳转。
+- **可选的评论与互动**：评论（嵌套回复、表情与按需验证码）、文章点赞、阅读量、光学投影打赏浮层与全局通知队列对接 `QingYan`，未配置或关闭时前端自动隐藏对应区域，保持纯静态站点可用性。
 
 ---
 

@@ -266,6 +266,13 @@ siteConfig:
 - 支持值：整数 `1`、`2`、`3`，默认 `1`。
 - 作用范围：所有页面中的 GitHub 仓库卡片，构建快照和浏览器刷新共用同一设置。
 
+#### `siteConfig.notifications`
+
+- 作用：控制全局通知队列的停靠位置与排列顺序，详见 `docs/notifications.md`。
+- 支持字段：
+  - `position`：`top`（默认，位于导航栏下方）或 `bottom`（位于视口底部及可见页脚上方）。
+  - `newestOnTop`：`false`（默认，新消息追加在既有队列之后）或 `true`（新消息占据基准边缘槽位）。
+
 #### `siteConfig.tags.showHash`
 
 - 作用：是否在侧栏标签芯片前显示 `#` 符号。
@@ -371,6 +378,17 @@ siteConfig:
 - 作用：同一置顶层内的排序方向。
 - 支持值：`asc`、`desc`
 - 冲突提醒：站点整体排序仍会先考虑 `sticky` 层级，再应用这里的字段和方向。
+
+#### `siteConfig.taxonomySort`
+
+- 作用：控制侧栏及归档上下文中分类与标签的排序规则。
+- `categories` 支持字段：
+  - `key`：`name`（默认）或 `count`。
+  - `order`：`asc`（默认）或 `desc`。
+  - `uncategorizedPosition`：`sorted`（默认，“未分类”参与排序）或 `last`（固定排在末尾）。
+- `tags` 支持字段：
+  - `key`：`name`（默认）或 `count`。
+  - `order`：`asc`（默认）或 `desc`。
 
 ### `navBarI18n`
 
