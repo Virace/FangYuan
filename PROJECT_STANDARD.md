@@ -131,7 +131,15 @@ Biome 解析 Markdown frontmatter，但保留代码块、frontmatter 和 HTML �
 
 GitHub 卡片的构建与浏览器用例复用测试专用请求替换层和固定公开 payload，不访问实时 GitHub，也不使用真实令牌；生产构建保持实际 API 获取与失败降级。
 
-## 7. 项目例外
+## 7. 正式版本
+
+新功能从 `develop` 拉出子分支，通过 PR 集成。发布前的小修、版本号和变更日志也在开发线收口。维护者核对 `package.json` 与 `CHANGELOG.md` 的版本后，从 `develop` 向 `main` 提 PR。主线校验通过后使用 merge commit 合入，让 Git 保留两条长期分支的共同历史。
+
+正式版使用 `主版本.次版本.修订号`。兼容修复升修订号，兼容的新功能升次版本。移除公开能力、更改固定链接语义或要求既有站点迁移配置、内容或集成时升主版本。公开契约见 `PROJECT_CONSTRAINTS.md`。站点配置迁移编号 `fangyuanConfigVersion` 独立维护。
+
+正式标签采用 `vX.Y.Z`，指向该版本在 `main` 上的合并提交。GitHub Release 使用同一标签。需要对外分发候选版时使用 `vX.Y.Z-rc.N` 并标为预发布。
+
+## 8. 项目例外
 
 - `develop` 是日常集成分支，`main` 只承载正式版；是否使用预发布分支按当轮发布决定。普通开发从 `develop` 建子分支。
 - `site/` 是被忽略的本地外部数据源，不是仓库 demo 基线；默认可复用行为写入 `src/default-config.ts`。
