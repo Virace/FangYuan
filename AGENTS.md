@@ -27,9 +27,8 @@
 
 1. 日常开发默认在 `develop` 基础上创建子分支，不直接在 `main` 上开发。
 2. 子分支完成开发后，先向 `develop` 发起 PR。
-3. `develop` 主要承担日常集成职责；远端自动校验默认不以它为门禁，本地提交前验证优先在这里完成。
-4. 若存在预发布分支，则从 `develop` 合入或择需补修到预发布分支，先做临时上线验证。
-5. 预发布验证通过后再同步到 `main`；若当轮没有预发布分支，则由用户明确决定是否直接从 `develop` 收口到 `main`。
+3. 发布前的小修、`package.json` 版本号及 `CHANGELOG.md` 在 `develop` 收口。需要预发布验证时，从 `develop` 生成候选版本，并将验收后的修复同步回 `develop`。
+4. 正式发布时，确认 `develop` 上的版本与变更日志后，从 `develop` 向 `main` 提 PR。主线校验通过后以 merge commit 合入，并在该提交上打正式标签、创建 GitHub Release。版本号规则见 `PROJECT_STANDARD.md`。
 
 ## 执行约束
 

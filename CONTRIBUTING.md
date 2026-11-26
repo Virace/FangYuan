@@ -15,7 +15,7 @@ Please keep each pull request focused on a single purpose. Avoid mixing unrelate
 
 Please use the [Conventional Commits](https://www.conventionalcommits.org/) format for your commit messages whenever possible. This keeps our history clear and consistent.
 
-Use `develop` as the normal integration target. `main` is reserved for release-ready state.
+Branch from `develop` for new features and open pull requests against it. Release fixes, the package version, and the changelog are finalized on `develop`. Maintainers then open a pull request from `develop` to `main` and tag the merge commit after the mainline checks pass. See [the project standard](PROJECT_STANDARD.md) for versioning.
 
 Before submitting code, run the checks that match your change:
 
