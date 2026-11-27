@@ -762,17 +762,7 @@
 
 .collapse-wrapper.collapsed {
     max-height: var(--collapsedHeight);
-}
-
-.collapse-wrapper.collapsed::after {
-    content: "";
-    position: absolute;
-    left: 0.75rem;
-    right: 0.75rem;
-    bottom: 0;
-    height: 2.25rem;
-    pointer-events: none;
-    background: linear-gradient(to bottom, transparent, var(--optical-card-surface) 92%);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 2.25rem), transparent);
 }
 
 .collapse-wrapper.is-expanded {
