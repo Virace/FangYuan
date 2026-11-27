@@ -4,10 +4,12 @@ import type { ImageMetadata } from "astro";
 import { Icon } from "astro-icon/components";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+import { formatDateToYYYYMMDD } from "../utils/content/date";
 import { isPinnedPost } from "../utils/content/post-ordering";
 import type { PostEntry } from "../utils/content/posts";
 import { resolveContentImage } from "../utils/image-source";
 import { resolveOpticalCoverPreset } from "../utils/optical-cover-presets";
+import { getCategoryUrl, getTagUrl } from "../utils/permalink/urls";
 import ImageWrapper from "./misc/ImageWrapper.astro";
 import PostMetadata from "./PostMeta.astro";
 
@@ -50,47 +52,108 @@ const fallbackCover = hasCover
 	? null
 	: resolveOpticalCoverPreset(entry.id || url || title);
 const isPinned = isPinnedPost(entry.data);
+const mobileCoverTags = hasCover ? tags.slice(0, 2) : [];
 ---
-<div class:list={["card-base optical-post-card flex flex-col-reverse md:flex-col w-full rounded-panel overflow-hidden relative md:min-h-[12.75rem]", className]} style={style}>
-    {hasCover && <div class="optical-card-blur-band hidden md:block pointer-events-none" aria-hidden="true"></div>}
-    <div class="optical-card-text-scrim hidden md:block pointer-events-none" aria-hidden="true"></div>
+<div
+    class:list={[
+        "card-base optical-post-card flex flex-col w-full rounded-panel overflow-hidden relative md:min-h-[12.75rem]",
+        hasCover ? "optical-post-card--cover" : "optical-post-card--plain",
+        className,
+    ]}
+    style={style}
+>
+    {hasCover && <div class="optical-card-blur-band pointer-events-none" aria-hidden="true"></div>}
+    <div class="optical-card-text-scrim pointer-events-none" aria-hidden="true"></div>
 
-    <div class:list={["optical-card-content relative z-10 pl-6 md:pl-9 pr-6 md:pr-6 pt-5 md:pt-7 pb-6 flex-1 flex flex-col justify-between w-full", hasCover ? "md:w-[58%]" : "md:w-[78%]"]}>
+    <div
+        class:list={[
+            "optical-card-content relative z-10 pl-6 pr-5 md:pl-9 md:pr-6 pt-4 md:pt-7 pb-4 md:pb-6 flex-1 flex flex-col justify-between w-full max-md:pointer-events-none",
+            hasCover ? "md:w-[58%]" : "md:w-[78%]",
+        ]}
+    >
         <div>
+            {/* 移动端有图卡专属：紧凑小额头承载置顶、分类与标签（自带毛玻璃底，图片上半部分 100% 透出） */}
+            {hasCover && (
+                <div class="flex md:hidden flex-wrap items-center gap-1.5 -ml-2 mb-9">
+                    {isPinned && (
+                        <span class="optical-cover-chip optical-cover-chip--pinned">
+                            <span class="optical-status-dot" aria-hidden="true"></span>
+                            <span>{i18n(I18nKey.pinned)}</span>
+                        </span>
+                    )}
+                    <a
+                        href={getCategoryUrl(category)}
+                        aria-label={`View all posts in the ${category} category`}
+                        class="optical-cover-chip optical-cover-chip--category pointer-events-auto"
+                    >
+                        {category || i18n(I18nKey.uncategorized)}
+                    </a>
+                    {mobileCoverTags.map((tag) => (
+                        <a
+                            href={getTagUrl(tag)}
+                            aria-label={`View all posts with the ${tag.trim()} tag`}
+                            class="optical-cover-chip optical-cover-chip--tag pointer-events-auto"
+                        >
+                            #{tag.trim()}
+                        </a>
+                    ))}
+                </div>
+            )}
+
             <a href={url} data-transition-title={title}
-               class="transition group w-full block font-bold mb-3 text-3xl text-90
+               class="transition group w-full block font-bold mb-2 md:mb-3 text-xl leading-[1.38] md:text-3xl md:leading-normal text-90
             hover:text-accent-solid
             active:text-title-active
             optical-post-title-beam
-            before:absolute before:top-8.75 before:left-4.5 before:hidden md:before:block
+            pointer-events-auto
+            relative md:static
+            before:absolute before:top-[0.3rem] before:-left-3 before:block md:before:top-8.75 md:before:left-4.5
             ">
                 <span class="flex items-start gap-1">
                     <span class="line-clamp-2 min-w-0">
                         {isPinned && (
                             <span
-                                class="relative -top-[0.08em] inline-block whitespace-nowrap text-[0.56em] leading-none align-middle font-black tracking-[0.18em] text-accent-solid uppercase"
+                                class:list={[
+                                    "relative -top-[0.08em] whitespace-nowrap text-[0.58em] md:text-[0.56em] leading-none align-middle font-black tracking-[0.16em] md:tracking-[0.18em] text-accent-foreground md:text-accent-solid uppercase mr-1",
+                                    hasCover ? "hidden md:inline-block" : "inline-block",
+                                ]}
                             >
                                 {i18n(I18nKey.pinned)}
                             </span>
                         )}
                         {title}
                     </span>
-                    <Icon is:inline class="inline shrink-0 icon-32 text-primary md:hidden translate-y-0.5" name="material-symbols:chevron-right-rounded" ></Icon>
+                    <Icon is:inline class="inline shrink-0 text-2xl text-accent-foreground/75 md:hidden translate-y-0.5" name="material-symbols:chevron-right-rounded"></Icon>
                     <Icon is:inline class="text-primary shrink-0 icon-32 transition hidden md:inline translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
                 </span>
             </a>
 
             <!-- metadata -->
-            <PostMetadata published={published} updated={updated} tags={tags} category={category} hideTagsForMobile={true} hideUpdateDate={true} class="mb-4"></PostMetadata>
+            <PostMetadata
+                published={published}
+                updated={updated}
+                tags={tags}
+                category={category}
+                hideTagsForMobile={true}
+                hideUpdateDate={true}
+                class={hasCover ? "hidden md:flex mb-2.5 md:mb-4 pointer-events-auto" : "mb-2.5 md:mb-4 pointer-events-auto"}
+            ></PostMetadata>
 
             <!-- description -->
-            <div class="transition text-75 mb-3.5 pr-4 line-clamp-2">
+            <div class="transition text-75 text-[0.875rem] leading-[1.6] md:text-base md:leading-normal mb-2.5 md:mb-3.5 pr-1 md:pr-4 line-clamp-2">
                 { description || remarkPluginFrontmatter.excerpt }
             </div>
         </div>
 
-        <!-- word count and read time  -->
-        <div class="text-sm text-muted flex gap-4 transition">
+        <!-- word count and read time (mobile cover card also shows publish date inline) -->
+        <div class="text-xs md:text-sm text-muted flex flex-wrap items-center gap-x-3 gap-y-1 md:gap-4 transition">
+            {hasCover && (
+                <div class="flex md:hidden items-center gap-1">
+                    <Icon is:inline name="material-symbols:calendar-today-outline-rounded" class="text-sm optical-mobile-meta-icon" aria-hidden="true"></Icon>
+                    <span>{formatDateToYYYYMMDD(published)}</span>
+                </div>
+            )}
+            {hasCover && <div class="md:hidden opacity-45" aria-hidden="true">·</div>}
             <div>
                 {remarkPluginFrontmatter.words} {" " + i18n(remarkPluginFrontmatter.words === 1 ? I18nKey.wordCount : I18nKey.wordsCount)}
             </div>
@@ -103,7 +166,7 @@ const isPinned = isPinnedPost(entry.data);
     </div>
 
     {hasCover && <a href={url} aria-label={title}
-                    class="optical-card-cover-link group block relative h-48 md:h-auto md:inset-0 md:absolute z-0 overflow-hidden" >
+                    class="optical-card-cover-link group block absolute inset-0 z-0 overflow-hidden" >
         <div class="optical-card-focus-mark hidden md:flex items-center justify-center pointer-events-none">
             <Icon is:inline name="material-symbols:chevron-right-rounded" class="text-xl" />
         </div>
@@ -121,16 +184,15 @@ const isPinned = isPinnedPost(entry.data);
 
     {!hasCover && fallbackCover && (
         <a href={url} aria-label={title}
-           class="optical-card-cover-link group block relative h-32 md:h-auto md:inset-0 md:absolute z-0 overflow-hidden">
+           class="optical-card-cover-link group block absolute inset-0 z-0 overflow-hidden">
             <div class="optical-card-focus-mark hidden md:flex items-center justify-center pointer-events-none">
                 <Icon is:inline name="material-symbols:chevron-right-rounded" class="text-xl" />
             </div>
             <div
-                class="optical-card-cover-media w-full h-full"
-                style={`background: ${fallbackCover.background};`}
+                class="optical-card-cover-media optical-card-cover-fallback w-full h-full"
+                style={`--optical-cover-bg: ${fallbackCover.background}; --optical-cover-bg-light: ${fallbackCover.lightBackground}; --optical-cover-bg-dark: ${fallbackCover.darkBackground};`}
                 aria-hidden="true"
             ></div>
         </a>
     )}
 </div>
-<div class="optical-hairline mx-6 w-auto! last:hidden md:hidden" aria-hidden="true"></div>

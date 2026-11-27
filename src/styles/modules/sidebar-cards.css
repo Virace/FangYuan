@@ -427,20 +427,26 @@
     contain: layout style paint;
 }
 
-@media (min-width: 768px) {
-    .optical-post-card::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: 25;
-        border-radius: inherit;
-        box-shadow: inset 0 0 0 1px var(--optical-card-border);
-        pointer-events: none;
-        transition: box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
+.optical-post-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 25;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px var(--optical-card-border);
+    pointer-events: none;
+    transition: box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
 
+@media (hover: hover) {
     .optical-post-card:hover::before {
         box-shadow: inset 0 0 0 1px var(--optical-glass-hover-border);
+    }
+}
+
+@media (max-width: 767.98px) and (prefers-reduced-motion: no-preference) {
+    .optical-post-card:active {
+        transform: scale(0.988);
     }
 }
 
@@ -504,21 +510,76 @@
     filter: brightness(1.08);
 }
 
+.optical-cover-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.16rem 0.52rem;
+    border-radius: 0.45rem;
+    border: 1px solid color-mix(in oklch, var(--optical-card-border) 85%, rgb(255 255 255 / 0.45));
+    background-color: color-mix(in oklch, var(--optical-card-surface) 78%, transparent);
+    color: var(--btn-plain-content);
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.35;
+    white-space: nowrap;
+    text-decoration: none;
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    box-shadow: 0 2px 8px -4px rgb(15 23 42 / 0.22);
+    transition:
+        color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark .optical-cover-chip {
+    border-color: color-mix(in oklch, var(--primary) 24%, rgb(255 255 255 / 0.18));
+    background-color: color-mix(in oklch, var(--optical-card-surface) 74%, transparent);
+    box-shadow: 0 2px 10px -4px rgb(0 0 0 / 0.48);
+}
+
+.optical-cover-chip--pinned {
+    color: var(--accent-foreground);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.optical-cover-chip--category {
+    color: var(--accent-foreground);
+    font-weight: 600;
+}
+
+.optical-cover-chip--tag {
+    background-color: color-mix(in oklch, var(--optical-card-surface) 68%, transparent);
+}
+
+.dark .optical-cover-chip--tag {
+    background-color: color-mix(in oklch, var(--optical-card-surface) 64%, transparent);
+}
+
+.optical-cover-chip:active,
+.optical-cover-chip:focus-visible {
+    border-color: var(--optical-chip-hover-border);
+    background-color: var(--optical-chip-hover-bg);
+    outline: none;
+}
+
+.optical-mobile-meta-icon {
+    color: color-mix(in oklch, var(--accent-solid) 76%, var(--btn-plain-content));
+}
+
 .optical-card-cover-media {
     filter: saturate(0.95) brightness(0.97);
-    mask-image: linear-gradient(
-        to bottom,
-        #000 58%,
-        rgb(0 0 0 / 0.55) 84%,
-        transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-        to bottom,
-        #000 58%,
-        rgb(0 0 0 / 0.55) 84%,
-        transparent 100%
-    );
     transition: filter 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.optical-card-cover-fallback {
+    background: var(--optical-cover-bg-light, var(--optical-cover-bg));
+}
+
+.dark .optical-card-cover-fallback {
+    background: var(--optical-cover-bg-dark, var(--optical-cover-bg));
 }
 
 .dark .optical-card-cover-media {
@@ -529,10 +590,24 @@
     filter: saturate(1.12) brightness(1.06);
 }
 
+@media (max-width: 767.98px) {
+    .optical-post-card--cover .optical-card-cover-real img {
+        object-position: center 32% !important;
+    }
+
+    .optical-post-card--cover .optical-card-content {
+        text-shadow: 0 1px 8px color-mix(in oklch, var(--optical-card-surface) 72%, transparent);
+    }
+
+    .dark .optical-post-card--cover .optical-card-content {
+        text-shadow: 0 1px 8px rgb(0 0 0 / 0.55);
+    }
+}
+
 @media (min-width: 768px) {
-    .optical-card-cover-media {
-        mask-image: none;
-        -webkit-mask-image: none;
+    .optical-card-cover-fallback,
+    .dark .optical-card-cover-fallback {
+        background: var(--optical-cover-bg);
     }
 
     .optical-card-cover-mirror {
@@ -563,43 +638,105 @@
     }
 }
 
+/* 移动端有图卡：长距离轻磨砂渐进，顶部小额头 100% 锐利透图，标题处温和起步，底部不糊死画面 */
 .optical-card-blur-band {
     position: absolute;
-    inset: 0 36% 0 0;
+    inset: 0;
     z-index: 1;
-    backdrop-filter: blur(22px) saturate(135%);
-    -webkit-backdrop-filter: blur(22px) saturate(135%);
+    backdrop-filter: blur(6px) saturate(116%);
+    -webkit-backdrop-filter: blur(6px) saturate(116%);
     mask-image: linear-gradient(
-        94deg,
-        #000 0%,
-        #000 46%,
-        rgb(0 0 0 / 0.85) 66%,
-        rgb(0 0 0 / 0.35) 84%,
-        transparent 100%
+        to bottom,
+        transparent 0%,
+        transparent 24%,
+        rgb(0 0 0 / 0.3) 48%,
+        rgb(0 0 0 / 0.76) 78%,
+        #000 100%
     );
     -webkit-mask-image: linear-gradient(
-        94deg,
-        #000 0%,
-        #000 46%,
-        rgb(0 0 0 / 0.85) 66%,
-        rgb(0 0 0 / 0.35) 84%,
-        transparent 100%
+        to bottom,
+        transparent 0%,
+        transparent 24%,
+        rgb(0 0 0 / 0.3) 48%,
+        rgb(0 0 0 / 0.76) 78%,
+        #000 100%
     );
 }
 
-.optical-card-text-scrim {
+/* 移动端有图卡：顶部额头 100% 透图，标题起始位置即带约 14% 轻蒙版，往下缓慢加厚并保留底部画面透出 */
+.optical-post-card--cover .optical-card-text-scrim {
     position: absolute;
     inset: 0;
     z-index: 2;
     background: linear-gradient(
-        94deg,
-        color-mix(in oklch, var(--optical-card-surface) 97%, transparent) 0%,
-        color-mix(in oklch, var(--optical-card-surface) 94%, transparent) 24%,
-        color-mix(in oklch, var(--optical-card-surface) 82%, transparent) 42%,
-        color-mix(in oklch, var(--optical-card-surface) 48%, transparent) 56%,
-        color-mix(in oklch, var(--optical-card-surface) 14%, transparent) 70%,
-        transparent 84%
+        to bottom,
+        transparent 0%,
+        transparent 18%,
+        color-mix(in oklch, var(--optical-card-surface) 14%, transparent) 30%,
+        color-mix(in oklch, var(--optical-card-surface) 42%, transparent) 50%,
+        color-mix(in oklch, var(--optical-card-surface) 64%, transparent) 72%,
+        color-mix(in oklch, var(--optical-card-surface) 76%, transparent) 100%
     );
+}
+
+/* 移动端无图卡：已按亮/暗主题匹配同明度光学渐变，仅叠加极轻主题面微蒙版，保持清透渐变与清晰文字 */
+.optical-post-card--plain .optical-card-text-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--optical-card-surface) 32%, transparent) 0%,
+        color-mix(in oklch, var(--optical-card-surface) 40%, transparent) 55%,
+        color-mix(in oklch, var(--optical-card-surface) 48%, transparent) 100%
+    );
+}
+
+.dark .optical-post-card--plain .optical-card-text-scrim {
+    background: linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--optical-card-surface) 30%, transparent) 0%,
+        color-mix(in oklch, var(--optical-card-surface) 38%, transparent) 55%,
+        color-mix(in oklch, var(--optical-card-surface) 46%, transparent) 100%
+    );
+}
+
+@media (min-width: 768px) {
+    .optical-card-blur-band {
+        inset: 0 36% 0 0;
+        backdrop-filter: blur(22px) saturate(135%);
+        -webkit-backdrop-filter: blur(22px) saturate(135%);
+        mask-image: linear-gradient(
+            94deg,
+            #000 0%,
+            #000 46%,
+            rgb(0 0 0 / 0.85) 66%,
+            rgb(0 0 0 / 0.35) 84%,
+            transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+            94deg,
+            #000 0%,
+            #000 46%,
+            rgb(0 0 0 / 0.85) 66%,
+            rgb(0 0 0 / 0.35) 84%,
+            transparent 100%
+        );
+    }
+
+    .optical-post-card--cover .optical-card-text-scrim,
+    .optical-post-card--plain .optical-card-text-scrim,
+    .dark .optical-post-card--plain .optical-card-text-scrim {
+        background: linear-gradient(
+            94deg,
+            color-mix(in oklch, var(--optical-card-surface) 97%, transparent) 0%,
+            color-mix(in oklch, var(--optical-card-surface) 94%, transparent) 24%,
+            color-mix(in oklch, var(--optical-card-surface) 82%, transparent) 42%,
+            color-mix(in oklch, var(--optical-card-surface) 48%, transparent) 56%,
+            color-mix(in oklch, var(--optical-card-surface) 14%, transparent) 70%,
+            transparent 84%
+        );
+    }
 }
 
 .optical-card-focus-mark {
