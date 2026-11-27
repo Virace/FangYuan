@@ -190,8 +190,9 @@ if (window?.swup?.hooks) {
 }
 </script>
 
-{import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
+{import.meta.env.PROD && <script is:inline data-swup-ignore-script define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
 async function loadPagefind() {
+    if (window.pagefind) return;
     try {
         const response = await fetch(scriptUrl, { method: 'HEAD' });
         if (!response.ok) {
