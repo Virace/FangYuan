@@ -225,6 +225,10 @@ export function installOpticalTransition(
 	const recentSlowVisits: boolean[] = [];
 	let useFade = false;
 	let bannerSyncMode: "none" | "start" | "hold" = "none";
+	let holdComposited = false;
+	let holdTimer = 0;
+	let presentationFrame = 0;
+	let skipSlowSample = false;
 	const state: TransitionFrameState = {
 		phase: "entering",
 		phaseProgress: 0,
@@ -238,6 +242,55 @@ export function installOpticalTransition(
 		isDark: false,
 		imprint: { eyebrow: "", title: "" },
 	};
+
+	function exitHold() {
+		cancelAnimationFrame(presentationFrame);
+		presentationFrame = 0;
+		if (holdTimer) {
+			window.clearTimeout(holdTimer);
+			holdTimer = 0;
+		}
+		if (holdComposited) {
+			renderer.leaveHold?.();
+			holdComposited = false;
+		}
+	}
+
+	function allowReplacementAfterPaint() {
+		const gate = permit;
+		if (!holdComposited || document.hidden) {
+			gate.resolve();
+			return;
+		}
+		// 缓存命中时 Swup 会在微任务里立即换页，先留出一次完整的渲染机会给驻留图层。
+		presentationFrame = requestAnimationFrame(() => {
+			presentationFrame = requestAnimationFrame(() => {
+				presentationFrame = 0;
+				gate.resolve();
+			});
+		});
+	}
+
+	function scheduleHoldCheck() {
+		if (
+			!current ||
+			!holdComposited ||
+			state.phase !== "holding" ||
+			!replacedAt
+		) {
+			return;
+		}
+		if (holdTimer) {
+			window.clearTimeout(holdTimer);
+			holdTimer = 0;
+		}
+		const remaining = phaseStart + duration - performance.now();
+		if (remaining > 0) {
+			holdTimer = window.setTimeout(scheduleHoldCheck, Math.ceil(remaining));
+			return;
+		}
+		if (!frame) frame = requestAnimationFrame(draw);
+	}
 
 	function lockUserScroll() {
 		if (scrollGuard) return;
@@ -261,6 +314,8 @@ export function installOpticalTransition(
 
 	function finish(completed = false) {
 		unlockUserScroll();
+		exitHold();
+		skipSlowSample = false;
 		if (completed && sampleVisit) {
 			if (warmed) {
 				recentSlowVisits.push(slowFrames >= 3);
@@ -364,7 +419,18 @@ export function installOpticalTransition(
 		state.scrollVelocity = 0;
 		setBannerHome(targetHome);
 		pulseBanner();
-		permit.resolve();
+		if (host?.ctx && main) {
+			syncHoldGeometry();
+			Object.assign(state, host.geometry);
+			holdComposited = Boolean(
+				renderer.enterHold?.(
+					{ holdLayer: host.holdLayer, canvas: host.canvas, ctx: host.ctx },
+					state,
+					holdMs,
+				),
+			);
+		}
+		allowReplacementAfterPaint();
 	}
 
 	function close(visit: Visit, now: number) {
@@ -400,22 +466,81 @@ export function installOpticalTransition(
 		renderer.render(host.ctx, state);
 	}
 
+	function syncHoldGeometry() {
+		if (!host?.ctx || !main || !current) return;
+		const extend = resolveBannerExtendPx();
+		const gridSlide =
+			extend > 0
+				? document
+						.getElementById("main-grid")
+						?.getAnimations()
+						.find(
+							(animation) =>
+								"transitionProperty" in animation &&
+								animation.transitionProperty === "transform",
+						)
+				: undefined;
+		if (extend > 0 && (host.isBannerSynced || gridSlide)) {
+			const { baseTop, currentOffsetY } = resolveMainGridMetrics(main);
+			const targetOffset = isHome(current) ? extend : 0;
+			host.lockToBanner(
+				main,
+				baseTop,
+				currentOffsetY,
+				targetOffset,
+				Math.max(0, innerHeight - Math.max(0, baseTop + currentOffsetY)),
+				Math.max(0, innerHeight - Math.max(0, baseTop + targetOffset)),
+				gridSlide,
+			);
+		} else {
+			host.unlockBanner();
+			host.sync(main);
+		}
+	}
+
+	function resizeVeil() {
+		if (!host?.ctx || !main || !current) return;
+		syncHoldGeometry();
+		Object.assign(state, host.geometry);
+		if (holdComposited) {
+			state.elapsedSec = (performance.now() - started) / 1000;
+			holdComposited = Boolean(
+				renderer.enterHold?.(
+					{ holdLayer: host.holdLayer, canvas: host.canvas, ctx: host.ctx },
+					state,
+					duration,
+				),
+			);
+			if (!holdComposited && !frame) frame = requestAnimationFrame(draw);
+		}
+	}
+
 	function draw(now: number) {
 		frame = 0;
 		if (!current || !host?.ctx || !main || (current.done && !replacedAt))
 			return finish();
-		const elapsed = Math.max(0, now - previousTime) / 1000;
+		const rawElapsed = Math.max(0, now - previousTime) / 1000;
+		const elapsed = skipSlowSample ? 0 : rawElapsed;
 		if (
 			sampleVisit &&
+			!skipSlowSample &&
 			previousTime !== started &&
 			state.phase !== "holding" &&
 			elapsed > 0.045
 		)
 			slowFrames++;
+		skipSlowSample = false;
 		state.dt = Math.min(0.034, elapsed);
 		state.elapsedSec = (now - started) / 1000;
 		previousTime = now;
-		const progress = Math.min(1, Math.max(0, (now - phaseStart) / duration));
+		const effectiveNow =
+			holdComposited && state.phase === "holding" && replacedAt
+				? Math.max(now, performance.now())
+				: now;
+		const progress = Math.min(
+			1,
+			Math.max(0, (effectiveNow - phaseStart) / duration),
+		);
 		state.phaseProgress = progress;
 		switch (state.phase) {
 			case "entering":
@@ -433,6 +558,12 @@ export function installOpticalTransition(
 			}
 			case "holding":
 				if (replacedAt && progress === 1) {
+					if (holdComposited) {
+						exitHold();
+						previousTime = now;
+						skipSlowSample = true;
+						state.dt = 0;
+					}
 					const exitMs =
 						bannerSyncMode === "hold"
 							? 400
@@ -447,6 +578,10 @@ export function installOpticalTransition(
 			case "exiting":
 				if (progress === 1) return finish(true);
 				break;
+		}
+		if (holdComposited) {
+			if (replacedAt) scheduleHoldCheck();
+			return;
 		}
 		paint();
 		frame = requestAnimationFrame(draw);
@@ -537,6 +672,9 @@ export function installOpticalTransition(
 			if (state.phase === "exiting") {
 				phase("entering", now, Math.max(32, 160 * state.phaseProgress));
 			} else if (state.phase === "holding") {
+				exitHold();
+				previousTime = now;
+				skipSlowSample = true;
 				close(visit, now);
 			}
 		}
@@ -559,27 +697,32 @@ export function installOpticalTransition(
 		if (visit === current) {
 			sampleVisit = false;
 			permit.resolve();
+			if (holdComposited && !frame) frame = requestAnimationFrame(draw);
 		}
 	});
 	swup.hooks.on("visit:end", (visit) => {
 		if (visit === fadeVisit) releaseFade();
+		if (visit === current && holdComposited && !replacedAt && !frame) {
+			frame = requestAnimationFrame(draw);
+		}
 	});
 	swup.hooks.before("content:scroll", (visit) => {
 		if (visit === current) visit.scroll.scrolledToContent = true;
 		if (!visit.to.hash && !visit.scroll.target) visit.scroll.animate = false;
 	});
+	swup.hooks.before("content:replace", (visit) => {
+		if (visit !== current) return;
+		const incoming = visit.to.document?.getElementById("swup-container");
+		if (incoming) incoming.dataset.opticalRevealed = "";
+		if (scrollY !== 0) window.scrollTo({ top: 0, behavior: "instant" });
+	});
 	swup.hooks.on("content:replace", (visit) => {
 		if (visit === fadeVisit) {
 			setBannerHome(isHome(visit));
-			document.documentElement.style.setProperty("--content-delay", "0ms");
 		}
 		if (visit !== current) return;
 		main = document.getElementById("swup-container");
 		if (!main) return finish();
-		main.dataset.opticalRevealed = "";
-		if (scrollY !== 0) {
-			window.scrollTo({ top: 0, behavior: "instant" });
-		}
 		const targetPath = new URL(visit.to.url, location.href).pathname;
 		state.imprint.title =
 			(isHomeOrPagination(targetPath) ? getSiteName() : "") ||
@@ -589,7 +732,7 @@ export function installOpticalTransition(
 		pulseBanner();
 		replacedAt = performance.now();
 		state.dt = 0;
-		paint();
+		if (holdComposited) scheduleHoldCheck();
 	});
 	motion.addEventListener("change", () => {
 		if (!motion.matches || !current) return;
@@ -597,7 +740,15 @@ export function installOpticalTransition(
 		finish();
 	});
 	document.addEventListener("visibilitychange", () => {
-		if (document.hidden) sampleVisit = false;
+		if (document.hidden) {
+			sampleVisit = false;
+			if (presentationFrame) {
+				cancelAnimationFrame(presentationFrame);
+				presentationFrame = 0;
+				permit.resolve();
+			}
+		}
 	});
+	window.addEventListener("resize", resizeVeil);
 	window.addEventListener("pagehide", () => finish());
 }

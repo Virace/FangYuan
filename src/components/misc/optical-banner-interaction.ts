@@ -97,6 +97,7 @@ class OpticalBanner extends HTMLElement {
 
 		const rotateLight = (radians: number) => {
 			angle = radians;
+			beamPulses?.invalidate();
 			const rotation = `rotate(${(angle * 180) / Math.PI})`;
 			for (const orbit of orbits) orbit.setAttribute("transform", rotation);
 			counterOrbit?.setAttribute(
@@ -450,6 +451,7 @@ class OpticalBanner extends HTMLElement {
 		this.cleanup = () => {
 			listeners.abort();
 			reset();
+			beamPulses?.dispose();
 			visibility.disconnect();
 			this.removeEventListener("fangyuan:optical-pulse", pulseOnNavigation);
 			motion.removeEventListener("change", reset);

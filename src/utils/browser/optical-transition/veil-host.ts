@@ -1,6 +1,7 @@
 import type { VeilGeometry } from "./types";
 
 export class VeilHost {
+	readonly holdLayer: HTMLDivElement = document.createElement("div");
 	readonly canvas: HTMLCanvasElement = document.createElement("canvas");
 	readonly ctx: CanvasRenderingContext2D | null = this.canvas.getContext("2d");
 	readonly geometry: VeilGeometry = {
@@ -20,7 +21,9 @@ export class VeilHost {
 	constructor() {
 		this.host.className = "optical-transition-veil";
 		this.host.setAttribute("aria-hidden", "true");
-		this.host.append(this.canvas);
+		this.holdLayer.className = "optical-transition-hold";
+		this.holdLayer.hidden = true;
+		this.host.append(this.holdLayer, this.canvas);
 		document.body.append(this.host);
 	}
 
@@ -93,6 +96,7 @@ export class VeilHost {
 		targetOffsetY: number,
 		startVisibleHeight: number,
 		targetVisibleHeight: number,
+		gridSlide?: Animation,
 	): void {
 		const rect = main.getBoundingClientRect();
 		const top = Math.max(0, baseTop);
@@ -110,7 +114,26 @@ export class VeilHost {
 			startVisibleHeight,
 			targetVisibleHeight,
 		);
-		this.startBannerSlide(startOffsetY, targetOffsetY);
+		const timelineProgress = gridSlide?.effect?.getComputedTiming().progress;
+		if (gridSlide?.effect && timelineProgress != null && timelineProgress < 1) {
+			this.bannerAnim?.cancel();
+			this.host.style.transform = `translateY(${targetOffsetY}px)`;
+			// 从当前 CSS 像素位移还原起点，避免缩放页面时将关键帧里的长度再放大一遍。
+			const fromY =
+				targetOffsetY + (startOffsetY - targetOffsetY) / (1 - timelineProgress);
+			this.bannerAnim = this.host.animate(
+				[
+					{ transform: `translateY(${fromY}px)` },
+					{ transform: `translateY(${targetOffsetY}px)` },
+				],
+				{ ...gridSlide.effect.getTiming(), fill: "both" },
+			);
+			if (gridSlide.startTime !== null) {
+				this.bannerAnim.startTime = gridSlide.startTime;
+			}
+		} else {
+			this.startBannerSlide(startOffsetY, targetOffsetY);
+		}
 		this.bannerSync = true;
 	}
 
@@ -122,9 +145,14 @@ export class VeilHost {
 		this.geometry.targetVisibleHeight = targetVisibleHeight;
 	}
 
-	remove(): void {
+	unlockBanner(): void {
 		this.bannerAnim?.cancel();
 		this.bannerAnim = undefined;
+		this.bannerSync = false;
+	}
+
+	remove(): void {
+		this.unlockBanner();
 		this.host.remove();
 	}
 }

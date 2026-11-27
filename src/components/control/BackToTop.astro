@@ -4,7 +4,7 @@ import { Icon } from "astro-icon/components";
 
 <!-- There can't be a filter on parent element, or it will break `fixed` -->
 <div class="back-to-top-wrapper">
-	<div id="back-to-top-btn" class="back-to-top-btn hide" onclick="backToTop()">
+	<div id="back-to-top-btn" class="back-to-top-btn hide">
 		<button type="button" aria-label="Back to Top" class="back-to-top-button">
 			<svg class="back-to-top-ring" viewBox="0 0 40 40" aria-hidden="true">
 				<circle class="back-to-top-ring-track" cx="20" cy="20" r="17.5"></circle>
@@ -15,43 +15,39 @@ import { Icon } from "astro-icon/components";
 	</div>
 </div>
 
-<script is:raw is:inline>
-function backToTop() {
-	window.scroll({ top: 0, behavior: 'smooth' });
-}
-
+<script is:inline data-swup-ignore-script>
 (() => {
-	const btn = document.getElementById('back-to-top-btn');
+	const btn = document.getElementById("back-to-top-btn");
 	if (!btn) return;
 	let frame = 0;
 
+	btn.addEventListener("click", () => {
+		window.scroll({ top: 0, behavior: "smooth" });
+	});
+
 	const syncProgress = () => {
 		frame = 0;
-		const maxScroll = Math.max(
-			1,
-			document.documentElement.scrollHeight - window.innerHeight,
-		);
-		const progress = Math.min(1, Math.max(0, window.scrollY / maxScroll));
-		btn.style.setProperty('--btt-progress', progress.toFixed(4));
+		const root = document.documentElement;
+		if (root.classList.contains("optical-transition-active")) return;
+		const scrollTop = window.scrollY;
+		if (scrollTop <= 0) {
+			btn.style.setProperty("--btt-progress", "0");
+			return;
+		}
+		const maxScroll = Math.max(1, root.scrollHeight - window.innerHeight);
+		const progress = Math.min(1, scrollTop / maxScroll);
+		btn.style.setProperty("--btt-progress", progress.toFixed(4));
 	};
 
 	const schedule = () => {
-		if (frame) return;
+		if (frame || document.documentElement.classList.contains("optical-transition-active")) return;
 		frame = requestAnimationFrame(syncProgress);
 	};
 
-	window.addEventListener('scroll', schedule, { passive: true });
-	window.addEventListener('resize', schedule, { passive: true });
-
-	const bindSwup = () => {
-		window.swup?.hooks?.on('content:replace', schedule);
-	};
-	if (window?.swup?.hooks) {
-		bindSwup();
-	} else {
-		document.addEventListener('swup:enable', bindSwup, { once: true });
-	}
-
-	syncProgress();
+	window.addEventListener("scroll", schedule, { passive: true });
+	window.addEventListener("resize", schedule, { passive: true });
+	document.addEventListener("fangyuan:optical-transition-end", schedule);
+	document.addEventListener("swup:page:view", schedule);
+	schedule();
 })();
 </script>

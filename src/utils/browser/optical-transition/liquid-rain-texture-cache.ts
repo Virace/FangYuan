@@ -12,8 +12,10 @@ function canvasTexture(
 	return ctx;
 }
 
-export function createRainTextureCache(): (hue: number) => RainTextures {
-	let cached: RainTextures | undefined;
+export function createRainTextureCache(): (
+	hue: number,
+) => RainTextures<HTMLCanvasElement> {
+	let cached: RainTextures<HTMLCanvasElement> | undefined;
 	let cachedHue: number | undefined;
 
 	return (hue) => {
