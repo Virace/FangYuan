@@ -14,10 +14,18 @@ function updateCard(
 	update: () => void,
 	fadeContent = false,
 ): void {
-	const previousHeight = card.getBoundingClientRect().height;
+	const animate =
+		!window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+		!(
+			card.closest("#swup-container") &&
+			document.querySelector(".optical-transition-hold:not([hidden])")
+		);
+	const previousHeight = animate
+		? card.getBoundingClientRect().height
+		: undefined;
 	for (const animation of cardAnimations.get(card) ?? []) animation.cancel();
 	update();
-	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+	if (previousHeight === undefined) return;
 
 	// 用实际前后高度过渡，兼容自动换行；布局先展开，提示随后显现。
 	const nextHeight = card.getBoundingClientRect().height;
@@ -151,11 +159,13 @@ export function refreshGithubCards(): void {
 	)) {
 		const repo = normalizeGithubRepo(card.dataset.githubRepo);
 		if (!repo) continue;
-		updateCard(card, () => {
-			card.dataset.githubState = "updating";
-			card.setAttribute("aria-busy", "true");
-			setStatus(card, false);
-		});
+		card.dataset.githubState = "updating";
+		card.setAttribute("aria-busy", "true");
+		const status = card.querySelector<HTMLElement>(".gc-status");
+		if (status && !status.hidden)
+			updateCard(card, () => {
+				status.hidden = true;
+			});
 		const avatar = card.querySelector<HTMLImageElement>(".gc-avatar");
 		if (avatar)
 			avatar.onerror = () => {

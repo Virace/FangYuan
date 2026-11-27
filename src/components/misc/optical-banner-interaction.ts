@@ -7,6 +7,7 @@ import {
 	projectPrismGuide,
 } from "./optical-projection";
 import { projectSpectrum } from "./optical-spectrum";
+import { playSurfacePulse } from "./optical-surface-pulse";
 
 class OpticalBanner extends HTMLElement {
 	private cleanup?: () => void;
@@ -19,10 +20,26 @@ class OpticalBanner extends HTMLElement {
 				name: element.dataset.plane as keyof OpticalProjection,
 			}),
 		);
-		const svg = this.querySelector("svg");
+		const surfaces = Array.from(
+			this.querySelectorAll<HTMLElement>("[data-surface]"),
+			(element) => ({
+				element,
+				name: element.dataset.surface as keyof ReturnType<
+					typeof projectOptics
+				>["surfaces"],
+			}),
+		);
+		const rays = Array.from(
+			this.querySelectorAll<HTMLElement>("[data-ray]"),
+			(element) => ({
+				element,
+				name: element.dataset.ray as "incoming" | "outgoing",
+			}),
+		);
+		const svg = this.querySelector<SVGSVGElement>(".beam-art");
 		const lightPlane = this.querySelector<SVGGElement>(".light-plane");
 		const lightOrbit = lightPlane?.querySelector<SVGGElement>("[data-orbit]");
-		const inletHandle = lightPlane?.querySelector(
+		const inletHandle = this.querySelector(
 			".beam-handle[data-plane='incoming']",
 		);
 		const orbits = this.querySelectorAll<SVGGraphicsElement>("[data-orbit]");
@@ -51,12 +68,15 @@ class OpticalBanner extends HTMLElement {
 			"[data-spectrum-segment]",
 		);
 		const envelope = this.querySelector<SVGPathElement>("#optics-envelope");
-		const pulseMask = this.querySelector<SVGMaskElement>("#optics-wave");
-		const spill = this.querySelector<HTMLElement>(".optics-spill");
+		const flashTemplates = this.querySelectorAll<HTMLTemplateElement>(
+			"[data-flash-offset]",
+		);
+		const pulses = new Set<NonNullable<ReturnType<typeof playSurfacePulse>>>();
+		const beamLayer = this.querySelector<HTMLElement>(".optics-beam-layer");
 		const highlight = this.querySelector<SVGSVGElement>(".beam-light");
-		if (!svg || !lightPlane || !lightOrbit || !pulseMask || !highlight) return;
+		if (!svg || !lightPlane || !lightOrbit || !highlight || !beamLayer) return;
 		const pulseCanvas = this.querySelector<HTMLCanvasElement>(".beam-pulses");
-		const beam = lightOrbit.querySelector<SVGGElement>("#optics-beams");
+		const beam = svg.querySelector<SVGGElement>("#optics-beams");
 		let beamPulses: ReturnType<typeof createBeamPulses>;
 
 		const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -74,6 +94,28 @@ class OpticalBanner extends HTMLElement {
 		let tailVelocity = 0;
 		let lastBend = 0;
 		let resizing = false;
+		const readGeometry = () => {
+			const scene = svg.getScreenCTM();
+			if (!scene?.a) return;
+			const rect = this.getBoundingClientRect();
+			return {
+				scene,
+				inverse: scene.inverse(),
+				rect,
+				top: Math.max(rect.top, -window.scrollY),
+				bottom: beamLayer.getBoundingClientRect().bottom,
+			};
+		};
+		let geometry: ReturnType<typeof readGeometry>;
+		let geometryFrame = 0;
+		const refreshGeometry = () => {
+			geometryFrame = 0;
+			geometry = readGeometry();
+		};
+		const scheduleGeometry = () => {
+			if (!geometryFrame)
+				geometryFrame = requestAnimationFrame(refreshGeometry);
+		};
 		let drag:
 			| {
 					start: PointerEvent;
@@ -100,6 +142,7 @@ class OpticalBanner extends HTMLElement {
 			beamPulses?.invalidate();
 			const rotation = `rotate(${(angle * 180) / Math.PI})`;
 			for (const orbit of orbits) orbit.setAttribute("transform", rotation);
+			for (const pulse of pulses) pulse.rotate(angle);
 			counterOrbit?.setAttribute(
 				"transform",
 				`rotate(${(-angle * 180) / Math.PI})`,
@@ -129,12 +172,21 @@ class OpticalBanner extends HTMLElement {
 		const draw = (viewChanged = true) => {
 			beamPulses?.invalidate();
 			const view = projectOptics(x, y, prismProfile, angle);
+			for (const { element, name } of rays)
+				element.style.transform = view.rays[name];
+			if (viewChanged) {
+				for (const { element, name } of surfaces)
+					element.style.transform = view.surfaces[name];
+			}
 			for (const { element, name } of planes)
-				element.setAttribute("transform", view[name]);
+				if (element.getAttribute("transform") !== view[name])
+					element.setAttribute("transform", view[name]);
 			for (const guide of guides) {
 				const { path, opacity } = projectPrismGuide(guide.points, angle, view);
-				guide.path.setAttribute("d", path);
-				guide.light.setAttribute("opacity", String(opacity));
+				if (guide.path.getAttribute("d") !== path)
+					guide.path.setAttribute("d", path);
+				if (guide.light.getAttribute("opacity") !== String(opacity))
+					guide.light.setAttribute("opacity", String(opacity));
 			}
 			if (viewChanged && diamond.length) {
 				const facets = projectDiamond(view.relief);
@@ -171,7 +223,7 @@ class OpticalBanner extends HTMLElement {
 						: angle + difference * follow,
 				);
 			}
-			if (viewChanged || (prismProfile && orbitChanged)) draw(viewChanged);
+			if (viewChanged || orbitChanged) draw(viewChanged);
 			tailVelocity += ((angle - tailAngle) * 255 - tailVelocity * 20) * dt;
 			tailAngle += tailVelocity * dt;
 			if (
@@ -202,13 +254,15 @@ class OpticalBanner extends HTMLElement {
 			targetY = nextY;
 			if (x !== targetX || y !== targetY) wake();
 		};
+		const beamMatrix = () =>
+			lightPlane.transform.baseVal
+				.getItem(0)
+				.matrix.rotate((angle * 180) / Math.PI);
 		const playPulse = (start?: PointerEvent): boolean => {
-			const matrix = lightOrbit.getScreenCTM();
-			if (!matrix || motion.matches) return false;
+			if (!geometry || motion.matches) return false;
+			const { scene, rect, top, bottom } = geometry;
+			const matrix = scene.multiply(beamMatrix());
 			const inverse = matrix.inverse();
-			const rect = this.getBoundingClientRect();
-			const bottom = spill?.getBoundingClientRect().bottom ?? rect.bottom;
-			const top = Math.max(rect.top, -window.scrollY);
 			const corners = [
 				new DOMPoint(rect.left, top),
 				new DOMPoint(rect.left, bottom),
@@ -229,29 +283,24 @@ class OpticalBanner extends HTMLElement {
 				380,
 				Math.min(1050, (end - source) * Math.hypot(matrix.a, matrix.b) * 0.67),
 			);
-			const packet = document.createElementNS(
-				"http://www.w3.org/2000/svg",
-				"use",
+			const pulse = playSurfacePulse(
+				flashTemplates,
+				source,
+				end,
+				duration,
+				angle,
 			);
-			packet.setAttribute("href", "#optics-packet");
-			packet.setAttribute("opacity", "0");
-			pulseMask.append(packet);
+			if (!pulse) return false;
+			pulses.add(pulse);
 			this.toggleAttribute("data-pulsing", true);
-			const sweep = packet.animate(
-				[
-					{ transform: `translateX(${source}px)`, opacity: 0 },
-					{ opacity: 1, offset: 0.045 },
-					{ transform: `translateX(${end}px)`, opacity: 1 },
-				],
-				{ duration },
-			);
-			sweep.onfinish = () => {
-				packet.remove();
-				if (!pulseMask.childElementCount) this.removeAttribute("data-pulsing");
+			pulse.animation.onfinish = () => {
+				pulse.remove();
+				pulses.delete(pulse);
+				if (!pulses.size) this.removeAttribute("data-pulsing");
 			};
 			if (pulseCanvas && beam) {
-				beamPulses ??= createBeamPulses(pulseCanvas, beam);
-				beamPulses?.add(sweep, source, end, duration);
+				beamPulses ??= createBeamPulses(pulseCanvas, beam, beamMatrix);
+				beamPulses?.add(pulse.animation, source, end, duration);
 			}
 			return true;
 		};
@@ -264,9 +313,8 @@ class OpticalBanner extends HTMLElement {
 			cancelAnimationFrame(frame);
 			frame = 0;
 			x = y = targetX = targetY = 0;
-			for (const animation of pulseMask.getAnimations({ subtree: true }))
-				animation.cancel();
-			pulseMask.replaceChildren();
+			for (const pulse of pulses) pulse.remove();
+			pulses.clear();
 			this.removeAttribute("data-pulsing");
 			if (motion.matches) targetAngle = 0;
 			rotateLight(targetAngle);
@@ -278,17 +326,14 @@ class OpticalBanner extends HTMLElement {
 		const applyPointerSample = () => {
 			const event = pendingMove;
 			pendingMove = undefined;
-			if (!event) return;
-			const rect = this.getBoundingClientRect();
-			const matrix = svg.getScreenCTM();
-			if (!matrix) return;
+			if (!event || !geometry) return;
+			const { rect, inverse, top, scene } = geometry;
 			const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(
-				matrix.inverse(),
+				inverse,
 			);
 			const localX = event.clientX - rect.left;
 			const localY = event.clientY - rect.top;
 			if (drag?.moved) drag.point = point;
-			const top = Math.max(rect.top, -window.scrollY);
 			targetX = Math.max(-1, Math.min(1, (localX / rect.width) * 2 - 1));
 			targetY = Math.max(
 				-1,
@@ -297,7 +342,7 @@ class OpticalBanner extends HTMLElement {
 					((event.clientY - top) / Math.max(1, rect.bottom - top)) * 2 - 1,
 				),
 			);
-			const scale = 1 / matrix.a;
+			const scale = 1 / scene.a;
 			const radius = 58;
 			highlight.style.transform = `translate3d(${localX - radius}px,${localY - radius}px,0)`;
 			highlight.setAttribute(
@@ -343,11 +388,10 @@ class OpticalBanner extends HTMLElement {
 				return;
 			}
 			if (event.button !== 0 || motion.matches || !onBeam) return;
-			const matrix = svg.getScreenCTM();
-			if (!matrix) return;
+			if (!geometry) return;
 			const direction = pointerAngle(
 				new DOMPoint(event.clientX, event.clientY).matrixTransform(
-					matrix.inverse(),
+					geometry.inverse,
 				),
 			);
 			if (direction === undefined) return;
@@ -411,6 +455,7 @@ class OpticalBanner extends HTMLElement {
 		const resize = (event: TransitionEvent) => {
 			if (event.target !== stage || event.propertyName !== "transform") return;
 			resizing = event.type === "transitionrun";
+			scheduleGeometry();
 			if (resizing) {
 				cancelAnimationFrame(frame);
 				frame = 0;
@@ -430,6 +475,17 @@ class OpticalBanner extends HTMLElement {
 			}
 		};
 		const listeners = new AbortController();
+		const resizeObserver = new ResizeObserver(scheduleGeometry);
+		resizeObserver.observe(this);
+		resizeObserver.observe(svg);
+		let visible = true;
+		const onScroll = () => {
+			if (visible) scheduleGeometry();
+		};
+		window.addEventListener("scroll", onScroll, {
+			passive: true,
+			signal: listeners.signal,
+		});
 		for (const event of [
 			"transitionrun",
 			"transitionend",
@@ -437,19 +493,35 @@ class OpticalBanner extends HTMLElement {
 		] as const)
 			stage?.addEventListener(event, resize, { signal: listeners.signal });
 		const visibility = new IntersectionObserver(([entry]) => {
-			if (!entry.isIntersecting) reset();
+			visible = entry.isIntersecting;
+			if (visible) scheduleGeometry();
+			else reset();
 		});
 		visibility.observe(this);
+		scheduleGeometry();
+		let navigationFrame = 0;
 		const pulseOnNavigation = (event: Event) => {
-			const rect = this.getBoundingClientRect();
-			if (rect.bottom > 0 && rect.top < innerHeight && playPulse()) {
-				if (event instanceof CustomEvent) event.detail?.onPlay?.();
-			}
+			if (motion.matches || navigationFrame) return;
+			scheduleGeometry();
+			navigationFrame = requestAnimationFrame(() => {
+				navigationFrame = 0;
+				if (
+					geometry &&
+					geometry.rect.bottom > 0 &&
+					geometry.rect.top < innerHeight &&
+					playPulse()
+				) {
+					if (event instanceof CustomEvent) event.detail?.onPlay?.();
+				}
+			});
 		};
 		this.addEventListener("fangyuan:optical-pulse", pulseOnNavigation);
 		motion.addEventListener("change", reset);
 		this.cleanup = () => {
 			listeners.abort();
+			cancelAnimationFrame(navigationFrame);
+			cancelAnimationFrame(geometryFrame);
+			resizeObserver.disconnect();
 			reset();
 			beamPulses?.dispose();
 			visibility.disconnect();

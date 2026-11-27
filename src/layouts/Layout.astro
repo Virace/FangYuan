@@ -264,6 +264,9 @@ const canonicalUrl =
 	opacity: 0;
 	transform: translateY(-4rem);
 }
+html.optical-transition-active #swup-container[data-optical-revealed] {
+	contain: layout style;
+}
 @media (prefers-reduced-motion: reduce) {
 	.enable-banner #banner-wrapper, .enable-banner #main-grid {
 		transition-property: none;
@@ -427,6 +430,7 @@ const setup = () => {
 		visit.a11y.announce = announcement
 	})
 	window.swup.hooks.on('content:replace', refreshFormulaScrollbars)
+	window.swup.hooks.on('content:replace', scheduleScrollUpdate)
 }
 if (window?.swup?.hooks) {
 	setup()
@@ -436,13 +440,22 @@ if (window?.swup?.hooks) {
 
 const backToTopButton = document.getElementById('back-to-top-btn');
 const tableOfContentsElement = document.getElementById('toc-wrapper');
-function scrollFunction() {
+let scrollFrame = 0
+let viewportResized = false
+function updateScrollState() {
+	scrollFrame = 0
 	const scrollTop = window.scrollY;
 	const viewportHeight = window.innerHeight
 	const bannerScrollThreshold = viewportHeight * (BANNER_HEIGHT / 100)
 	const isHomeDesktop = isBannerEnabled && document.body.classList.contains('lg:is-home') && window.innerWidth >= 1024
 	const NAVBAR_HEIGHT = 72
 	hideNavbarOnHomeExit = isBannerEnabled && scrollTop >= bannerScrollThreshold - NAVBAR_HEIGHT - 16
+
+	if (viewportResized) {
+		viewportResized = false
+		const offset = Math.floor(viewportHeight * (BANNER_HEIGHT_EXTEND / 100))
+		document.documentElement.style.setProperty('--banner-height-extend', `${offset - offset % 4}px`)
+	}
 
 	if (backToTopButton) {
 		backToTopButton.classList.toggle('hide', scrollTop <= bannerScrollThreshold)
@@ -460,16 +473,15 @@ function scrollFunction() {
 		navbarElement.classList.toggle('navbar-hidden', scrollTop >= navbarHideThreshold)
 	}
 }
-window.addEventListener('scroll', scrollFunction, { passive: true })
-requestAnimationFrame(scrollFunction)
-
+function scheduleScrollUpdate() {
+	if (!scrollFrame) scrollFrame = requestAnimationFrame(updateScrollState)
+}
+window.addEventListener('scroll', scheduleScrollUpdate, { passive: true })
 window.addEventListener('resize', () => {
-	scrollFunction()
-	// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
-	let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
-	offset = offset - offset % 4;
-	document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
+	viewportResized = true
+	scheduleScrollUpdate()
 }, { passive: true })
+scheduleScrollUpdate()
 
 </script>
 

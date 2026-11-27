@@ -99,6 +99,7 @@ function clearDirtyRects(
 export function createBeamPulses(
 	canvas: HTMLCanvasElement,
 	beam: SVGGElement,
+	beamMatrix: () => DOMMatrix,
 ): BeamPulses | undefined {
 	const rawContext = canvas.getContext("2d");
 	const svg = beam.ownerSVGElement;
@@ -145,12 +146,14 @@ export function createBeamPulses(
 	let frame = 0;
 	let sliceMatrices: DOMMatrix[] | undefined;
 	let cachedPose: PoseCache | undefined;
-	let layoutDirty = true;
-	let needsFullClear = false;
+	let viewport:
+		| { width: number; height: number; dpr: number; matrix: DOMMatrix }
+		| undefined;
 	let prevDirtyRects: DirtyRect[] = [];
 	let combinedMask: CanvasRenderingContext2D | null = null;
 	const resizeObserver = new ResizeObserver(() => {
-		layoutDirty = true;
+		viewport = undefined;
+		cachedPose = undefined;
 	});
 	resizeObserver.observe(canvas);
 	resizeObserver.observe(svg);
@@ -158,24 +161,30 @@ export function createBeamPulses(
 	function resolvePose(): PoseCache | undefined {
 		if (!svg || !inlet || !outlet) return;
 		const dpr = Math.min(window.devicePixelRatio || 1, 2);
-		if (!layoutDirty && cachedPose && cachedPose.dpr === dpr) {
+		if (cachedPose && cachedPose.dpr === dpr) {
 			return cachedPose;
 		}
-		const cssWidth = canvas.clientWidth;
-		const cssHeight = canvas.clientHeight;
-		const ctm = beam.getCTM();
-		if (!ctm || !cssWidth || !cssHeight) return;
-		const svgStyle = getComputedStyle(svg);
-		const ox =
-			Number.parseFloat(svgStyle.left) - Number.parseFloat(svgStyle.width) / 2;
-		const oy =
-			Number.parseFloat(svgStyle.top) - Number.parseFloat(svgStyle.height) / 2;
-		const width = Math.ceil(cssWidth * dpr);
-		const height = Math.ceil(cssHeight * dpr);
-		const pose = new DOMMatrix()
-			.scale(dpr, dpr)
-			.translate(ox, oy)
-			.multiply(ctm);
+		if (!viewport || viewport.dpr !== dpr) {
+			const width = Math.ceil(canvas.clientWidth * dpr);
+			const height = Math.ceil(canvas.clientHeight * dpr);
+			if (!width || !height) return;
+			const style = getComputedStyle(svg);
+			const scale = Number.parseFloat(style.width) / svg.viewBox.baseVal.width;
+			viewport = {
+				width,
+				height,
+				dpr,
+				matrix: new DOMMatrix()
+					.scale(dpr)
+					.translate(
+						Number.parseFloat(style.left),
+						Number.parseFloat(style.top),
+					)
+					.scale(scale),
+			};
+		}
+		const { width, height } = viewport;
+		const pose = viewport.matrix.multiply(beamMatrix());
 		const entry = inlet.transform.baseVal.getItem(0).matrix;
 		const inletBounds = transformRectBounds(entry, -4400, -19, inletEnd, 19);
 		const exit = outlet.transform.baseVal.getItem(0).matrix;
@@ -186,7 +195,6 @@ export function createBeamPulses(
 			matrix,
 			bounds: transformRectBounds(matrix, 0, 0, 1, 1),
 		}));
-		layoutDirty = false;
 		cachedPose = {
 			width,
 			height,
@@ -298,13 +306,7 @@ export function createBeamPulses(
 			});
 		}
 		if (!packets.length) {
-			if (needsFullClear) {
-				context.resetTransform();
-				context.clearRect(0, 0, canvas.width, canvas.height);
-				needsFullClear = false;
-			} else if (prevDirtyRects.length) {
-				clearDirtyRects(context, prevDirtyRects);
-			}
+			clearDirtyRects(context, prevDirtyRects);
 			prevDirtyRects = [];
 			return;
 		}
@@ -315,14 +317,8 @@ export function createBeamPulses(
 		if (canvas.width !== width) canvas.width = width;
 		if (canvas.height !== height) canvas.height = height;
 		if (!resized) {
-			if (needsFullClear) {
-				context.resetTransform();
-				context.clearRect(0, 0, width, height);
-			} else if (prevDirtyRects.length) {
-				clearDirtyRects(context, prevDirtyRects);
-			}
+			clearDirtyRects(context, prevDirtyRects);
 		}
-		needsFullClear = false;
 
 		const hasSpectrum = spectrum.naturalWidth > 0;
 		const activePackets: {
@@ -438,8 +434,7 @@ export function createBeamPulses(
 		},
 		invalidate() {
 			sliceMatrices = undefined;
-			layoutDirty = true;
-			if (prevDirtyRects.length) needsFullClear = true;
+			cachedPose = undefined;
 		},
 		reset() {
 			cancelAnimationFrame(frame);
@@ -447,8 +442,7 @@ export function createBeamPulses(
 			pulses.clear();
 			canvas.width = canvas.height = 1;
 			prevDirtyRects = [];
-			needsFullClear = false;
-			layoutDirty = true;
+			viewport = undefined;
 			cachedPose = undefined;
 			combinedMask = null;
 			sliceMatrices = undefined;

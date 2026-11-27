@@ -440,7 +440,7 @@
     background: var(--float-panel-glass-bg);
     border: 1px solid var(--float-panel-glass-border);
     box-shadow: var(--float-panel-glass-shadow);
-    backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: var(--floating-backdrop-filter);
     transition:
         color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
         background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),

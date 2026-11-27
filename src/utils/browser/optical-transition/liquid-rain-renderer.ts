@@ -1,51 +1,28 @@
+import {
+	advanceRainDrops,
+	drawRain,
+	type RainDrop,
+	type RainSnapshot,
+	type RainWorkerMessage,
+} from "./liquid-rain-frame";
 import { createRainTextureCache } from "./liquid-rain-texture-cache";
 import { type RainTextures, rainColors } from "./liquid-rain-textures";
 import type {
 	OpticalTransitionHoldHost,
 	OpticalTransitionRenderer,
+	TransitionClock,
 	TransitionFrameState,
 } from "./types";
 
 const circle = Math.PI * 2;
 const sineEasing = "cubic-bezier(0.3642,0,0.6358,1)";
 
-function traceSurface(
-	ctx: CanvasRenderingContext2D,
-	w: number,
-	y: number,
-	amp: number,
-	time: number,
-) {
-	ctx.beginPath();
-	for (let x = 0; ; x = Math.min(w, x + 10)) {
-		const edge =
-			y +
-			(Math.sin(x * 0.02 + time * 4.4) +
-				0.45 * Math.cos(x * 0.046 - time * 2.9)) *
-				amp;
-		if (x === 0) ctx.moveTo(x, edge);
-		else ctx.lineTo(x, edge);
-		if (x === w) break;
-	}
-}
-
-function drawGlow(
-	ctx: CanvasRenderingContext2D,
-	image: CanvasImageSource,
-	x: number,
-	y: number,
-	radius: number,
-) {
-	ctx.drawImage(image, x - radius, y - radius, radius * 2, radius * 2);
-}
-
-interface Drop {
-	x: number;
-	y: number;
-	radius: number;
-	speed: number;
-	offset: number;
-	color: number;
+function themeHue() {
+	return (
+		Number.parseFloat(
+			getComputedStyle(document.body).getPropertyValue("--hue"),
+		) || 0
+	);
 }
 
 function oscillate(
@@ -78,77 +55,100 @@ function placeTexture(
 }
 
 export function createLiquidRainRenderer(): OpticalTransitionRenderer {
-	let drops: Drop[] = [];
 	const texturesForHue = createRainTextureCache();
-	let materials: RainTextures<HTMLCanvasElement>["materials"] = [];
-	let tails: RainTextures["tails"] = [];
-	let tailsDown: RainTextures["tailsDown"] = [];
-	let lastPhase: TransitionFrameState["phase"] | undefined;
-	let surfaceFraction = 1;
+	let textures: RainTextures<HTMLCanvasElement> | undefined;
+	let background: CanvasRenderingContext2D | null = null;
+	let hue = 0;
+	let drops: RainDrop[] = [];
 	let entryFraction = 1;
-	let background: HTMLCanvasElement | undefined;
-	let glowLayer: CanvasRenderingContext2D | null = null;
+	let clock: TransitionClock | undefined;
+	let snapshot: RainSnapshot | undefined;
 	let holdHost: OpticalTransitionHoldHost | undefined;
 	let holdAnimations: Animation[] = [];
+	let worker: Worker | undefined;
+	let workerReady = false;
+	let activeWorker = false;
+	let selectBackend = false;
+	let workerInitialized = false;
 
-	function drawDrops(
-		ctx: CanvasRenderingContext2D,
-		state: TransitionFrameState,
-		held: boolean,
-		falling: boolean,
-		speed: number,
-	) {
-		const { width: w, height: h, elapsedSec: time } = state;
-		const shimmer = held ? 0.91 + 0.09 * Math.sin(time * circle * 6.5) : 1;
-		const activeTails = falling ? tailsDown : tails;
-		for (const drop of drops) {
-			if (!held) {
-				const velocity = speed * drop.speed;
-				drop.y += (velocity * state.dt) / h;
-				if (drop.y < -24 / h) drop.y = 1 + 14 / h;
-			}
-			const x = drop.x * w;
-			const y =
-				drop.y * h + (held ? 0.35 * Math.sin(time * 36 + drop.offset) : 0);
-			const r = drop.radius;
-			const color = rainColors[drop.color];
-			ctx.globalAlpha = 0.78 * shimmer;
-			if (!held) {
-				const velocity = speed * drop.speed;
-				const length = Math.max(8, Math.min(22, Math.abs(velocity) / 15));
-				const tailY = falling ? y - length : y;
-				ctx.drawImage(
-					activeTails[drop.color],
-					x - r * 0.42,
-					tailY,
-					r * 0.84,
-					length,
-				);
-			}
-			ctx.fillStyle = color;
-			ctx.beginPath();
-			ctx.arc(x, y, r, 0, circle);
-			ctx.fill();
-			ctx.fillStyle = "#fff";
-			ctx.beginPath();
-			ctx.arc(x - r * 0.22, y - r * 0.26, r * 0.42, 0, circle);
-			ctx.fill();
-			if (held && r > 3.2) {
-				ctx.globalAlpha = 0.34 * shimmer;
-				ctx.strokeStyle = color;
-				ctx.lineWidth = 1;
-				ctx.beginPath();
-				ctx.arc(x, y, r * 2.25, 0, circle);
-				ctx.stroke();
-			}
+	function disableWorker() {
+		worker?.terminate();
+		worker = undefined;
+		workerReady = false;
+		activeWorker = false;
+	}
+	function initializeWorker() {
+		if (workerInitialized) return;
+		workerInitialized = true;
+		if (
+			typeof Worker === "undefined" ||
+			typeof HTMLCanvasElement.prototype.transferControlToOffscreen !==
+				"function"
+		)
+			return;
+		try {
+			worker = new Worker(new URL("./liquid-rain-worker.ts", import.meta.url), {
+				type: "module",
+			});
+			worker.onmessage = (event: MessageEvent<unknown>) => {
+				workerReady = event.data === "ready";
+			};
+			worker.onerror = disableWorker;
+			worker.postMessage({
+				type: "warm",
+				hue: themeHue(),
+			} satisfies RainWorkerMessage);
+		} catch {
+			disableWorker();
 		}
-		ctx.globalAlpha = 1;
+	}
+	if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
+		initializeWorker();
+
+	function updateSnapshot(
+		state: TransitionFrameState,
+		nextClock: TransitionClock,
+	) {
+		const previous = snapshot;
+		if (
+			previous &&
+			previous.clock.phaseStart === nextClock.phaseStart &&
+			previous.clock.duration === nextClock.duration &&
+			previous.state.phase === state.phase &&
+			previous.state.width === state.width &&
+			previous.state.height === state.height &&
+			previous.state.dpr === state.dpr &&
+			previous.state.isDark === state.isDark &&
+			previous.state.targetVisibleHeight === state.targetVisibleHeight &&
+			previous.state.scrollNorm === state.scrollNorm &&
+			previous.state.scrollVelocity === state.scrollVelocity &&
+			previous.viewportHeight === innerHeight
+		)
+			return;
+		if (previous) {
+			const surface = advanceRainDrops(previous, state.elapsedSec);
+			if (state.phase === "entering" && previous.state.phase === "exiting")
+				entryFraction = surface;
+		}
+		const parameters = {
+			state: { ...state },
+			clock: nextClock,
+			viewportHeight: innerHeight,
+			entryFraction,
+		};
+		snapshot = { ...parameters, drops };
+		if (activeWorker)
+			worker?.postMessage({
+				type: "update",
+				parameters,
+			} satisfies RainWorkerMessage);
 	}
 
 	function cancelHoldAnimations() {
 		for (const anim of holdAnimations) anim.cancel();
 		holdAnimations = [];
 		if (holdHost) {
+			holdHost.canvas.style.visibility = "";
 			holdHost.holdLayer.hidden = true;
 			holdHost.holdLayer.replaceChildren();
 			holdHost = undefined;
@@ -158,16 +158,11 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 	return {
 		id: "liquid-rain",
 		prepare({ width, height, startVisibleHeight }) {
+			initializeWorker();
 			cancelHoldAnimations();
-			const styles = getComputedStyle(document.body);
-			const hue = Number.parseFloat(styles.getPropertyValue("--hue")) || 0;
-			({ materials, tails, tailsDown } = texturesForHue(hue));
-			if (!background) {
-				background = document.createElement("canvas");
-				background.width = 256;
-				background.height = 192;
-				glowLayer = background.getContext("2d", { alpha: false });
-			}
+			hue = themeHue();
+			textures = texturesForHue(hue);
+			selectBackend = true;
 			const count =
 				innerWidth < 1024
 					? Math.max(28, Math.min(34, Math.round((width * height) / 11000)))
@@ -180,123 +175,68 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 				offset: Math.random() * circle,
 				color: i % rainColors.length,
 			}));
-			lastPhase = undefined;
 			const startRatio =
 				startVisibleHeight && height > 0
 					? Math.min(1, startVisibleHeight / height)
 					: 1;
-			entryFraction = surfaceFraction = startRatio + 0.08;
+			entryFraction = startRatio + 0.08;
 		},
-		render(ctx, state) {
-			const {
-				width: w,
-				height: h,
-				phase,
-				phaseProgress: p,
-				elapsedSec: time,
-				isDark,
-			} = state;
-			if (!w || !h) return;
-			const ink = materials[Number(isDark)];
-			const targetH =
-				state.targetVisibleHeight && state.targetVisibleHeight > 0
-					? Math.min(h, state.targetVisibleHeight)
-					: h;
-			const exitRatio = h > 0 ? targetH / h : 1;
-			const cx = w / 2;
-			const cy = targetH / 2;
-			const wave = phase === "entering" || phase === "exiting";
-			const amp = phase === "exiting" ? 15 * (1 - 0.4 * p) : 15;
-			const margin = Math.max(24 / h, 0.08);
-			if (phase === "entering" && lastPhase === "exiting")
-				entryFraction = surfaceFraction;
-			if (phase === "entering")
-				surfaceFraction = -margin + (entryFraction + margin) * (1 - p) ** 2.4;
-			else if (phase === "exiting")
-				surfaceFraction = -margin + (exitRatio + 2 * margin) * p ** 1.3;
-			else surfaceFraction = -margin;
-			lastPhase = phase;
-			ctx.clearRect(0, 0, w, h);
-			ctx.save();
-			if (wave) {
-				traceSurface(ctx, w, h * surfaceFraction, amp, time);
-				ctx.lineTo(w, h);
-				ctx.lineTo(0, h);
-				ctx.closePath();
-				ctx.clip();
+		renderOffscreen(canvas, state, nextClock) {
+			if (!activeWorker && !(selectBackend && workerReady)) {
+				selectBackend = false;
+				return false;
 			}
-			const glow = glowLayer ?? ctx;
-			if (glowLayer && background) {
-				glowLayer.setTransform(
-					background.width / w,
-					0,
-					0,
-					background.height / h,
-					0,
-					0,
-				);
-			}
-			glow.drawImage(ink.base, 0, 0, w, h);
-			drawGlow(
-				glow,
-				ink.glows[0],
-				w * (0.28 + 0.1 * Math.sin(time * 1.4)),
-				h * (0.34 + 0.12 * Math.cos(time * 1.1)),
-				Math.max(w * 0.48, h * 0.4),
-			);
-			drawGlow(
-				glow,
-				ink.glows[1],
-				w * (0.72 + 0.08 * Math.cos(time * 1.2)),
-				h * (0.64 - 0.1 * Math.sin(time * 1.3)),
-				Math.max(w * 0.44, h * 0.38),
-			);
-			drawGlow(
-				glow,
-				ink.glows[2],
-				cx,
-				h * (0.5 - state.scrollNorm * 0.14),
-				Math.max(w * 0.34, h * 0.28),
-			);
-			if (glowLayer && background) ctx.drawImage(background, 0, 0, w, h);
-			ctx.save();
-			ctx.translate(cx, cy);
-			ctx.rotate(-0.21);
-			ctx.drawImage(ink.beam, -w, -82, w * 2, 164);
-			ctx.restore();
-
-			const held = phase === "holding";
-			const falling = phase === "exiting";
-			const speed = falling
-				? 150 + 500 * p
-				: phase === "entering"
-					? -310
-					: -(
-							78 +
-							130 * state.scrollNorm +
-							Math.min(100, state.scrollVelocity * 0.035)
+			clock = nextClock;
+			updateSnapshot(state, nextClock);
+			if (selectBackend) {
+				selectBackend = false;
+				if (worker && workerReady && snapshot) {
+					try {
+						const offscreen = canvas.transferControlToOffscreen();
+						worker.postMessage(
+							{
+								type: "start",
+								canvas: offscreen,
+								hue,
+								snapshot,
+							} satisfies RainWorkerMessage,
+							[offscreen],
 						);
-			drawDrops(ctx, state, held, falling, speed);
-			// 主栏居中与整站视口中心存在偏置，且各页高度不一导致纵向重心不稳，本版本暂不绘制中央文字印记（保留 state.imprint 契约以便后续复用）
-			ctx.restore();
-			if (wave) {
-				ctx.save();
-				traceSurface(ctx, w, h * surfaceFraction, amp, time);
-				ctx.strokeStyle = isDark
-					? "rgba(182,248,255,.92)"
-					: "rgba(92,198,218,.85)";
-				ctx.lineWidth = 3;
-				ctx.shadowColor = "#8eeeff";
-				ctx.shadowBlur = 12;
-				ctx.stroke();
-				ctx.restore();
+						activeWorker = true;
+					} catch {
+						disableWorker();
+					}
+				}
 			}
+			return activeWorker;
 		},
-		enterHold(host, state) {
-			const { width: w, height: h, elapsedSec: time, isDark } = state;
-			if (!w || !h || !materials.length) return false;
+		render(ctx, state, nextClock) {
+			clock = nextClock ?? {
+				origin: 0,
+				phaseStart: (state.elapsedSec - state.phaseProgress) * 1000,
+				duration: 1000,
+			};
+			updateSnapshot(state, clock);
+			if (!snapshot || !textures) return;
+			if (!background) {
+				const layer = document.createElement("canvas");
+				layer.width = 256;
+				layer.height = 192;
+				background = layer.getContext("2d", { alpha: false });
+			}
+			if (background)
+				drawRain(ctx, background, textures, snapshot, state.elapsedSec);
+		},
+		enterHold(host, state, holdMs) {
+			const { width: w, height: h, isDark, elapsedSec: time } = state;
+			if (!w || !h || !textures || !clock) return false;
 			cancelHoldAnimations();
-			const ink = materials[Number(isDark)];
+			updateSnapshot(state, {
+				...clock,
+				phaseStart: state.elapsedSec * 1000,
+				duration: holdMs,
+			});
+			const ink = textures.materials[Number(isDark)];
 			const targetH = Math.min(h, state.targetVisibleHeight || h);
 			const radii = [
 				Math.max(w * 0.48, h * 0.4),
@@ -306,7 +246,7 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 			const centers = [
 				[w * 0.28, h * 0.34],
 				[w * 0.72, h * 0.64],
-				[w * 0.5, h * 0.5],
+				[w * 0.5, h * (0.5 - state.scrollNorm * 0.14)],
 			];
 			for (const [i, glow] of ink.glows.entries()) {
 				const radius = radii[i];
@@ -334,11 +274,7 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 				rain.append(bead);
 			}
 
-			holdHost = host;
-			surfaceFraction = -Math.max(24 / h, 0.08);
-			lastPhase = "holding";
 			host.holdLayer.replaceChildren(ink.base, ...ink.glows, ink.beam, rain);
-			host.holdLayer.hidden = false;
 			// 光斑两轴的频率不同，分别合成才能在慢请求期间沿原轨迹继续移动。
 			function drift(
 				glow: HTMLCanvasElement,
@@ -368,7 +304,9 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 					time,
 				),
 			);
-			host.ctx.clearRect(0, 0, w, h);
+			holdHost = host;
+			host.canvas.style.visibility = "hidden";
+			host.holdLayer.hidden = false;
 			return true;
 		},
 		leaveHold() {
@@ -377,9 +315,12 @@ export function createLiquidRainRenderer(): OpticalTransitionRenderer {
 		dispose() {
 			cancelHoldAnimations();
 			drops = [];
-			tails = [];
-			tailsDown = [];
-			materials = [];
+			if (activeWorker)
+				worker?.postMessage({ type: "stop" } satisfies RainWorkerMessage);
+			activeWorker = false;
+			snapshot = undefined;
+			clock = undefined;
+			textures = undefined;
 		},
 	};
 }

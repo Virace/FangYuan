@@ -45,7 +45,7 @@
 	border-radius: 14px;
 	background-color: var(--float-panel-glass-bg);
 	box-shadow: var(--float-panel-glass-shadow);
-	backdrop-filter: blur(22px) saturate(140%);
+	backdrop-filter: var(--floating-backdrop-filter);
 	color: var(--notice-ink);
 	overflow: hidden;
 	pointer-events: auto;

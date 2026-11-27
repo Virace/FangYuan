@@ -15,11 +15,6 @@ export interface RainTextures<T = HTMLCanvasElement | ImageBitmap> {
 	tailsDown: T[];
 }
 
-export interface RainTextureMessage {
-	textures: RainTextures<ImageBitmap>;
-	bitmaps: ImageBitmap[];
-}
-
 export function createRainTextures<C extends TextureContext, T>(
 	hue: number,
 	texture: (width: number, height: number) => C,

@@ -26,6 +26,13 @@ export interface OpticalTransitionHoldHost {
 	readonly ctx: CanvasRenderingContext2D;
 }
 
+/** 与 Window 和 Worker 共享的导航时间原点，以及相对它的阶段起点和时长（毫秒）。 */
+export interface TransitionClock {
+	origin: number;
+	phaseStart: number;
+	duration: number;
+}
+
 /** prepare 可采集旧正文。render 只使用帧快照与已按 DPR 缩放的画布；结束或中断后释放资源。 */
 export interface OpticalTransitionRenderer {
 	readonly id: "liquid-rain" | "color-field";
@@ -36,7 +43,16 @@ export interface OpticalTransitionRenderer {
 		isDark: boolean;
 		startVisibleHeight?: number;
 	}): void;
-	render(ctx: CanvasRenderingContext2D, state: TransitionFrameState): void;
+	render(
+		ctx: CanvasRenderingContext2D,
+		state: TransitionFrameState,
+		clock?: TransitionClock,
+	): void;
+	renderOffscreen?(
+		canvas: HTMLCanvasElement,
+		state: TransitionFrameState,
+		clock: TransitionClock,
+	): boolean;
 	enterHold?(
 		host: OpticalTransitionHoldHost,
 		state: TransitionFrameState,
