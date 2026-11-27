@@ -12,11 +12,7 @@ type TextureContext =
 export interface RainTextures<T = HTMLCanvasElement | ImageBitmap> {
 	materials: { base: T; glows: T[]; beam: T; underline: T }[];
 	tails: T[];
-}
-
-export interface RainTextureMessage {
-	textures: RainTextures<ImageBitmap>;
-	bitmaps: ImageBitmap[];
+	tailsDown: T[];
 }
 
 export function createRainTextures<C extends TextureContext, T>(
@@ -99,5 +95,18 @@ export function createRainTextures<C extends TextureContext, T>(
 		tail.fillRect(0, 0, 3, 32);
 		return finish(tail);
 	});
-	return { materials: [material(false), material(true)], tails };
+	const tailsDown = rainColors.map((color) => {
+		const tail = texture(3, 32);
+		const fade = tail.createLinearGradient(0, 32, 0, 0);
+		fade.addColorStop(0, color);
+		fade.addColorStop(1, `${color}00`);
+		tail.fillStyle = fade;
+		tail.fillRect(0, 0, 3, 32);
+		return finish(tail);
+	});
+	return {
+		materials: [material(false), material(true)],
+		tails,
+		tailsDown,
+	};
 }

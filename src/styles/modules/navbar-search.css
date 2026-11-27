@@ -33,7 +33,7 @@
     border: 1px solid var(--navbar-glass-border);
     border-top: none;
     box-shadow: var(--navbar-glass-shadow);
-    backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: var(--floating-backdrop-filter);
     transition:
         background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
         border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),

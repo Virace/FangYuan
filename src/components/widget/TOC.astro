@@ -105,6 +105,8 @@ class TableOfContents extends HTMLElement {
 	scrimEl: HTMLElement | null = null;
 	panelEl: HTMLElement | null = null;
 	progressEl: HTMLElement | null = null;
+	articleEl: HTMLElement | null = null;
+	articleContentEl: HTMLElement | null = null;
 	visibleClass = "visible";
 	observer: IntersectionObserver;
 	anchorNavTarget: HTMLElement | null = null;
@@ -122,8 +124,6 @@ class TableOfContents extends HTMLElement {
 	resizeFrame = 0;
 	scrollFrame = 0;
 	initFrame = 0;
-	transitionFallbackTimer = 0;
-	transitionEndHandler: (() => void) | null = null;
 	isInitialized = false;
 	proseAnimationTarget: HTMLElement | null = null;
 
@@ -244,8 +244,8 @@ class TableOfContents extends HTMLElement {
 		for (let i = 0; i < this.sections.length; i++) {
 			const section = this.sections[i];
 			if (!section) continue;
-			const offsetTop = section.getBoundingClientRect().top;
-			const offsetBottom = section.getBoundingClientRect().bottom;
+			const { top: offsetTop, bottom: offsetBottom } =
+				section.getBoundingClientRect();
 
 			if (
 				this.isInRange(offsetTop, 0, window.innerHeight) ||
@@ -307,10 +307,7 @@ class TableOfContents extends HTMLElement {
 	updateLayout = () => {
 		if (!this.wrapperEl || this.tocEntries.length === 0) return;
 
-		const articleEl =
-			document.getElementById("post-container") ??
-			document.querySelector<HTMLElement>("main");
-		const articleRect = articleEl?.getBoundingClientRect();
+		const articleRect = this.articleEl?.getBoundingClientRect();
 		const viewportWidth = window.innerWidth;
 
 		const availableOutsideWidth =
@@ -360,9 +357,8 @@ class TableOfContents extends HTMLElement {
 		}
 
 		if (modeChanged) {
-			void this.wrapperEl.offsetHeight;
 			requestAnimationFrame(() => {
-				if (this.wrapperEl) {
+				if (this.isConnected && this.wrapperEl) {
 					delete this.wrapperEl.dataset.tocSwitching;
 				}
 			});
@@ -371,67 +367,37 @@ class TableOfContents extends HTMLElement {
 		requestAnimationFrame(() => this.toggleActiveHeading());
 	};
 
-	/**
-	 * 滚动超出正文主体后通过独立状态隐藏 TOC，避免在评论区遮挡或停留。
-	 */
-	updateArticleBoundsVisibility = () => {
+	updateProgress = () => {
 		if (!this.wrapperEl) return;
-
-		const contentEl =
-			document.querySelector<HTMLElement>("#post-container .markdown-content") ??
-			document.getElementById("post-container");
-		if (!contentEl) {
-			delete this.wrapperEl.dataset.tocPastArticle;
-			return;
-		}
-
-		const rect = contentEl.getBoundingClientRect();
-		if (rect.height <= 0) {
-			delete this.wrapperEl.dataset.tocPastArticle;
-			return;
-		}
-
+		const article = this.articleEl?.getBoundingClientRect();
+		const content =
+			this.articleContentEl === this.articleEl
+				? article
+				: this.articleContentEl?.getBoundingClientRect();
 		const isCurrentlyPast = this.wrapperEl.dataset.tocPastArticle === "true";
 		const hideThreshold = isCurrentlyPast ? 140 : 100;
-		if (rect.bottom <= hideThreshold) {
-			this.wrapperEl.dataset.tocPastArticle = "true";
-		} else {
-			delete this.wrapperEl.dataset.tocPastArticle;
+		const isPast = Boolean(
+			content && content.height > 0 && content.bottom <= hideThreshold,
+		);
+		const ratio = article
+			? -article.top / Math.max(1, article.height - window.innerHeight)
+			: window.scrollY /
+				Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+		const percent = Math.min(100, Math.max(0, Math.round(ratio * 100)));
+
+		if (isPast !== isCurrentlyPast) {
+			if (isPast) this.wrapperEl.dataset.tocPastArticle = "true";
+			else delete this.wrapperEl.dataset.tocPastArticle;
 		}
-	};
-
-	updateProgress = () => {
-		this.updateArticleBoundsVisibility();
-
 		if (
-			this.wrapperEl?.classList.contains("toc-hide") ||
-			this.wrapperEl?.dataset.tocPastArticle === "true"
+			(isPast || this.wrapperEl.classList.contains("toc-hide")) &&
+			(this.dataset.tocOpen === "true" || this.dataset.tocHover === "true")
 		) {
 			this.setOpen(false);
-			this.setHover(false);
 		}
-
-		if (!this.progressEl) return;
-		const articleEl =
-			document.getElementById("post-container") ??
-			document.querySelector<HTMLElement>("main");
-
-		let ratio = 0;
-		if (articleEl) {
-			const rect = articleEl.getBoundingClientRect();
-			const articleTop = window.scrollY + rect.top;
-			const scrollable = Math.max(1, articleEl.offsetHeight - window.innerHeight);
-			ratio = (window.scrollY - articleTop) / scrollable;
-		} else {
-			const maxScroll = Math.max(
-				1,
-				document.documentElement.scrollHeight - window.innerHeight,
-			);
-			ratio = window.scrollY / maxScroll;
+		if (this.progressEl && this.progressEl.textContent !== `${percent}%`) {
+			this.progressEl.textContent = `${percent}%`;
 		}
-
-		const percent = Math.min(100, Math.max(0, Math.round(ratio * 100)));
-		this.progressEl.textContent = `${percent}%`;
 	};
 
 	setOpen = (open: boolean) => {
@@ -520,7 +486,7 @@ class TableOfContents extends HTMLElement {
 		this.resizeFrame = requestAnimationFrame(() => {
 			this.resizeFrame = 0;
 			this.updateLayout();
-			this.updateProgress();
+			this.handleScroll();
 		});
 	};
 
@@ -554,15 +520,7 @@ class TableOfContents extends HTMLElement {
 	};
 
 	handleProseAnimationEnd = () => {
-		if (!this.isConnected) return;
-		if (!this.isInitialized) {
-			this.init();
-		} else {
-			this.updateLayout();
-			this.fallback();
-			this.update();
-			this.updateProgress();
-		}
+		if (this.isConnected && this.isInitialized) this.handleScroll();
 	};
 
 	scheduleInit = () => {
@@ -570,6 +528,16 @@ class TableOfContents extends HTMLElement {
 		this.initFrame = requestAnimationFrame(() => {
 			this.initFrame = 0;
 			if (!this.isConnected) return;
+			if (
+				document.documentElement.classList.contains("optical-transition-active")
+			) {
+				document.addEventListener(
+					"fangyuan:optical-transition-end",
+					this.scheduleInit,
+					{ once: true },
+				);
+				return;
+			}
 			this.init();
 		});
 	};
@@ -582,37 +550,7 @@ class TableOfContents extends HTMLElement {
 			{ once: true },
 		);
 
-		if (
-			document.documentElement.classList.contains("optical-transition-active")
-		) {
-			// 光幕遮挡且 #toc-wrapper 隐藏期间延后首次布局测量，避免抢跑阻塞切页帧率。
-			const onReady = () => {
-				if (this.transitionFallbackTimer) {
-					window.clearTimeout(this.transitionFallbackTimer);
-					this.transitionFallbackTimer = 0;
-				}
-				if (this.transitionEndHandler) {
-					document.removeEventListener(
-						"fangyuan:optical-transition-end",
-						this.transitionEndHandler,
-					);
-					this.transitionEndHandler = null;
-				}
-				this.scheduleInit();
-			};
-			this.transitionEndHandler = onReady;
-			document.addEventListener("fangyuan:optical-transition-end", onReady, {
-				once: true,
-			});
-			this.transitionFallbackTimer = window.setTimeout(onReady, 900);
-		} else {
-			this.scheduleInit();
-		}
-
-		document.fonts?.ready.then(() => {
-			if (!this.isConnected || !this.isInitialized) return;
-			this.updateLayout();
-		});
+		this.scheduleInit();
 	}
 
 	refresh() {
@@ -626,7 +564,7 @@ class TableOfContents extends HTMLElement {
 		this.active = [];
 		this.anchorNavTarget = null;
 		this.isInitialized = false;
-		this.init();
+		this.scheduleInit();
 	}
 
 	init() {
@@ -650,6 +588,10 @@ class TableOfContents extends HTMLElement {
 
 		if (!this.wrapperEl || this.tocEntries.length === 0) return;
 		this.isInitialized = true;
+		const post = document.getElementById("post-container");
+		this.articleEl = post ?? document.querySelector<HTMLElement>("main");
+		this.articleContentEl =
+			post?.querySelector<HTMLElement>(".markdown-content") ?? post;
 
 		this.scrollAreaEl?.addEventListener("click", this.handleAnchorClick, {
 			capture: true,
@@ -666,6 +608,7 @@ class TableOfContents extends HTMLElement {
 		window.addEventListener("keydown", this.handleKeyDown);
 		window.addEventListener("scroll", this.handleScroll, { passive: true });
 		window.addEventListener("resize", this.handleResize, { passive: true });
+		document.fonts?.addEventListener("loadingdone", this.handleResize);
 
 		this.sections = new Array(this.tocEntries.length);
 		this.headings = new Array(this.tocEntries.length);
@@ -688,9 +631,7 @@ class TableOfContents extends HTMLElement {
 		}
 
 		this.updateLayout();
-		this.fallback();
-		this.update();
-		this.updateProgress();
+		this.handleScroll();
 	}
 
 	cleanupListeners() {
@@ -699,17 +640,11 @@ class TableOfContents extends HTMLElement {
 			cancelAnimationFrame(this.initFrame);
 			this.initFrame = 0;
 		}
-		if (this.transitionFallbackTimer) {
-			window.clearTimeout(this.transitionFallbackTimer);
-			this.transitionFallbackTimer = 0;
-		}
-		if (this.transitionEndHandler) {
-			document.removeEventListener(
-				"fangyuan:optical-transition-end",
-				this.transitionEndHandler,
-			);
-			this.transitionEndHandler = null;
-		}
+		document.removeEventListener(
+			"fangyuan:optical-transition-end",
+			this.scheduleInit,
+		);
+		document.fonts?.removeEventListener("loadingdone", this.handleResize);
 		if (this.resizeFrame) {
 			cancelAnimationFrame(this.resizeFrame);
 			this.resizeFrame = 0;
@@ -741,12 +676,10 @@ class TableOfContents extends HTMLElement {
 
 	disconnectedCallback() {
 		this.cleanupListeners();
-		for (const section of this.sections) {
-			if (section) {
-				this.observer.unobserve(section);
-			}
-		}
 		this.observer.disconnect();
+		this.isInitialized = false;
+		this.headingIdxMap.clear();
+		this.anchorNavTarget = null;
 		if (this.wrapperEl && !this.wrapperEl.querySelector("table-of-contents")) {
 			delete this.wrapperEl.dataset.tocLayout;
 			delete this.wrapperEl.dataset.tocSwitching;

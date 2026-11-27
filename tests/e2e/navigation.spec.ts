@@ -177,14 +177,18 @@ for (const [source, destination, deep] of [
 			if (deep) scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" });
 			const banner = document.querySelector("optical-banner")!;
 			const played: number[] = [];
+			const material = banner.querySelector(".optical-plane:has(template)")!;
 			const observer = new MutationObserver(records => {
 				for (const record of records) {
 					for (const node of record.addedNodes) {
-						if (node instanceof SVGUseElement) played.push(banner.getBoundingClientRect().bottom);
+						if (node instanceof HTMLElement && node.getAnimations({ subtree: true }).length > 0) {
+							const { top, bottom } = banner.getBoundingClientRect();
+							played.push(Math.min(innerHeight, bottom) - Math.max(0, top));
+						}
 					}
 				}
 			});
-			observer.observe(banner.querySelector("#optics-wave")!, { childList: true });
+			observer.observe(material, { childList: true });
 			const end = new Promise<void>(resolve => window.swup.hooks.once("visit:end", () => resolve()));
 			document.querySelector<HTMLAnchorElement>(`a[href="${destination}"]`)!.click();
 			await end;

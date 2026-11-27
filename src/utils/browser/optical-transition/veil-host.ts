@@ -1,8 +1,9 @@
 import type { VeilGeometry } from "./types";
 
 export class VeilHost {
-	readonly canvas: HTMLCanvasElement = document.createElement("canvas");
-	readonly ctx: CanvasRenderingContext2D | null = this.canvas.getContext("2d");
+	readonly holdLayer: HTMLDivElement = document.createElement("div");
+	canvas: HTMLCanvasElement = document.createElement("canvas");
+	private drawingContext: CanvasRenderingContext2D | null = null;
 	readonly geometry: VeilGeometry = {
 		width: 0,
 		height: 0,
@@ -20,8 +21,40 @@ export class VeilHost {
 	constructor() {
 		this.host.className = "optical-transition-veil";
 		this.host.setAttribute("aria-hidden", "true");
-		this.host.append(this.canvas);
+		this.holdLayer.className = "optical-transition-hold";
+		this.holdLayer.hidden = true;
+		this.host.append(this.holdLayer, this.canvas);
 		document.body.append(this.host);
+	}
+
+	get ctx(): CanvasRenderingContext2D {
+		const ctx = this.getDrawingContext();
+		if (!ctx) throw new Error("Canvas 2D unavailable");
+		return ctx;
+	}
+
+	getDrawingContext(): CanvasRenderingContext2D | null {
+		if (!this.drawingContext) {
+			try {
+				this.drawingContext = this.canvas.getContext("2d");
+			} catch {
+				// 已转交 Worker 的画布无法取回上下文。回退时保留宿主几何并换用新的画布。
+				const replacement = document.createElement("canvas");
+				replacement.style.cssText = this.canvas.style.cssText;
+				this.canvas.replaceWith(replacement);
+				this.canvas = replacement;
+				this.drawingContext = replacement.getContext("2d");
+			}
+		}
+		if (this.drawingContext) {
+			const { width, dpr } = this.geometry;
+			const pixelWidth = Math.max(1, Math.round(width * dpr));
+			const pixelHeight = Math.max(1, Math.round(innerHeight * dpr));
+			if (this.canvas.width !== pixelWidth) this.canvas.width = pixelWidth;
+			if (this.canvas.height !== pixelHeight) this.canvas.height = pixelHeight;
+			this.drawingContext.setTransform(dpr, 0, 0, dpr, 0, 0);
+		}
+		return this.drawingContext;
 	}
 
 	private applyCanvasGeometry(
@@ -32,12 +65,7 @@ export class VeilHost {
 	): void {
 		const dpr = Math.min(devicePixelRatio, 2);
 		// 只裁剪宿主的可见部分。顶图伸缩或回顶时避免每帧重新分配整张位图。
-		const pixelWidth = Math.max(1, Math.round(width * dpr));
-		const pixelHeight = Math.max(1, Math.round(innerHeight * dpr));
-		if (this.canvas.width !== pixelWidth) this.canvas.width = pixelWidth;
-		if (this.canvas.height !== pixelHeight) this.canvas.height = pixelHeight;
 		this.canvas.style.height = `${innerHeight}px`;
-		this.ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
 		this.geometry.width = width;
 		this.geometry.height = height;
 		this.geometry.dpr = dpr;
@@ -93,6 +121,7 @@ export class VeilHost {
 		targetOffsetY: number,
 		startVisibleHeight: number,
 		targetVisibleHeight: number,
+		gridSlide?: Animation,
 	): void {
 		const rect = main.getBoundingClientRect();
 		const top = Math.max(0, baseTop);
@@ -110,7 +139,26 @@ export class VeilHost {
 			startVisibleHeight,
 			targetVisibleHeight,
 		);
-		this.startBannerSlide(startOffsetY, targetOffsetY);
+		const timelineProgress = gridSlide?.effect?.getComputedTiming().progress;
+		if (gridSlide?.effect && timelineProgress != null && timelineProgress < 1) {
+			this.bannerAnim?.cancel();
+			this.host.style.transform = `translateY(${targetOffsetY}px)`;
+			// 从当前 CSS 像素位移还原起点，避免缩放页面时将关键帧里的长度再放大一遍。
+			const fromY =
+				targetOffsetY + (startOffsetY - targetOffsetY) / (1 - timelineProgress);
+			this.bannerAnim = this.host.animate(
+				[
+					{ transform: `translateY(${fromY}px)` },
+					{ transform: `translateY(${targetOffsetY}px)` },
+				],
+				{ ...gridSlide.effect.getTiming(), fill: "both" },
+			);
+			if (gridSlide.startTime !== null) {
+				this.bannerAnim.startTime = gridSlide.startTime;
+			}
+		} else {
+			this.startBannerSlide(startOffsetY, targetOffsetY);
+		}
 		this.bannerSync = true;
 	}
 
@@ -122,9 +170,14 @@ export class VeilHost {
 		this.geometry.targetVisibleHeight = targetVisibleHeight;
 	}
 
-	remove(): void {
+	unlockBanner(): void {
 		this.bannerAnim?.cancel();
 		this.bannerAnim = undefined;
+		this.bannerSync = false;
+	}
+
+	remove(): void {
+		this.unlockBanner();
 		this.host.remove();
 	}
 }

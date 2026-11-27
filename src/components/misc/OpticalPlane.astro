@@ -1,0 +1,39 @@
+---
+interface Props {
+	name: string;
+	transform: string;
+	pulseOffset?: number;
+}
+const { name, transform, pulseOffset = 0 } = Astro.props;
+---
+
+<div class="optical-plane" data-surface={name} style={{ transform }}>
+	<svg class="surface-art" viewBox="-240 -165 480 330" fill="none"><slot /></svg>
+	{Astro.slots.has("flash") && <template data-flash-offset={pulseOffset}>
+		<div class="flash-orbit">
+			<div class="flash-band">
+				<div class="flash-material">
+					<svg class="flash-counter" viewBox="-240 -165 480 330" fill="none"><slot name="flash" /></svg>
+				</div>
+			</div>
+		</div>
+	</template>}
+</div>
+
+<style>
+	.optical-plane, .surface-art, .flash-orbit, .flash-counter {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+	}
+	.optical-plane { contain: paint; will-change: transform; }
+	.flash-band {
+		position: absolute;
+		inset: -25% 0;
+		mask-image: linear-gradient(to right, transparent 36.667%, rgb(0 0 0 / .55) 46.8%, black 50.125%, transparent 52.5%);
+	}
+	.flash-material { position: absolute; inset: 16.666667% 0; }
+	.flash-counter { transform-origin: center; }
+</style>

@@ -1,8 +1,4 @@
 export interface OpticalProjection {
-	back: string;
-	spacer: string;
-	frame: string;
-	barrel: string;
 	lens: string;
 	incoming: string;
 	outgoing: string;
@@ -11,6 +7,8 @@ export interface OpticalProjection {
 }
 
 interface OpticalView extends OpticalProjection {
+	surfaces: Record<"back" | "spacer" | "frame" | "barrel" | "lens", string>;
+	rays: Record<"incoming" | "outgoing", string>;
 	relief: { x: number; y: number };
 	exitRadius: number;
 }
@@ -56,11 +54,24 @@ export function projectOptics(
 	const depthY = sr * sy - cr * sp * cy;
 	const x = horizontal * 16;
 	const y = vertical * 10;
-	const plane = (depth: number) =>
-		`matrix(${a} ${b} ${c} ${d} ${x + depth * depthX} ${y + depth * depthY})`;
+	const surface = (depth: number) =>
+		`translate(${((x + depth * depthX) / 480) * 100}%, ${((y + depth * depthY) / 330) * 100}%) matrix(${a}, ${b}, ${c}, ${d}, 0, 0)`;
 	const determinant = a * d - b * c;
-	const beam = (edge: number, angle: number, width: number) =>
-		`matrix(${(d * width - c * angle) / determinant} ${(a * angle - b * width) / determinant} 0 1 ${edge} 0)`;
+	const lens = surface(lensDepth);
+	const beam = (edge: number, slope: number, width: number) => {
+		const u = (d * width - c * slope) / determinant;
+		const v = (a * slope - b * width) / determinant;
+		return {
+			svg: `matrix(${u} ${v} 0 1 ${edge} 0)`,
+			css: `${lens} rotate(${angle}rad) translateX(${(edge / 480) * 100}%) matrix(${u}, ${v}, 0, 1, 0, 0)`,
+		};
+	};
+	const incoming = beam(entry, -0.075 + vertical * 0.025, 1);
+	const outgoing = beam(
+		exit,
+		-0.04 - vertical * 0.26 + horizontal * 0.075,
+		1 + horizontal * 0.19,
+	);
 
 	return {
 		exitRadius: exit,
@@ -68,17 +79,17 @@ export function projectOptics(
 			x: (d * depthX - c * depthY) / determinant,
 			y: (a * depthY - b * depthX) / determinant,
 		},
-		back: plane(prismProfile ? -26 : -48),
-		spacer: plane(-30),
-		frame: plane(prismProfile ? prismSpacerDepth : -12),
-		barrel: plane(6),
-		lens: plane(lensDepth),
-		incoming: beam(entry, -0.075 + vertical * 0.025, 1),
-		outgoing: beam(
-			exit,
-			-0.04 - vertical * 0.26 + horizontal * 0.075,
-			1 + horizontal * 0.19,
-		),
+		surfaces: {
+			back: surface(prismProfile ? -26 : -48),
+			spacer: surface(-30),
+			frame: surface(prismProfile ? prismSpacerDepth : -12),
+			barrel: surface(6),
+			lens,
+		},
+		rays: { incoming: incoming.css, outgoing: outgoing.css },
+		lens: `matrix(${a} ${b} ${c} ${d} ${x + lensDepth * depthX} ${y + lensDepth * depthY})`,
+		incoming: incoming.svg,
+		outgoing: outgoing.svg,
 		transmission: `matrix(${exit - entry} 0 0 1 ${entry} 0)`,
 		glint: `translate(${horizontal * -24} ${vertical * -17})`,
 	};

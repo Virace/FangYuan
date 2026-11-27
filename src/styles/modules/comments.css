@@ -174,7 +174,7 @@
     border-radius: 1rem;
     background: var(--float-panel-glass-bg);
     box-shadow: var(--float-panel-glass-shadow);
-    backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: var(--floating-backdrop-filter);
 }
 
 .comment-vote-popover,
