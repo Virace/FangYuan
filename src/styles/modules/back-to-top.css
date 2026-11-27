@@ -37,7 +37,7 @@ html.optical-transition-active .back-to-top-btn {
     border: 1px solid var(--float-panel-glass-border);
     background: var(--float-panel-glass-bg);
     box-shadow: var(--float-panel-glass-shadow);
-    backdrop-filter: blur(18px) saturate(140%);
+    background-image: var(--surface-grain);
     color: var(--accent-foreground);
     cursor: var(--cursor-link, pointer);
     transition:

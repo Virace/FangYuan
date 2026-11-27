@@ -205,8 +205,8 @@ test("narrow desktop switches toc to translucent inside dock and opens on hover"
 	const panel = page.locator("#toc-nav-panel");
 	const firstTocLink = page.locator("#toc a").first();
 	await expect(firstTocLink).toBeVisible();
-	const backdropFilter = await readComputedStyleValue(panel, "backdrop-filter");
-	expect(backdropFilter).toContain("blur(");
+	await expect(panel).toHaveCSS("backdrop-filter", "none");
+	await expect(panel).not.toHaveCSS("background-image", "none");
 
 	const href = await firstTocLink.getAttribute("href");
 	if (!href) {
